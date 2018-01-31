@@ -8,4 +8,7 @@
 #                        |___/
 
 terminal:
-   read-line: false
+   read-line: true
+
+developer:
+  load-incompatible-api: true

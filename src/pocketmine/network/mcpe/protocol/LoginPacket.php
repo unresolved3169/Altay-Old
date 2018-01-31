@@ -73,7 +73,7 @@ class LoginPacket extends DataPacket{
 	}
 
 	public function mayHaveUnreadBytes() : bool{
-		return $this->protocol !== null and $this->protocol !== ProtocolInfo::CURRENT_PROTOCOL;
+		return $this->protocol !== null and !in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS);
 	}
 
 	protected function decodePayload(){
@@ -88,17 +88,17 @@ class LoginPacket extends DataPacket{
 
 		try{
 			$this->decodeConnectionRequest();
-		}catch(\Throwable $e){
-			if($this->protocol === ProtocolInfo::CURRENT_PROTOCOL){
-				throw $e;
-			}
+		}catch(\Throwable $e) {
+            if(!in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS)){
+                throw $e;
+            }
 
-			$logger = MainLogger::getLogger();
-			$logger->debug(get_class($e)  . " was thrown while decoding connection request in login (protocol version " . ($this->protocol ?? "unknown") . "): " . $e->getMessage());
-			foreach(\pocketmine\getTrace(0, $e->getTrace()) as $line){
-				$logger->debug($line);
-			}
-		}
+            $logger = MainLogger::getLogger();
+            $logger->debug(get_class($e) . " was thrown while decoding connection request in login (protocol version " . ($this->protocol ?? "unknown") . "): " . $e->getMessage());
+            foreach(\pocketmine\getTrace(0, $e->getTrace()) as $line){
+                $logger->debug($line);
+            }
+        }
 	}
 
 	protected function decodeConnectionRequest() : void{
