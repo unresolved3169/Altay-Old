@@ -5,6 +5,7 @@ Altay is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).
 # Finished & Planned Features
  - [x] Altay Configuration File
  - [x] Xbox User Id on player list
+ - [x] Elytra
  - [ ] Anvil
  - [ ] EnchantTable  
 ***more...***

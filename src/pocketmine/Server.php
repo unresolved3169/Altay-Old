@@ -283,11 +283,11 @@ class Server{
     /** @var bool */
     public static $readLine = false;
     /** @var bool */
-    public $loadIncompatibleApi = false;
+    public $loadIncompatibleApi = true;
 
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
-        self::$readLine = $this->getAltayProperty("developer.load-incompatible-api", true);
+        $this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
     }
 
 	/**
@@ -1507,7 +1507,7 @@ class Server{
 				@file_put_contents($this->dataPath . "altay.yml", $content);
 			}
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
-			self::$readLine = $this->getAltayProperty("terminal.read-line", true);
+			$this->loadAltayConfig();
 
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
