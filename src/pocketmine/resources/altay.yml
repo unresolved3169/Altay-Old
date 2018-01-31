@@ -9,3 +9,6 @@
 
 terminal:
    read-line: true
+
+developer:
+  load-incompatible-api: true

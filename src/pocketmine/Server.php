@@ -282,6 +282,13 @@ class Server{
 
     /** @var bool */
     public static $readLine = false;
+    /** @var bool */
+    public $loadIncompatibleApi = false;
+
+    public function loadAltayConfig(){
+        self::$readLine = $this->getAltayProperty("terminal.read-line", true);
+        self::$readLine = $this->getAltayProperty("developer.load-incompatible-api", true);
+    }
 
 	/**
 	 * @return string

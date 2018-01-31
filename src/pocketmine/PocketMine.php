@@ -80,7 +80,7 @@ namespace pocketmine {
 
 	const NAME = "Altay";
 	const VERSION = "1.2";
-	const API_VERSION = "3.0.2";
+	const API_VERSION = "3.0.1";
 	const CODENAME = "TuranicPRO";
 
 	const MIN_PHP_VERSION = "7.2.0RC3";
