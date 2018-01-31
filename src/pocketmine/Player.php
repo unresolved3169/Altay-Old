@@ -52,6 +52,7 @@ use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerEditBookEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
+use pocketmine\event\player\PlayerToggleGlideEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -1671,7 +1672,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 						$this->inAirTicks = 0;
 					}else{
-						if(!$this->allowFlight and $this->inAirTicks > 10 and !$this->isSleeping() and !$this->isImmobile()){
+					    $gliding = $this->isGliding();
+						if(!$gliding and !$this->allowFlight and $this->inAirTicks > 10 and !$this->isSleeping() and !$this->isImmobile()){
 							$expectedVelocity = (-$this->gravity) / $this->drag - ((-$this->gravity) / $this->drag) * exp(-$this->drag * ($this->inAirTicks - $this->startAirTicks));
 							$diff = ($this->speed->y - $expectedVelocity) ** 2;
 
@@ -1686,8 +1688,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							}
 						}
 
-						$this->inAirTicks += $tickDiff;
-					}
+						if($gliding){
+						    $this->resetFallDistance();
+                        }
+
+                        $this->inAirTicks += $tickDiff;
+                    }
 				}
 			}
 		}
@@ -2711,8 +2717,23 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}
 				return true;
 			case PlayerActionPacket::ACTION_START_GLIDE:
+                $ev = new PlayerToggleGlideEvent($this, true);
+                $this->server->getPluginManager()->callEvent($ev);
+                if($ev->isCancelled()){
+                    $this->sendData($this);
+                }else{
+                    $this->setGliding(true);
+                }
+			    break;
 			case PlayerActionPacket::ACTION_STOP_GLIDE:
-				break; //TODO
+                $ev = new PlayerToggleGlideEvent($this, false);
+                $this->server->getPluginManager()->callEvent($ev);
+                if($ev->isCancelled()){
+                    $this->sendData($this);
+                }else{
+                    $this->setGliding(false);
+                }
+				break;
 			case PlayerActionPacket::ACTION_CONTINUE_BREAK:
 				$block = $this->level->getBlock($pos);
 				$this->level->broadcastLevelEvent($pos, LevelEventPacket::EVENT_PARTICLE_PUNCH_BLOCK, $block->getId() | ($block->getDamage() << 8) | ($packet->face << 16));
