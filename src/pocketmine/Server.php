@@ -2347,7 +2347,7 @@ class Server{
 	}
 
 	public function addOnlinePlayer(Player $player){
-		$this->updatePlayerListData($player->getUniqueId(), $player->getId(), $player->getDisplayName(), $player->getSkin());
+		$this->updatePlayerListData($player->getUniqueId(), $player->getId(), $player->getDisplayName(), $player->getSkin(), $player->getXuid());
 
 		$this->playerList[$player->getRawUniqueId()] = $player;
 	}
@@ -2360,18 +2360,19 @@ class Server{
 		}
 	}
 
-	/**
-	 * @param UUID          $uuid
-	 * @param int           $entityId
-	 * @param string        $name
-	 * @param Skin          $skin
-	 * @param Player[]|null $players
-	 */
-	public function updatePlayerListData(UUID $uuid, int $entityId, string $name, Skin $skin, array $players = null){
+    /**
+     * @param UUID $uuid
+     * @param int $entityId
+     * @param string $name
+     * @param Skin $skin
+     * @param string $xboxUserId
+     * @param Player[]|null $players
+     */
+	public function updatePlayerListData(UUID $uuid, int $entityId, string $name, Skin $skin, string $xboxUserId, array $players = null){
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
 
-		$pk->entries[] = PlayerListEntry::createAdditionEntry($uuid, $entityId, $name, $skin);
+		$pk->entries[] = PlayerListEntry::createAdditionEntry($uuid, $entityId, $name, $skin, $xboxUserId);
 		$this->broadcastPacket($players ?? $this->playerList, $pk);
 	}
 
