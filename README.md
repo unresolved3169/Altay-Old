@@ -1,6 +1,6 @@
 # Altay
 Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.x.
-Turanic is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).
+Altay is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).
 
 # Finished & Planned Features
  - [x] Altay Configuration File
