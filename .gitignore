@@ -9,6 +9,7 @@ crashdumps/*
 *.phar
 server.properties
 /pocketmine.yml
+/altay.yml
 memoryDump_*/*
 resource_packs/
 
