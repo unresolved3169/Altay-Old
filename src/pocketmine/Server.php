@@ -294,11 +294,17 @@ class Server{
     public $loadIncompatibleApi = true;
     /** @var bool */
     public $allowServerSettingsForm = true;
+    /** @var bool */
+    public $keepInventory = false;
+    /** @var bool */
+    public $keepExperience = false;
 
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
         $this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
         $this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
+        $this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
+        $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
     }
 
 	/**

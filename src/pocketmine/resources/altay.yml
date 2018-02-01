@@ -7,6 +7,10 @@
 #                         __/ |
 #                        |___/
 
+player:
+  keep-inventory: false
+  keep-experience: false
+
 terminal:
    read-line: true
 

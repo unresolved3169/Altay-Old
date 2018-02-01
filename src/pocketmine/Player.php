@@ -1436,7 +1436,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function getXpDropAmount() : int{
-		if(!$this->isCreative()){
+		if($this->server->keepExperience && !$this->isCreative()){
 			return parent::getXpDropAmount();
 		}
 
@@ -3663,7 +3663,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		//main inventory and drops the rest on the ground.
 		$this->resetCraftingGridType();
 
-		$this->server->getPluginManager()->callEvent($ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params)));
+        $ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params));
+        $ev->setKeepInventory($this->server->keepInventory);
+		$this->server->getPluginManager()->callEvent($ev);
 
 		if(!$ev->getKeepInventory()){
 			foreach($ev->getDrops() as $item){
