@@ -51,11 +51,10 @@ class InventoryTransactionPacket extends DataPacket{
 	public $transactionType;
 
 	/**
-	 * @var bool
-	 * NOTE: THIS FIELD DOES NOT EXIST IN THE PROTOCOL, it's merely used for convenience for PocketMine-MP to easily
-	 * determine whether we're doing a crafting transaction.
+	 * @var string
+	 * NOTE: THIS FIELD DOES NOT EXIST IN THE PROTOCOL
 	 */
-	public $isCraftingPart = false;
+	public $inventoryType = "";
 
 	/** @var NetworkInventoryAction[] */
 	public $actions = [];

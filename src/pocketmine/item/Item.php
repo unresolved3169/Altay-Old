@@ -996,4 +996,14 @@ class Item implements ItemIds, \JsonSerializable{
 		$this->cachedNBT = null;
 	}
 
+	// ALTAY
+
+	public function getRepairCost() : int{
+        return $this->getNamedTag()->getInt("RepairCost", 0);
+    }
+
+    public function setRepairCost(int $repairCost) : void{
+	    $this->getNamedTag()->setInt("RepairCost", $repairCost);
+    }
+
 }

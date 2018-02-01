@@ -185,7 +185,7 @@ class ItemFactory{
 			self::registerItem(new PumpkinPie());
 			//TODO: FIREWORKS
 			//TODO: FIREWORKSCHARGE
-			//TODO: ENCHANTED_BOOK
+			self::registerItem(new EnchantedBook());
 			self::registerItem(new ItemBlock(Block::COMPARATOR_BLOCK, 0, Item::COMPARATOR));
 			self::registerItem(new Item(Item::NETHER_BRICK, 0, "Nether Brick"));
 			self::registerItem(new Item(Item::NETHER_QUARTZ, 0, "Nether Quartz"));

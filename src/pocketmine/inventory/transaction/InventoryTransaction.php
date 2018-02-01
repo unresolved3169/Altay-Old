@@ -37,7 +37,7 @@ use pocketmine\utils\MainLogger;
  */
 class InventoryTransaction{
 	/** @var float */
-	private $creationTime;
+	protected $creationTime;
 	protected $hasExecuted = false;
 	/** @var Player */
 	protected $source;

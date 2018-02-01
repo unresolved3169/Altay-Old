@@ -90,29 +90,29 @@ class Enchantment{
 	public static function init(){
 		self::$enchantments = new \SplFixedArray(256);
 
-		self::registerEnchantment(new ProtectionEnchantment(self::PROTECTION, "%enchant.protect.all", self::RARITY_COMMON, self::SLOT_ARMOR, 4, 0.75, null));
+		self::registerEnchantment(new ProtectionEnchantment(self::PROTECTION, "%enchant.protect.all", self::RARITY_COMMON, self::SLOT_ARMOR, 4, 0.75, null, 1));
 		self::registerEnchantment(new ProtectionEnchantment(self::FIRE_PROTECTION, "%enchantment.protect.fire", self::RARITY_UNCOMMON, self::SLOT_ARMOR, 4, 1.25, [
 			EntityDamageEvent::CAUSE_FIRE,
 			EntityDamageEvent::CAUSE_FIRE_TICK,
 			EntityDamageEvent::CAUSE_LAVA
 			//TODO: check fireballs
-		]));
+		], 2));
 		self::registerEnchantment(new ProtectionEnchantment(self::FEATHER_FALLING, "%enchantment.protect.fall", self::RARITY_UNCOMMON, self::SLOT_FEET, 4, 2.5, [
 			EntityDamageEvent::CAUSE_FALL
-		]));
+		], 2));
 		self::registerEnchantment(new ProtectionEnchantment(self::BLAST_PROTECTION, "%enchantment.protect.explosion", self::RARITY_RARE, self::SLOT_ARMOR, 4, 1.5, [
 			EntityDamageEvent::CAUSE_BLOCK_EXPLOSION,
 			EntityDamageEvent::CAUSE_ENTITY_EXPLOSION
-		]));
+		], 4));
 		self::registerEnchantment(new ProtectionEnchantment(self::PROJECTILE_PROTECTION, "%enchantment.protect.projectile", self::RARITY_UNCOMMON, self::SLOT_ARMOR, 4, 1.5, [
 			EntityDamageEvent::CAUSE_PROJECTILE
-		]));
+		], 2));
 
-		self::registerEnchantment(new Enchantment(self::RESPIRATION, "%enchantment.oxygen", self::RARITY_RARE, self::SLOT_HEAD, 3));
+		self::registerEnchantment(new Enchantment(self::RESPIRATION, "%enchantment.oxygen", self::RARITY_RARE, self::SLOT_HEAD, 3, 4));
 
-		self::registerEnchantment(new Enchantment(self::EFFICIENCY, "%enchantment.digging", self::RARITY_COMMON, self::SLOT_DIG | self::SLOT_SHEARS, 5));
-		self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.untouching", self::RARITY_MYTHIC, self::SLOT_DIG | self::SLOT_SHEARS, 1));
-		self::registerEnchantment(new Enchantment(self::UNBREAKING, "%enchantment.durability", self::RARITY_UNCOMMON, self::SLOT_ALL, 3)); //TODO: item type flags need to be split up
+		self::registerEnchantment(new Enchantment(self::EFFICIENCY, "%enchantment.digging", self::RARITY_COMMON, self::SLOT_DIG | self::SLOT_SHEARS, 5, 1));
+		self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.untouching", self::RARITY_MYTHIC, self::SLOT_DIG | self::SLOT_SHEARS, 1, 8));
+		self::registerEnchantment(new Enchantment(self::UNBREAKING, "%enchantment.durability", self::RARITY_UNCOMMON, self::SLOT_ALL, 3, 2)); //TODO: item type flags need to be split up
 	}
 
 	/**
@@ -156,20 +156,24 @@ class Enchantment{
 	private $slot;
 	/** @var int */
 	private $maxLevel;
+	/** @var int */
+	private $repairCost = 1;
 
-	/**
-	 * @param int    $id
-	 * @param string $name
-	 * @param int    $rarity
-	 * @param int    $slot
-	 * @param int    $maxLevel
-	 */
-	public function __construct(int $id, string $name, int $rarity, int $slot, int $maxLevel){
+    /**
+     * @param int $id
+     * @param string $name
+     * @param int $rarity
+     * @param int $slot
+     * @param int $maxLevel
+     * @param int $repairCost
+     */
+	public function __construct(int $id, string $name, int $rarity, int $slot, int $maxLevel, int $repairCost = 1){
 		$this->id = $id;
 		$this->name = $name;
 		$this->rarity = $rarity;
 		$this->slot = $slot;
 		$this->maxLevel = $maxLevel;
+		$this->repairCost = $repairCost;
 	}
 
 	/**
@@ -221,6 +225,14 @@ class Enchantment{
 	public function getMaxLevel() : int{
 		return $this->maxLevel;
 	}
+
+    /**
+     * Returns the repair cost of enchantment.
+     * @return int
+     */
+    public function getRepairCost() : int{
+	    return $this->repairCost;
+    }
 
 	//TODO: methods for min/max XP cost bounds based on enchantment level (not needed yet - enchanting is client-side)
 }

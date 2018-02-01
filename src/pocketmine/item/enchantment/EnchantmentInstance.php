@@ -78,4 +78,15 @@ class EnchantmentInstance{
 
 		return $this;
 	}
+
+	public function getRepairCost() : int{
+	    return $this->enchantment->getRepairCost() * $this->level;
+    }
+
+    /**
+     * @return Enchantment
+     */
+    public function getEnchantment(): Enchantment{
+        return $this->enchantment;
+    }
 }

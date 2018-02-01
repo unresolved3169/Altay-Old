@@ -31,19 +31,20 @@ class ProtectionEnchantment extends Enchantment{
 	/** @var int[]|null */
 	protected $applicableDamageTypes = null;
 
-	/**
-	 * ProtectionEnchantment constructor.
-	 *
-	 * @param int        $id
-	 * @param string     $name
-	 * @param int        $rarity
-	 * @param int        $slot
-	 * @param int        $maxLevel
-	 * @param float      $typeModifier
-	 * @param int[]|null $applicableDamageTypes EntityDamageEvent::CAUSE_* constants which this enchantment type applies to, or null if it applies to all types of damage.
-	 */
-	public function __construct(int $id, string $name, int $rarity, int $slot, int $maxLevel, float $typeModifier, ?array $applicableDamageTypes){
-		parent::__construct($id, $name, $rarity, $slot, $maxLevel);
+    /**
+     * ProtectionEnchantment constructor.
+     *
+     * @param int $id
+     * @param string $name
+     * @param int $rarity
+     * @param int $slot
+     * @param int $maxLevel
+     * @param float $typeModifier
+     * @param int[]|null $applicableDamageTypes EntityDamageEvent::CAUSE_* constants which this enchantment type applies to, or null if it applies to all types of damage.
+     * @param int $repairCost
+     */
+	public function __construct(int $id, string $name, int $rarity, int $slot, int $maxLevel, float $typeModifier, ?array $applicableDamageTypes, int $repairCost = 1){
+		parent::__construct($id, $name, $rarity, $slot, $maxLevel, $repairCost);
 
 		$this->typeModifier = $typeModifier;
 		if($applicableDamageTypes !== null){

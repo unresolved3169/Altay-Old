@@ -71,8 +71,10 @@ use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\TextContainer;
 use pocketmine\event\Timings;
 use pocketmine\event\TranslationContainer;
+use pocketmine\inventory\AnvilInventory;
 use pocketmine\inventory\BigCraftingGrid;
 use pocketmine\inventory\CraftingGrid;
+use pocketmine\inventory\transaction\AnvilTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
@@ -2225,27 +2227,34 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}
 		}
 
-		if($packet->isCraftingPart){
-			if($this->craftingTransaction === null){
-				$this->craftingTransaction = new CraftingTransaction($this, $actions);
-			}else{
-				foreach($actions as $action){
-					$this->craftingTransaction->addAction($action);
-				}
-			}
+		switch($packet->inventoryType) {
+            case "Crafting":
+                if($this->craftingTransaction === null){
+                    $this->craftingTransaction = new CraftingTransaction($this, $actions);
+                }else{
+                    foreach($actions as $action){
+                        $this->craftingTransaction->addAction($action);
+                    }
+                }
 
-			if($this->craftingTransaction->getPrimaryOutput() !== null){
-				//we get the actions for this in several packets, so we can't execute it until we get the result
+                if($this->craftingTransaction->getPrimaryOutput() !== null){
+                    //we get the actions for this in several packets, so we can't execute it until we get the result
 
-				$this->craftingTransaction->execute();
-				$this->craftingTransaction = null;
-			}
-
-			return true;
-		}elseif($this->craftingTransaction !== null){
-			$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
-			$this->craftingTransaction = null;
-		}
+                    $this->craftingTransaction->execute();
+                    $this->craftingTransaction = null;
+                }
+                return true;
+            case "Anvil":
+                $anvilTransaction = new AnvilTransaction($this, $actions);
+                $anvilTransaction->execute();
+                return true;
+            default:
+                if($this->craftingTransaction !== null){
+                    $this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
+                    $this->craftingTransaction = null;
+                }
+                break;
+        }
 
 		switch($packet->transactionType){
 			case InventoryTransactionPacket::TYPE_NORMAL:
@@ -3875,4 +3884,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function isLoaderActive() : bool{
 		return $this->isConnected();
 	}
+
+	// ALTAY
+
+    public function getAnvilInventory() : ?AnvilInventory{
+        foreach($this->windowIndex as $inventory){
+            if($inventory instanceof AnvilInventory){
+                return $inventory;
+            }
+        }
+
+        return null;
+    }
 }
