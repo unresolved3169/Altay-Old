@@ -175,7 +175,7 @@ class Server{
 
 	private $dispatchSignals = false;
 
-	/** @var \AttachableThreadedLogger */
+	/** @var MainLogger */
 	private $logger;
 
 	/** @var MemoryManager */
@@ -1334,11 +1334,8 @@ class Server{
 	 * @return PluginIdentifiableCommand|null
 	 */
 	public function getPluginCommand(string $name) : ?PluginIdentifiableCommand{
-		if(($command = $this->commandMap->getCommand($name)) instanceof PluginIdentifiableCommand){
-			return $command;
-		}else{
-			return null;
-		}
+        $command = $this->commandMap->getCommand($name);
+        return $command instanceof PluginIdentifiableCommand ? $command : null;
 	}
 
 	/**
