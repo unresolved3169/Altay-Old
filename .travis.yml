@@ -22,3 +22,8 @@ script:
 
 notifications:
  email: false
+
+before_deploy:
+- mv plugins/Altay/Altay*.phar plugins/Altay/Altay.phar
+- chmod +x ci/travis.sh
+- chmod +x ci/lint.sh
