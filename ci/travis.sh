@@ -10,7 +10,7 @@ while getopts "p:" OPTION 2> /dev/null; do
 	esac
 done
 
-./ci/lint.sh -p "$PHP_BINARY"
+bash ci/lint.sh -p "$PHP_BINARY"
 
 if [ $? -ne 0 ]; then
 	echo Lint scan failed!
