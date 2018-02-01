@@ -1500,6 +1500,10 @@ class Server{
 				mkdir($pluginPath, 0777);
 			}
 
+			if(!file_exists($pluginPath.NAME)){
+				mkdir($pluginPath.NAME, 0777);
+			}
+
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
 
@@ -1579,7 +1583,9 @@ class Server{
 				if($processors > 0){
 					$poolSize = max(1, $processors);
 				}
-			}
+			}else{
+			    $poolSize = (int) $poolSize;
+            }
 
 			ServerScheduler::$WORKERS = $poolSize;
 

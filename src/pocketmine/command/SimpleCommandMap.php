@@ -39,6 +39,7 @@ use pocketmine\command\defaults\HelpCommand;
 use pocketmine\command\defaults\KickCommand;
 use pocketmine\command\defaults\KillCommand;
 use pocketmine\command\defaults\ListCommand;
+use pocketmine\command\defaults\MakeServerCommand;
 use pocketmine\command\defaults\MeCommand;
 use pocketmine\command\defaults\OpCommand;
 use pocketmine\command\defaults\PardonCommand;
@@ -100,6 +101,7 @@ class SimpleCommandMap implements CommandMap{
 			new KickCommand("kick"),
 			new KillCommand("kill"),
 			new ListCommand("list"),
+			new MakeServerCommand("makeserver"),
 			new MeCommand("me"),
 			new OpCommand("op"),
 			new PardonCommand("pardon"),
