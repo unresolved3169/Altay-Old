@@ -47,6 +47,9 @@ use pocketmine\event\server\ServerCommandEvent;
 use pocketmine\event\TextContainer;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
+use pocketmine\form\element\Label;
+use pocketmine\form\FormIcon;
+use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\CraftingManager;
 use pocketmine\inventory\Recipe;
 use pocketmine\item\enchantment\Enchantment;
@@ -278,16 +281,24 @@ class Server{
 	/** @var Level */
 	private $levelDefault = null;
 
-	// ALTAY CONFIG
+	// ALTAY
+
+    /** @var ServerSettingsForm */
+    protected $serverSettingsForm = null;
+
+    /** ALTAY CONFIG */
 
     /** @var bool */
     public static $readLine = false;
     /** @var bool */
     public $loadIncompatibleApi = true;
+    /** @var bool */
+    public $allowServerSettingsForm = true;
 
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
         $this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
+        $this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
     }
 
 	/**
@@ -1509,6 +1520,8 @@ class Server{
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
 
+            $this->setServerSettingsForm(new ServerSettingsForm("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")));
+
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
 			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
@@ -2657,4 +2670,20 @@ class Server{
 	public function __sleep(){
 		throw new \BadMethodCallException("Cannot serialize Server instance");
 	}
+
+	// ALTAY
+
+    /**
+     * @return ServerSettingsForm
+     */
+    public function getServerSettingsForm(): ServerSettingsForm{
+        return $this->serverSettingsForm;
+    }
+
+    /**
+     * @param ServerSettingsForm $serverSettingsForm
+     */
+    public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
+        $this->serverSettingsForm = $serverSettingsForm;
+    }
 }

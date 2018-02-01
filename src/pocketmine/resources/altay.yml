@@ -12,3 +12,6 @@ terminal:
 
 developer:
   load-incompatible-api: true
+
+server:
+  allow-server-settings-form: true

@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -71,6 +72,7 @@ use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\TextContainer;
 use pocketmine\event\Timings;
 use pocketmine\event\TranslationContainer;
+use pocketmine\form\Form;
 use pocketmine\inventory\AnvilInventory;
 use pocketmine\inventory\BigCraftingGrid;
 use pocketmine\inventory\CraftingGrid;
@@ -111,6 +113,8 @@ use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
+use pocketmine\network\mcpe\protocol\ServerSettingsResponsePacket;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
@@ -156,7 +160,6 @@ use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
-
 
 /**
  * Main class that handles networking, recovery, and packet sending to the server part
@@ -300,6 +303,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * Last measurement of player's latency in milliseconds.
 	 */
 	protected $lastPingMeasure = 1;
+
+    /** @var int */
+    protected $formIdCounter = 0;
+    /** @var int|null */
+    protected $sentFormId = null;
+    /** @var Form|null */
+    protected $sentForm = null;
+    /** @var Form[] */
+    protected $formQueue = [];
 
 	/**
 	 * @return TranslationContainer|string
@@ -3290,7 +3302,90 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->dataPacket($pk);
 	}
 
-	/**
+    /**
+     * Sends a Form to the player, or queue to send it if a form is already open.
+     *
+     * @param Form $form
+     * @param bool $prepend if true, the form will be sent immediately after the current form is closed (if any), before other queued forms.
+     */
+    public function sendForm(Form $form, bool $prepend = false) : void{
+        $form->setInUse();
+
+        if($this->sentForm !== null){
+            if($prepend){
+                array_unshift($this->formQueue, $form);
+            }else{
+                $this->formQueue[] = $form;
+            }
+            return;
+        }
+
+        $this->sendFormRequestPacket($form);
+    }
+
+    /**
+     * @param int   $formId
+     * @param mixed $responseData
+     *
+     * @return bool
+     */
+    public function onFormSubmit(int $formId, $responseData) : bool{
+        if($formId !== $this->sentFormId){
+            $this->server->getLogger()->debug("Got unexpected response for form $formId, but waiting for response for $this->sentFormId");
+            return false;
+        }
+
+        $form = null;
+
+        try{
+            $form = $this->sentForm->handleResponse($this, $responseData);
+        }catch(\Throwable $e){
+            $this->server->getLogger()->logException($e);
+        }
+
+        $this->sentFormId = null;
+        $this->sentForm = null;
+
+        try{
+            if($form !== null){
+                $form->setInUse(); //forms in the queue will already be marked as "in use", we only need to check here
+            }else{
+                $form = array_shift($this->formQueue);
+            }
+
+            if($form !== null){
+                $this->sendFormRequestPacket($form);
+            }
+        }catch(\Throwable $e){
+            $this->server->getLogger()->logException($e);
+        }
+
+        return true;
+    }
+
+    private function sendFormRequestPacket(Form $form) : void{
+        $id = $this->formIdCounter++;
+        $pk = new ModalFormRequestPacket();
+        $pk->formId = $id;
+        $pk->formData = json_encode($form);
+        if($this->dataPacket($pk)){
+            $this->sentFormId = $id;
+            $this->sentForm = $form;
+        }
+    }
+
+    public function sendServerSettings(Form $form){
+        $id = $this->formIdCounter++;
+        $pk = new ServerSettingsResponsePacket();
+        $pk->formId = $id;
+        $pk->formData = json_encode($form);
+        if($this->dataPacket($pk)){
+            $this->sentFormId = $id;
+            $this->sentForm = $form;
+        }
+    }
+
+    /**
 	 * Note for plugin developers: use kick() with the isAdmin
 	 * flag set to kick without the "Kicked by admin" part instead of this method.
 	 *
