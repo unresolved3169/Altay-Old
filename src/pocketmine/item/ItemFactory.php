@@ -223,7 +223,7 @@ class ItemFactory{
 			//TODO: LINGERING_POTION
 
 			//TODO: COMMAND_BLOCK_MINECART
-			self::registerItem(new Elytra());
+			self::registerItem(new Item(Item::ELYTRA, 0, "Elytra Wings"));
 			self::registerItem(new Item(Item::SHULKER_SHELL, 0, "Shulker Shell"));
 			self::registerItem(new Banner());
 
