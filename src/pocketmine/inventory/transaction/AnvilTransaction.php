@@ -60,30 +60,7 @@ class AnvilTransaction extends InventoryTransaction{
     }
 
     public function execute() : bool{
-        if($this->hasExecuted() or !$this->canExecute()){
-            $this->sendInventories();
-            return false;
-        }
-
-        if(!$this->callExecuteEvent()){
-            $this->sendInventories();
-            return false;
-        }
-
-        foreach($this->actions as $action){
-            if(!$action->onPreExecute($this->source)){
-                $this->sendInventories();
-                return false;
-            }
-        }
-
-        foreach($this->actions as $action){
-            if($action->execute($this->source)){
-                $action->onExecuteSuccess($this->source);
-            }else{
-                $action->onExecuteFail($this->source);
-            }
-        }
+        if(!parent::execute()) return false;
 
         $this->inventory->setItem(0, Item::get(0), false);
         if(self::$useMaterial != null){
@@ -105,12 +82,14 @@ class AnvilTransaction extends InventoryTransaction{
             if (self::$useMaterial instanceof EnchantedBook) {
                 foreach ($this->result->getEnchantments() as $enchant) {
                     $inputEnchant = self::$useInput->getEnchantment($enchant->getId());
-                    if ($inputEnchant == null) {
-                        $cost += $enchant->getRepairCost() / 2;
-                    } else if ($enchant->getLevel() != $inputEnchant->getLevel()) {
+                    if($inputEnchant != null){
+                        $bol = $inputEnchant->getEnchantment()->getRepairCost() === 1 ? 1 : 2;
+                        $cost += $enchant->getRepairCost() / $bol;
+                    }elseif($enchant->getLevel() != $inputEnchant->getLevel()){
                         $check = Enchantment::getEnchantment($enchant->getId());
+                        $bol = $check->getRepairCost() === 1 ? 1 : 2;
                         $check = new EnchantmentInstance($check, $enchant->getLevel() - $inputEnchant->getLevel());
-                        $cost += $check->getRepairCost() / 2; // TODO : Fix repair cost
+                        $cost += $check->getRepairCost() / $bol;
                     }
                 }
             }elseif(self::$useMaterial->isTool()){
@@ -127,8 +106,6 @@ class AnvilTransaction extends InventoryTransaction{
             }
         }
         $this->source->setXpLevel($this->source->getXpLevel() - $cost);
-
-        $this->hasExecuted = true;
 
         return true;
     }
