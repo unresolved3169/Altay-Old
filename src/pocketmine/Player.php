@@ -76,7 +76,9 @@ use pocketmine\form\Form;
 use pocketmine\inventory\AnvilInventory;
 use pocketmine\inventory\BigCraftingGrid;
 use pocketmine\inventory\CraftingGrid;
+use pocketmine\inventory\EnchantInventory;
 use pocketmine\inventory\transaction\AnvilTransaction;
+use pocketmine\inventory\transaction\EnchantTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
@@ -2201,6 +2203,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->dataPacket($packet);
 				$this->server->broadcastPacket($this->getViewers(), $packet);
 				break;
+            case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
+                $this->addXpLevels($packet->data);
+                break;
 			default:
 				return false;
 		}
@@ -2260,6 +2265,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
                 $anvilTransaction = new AnvilTransaction($this, $actions);
                 $anvilTransaction->execute();
                 return true;
+            case "Enchant":
+                $enchantTransaction = new EnchantTransaction($this, $actions);
+                $enchantTransaction->execute();
+                break;
             default:
                 if($this->craftingTransaction !== null){
                     $this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
@@ -2759,6 +2768,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$block = $this->level->getBlock($pos);
 				$this->level->broadcastLevelEvent($pos, LevelEventPacket::EVENT_PARTICLE_PUNCH_BLOCK, $block->getId() | ($block->getDamage() << 8) | ($packet->face << 16));
 				break;
+            case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
+                // TODO
+                break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
 				return false;
@@ -3982,11 +3994,21 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->isConnected();
 	}
 
-	// ALTAY
+	// ALTAY TODO : OPTIMIZE
 
     public function getAnvilInventory() : ?AnvilInventory{
         foreach($this->windowIndex as $inventory){
             if($inventory instanceof AnvilInventory){
+                return $inventory;
+            }
+        }
+
+        return null;
+    }
+
+    public function getEnchantInventory() : ?EnchantInventory{
+        foreach($this->windowIndex as $inventory){
+            if($inventory instanceof EnchantInventory){
                 return $inventory;
             }
         }
