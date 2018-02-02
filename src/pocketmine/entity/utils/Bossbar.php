@@ -55,7 +55,7 @@ class Bossbar extends Vector3{
 			);
 		$this->metadata = [
 		Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-		Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $this->title]];
+		Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, "Turanic"]];
 		
 		$this->entityId = Entity::$entityCount++;
 	}
@@ -100,7 +100,7 @@ class Bossbar extends Vector3{
 		$pk2 = new BossEventPacket;
 		$pk2->bossEid = $this->entityId;
 		$pk2->eventType = BossEventPacket::TYPE_SHOW;
-		$pk2->title = $this->title;
+		$pk2->title = $this->getTitle();
 		$pk2->healthPercent = $this->healthPercent;
 		$pk2->overlay = 0;
 		$pk2->unknownShort = 0;
