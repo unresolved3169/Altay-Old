@@ -22,17 +22,21 @@
  
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\utils;
+
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\{AddEntityPacket, UpdateAttributesPacket, BossEventPacket, RemoveEntityPacket, SetEntityDataPacket};
 use pocketmine\Player;
+use pocketmine\entity\EntityIds;
+use pocketmine\entity\Entity;
+use pocketmine\entity\Attribute;
+
 /*
  * This a Helper class for simple Bossbar create
  * Note: This not a entity
  */
 class Bossbar extends Vector3{
-    /** @var string */
-	protected $title = "Turanic";
+	
 	/** @var float */
 	protected $healthPercent = 0;
 	/** @var float */
@@ -57,12 +61,11 @@ class Bossbar extends Vector3{
 	}
 	
 	public function setTitle(string $t){
-		$this->title = $t;
 		$this->setMetadata(Entity::DATA_NAMETAG, Entity::DATA_TYPE_STRING, $t);
 	}
 	
 	public function getTitle() : string{
-		return $this->title;
+		return $this->getMetadata(Entity::DATA_NAMETAG);
 	}
 	
 	public function setHealthPercent(float $hp, float $maxHp = null){
