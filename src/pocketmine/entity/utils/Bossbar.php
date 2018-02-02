@@ -55,7 +55,7 @@ class Bossbar extends Vector3{
 			);
 		$this->metadata = [
 		Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-		Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, "Turanic"]];
+		Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, "Altay"]];
 		
 		$this->entityId = Entity::$entityCount++;
 	}
