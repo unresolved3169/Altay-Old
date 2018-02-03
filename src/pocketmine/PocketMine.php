@@ -494,9 +494,10 @@ namespace pocketmine {
 			"curl" => "cURL",
 			"json" => "JSON",
 			"mbstring" => "Multibyte String",
-			"yaml" => "YAML",
+            "openssl" => "OpenSSL",
 			"sockets" => "Sockets",
-			"zip" => "Zip",
+            "yaml" => "YAML",
+            "zip" => "Zip",
 			"zlib" => "Zlib"
 		];
 
