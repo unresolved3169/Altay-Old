@@ -60,7 +60,7 @@ class AnvilTransaction extends InventoryTransaction{
     }
 
     public function execute() : bool{
-        if(!parent::execute()) return false;
+        if(!parent::execute() or $this->source->getXpLevel() <= 0) return false;
 
         $this->inventory->setItem(0, Item::get(0), false);
         if(self::$useMaterial != null){

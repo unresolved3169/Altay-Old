@@ -45,13 +45,15 @@ class MakeServerCommand extends VanillaCommand{
             return false;
         }
 
+
+
         $server = $sender->getServer();
         $pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Altay" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . "_" . date("Y-m-d") . ".phar";
         if (file_exists($pharPath)) {
             $sender->sendMessage("Phar file already exists, overwriting...");
             @unlink($pharPath);
         }
-        $sender->sendMessage($server->getName() . " Phar has begun to be created. This will take 4-5 minutes (may vary depending on your system).");
+        $sender->sendMessage($server->getName() . " Phar has begun to be created. This will take 2 minutes (may vary depending on your system).");
         $phar = new \Phar($pharPath);
         $phar->setMetadata([
             "name" => $server->getName(),
@@ -67,6 +69,17 @@ class MakeServerCommand extends VanillaCommand{
 
         $filePath = substr(\pocketmine\PATH, 0, 7) === "phar://" ? \pocketmine\PATH : realpath(\pocketmine\PATH) . "/";
         $filePath = rtrim(str_replace("\\", "/", $filePath), "/") . "/";
+
+        if(file_exists($filePath."vendor")){
+            foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath . "vendor")) as $file){
+                $path = ltrim(str_replace(["\\", $filePath], ["/", ""], $file), "/");
+                if ($path{0} === "." or strpos($path, "/.") !== false or substr($path, 0, 7) !== "vendor/") {
+                    continue;
+                }
+                $phar->addFile($file->getPathname(), $path);
+            }
+        }
+
         /** @var \SplFileInfo $file */
         foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($filePath . "src")) as $file){
             $path = ltrim(str_replace(["\\", $filePath], ["/", ""], $file), "/");
@@ -75,6 +88,7 @@ class MakeServerCommand extends VanillaCommand{
             }
             $phar->addFile($file->getPathname(), $path);
         }
+
         foreach($phar as $file => $finfo){
             /** @var \PharFileInfo $finfo */
             if ($finfo->getSize() > (1024 * 512)) {

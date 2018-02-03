@@ -123,9 +123,9 @@ namespace pocketmine {
 	}
 
 	if(\Phar::running(true) !== ""){
-		define('pocketmine\PATH', \Phar::running(true) . "/");
+		@define('pocketmine\PATH', \Phar::running(true) . "/");
 	}else{
-		define('pocketmine\PATH', dirname(__FILE__, 3) . DIRECTORY_SEPARATOR);
+		@define('pocketmine\PATH', dirname(__FILE__, 3) . DIRECTORY_SEPARATOR);
 	}
 
 	define('pocketmine\COMPOSER_AUTOLOADER_PATH', \pocketmine\PATH . 'vendor/autoload.php');

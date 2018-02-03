@@ -9,11 +9,11 @@ if exist bin\php\php.exe (
 	set PHP_BINARY=php
 )
 
-if exist Altay*.phar (
-	set ALTAY_FILE=Altay*.phar
+if exist Altay.phar (
+	set ALTAY_FILE=Altay.phar
 ) else (
-	if exist Altay.phar (
-		set ALTAY_FILE=Altay.phar
+	if exist Altay*.phar (
+		set ALTAY_FILE=Altay*.phar
 	) else (
 		if exist PocketMine-MP.phar (
 			set ALTAY_FILE=PocketMine-MP.phar
