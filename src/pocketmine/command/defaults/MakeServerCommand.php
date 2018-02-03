@@ -45,13 +45,10 @@ class MakeServerCommand extends VanillaCommand{
             return false;
         }
 
-        $server = $sender->getServer();
-        if(isset($args[0]) && $args[0] == "eksiz"){
-            $pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Altay" . DIRECTORY_SEPARATOR . $server->getName() . ".phar";
-        }else{
-            $pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Altay" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . "_" . $server->getApiVersion() . ".phar";
-        }
 
+
+        $server = $sender->getServer();
+        $pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Altay" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . "_" . $server->getApiVersion() . ".phar";
         if (file_exists($pharPath)) {
             $sender->sendMessage("Phar file already exists, overwriting...");
             @unlink($pharPath);
