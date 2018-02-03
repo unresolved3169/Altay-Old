@@ -29,6 +29,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\entity\Attribute;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
@@ -4021,5 +4022,24 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         }
 
         return null;
+    }
+
+    /**
+     * Sets the movement speed of player
+     * 1 = default 0 = immobile
+     *
+     * @param float $speed
+     */
+    public function setMovementSpeed(float $speed) : void{
+	    $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed, true);
+    }
+
+    /**
+     * Returns the movement speed of player
+     *
+     * @return float
+     */
+    public function getMovementSpeed() : float{
+        return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
     }
 }
