@@ -17,7 +17,8 @@ Example servers running Altay
  - [x] Elytra
  - [x] Anvil
  - [x] FormAPI
- - [x] EnchantmentTable  
+ - [x] EnchantmentTable
  - [x] BossbarAPI
+ - [x] Hopper
  
 ***more...***
