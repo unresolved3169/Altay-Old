@@ -13,12 +13,11 @@ Example servers running Altay
     
 ## Finished & Planned Features
  - [x] Altay Configuration File
- - [x] Xbox User Id on player list
  - [x] Elytra
- - [x] Anvil
  - [x] FormAPI
+ - [x] Anvil
  - [x] EnchantmentTable
- - [x] BossbarAPI
  - [x] Hopper
+ - [x] BossbarAPI
  
 ***more...***
