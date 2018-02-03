@@ -1688,8 +1688,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 						$this->inAirTicks = 0;
 					}else{
-					    $gliding = $this->isGliding();
-						if(!$gliding and !$this->allowFlight and $this->inAirTicks > 10 and !$this->isSleeping() and !$this->isImmobile()){
+						if(!$this->isGliding() and !$this->allowFlight and $this->inAirTicks > 10 and !$this->isSleeping() and !$this->isImmobile()){
 							$expectedVelocity = (-$this->gravity) / $this->drag - ((-$this->gravity) / $this->drag) * exp(-$this->drag * ($this->inAirTicks - $this->startAirTicks));
 							$diff = ($this->speed->y - $expectedVelocity) ** 2;
 
@@ -1703,10 +1702,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 								}
 							}
 						}
-
-						if($gliding){
-						    $this->resetFallDistance();
-                        }
 
                         $this->inAirTicks += $tickDiff;
                     }

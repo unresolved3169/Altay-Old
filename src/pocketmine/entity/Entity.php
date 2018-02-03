@@ -1413,6 +1413,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * @param bool  $onGround
 	 */
 	protected function updateFallState(float $distanceThisTick, bool $onGround){
+	    if($this->isPlayer) return;
 		if($onGround){
 			if($this->fallDistance > 0){
 				$this->fall($this->fallDistance);

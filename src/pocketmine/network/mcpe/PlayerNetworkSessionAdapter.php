@@ -158,7 +158,8 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handleEntityFall(EntityFallPacket $packet) : bool{
-		return true; //Not used
+	    $this->player->fall($packet->fallDistance);
+		return true;
 	}
 
 	public function handleAnimate(AnimatePacket $packet) : bool{
