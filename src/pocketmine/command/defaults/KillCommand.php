@@ -25,6 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\data\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\TranslationContainer;
@@ -41,6 +42,8 @@ class KillCommand extends VanillaCommand{
 			["suicide"]
 		);
 		$this->setPermission("pocketmine.command.kill.self;pocketmine.command.kill.other");
+
+		$this->getOverload("default")->setParameter(0, new CommandParameter("target", CommandParameter::ARG_TYPE_TARGET, true));
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
