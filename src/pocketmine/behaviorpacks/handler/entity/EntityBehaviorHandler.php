@@ -6,6 +6,6 @@ use pocketmine\entity\Entity;
 
 interface EntityBehaviorHandler{
  
- public function applyToEntity(Entity $entity, $data) : void;
+ public function applyData(Entity $entity, $data) : void;
 }
 ?>
