@@ -25,51 +25,13 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
+use pocketmine\command\data\CommandData;
+use pocketmine\command\data\CommandEnum;
+use pocketmine\command\data\CommandParameter;
 use pocketmine\network\mcpe\NetworkSession;
-use pocketmine\network\mcpe\protocol\types\CommandData;
-use pocketmine\network\mcpe\protocol\types\CommandEnum;
-use pocketmine\network\mcpe\protocol\types\CommandParameter;
 
 class AvailableCommandsPacket extends DataPacket{
 	public const NETWORK_ID = ProtocolInfo::AVAILABLE_COMMANDS_PACKET;
-
-
-	/**
-	 * This flag is set on all types EXCEPT the TEMPLATE type. Not completely sure what this is for, but it is required
-	 * for the argtype to work correctly. VALID seems as good a name as any.
-	 */
-	public const ARG_FLAG_VALID = 0x100000;
-
-	/**
-	 * Basic parameter types. These must be combined with the ARG_FLAG_VALID constant.
-	 * ARG_FLAG_VALID | (type const)
-	 */
-	public const ARG_TYPE_INT      = 0x01;
-	public const ARG_TYPE_FLOAT    = 0x02;
-	public const ARG_TYPE_VALUE    = 0x03;
-	public const ARG_TYPE_TARGET   = 0x04;
-
-	public const ARG_TYPE_STRING   = 0x0d;
-	public const ARG_TYPE_POSITION = 0x0e;
-
-	public const ARG_TYPE_RAWTEXT  = 0x11;
-
-	public const ARG_TYPE_TEXT     = 0x13;
-
-	public const ARG_TYPE_JSON     = 0x16;
-
-	public const ARG_TYPE_COMMAND  = 0x1d;
-
-	/**
-	 * Enums are a little different: they are composed as follows:
-	 * ARG_FLAG_ENUM | ARG_FLAG_VALID | (enum index)
-	 */
-	public const ARG_FLAG_ENUM = 0x200000;
-
-	/**
-	 * This is used for /xp <level: int>L.
-	 */
-	public const ARG_FLAG_POSTFIX = 0x1000000;
 
 	/**
 	 * @var string[]
@@ -120,8 +82,7 @@ class AvailableCommandsPacket extends DataPacket{
 	}
 
 	protected function getEnum() : CommandEnum{
-		$retval = new CommandEnum();
-		$retval->enumName = $this->getString();
+		$retval = new CommandEnum($this->getString());
 
 		for($i = 0, $count = $this->getUnsignedVarInt(); $i < $count; ++$i){
 			//Get the enum value from the initial pile of mess
@@ -175,18 +136,15 @@ class AvailableCommandsPacket extends DataPacket{
 
 		for($overloadIndex = 0, $overloadCount = $this->getUnsignedVarInt(); $overloadIndex < $overloadCount; ++$overloadIndex){
 			for($paramIndex = 0, $paramCount = $this->getUnsignedVarInt(); $paramIndex < $paramCount; ++$paramIndex){
-				$parameter = new CommandParameter();
-				$parameter->paramName = $this->getString();
-				$parameter->paramType = $this->getLInt();
-				$parameter->isOptional = $this->getBool();
+				$parameter = new CommandParameter($this->getString(), $this->getLInt(), $this->getBool());
 
-				if($parameter->paramType & self::ARG_FLAG_ENUM){
-					$index = ($parameter->paramType & 0xffff);
+				if($parameter->getParamType() & CommandParameter::ARG_FLAG_ENUM){
+					$index = ($parameter->getParamType() & 0xffff);
 					$parameter->enum = $this->enums[$index] ?? null;
 
 					assert($parameter->enum !== null, "expected enum at $index, but got none");
-				}elseif(($parameter->paramType & self::ARG_FLAG_VALID) === 0){ //postfix (guessing)
-					$index = ($parameter->paramType & 0xffff);
+				}elseif(($parameter->getParamType() & CommandParameter::ARG_FLAG_VALID) === 0){ //postfix (guessing)
+					$index = ($parameter->getParamType() & 0xffff);
 					$parameter->postfix = $this->postfixes[$index] ?? null;
 
 					assert($parameter->postfix !== null, "expected postfix at $index, but got none");
@@ -219,61 +177,21 @@ class AvailableCommandsPacket extends DataPacket{
 				$this->putString($parameter->paramName);
 
 				if($parameter->enum !== null){
-					$type = self::ARG_FLAG_ENUM | self::ARG_FLAG_VALID | ($this->enumMap[$parameter->enum->enumName] ?? -1);
+					$type = CommandParameter::ARG_FLAG_ENUM | CommandParameter::ARG_FLAG_VALID | ($this->enumMap[$parameter->enum->enumName] ?? -1);
 				}elseif($parameter->postfix !== null){
 					$key = array_search($parameter->postfix, $this->postfixes, true);
 					if($key === false){
 						throw new \InvalidStateException("Postfix '$parameter->postfix' not in postfixes array");
 					}
-					$type = $parameter->paramType << 24 | $key;
+					$type = $parameter->getParamType() << 24 | $key;
 				}else{
-					$type = $parameter->paramType;
+					$type = $parameter->getParamType();
 				}
 
 				$this->putLInt($type);
 				$this->putBool($parameter->isOptional);
 			}
 		}
-	}
-
-	private function argTypeToString(int $argtype) : string{
-		if($argtype & self::ARG_FLAG_VALID){
-			if($argtype & self::ARG_FLAG_ENUM){
-				return "stringenum (" . ($argtype & 0xffff) . ")";
-			}
-
-			switch($argtype & 0xffff){
-				case self::ARG_TYPE_INT:
-					return "int";
-				case self::ARG_TYPE_FLOAT:
-					return "float";
-				case self::ARG_TYPE_VALUE:
-					return "mixed";
-				case self::ARG_TYPE_TARGET:
-					return "target";
-				case self::ARG_TYPE_STRING:
-					return "string";
-				case self::ARG_TYPE_POSITION:
-					return "xyz";
-				case self::ARG_TYPE_RAWTEXT:
-					return "rawtext";
-				case self::ARG_TYPE_TEXT:
-					return "text";
-				case self::ARG_TYPE_JSON:
-					return "json";
-				case self::ARG_TYPE_COMMAND:
-					return "command";
-			}
-		}elseif($argtype !== 0){
-			//guessed
-			$baseType = $argtype >> 24;
-			$typeName = $this->argTypeToString(self::ARG_FLAG_VALID | $baseType);
-			$postfix = $this->postfixes[$argtype & 0xffff];
-
-			return $typeName . " (postfix $postfix)";
-		}
-
-		return "unknown ($argtype)";
 	}
 
 	protected function encodePayload(){

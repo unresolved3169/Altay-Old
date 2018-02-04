@@ -26,9 +26,12 @@ declare(strict_types=1);
  */
 namespace pocketmine\command;
 
+use pocketmine\command\data\CommandData;
+use pocketmine\command\data\CommandOverload;
 use pocketmine\event\TextContainer;
 use pocketmine\event\TimingsHandler;
 use pocketmine\event\TranslationContainer;
+use pocketmine\command\data\CommandParameter;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
@@ -36,8 +39,6 @@ abstract class Command{
 
 	/** @var string */
 	private $name;
-	/** @var array */
-	protected $commandData = null;
 
 	/** @var string */
 	private $nextLabel;
@@ -71,18 +72,23 @@ abstract class Command{
 	/** @var TimingsHandler */
 	public $timings;
 
-	/**
-	 * @param string   $name
-	 * @param string   $description
-	 * @param string   $usageMessage
-	 * @param string[] $aliases
-	 */
-	public function __construct(string $name, string $description = "", string $usageMessage = null, array $aliases = []){
+	/** @var array */
+	private $overloads = [];
+
+    /**
+     * @param string $name
+     * @param string $description
+     * @param string $usageMessage
+     * @param string[] $aliases
+     * @param array|null $overloads
+     */
+	public function __construct(string $name, string $description = "", string $usageMessage = null, array $aliases = [], array $overloads = null){
 		$this->name = $name;
 		$this->setLabel($name);
 		$this->setDescription($description);
 		$this->usageMessage = $usageMessage ?? ("/" . $name);
 		$this->setAliases($aliases);
+		$this->addOverload(new CommandOverload("default", [new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT, true)]));
 	}
 
 	/**
@@ -268,6 +274,9 @@ abstract class Command{
 	 * @param string $description
 	 */
 	public function setDescription(string $description){
+        if(strlen($description) > 0 and $description{0} == '%'){
+            $description = Server::getInstance()->getLanguage()->translateString($description);
+        }
 		$this->description = $description;
 	}
 
@@ -329,4 +338,23 @@ abstract class Command{
 	public function __toString() : string{
 		return $this->name;
 	}
+
+	public function getCommandData() : CommandData{
+	    return new CommandData($this);
+    }
+
+    /**
+     * @return array
+     */
+    public function getOverloads(): array{
+        return $this->overloads;
+    }
+
+    public function addOverload(CommandOverload $overload){
+        $this->overloads[$overload->getName()] = $overload;
+    }
+
+    public function getOverload(string $overloadName) : ?CommandOverload{
+        return $this->overloads[$overloadName] ?? null;
+    }
 }
