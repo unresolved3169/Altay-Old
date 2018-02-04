@@ -22,7 +22,7 @@ class CommandParameter{
     /** @var string */
     public $paramName;
     /** @var int */
-    private $paramType;
+    public $paramType;
     /** @var bool */
     public $isOptional;
     /** @var int */
@@ -34,30 +34,10 @@ class CommandParameter{
 
     public function __construct(string $paramName, int $paramType, bool $optional, int $flag = self::ARG_FLAG_VALID, CommandEnum $enum = null, string $postfix = null){
         $this->paramName = $paramName;
-        $this->paramType = $this->convertParamType($paramType, $flag);
+        $this->paramType = $paramType;
         $this->isOptional = $optional;
         $this->flag = $flag;
         $this->enum = $enum;
         $this->postfix = $postfix ?? "";
-    }
-
-    public function convertParamType(int $paramType, int $flag) : int{
-        switch($flag){
-            case self::ARG_FLAG_ENUM:
-            case self::ARG_FLAG_POSTFIX: // guess
-                return $flag | self::ARG_FLAG_VALID | $paramType;
-            case self::ARG_FLAG_VALID:
-                return $flag | $paramType;
-        }
-
-        return $paramType;
-    }
-
-    public function getParamType(): int{
-        return $this->paramType;
-    }
-
-    public function setParamType(int $paramType, int $flag = self::ARG_FLAG_VALID): void{
-        $this->paramType = $this->convertParamType($paramType, $flag);
     }
 }

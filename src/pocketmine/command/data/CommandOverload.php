@@ -11,7 +11,6 @@ class CommandOverload{
 
     public function __construct(string $name, array $parameters = []){
         $this->name = $name;
-        var_dump($parameters);
         $this->parameters = $parameters;
     }
 

@@ -14,9 +14,9 @@ class CommandData{
     public $flags;
     /** @var int */
     public $permission; // TODO : Add permission level
-    /** @var CommandEnum|null */
+    /** @var array */
     public $aliases;
-    /** @var CommandParameter[][] */
+    /** @var CommandOverload[] */
     public $overloads = [];
 
     public function __construct(Command $command = null, int $flags = 0){
@@ -25,27 +25,8 @@ class CommandData{
             $this->commandDescription = $command->getDescription();
             $this->flags = $flags;
             $this->permission = 0;
-            if(!empty($command->getAliases())){
-                $this->aliases = new CommandEnum($command->getName()."CommandAliases", $command->getAliases());
-            }
-            $this->overloads = $this->convertOverload($command->getOverloads());
+            $this->aliases = $command->getAliases();
+            $this->overloads = $command->getOverloads();
         }
-    }
-
-    /**
-     * @param CommandOverload[] $overloads
-     * @return array
-     */
-    public function convertOverload(array $overloads) : array{
-        $array = [];
-
-        /** @var CommandOverload[] $overloads */
-        $overloads = array_values($overloads);
-        foreach($overloads as $index => $overload){
-            $parameters = array_values($overload->getParameters());
-            $array[$index] = $parameters;
-        }
-
-        return $array;
     }
 }
