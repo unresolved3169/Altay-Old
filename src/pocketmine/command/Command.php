@@ -26,12 +26,12 @@ declare(strict_types=1);
  */
 namespace pocketmine\command;
 
-use pocketmine\command\data\CommandData;
-use pocketmine\command\data\CommandOverload;
+use pocketmine\command\overload\CommandData;
+use pocketmine\command\overload\CommandOverload;
 use pocketmine\event\TextContainer;
 use pocketmine\event\TimingsHandler;
 use pocketmine\event\TranslationContainer;
-use pocketmine\command\data\CommandParameter;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
@@ -88,7 +88,7 @@ abstract class Command{
 		$this->setDescription($description);
 		$this->usageMessage = $usageMessage ?? ("/" . $name);
 		$this->setAliases($aliases);
-		$this->addOverload(new CommandOverload("default", [new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT, true)]));
+		$this->addOverload(new CommandOverload("default", [new CommandParameter("args", CommandParameter::ARG_TYPE_STRING)]));
 	}
 
 	/**
@@ -352,6 +352,10 @@ abstract class Command{
 
     public function addOverload(CommandOverload $overload){
         $this->overloads[$overload->getName()] = $overload;
+    }
+
+    public function removeAllOverload(){
+        $this->overloads = [];
     }
 
     public function getOverload(string $overloadName) : ?CommandOverload{

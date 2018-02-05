@@ -1,6 +1,28 @@
 <?php
 
-namespace pocketmine\command\data;
+/*
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
+ *
+ */
+
+declare(strict_types=1);
+
+namespace pocketmine\command\overload;
 
 class CommandParameter{
 
@@ -32,7 +54,7 @@ class CommandParameter{
     /** @var string|null */
     public $postfix;
 
-    public function __construct(string $paramName, int $paramType, bool $optional, int $flag = self::ARG_FLAG_VALID, CommandEnum $enum = null, string $postfix = null){
+    public function __construct(string $paramName, int $paramType, bool $optional = true, int $flag = self::ARG_FLAG_VALID, CommandEnum $enum = null, string $postfix = null){
         $this->paramName = $paramName;
         $this->paramType = $paramType;
         $this->isOptional = $optional;

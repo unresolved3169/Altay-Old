@@ -25,10 +25,10 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-use pocketmine\command\data\CommandData;
-use pocketmine\command\data\CommandEnum;
-use pocketmine\command\data\CommandOverload;
-use pocketmine\command\data\CommandParameter;
+use pocketmine\command\overload\CommandData;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\network\mcpe\NetworkBinaryStream;
 use pocketmine\network\mcpe\NetworkSession;
 
@@ -119,7 +119,7 @@ class AvailableCommandsPacket extends DataPacket{
                             $realValues[] = $this->enumValuesCount;
                             $this->enumValuesCount++;
                         }
-                        $enums[] = new CommandEnum($commandData->commandName . $enum->enumName, $realValues);
+                        $enums[] = new CommandEnum($enum->enumName, $realValues);
                         $enumIndex = count($enums) - 1;
                         $type = $param::ARG_FLAG_ENUM | $param::ARG_FLAG_VALID | $enumIndex;
                     } elseif ($param->flag == $param::ARG_FLAG_POSTFIX and strlen($param->postfix) > 0) {
