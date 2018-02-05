@@ -42,7 +42,6 @@ class DifficultyCommand extends VanillaCommand{
 		);
 		$this->setPermission("pocketmine.command.difficulty");
 
-		$this->removeAllOverload();
 		$this->setOverloads([
             new CommandOverload("string", [
                 new CommandParameter("difficulty", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Difficulty", ["e", "easy", "h", "hard", "n", "normal", "p", "peaceful"]))

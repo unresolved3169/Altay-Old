@@ -23,10 +23,15 @@ declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
+use MongoDB\Driver\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Effect;
 use pocketmine\event\TranslationContainer;
+use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 
 class EffectCommand extends VanillaCommand{
@@ -38,6 +43,23 @@ class EffectCommand extends VanillaCommand{
 			"%commands.effect.usage"
 		);
 		$this->setPermission("pocketmine.command.effect");
+
+        $config = new Config(\pocketmine\RESOURCE_PATH . "effects.json", Config::JSON, []);
+        $effects = $config->getAll(true);
+
+		$this->setOverloads([
+		    new CommandOverload("clear", [
+		        new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+		        new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("clear", ["clear"])),
+            ]),
+            new CommandOverload("effect", [
+                new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+                new CommandParameter("effect", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Effect", $effects)),
+                new CommandParameter("seconds", CommandParameter::ARG_TYPE_INT),
+                new CommandParameter("amplifier", CommandParameter::ARG_TYPE_INT),
+                new CommandParameter("bool", CommandParameter::ARG_FLAG_ENUM, true, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("bool", ["true", "false"]))
+            ])
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
