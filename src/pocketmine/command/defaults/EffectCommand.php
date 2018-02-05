@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\command\defaults;
 
-use MongoDB\Driver\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandOverload;
