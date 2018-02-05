@@ -361,4 +361,8 @@ abstract class Command{
     public function getOverload(string $overloadName) : ?CommandOverload{
         return $this->overloads[$overloadName] ?? null;
     }
+
+    public function setOverloads(array $overloads): void{
+        $this->overloads = $overloads;
+    }
 }

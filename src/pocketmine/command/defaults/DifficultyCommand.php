@@ -34,17 +34,6 @@ use pocketmine\level\Level;
 
 class DifficultyCommand extends VanillaCommand{
 
-    protected $parameters = [
-        "e" => 1,
-        "easy" => 1,
-        "h" => 3,
-        "hard" => 3,
-        "n" => 2,
-        "normal" => 2,
-        "p" => 0,
-        "peaceful" => 0
-    ];
-
 	public function __construct(string $name){
 		parent::__construct(
 			$name,
@@ -54,20 +43,20 @@ class DifficultyCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.difficulty");
 
 		$this->removeAllOverload();
-        $this->addOverload(new CommandOverload("string", [
-            new CommandParameter("difficulty", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Difficulty", array_keys($this->parameters)))
-        ]));
-        $this->addOverload(new CommandOverload("int", [
-		    new CommandParameter("difficulty", CommandParameter::ARG_TYPE_INT, false)
-        ]));
+		$this->setOverloads([
+            new CommandOverload("string", [
+                new CommandParameter("difficulty", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Difficulty", ["e", "easy", "h", "hard", "n", "normal", "p", "peaceful"]))
+            ]),
+            new CommandOverload("int", [
+                new CommandParameter("difficulty", CommandParameter::ARG_TYPE_INT, false)
+            ])
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
 		if(!$this->testPermission($sender)){
 			return true;
 		}
-
-		// TODO : ADD Parameter
 
 		if(count($args) !== 1){
 			throw new InvalidCommandSyntaxException();
