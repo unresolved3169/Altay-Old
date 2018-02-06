@@ -28,7 +28,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\event\TranslationContainer;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
 
 class BanCommand extends VanillaCommand{

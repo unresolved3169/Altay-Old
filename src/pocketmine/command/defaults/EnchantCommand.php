@@ -28,7 +28,7 @@ use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\event\TranslationContainer;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\utils\TextFormat;

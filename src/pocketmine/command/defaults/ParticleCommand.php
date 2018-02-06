@@ -26,7 +26,7 @@ namespace pocketmine\command\defaults;
 use pocketmine\block\BlockFactory;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\event\TranslationContainer;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\level\particle\AngryVillagerParticle;

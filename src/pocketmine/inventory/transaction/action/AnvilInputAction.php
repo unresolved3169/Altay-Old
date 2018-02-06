@@ -24,12 +24,11 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory\transaction\action;
 
-use pocketmine\block\Block;
 use pocketmine\inventory\AnvilInventory;
 use pocketmine\item\Item;
 use pocketmine\Player;
 
-class AnvilResultAction extends InventoryAction{
+class AnvilInputAction extends InventoryAction{
 
     /** @var AnvilInventory */
     public $inventory;
@@ -40,20 +39,15 @@ class AnvilResultAction extends InventoryAction{
     }
 
     public function isValid(Player $source): bool{
-        return true;
+        $check = $this->inventory->getItem(0);
+        return $check->equalsExact($this->sourceItem);
     }
 
     public function execute(Player $source): bool{
-        return $this->inventory->setItem(1, Item::get(Block::AIR), false);
+        return $this->inventory->setItem(0, $this->targetItem, false);
     }
 
-    public function onExecuteSuccess(Player $source) : void{
-    }
+    public function onExecuteSuccess(Player $source) : void{}
 
-    public function onExecuteFail(Player $source) : void{
-    }
-
-    public function getInventory(): AnvilInventory{
-        return $this->inventory;
-    }
+    public function onExecuteFail(Player $source) : void{}
 }

@@ -25,23 +25,26 @@ declare(strict_types=1);
 namespace pocketmine\inventory\transaction\action;
 
 use pocketmine\inventory\AnvilInventory;
-use pocketmine\inventory\transaction\AnvilTransaction;
-use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\item\Item;
 use pocketmine\Player;
 
-class AnvilAction extends SlotChangeAction{
+class AnvilMaterialAction extends InventoryAction{
 
-    public function __construct(AnvilInventory $inventory, bool $inputAction, Item $sourceItem, Item $targetItem){
-        parent::__construct($inventory, $inputAction ? 0 : 1, $sourceItem, $targetItem);
+    /** @var AnvilInventory */
+    public $inventory;
+
+    public function __construct(AnvilInventory $inventory, Item $sourceItem, Item $targetItem){
+        parent::__construct($sourceItem, $targetItem);
+        $this->inventory = $inventory;
     }
 
-    public function onAddToTransaction(InventoryTransaction $transaction): void{
-        if($this->getSlot() === 0){
-            AnvilTransaction::$useInput = $this->getSourceItem();
-        }else{
-            AnvilTransaction::$useMaterial = $this->getTargetItem();
-        }
+    public function isValid(Player $source): bool{
+        $check = $this->inventory->getItem(1);
+        return $check->equalsExact($this->sourceItem);
+    }
+
+    public function execute(Player $source): bool{
+        return $this->inventory->setItem(1, $this->targetItem, false);
     }
 
     public function onExecuteSuccess(Player $source) : void{}

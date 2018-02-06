@@ -28,9 +28,9 @@ namespace pocketmine\command;
 
 use pocketmine\command\overload\CommandData;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\event\TextContainer;
+use pocketmine\lang\TextContainer;
 use pocketmine\event\TimingsHandler;
-use pocketmine\event\TranslationContainer;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\command\overload\CommandParameter;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;

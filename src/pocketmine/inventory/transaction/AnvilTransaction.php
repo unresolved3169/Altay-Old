@@ -24,8 +24,10 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory\transaction;
 
-use pocketmine\inventory\AnvilInventory;
+use pocketmine\inventory\transaction\action\AnvilMaterialAction;
 use pocketmine\inventory\transaction\action\AnvilResultAction;
+use pocketmine\inventory\transaction\action\AnvilInputAction;
+use pocketmine\inventory\Inventory;
 use pocketmine\item\EnchantedBook;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -35,13 +37,13 @@ use pocketmine\Player;
 class AnvilTransaction extends InventoryTransaction{
 
     /** @var Item */
-    protected $result = null;
+    private $result;
     /** @var Item */
-    public static $useInput = null;
+    private $useInput;
     /** @var Item */
-    public static $useMaterial = null;
+    private $useMaterial;
 
-    /** @var AnvilInventory */
+    /** @var Inventory */
     private $inventory;
 
     public function __construct(Player $source, $actions = []){
@@ -54,59 +56,93 @@ class AnvilTransaction extends InventoryTransaction{
                     $this->result = $action->getSourceItem();
                     $this->inventory = $action->getInventory();
                 }
+            }elseif($action instanceof AnvilInputAction){
+                if($this->useInput == null){
+                    $this->useInput = $action->getSourceItem();
+                }
+                continue;
+            }elseif($action instanceof AnvilMaterialAction){
+                if($this->useMaterial == null){
+                    $this->useMaterial = $action->getTargetItem();
+                }
+                continue;
             }
             $this->addAction($action);
         }
     }
 
-    public function execute() : bool{
-        if(!parent::execute() or $this->source->getXpLevel() <= 0) return false;
+    public function execute(): bool{
+        if($this->hasExecuted() or !$this->canExecute()){
+            $this->sendInventories();
+            return false;
+        }
+
+        if(!$this->callExecuteEvent()){
+            $this->sendInventories();
+            return false;
+        }
+
+        foreach($this->actions as $action){
+            if(!$action->onPreExecute($this->source)){
+                $this->sendInventories();
+                return false;
+            }
+        }
+
+        foreach($this->actions as $action){
+            if($action->execute($this->source)){
+                $action->onExecuteSuccess($this->source);
+            }else{
+                $action->onExecuteFail($this->source);
+            }
+        }
 
         $this->inventory->setItem(0, Item::get(0), false);
-        if(self::$useMaterial != null){
+        if ($this->useMaterial != null) {
             $item = $this->inventory->getItem(1);
-            if($item->getCount() - self::$useMaterial->getCount() < 1){
+            if ($item->getCount() - $this->useMaterial->getCount() < 1) {
                 $item = Item::get(0);
-            }else{
-                $item = $item->setCount($item->getCount() - self::$useMaterial->getCount());
+            } else {
+                $item = $item->setCount($item->getCount() - $this->useMaterial->getCount());
             }
             $this->inventory->setItem(1, $item, false);
         }
 
-        $cost = self::$useInput->getRepairCost();
-        if(self::$useInput->getCustomName() !== $this->result->getCustomName()){
+        $cost = $this->useInput->getRepairCost();
+        if ($this->useInput->getCustomName() !== $this->result->getCustomName()) {
             $cost++;
         }
-        if(self::$useMaterial != null){
-            $cost += self::$useMaterial->getRepairCost();
-            if (self::$useMaterial instanceof EnchantedBook) {
+        if ($this->useMaterial != null) {
+            $cost += $this->useMaterial->getRepairCost();
+            if ($this->useMaterial instanceof EnchantedBook) {
                 foreach ($this->result->getEnchantments() as $enchant) {
-                    $inputEnchant = self::$useInput->getEnchantment($enchant->getId());
-                    if($inputEnchant != null){
-                        $bol = $inputEnchant->getEnchantment()->getRepairCost() === 1 ? 1 : 2;
-                        $cost += $enchant->getRepairCost() / $bol;
-                    }elseif($enchant->getLevel() != $inputEnchant->getLevel()){
+                    $inputEnchant = $this->useInput->getEnchantment($enchant->getId());
+                    if ($inputEnchant == null) {
+                        $cost += $enchant->getRepairCost(); // TODO: Books
+                    } else if ($enchant->getLevel() != $inputEnchant->getLevel()) {
                         $check = Enchantment::getEnchantment($enchant->getId());
-                        $bol = $check->getRepairCost() === 1 ? 1 : 2;
                         $check = new EnchantmentInstance($check, $enchant->getLevel() - $inputEnchant->getLevel());
-                        $cost += $check->getRepairCost() / $bol;
+                        $cost += $check->getRepairCost();
                     }
                 }
-            }elseif(self::$useMaterial->isTool()){
+            } else if ($this->useMaterial->isTool()) {
                 $ench = 0;
-                foreach($this->result->getEnchantments() as $enchant){
+                foreach ($this->result->getEnchantments() as $enchant) {
                     $ench += $enchant->getRepairCost();
                 }
-                foreach(self::$useInput->getEnchantments() as $enchant){
+                foreach ($this->useInput->getEnchantments() as $enchant) {
                     $ench -= $enchant->getRepairCost();
                 }
                 $cost += $ench;
-            }else{
-                $cost += self::$useMaterial->getCount();
+            } else {
+                $cost += $this->useMaterial->getCount();
             }
         }
         $this->source->setXpLevel($this->source->getXpLevel() - $cost);
 
+        $this->hasExecuted = true;
+
         return true;
     }
+
 }

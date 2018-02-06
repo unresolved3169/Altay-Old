@@ -29,8 +29,8 @@ use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Effect;
-use pocketmine\event\TranslationContainer;
 use pocketmine\utils\Config;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\utils\TextFormat;
 
 class EffectCommand extends VanillaCommand{

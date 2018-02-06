@@ -19,7 +19,7 @@
  * @link https://github.com/TuranicTeam/Altay
  *
  */
- 
+
 declare(strict_types=1);
 
 namespace pocketmine\command\defaults;

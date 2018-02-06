@@ -26,7 +26,7 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\event\TranslationContainer;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;

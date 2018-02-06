@@ -71,10 +71,6 @@ class Hopper extends Spawnable implements Container, Nameable, InventoryHolder{
         return $this->inventory;
     }
 
-    public function getSize(): int{
-        return 5;
-    }
-
     public function getRealInventory(){
         return $this->inventory;
     }
