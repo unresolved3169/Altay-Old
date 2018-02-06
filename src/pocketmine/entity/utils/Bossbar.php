@@ -19,7 +19,7 @@
  * @link https://github.com/TuranicTeam/Altay
  *
  */
- 
+
 declare(strict_types=1);
 
 namespace pocketmine\entity\utils;
@@ -155,8 +155,12 @@ class Bossbar extends Vector3{
 	public function setMetadata(int $key, int $dtype, $value){
 		$this->metadata[$key] = [$dtype, $value];
 	}
-	
-	public function getMetadata(int $key){
+
+    /**
+     * @param int $key
+     * @return mixed
+     */
+    public function getMetadata(int $key){
 		return isset($this->metadata[$key]) ? $this->metadata[$key][1] : null;
 	}
 }
