@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity\behavior;
+namespace pocketmine\entity\behavior
 
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
@@ -30,20 +30,21 @@ use pocketmine\math\Vector3;
 class Path{
 	
 	/* @var Vector3[] */
-	protected $vecs = [];
+/*	protected $vecs = []; Todo
 	
 	public function __construct(array $vecs){
 		$this->vecs = $vecs;
 	}
 	
-	public static function findPath(Block $pos) : Path{
-		$d = rand(0,3);
+	public static function findPath(Block $pos) : bool{
+		$rot = rand(0,3);
 		$vecs = [];
 		$step = 1;
-		$limit = rand(5,8);
-		while(!$pos->getSide($d, $step)->isSolid() and count($vecs) < $limit){
-			$step++;
-			$vecs[] = $pos->getSide($d, $step)->asVector3();
+		$limit = rand(1,8);
+		$lastPoint = null;
+		while(count($vecs) < $limit){
+			if($)
+			$vecs[] = $block->asVector3();
 		}
 		
 		return new Path($vecs);
@@ -55,5 +56,5 @@ class Path{
 	
 	public function getNextVector() : ?Vector3{
 		return @array_shift($this->vecs);
-	}
+	}*/
 }

@@ -30,8 +30,7 @@ class RandomStrollBehavior extends Behavior{
 	
 	protected $speedMultiplier = 1.0;
 	protected $chance = 120;
-	/** @var Path */
-	protected $currentPath;
+	protected $timeLeft = 0;
 	
 	public function __construct(Living $mob, float $speedMultiplier = 1.0, int $chance = 120){
 		parent::__construct($mob);
@@ -42,28 +41,28 @@ class RandomStrollBehavior extends Behavior{
 	
 	public function canStart() : bool{
 		if(rand(0,$this->chance) === 0){
-			$this->currentPath = Path::findPath($this->mob->level->getBlock($this->mob));
+			$this->timeLeft = rand(50,80);
 			
-			return $this->currentPath->havePath();
+			return true;
 		}
 		return false;
 	}
 	
 	public function canContinue() : bool{
-		return $this->currentPath->havePath();
+		return $this->timeLeft-- > 0;
 	}
 	
 	public function onTick(int $tick) : void{
-		if($this->currentPath->havePath()){
-			if(($vec = $this->currentPath->getNextVector()) !== null){
-				$this->mob->lookAt($vec->add(0.5,0.5,0.5));
-				$this->mob->moveFormard($this->speedMultiplier);
-			}
+		if($this->mob->motionY < 0){
+			$this->timeLeft = 0;
+			return;
 		}
+		
+		$this->moveForward($this->speedMultiplier);
 	}
 	
 	public function onEnd() : void{
-		$this->mob->motionX = $this->mob->motionZ = 0;
-		$this->currentPath = null;
+		$this->mob->motionX = 0; $this->mob->motionZ = 0;
+		$this->timeLeft = 0;
 	}
 }

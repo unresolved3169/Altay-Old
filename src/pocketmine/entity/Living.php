@@ -814,4 +814,71 @@ abstract class Living extends Entity implements Damageable{
 
 		$this->armorInventory->sendContents($player);
 	}
+	
+	/**
+	 * Sets the movement speed of player
+	 * 1 = default 0 = immobile
+	 *
+	 * @param float $speed
+	 */
+	public function setMovementSpeed(float $speed) : void{
+	 	$this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed, true);
+	}
+	 	
+	/**
+	 	* Returns the movement speed of player
+	 	*
+	 	* @return float
+	 	*/
+ public function getMovementSpeed() : float{
+	 	return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
+ }
+
+	protected function sendSpawnPacket(Player $player) : void{
+		parent::sendSpawnPacket($player);
+
+		$this->armorInventory->sendContents($player);
+	}
+	
+	public function moveForward(float $spm) : void{
+		$sf = $this->getMovementSpeed() * $spm * 0.7;
+		$level = $this->level;
+		$dir = $this->getDirectionVector()->normalize();
+		$dir->y = 0;
+		
+		$entityCollide = $level->getCollidingEntities($this->getBoundingBox()->grow(0.15,0.15,0.15), $this);
+		$coord = $this->add($dir->multiply($sf)->add($dir->multiply(1 * 0.5)));
+		
+		$block = $level->getBlock($coord);
+		$blockUp = $level->getBlock($coord->add(0,1,0));
+		$blockUpUp = $level->getBlock($coord->add(0,2,0));
+		
+		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
+		
+		if(!$collide and !$entityCollide){
+			$blockDown = $level->getBlock($coord->add(0,-1,0));
+			
+			if($this->isOnGround() and $blockDown->isSolid()){
+				$velocity = $dir->multiply($sf);
+				$entityVelocity = $this->getMotion();
+				$entityVelocity->y = 0;
+				if($entityVelocity->length() < $velocity->length()){
+					$this->setMotion($entityVelocity->add($velocity->substract($entityVelocity)));
+				}else{
+					$this->setMotion($velocity);
+				}
+			}
+		}else{
+			if($this->canClimb() and !$entityCollide){
+				$this->setMotion(new Vector3(0,0.2,0));
+			}elseif(!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
+				if($this->isOnGround() and $this->motionY === 0){
+					$this->jump();
+				}
+			}else{
+				$this->motionX = 0;
+				$this->motionZ = 0;
+			}
+		}
+	}
 }
