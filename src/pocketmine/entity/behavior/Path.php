@@ -24,7 +24,7 @@ class Path{
 			$vecs[] = $pos->getSide($d, $step)->asVector3();
 		}
 		
-		return new Path($blocks);
+		return new Path($vecs);
 	}
 	
 	public function havePath() : bool{
