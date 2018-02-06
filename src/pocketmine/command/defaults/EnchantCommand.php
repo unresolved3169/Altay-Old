@@ -24,6 +24,9 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\item\enchantment\Enchantment;
@@ -39,6 +42,22 @@ class EnchantCommand extends VanillaCommand{
 			"%commands.enchant.usage"
 		);
 		$this->setPermission("pocketmine.command.enchant");
+
+		$playerParameter = new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false);
+		$levelParameter = new CommandParameter("level", CommandParameter::ARG_TYPE_INT);
+
+		$this->setOverloads([
+            new CommandOverload("enchantmentName", [
+                $playerParameter,
+                new CommandParameter("enchantmentName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Enchant", Enchantment::getEnchantmentNames())),
+                $levelParameter
+            ]),
+		    new CommandOverload("enchantmentId", [
+		        $playerParameter,
+		        new CommandParameter("enchantmentId", CommandParameter::ARG_TYPE_INT, false),
+                $levelParameter
+            ]),
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

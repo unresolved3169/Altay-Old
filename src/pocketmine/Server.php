@@ -1684,14 +1684,14 @@ class Server{
 
 
 			Timings::init();
+            Enchantment::init();
 
-			$this->consoleSender = new ConsoleCommandSender();
-			$this->commandMap = new SimpleCommandMap($this);
+            $this->consoleSender = new ConsoleCommandSender();
+            $this->commandMap = new SimpleCommandMap($this);
 
-			Entity::init();
-			Tile::init();
-			BlockFactory::init();
-			Enchantment::init();
+            Entity::init();
+            Tile::init();
+            BlockFactory::init();
 			ItemFactory::init();
 			Biome::init();
 			Effect::init();

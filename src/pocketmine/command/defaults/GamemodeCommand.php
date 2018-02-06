@@ -25,6 +25,9 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
@@ -41,6 +44,19 @@ class GamemodeCommand extends VanillaCommand{
             ["gm"]
 		);
 		$this->setPermission("pocketmine.command.gamemode");
+
+		$playerParameter = new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET);
+
+		$this->setOverloads([
+		    new CommandOverload("GameMode", [
+		        new CommandParameter("gameMode", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("GameMode", ["a", "adventure", "c", "creative", "s", "survival", "v", "view"])), // Vanilla hasn't got view parameter
+                $playerParameter
+            ]),
+            new CommandOverload("int", [
+                new CommandParameter("gameMode", CommandParameter::ARG_TYPE_INT, false),
+                $playerParameter
+            ])
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
