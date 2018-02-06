@@ -44,7 +44,7 @@ use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\event\TextContainer;
+use pocketmine\lang\TextContainer;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
 use pocketmine\form\element\Label;
@@ -2272,9 +2272,9 @@ class Server{
 
 		ini_set("error_reporting", '0');
 		ini_set("memory_limit", '-1'); //Fix error dump not dumped on memory problems
-		$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
-		try{
-			$dump = new CrashDump($this);
+        try{
+            $this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
+            $dump = new CrashDump($this);
 
 			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.submit", [$dump->getPath()]));
 
@@ -2315,7 +2315,9 @@ class Server{
 			}
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
-			$this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
+			try{
+                $this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
+            }catch(\Throwable $exception){}
 		}
 
 		//$this->checkMemory();

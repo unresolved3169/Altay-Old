@@ -32,5 +32,6 @@ if exist Altay.phar (
 if exist bin\mintty.exe (
 	start "" bin\mintty.exe -o Columns=88 -o Rows=32 -o AllowBlinking=0 -o FontQuality=3 -o Font="Consolas" -o FontHeight=10 -o CursorType=0 -o CursorBlinks=1 -h error -t "ALTAY_FILE" -w max %PHP_BINARY% %ALTAY_FILE% --enable-ansi %*
 ) else (
-	%PHP_BINARY% -c bin\php %ALTAY_FILE% %*
+    REM pause on exitcode != 0 so the user can see what went wrong
+	%PHP_BINARY% -c bin\php %ALTAY_FILE% %* || pause
 )
