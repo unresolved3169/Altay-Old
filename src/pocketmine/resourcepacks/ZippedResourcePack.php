@@ -61,7 +61,7 @@ class ZippedResourcePack implements ResourcePack{
 	protected $fileResource;
 	
 	/** @var string */
-	protected $type = "resource";
+	protected $type;
 
 	/**
 	 * @param string $zipPath Path to the resource pack zip
