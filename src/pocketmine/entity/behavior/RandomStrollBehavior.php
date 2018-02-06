@@ -8,6 +8,7 @@ class RandomStrollBehavior extends Behavior{
 	
 	protected $speedMultiplier = 1.0;
 	protected $chance = 120;
+	/** @var Path */
 	protected $currentPath;
 	
 	public function __construct(Living $mob, float $speedMultiplier = 1.0, int $chance = 120){
@@ -40,7 +41,7 @@ class RandomStrollBehavior extends Behavior{
 	}
 	
 	public function onEnd() : void{
-		$this->mob->motionX = 0; $this->mob->motionZ = 0;
+		$this->mob->motionX = $this->mob->motionZ = 0;
 		$this->currentPath = null;
 	}
 }
