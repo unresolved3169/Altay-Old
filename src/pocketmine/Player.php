@@ -1982,6 +1982,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk = new ResourcePacksInfoPacket();
 		$manager = $this->server->getResourceManager();
 		$pk->resourcePackEntries = $manager->getResourceStack();
+		$pk->behaviorPackEntries = $manager->getBehaviorStack();
 		$pk->mustAccept = $manager->resourcePacksRequired();
 		$this->dataPacket($pk);
 	}
@@ -2018,6 +2019,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$pk = new ResourcePackStackPacket();
 				$manager = $this->server->getResourceManager();
 				$pk->resourcePackStack = $manager->getResourceStack();
+				$pk->behaviorPackStack = $manager->getBehaviorStack();
 				$pk->mustAccept = $manager->resourcePacksRequired();
 				$this->dataPacket($pk);
 				break;

@@ -59,6 +59,9 @@ class ZippedResourcePack implements ResourcePack{
 
 	/** @var resource */
 	protected $fileResource;
+	
+	/** @var string */
+	protected $type = "resource";
 
 	/**
 	 * @param string $zipPath Path to the resource pack zip
@@ -91,6 +94,8 @@ class ZippedResourcePack implements ResourcePack{
 		}
 
 		$this->manifest = $manifest;
+		
+		$this->type = $manifest->modules->type ?? ResourcePackManager::TYPE_RESOURCE_PACK;
 
 		$this->fileResource = fopen($zipPath, "rb");
 	}
@@ -132,5 +137,9 @@ class ZippedResourcePack implements ResourcePack{
 			throw new \RuntimeException("Requested a resource pack chunk with invalid start offset");
 		}
 		return fread($this->fileResource, $length);
+	}
+	
+	public function getType() : string{
+		return $this->type;
 	}
 }
