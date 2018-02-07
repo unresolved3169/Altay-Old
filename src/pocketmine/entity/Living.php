@@ -824,20 +824,14 @@ abstract class Living extends Entity implements Damageable{
 	public function setMovementSpeed(float $speed) : void{
 	 	$this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed, true);
 	}
-	 	
-	/**
-	 	* Returns the movement speed of player
-	 	*
-	 	* @return float
-	 	*/
- public function getMovementSpeed() : float{
-	 	return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
- }
 
-	protected function sendSpawnPacket(Player $player) : void{
-		parent::sendSpawnPacket($player);
-
-		$this->armorInventory->sendContents($player);
+    /**
+     * Returns the movement speed of player
+     *
+     * @return float
+     */
+    public function getMovementSpeed() : float{
+	    return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
 	}
 	
 	public function moveForward(float $spm) : void{
@@ -863,7 +857,7 @@ abstract class Living extends Entity implements Damageable{
 				$entityVelocity = $this->getMotion();
 				$entityVelocity->y = 0;
 				if($entityVelocity->length() < $velocity->length()){
-					$this->setMotion($entityVelocity->add($velocity->substract($entityVelocity)));
+					$this->setMotion($entityVelocity->add($velocity->subtract($entityVelocity->x, $entityVelocity->y, $entityVelocity->z)));
 				}else{
 					$this->setMotion($velocity);
 				}

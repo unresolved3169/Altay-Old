@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity\behavior
+namespace pocketmine\entity\behavior;
 
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;
