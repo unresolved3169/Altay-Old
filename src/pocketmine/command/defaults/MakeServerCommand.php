@@ -37,15 +37,13 @@ class MakeServerCommand extends VanillaCommand{
             "/makeserver",
             ["ms"]
         );
-        $this->setPermission("pocketmine.command.makeserver");
+        $this->setPermission("altay.command.makeserver");
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args){
         if (!$this->testPermission($sender)) {
             return false;
         }
-
-
 
         $server = $sender->getServer();
         $pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Altay" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . "_" . $server->getApiVersion() . ".phar";
@@ -63,7 +61,7 @@ class MakeServerCommand extends VanillaCommand{
             "protocol" => ProtocolInfo::CURRENT_PROTOCOL,
             "creationDate" => time()
         ]);
-        $phar->setStub('<?php define("pocketmine\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
+        $phar->setStub('<?php require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
         $phar->setSignatureAlgorithm(\Phar::SHA1);
         $phar->startBuffering();
 

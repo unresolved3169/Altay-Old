@@ -301,8 +301,6 @@ class Server{
     public $keepExperience = false;
     /** @var bool */
     public $folderPluginLoader = true;
-    /** @var bool */
-    public $developerCommand = true;
 
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -311,7 +309,6 @@ class Server{
         $this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
         $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
         $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
-        $this->developerCommand = $this->getAltayProperty("developer.commands", true);
     }
 
 	/**
