@@ -24,36 +24,14 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
-
-abstract class Behavior{
+class PanicBehavior extends Behavior{
 	
-	protected $mob;
-	
-	public function getName() : string{
-		return (new \ReflectionClass($this))->getShortName();
+	public function canStart() : bool{
+		return $this->mob->getLastDamageCause() !== null;
 	}
 	
-	public function __construct(Living $mob){
-		$this->mob = $mob;
+	public function onEnd(){
+		parent::onEnd();
+		$this->mob->setLastDamageCause();
 	}
-	
-	public abstract function canStart() : bool;
-	
-	public function onStart(){
-		
-	}
-	
-	public abstract function canContinue() : bool{
-		return $this->canStart();
-	}
-	
-	public abstract function onTick(int $tick) : void{
-		
-	}
-	
-	public abstract function onEnd() : void{
-		
-	}
-	
 }

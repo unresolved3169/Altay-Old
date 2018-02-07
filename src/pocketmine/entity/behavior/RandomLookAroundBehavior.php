@@ -27,44 +27,34 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Living;
 use pocketmine\Player;
 
-class LookAtPlayerBehavior extends Behavior{
+class RandomLookAroundBehavior extends Behavior{
 	
-	protected $lookDistance = 6.0;
-	protected $player;
+	protected $rotation = 0;
 	protected $duration = 0;
-	
-	public function __construct(Living $mob, float $lookDistance = 6.0){
-		parent::__construct($mob);
-		
-		$this->lookDistance = $lookDistance;
-	}
 	
 	public function canStart() : bool{
 		if(rand(0,50) === 0){
-			$player = $this->mob->level->getNearestEntity($this->mob->asVector3(), $this->lookDistance, Player::class);
-			
-			if($player instanceof Player){
-				$this->player = $player;
-				$this->duration = 40 + rand(0,40);
+			$this->rotation = rand(-180,180);
+			$this->duration = 20 + rand(0,20);
 				
-				return true;
-			}
+			return true;
 		}
 		return false;
 	}
 	
 	public function canContinue() : bool{
-		return $this->duration-- > 0;
+		return $this->duration-- > 0 and abs($this->rotation) > 0;
 	}
 	
 	public function onTick(int $tick) : void{
-		if($this->player instanceof Player){
-			$this->mob->lookAt($this->player);
-		}
+		$this->mob->yaw += $this->signRotation($this->rotation) * 10;
+		$this->rotation -= 10;
 	}
 	
-	public function onEnd() : void{
-		$this->mob->pitch = 0;
-		$this->player = null;
+	public function signRotation(int $value){
+		if($value > 0) return 1;
+		if($value < 0) return -1;
+		
+		return 0;
 	}
 }
