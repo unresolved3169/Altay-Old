@@ -464,6 +464,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	/** @var bool */
 	protected $constructed = false;
+	
+	/** @var EntityBehaviorManager */
+	protected $behaviorManager;
 
 
 	public function __construct(Level $level, CompoundTag $nbt){
@@ -514,6 +517,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->fallDistance = $this->namedtag->getFloat("FallDistance", 0.0);
 
 		$this->propertyManager = new DataPropertyManager();
+		$this->behaviorManager = new EntityBehaviorManager($this);
+		$this->behaviorManager->setbehaviorsEnabled(Server::getInstance()->getProperty("level.entity-behaviors-enabled",  false));
 
 		$this->propertyManager->setLong(self::DATA_FLAGS, 0);
 		$this->propertyManager->setShort(self::DATA_MAX_AIR, 400);
@@ -532,6 +537,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->attributeMap = new AttributeMap();
 		$this->addAttributes();
+		$this->addBehaviors();
 
 		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, true);
 		$this->setGenericFlag(self::DATA_FLAG_HAS_COLLISION, true);
@@ -872,6 +878,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	protected function addAttributes(){
 
 	}
+	
+	protected function addBehaviors(){
+		
+	}
 
 	/**
 	 * @param EntityDamageEvent $source
@@ -981,6 +991,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function getDataPropertyManager() : DataPropertyManager{
 		return $this->propertyManager;
 	}
+	
+	public function getBehaviorManager() : EntityBehaviorManager{
+		return $this->behaviorManager;
+	}
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
 		//TODO: check vehicles
@@ -991,6 +1005,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		if(!empty($changedProperties)){
 			$this->sendData($this->hasSpawned, $changedProperties);
 			$this->propertyManager->clearDirtyProperties();
+		}
+		
+		if($this->behaviorManager->isBehaviorsEnabled()){
+			$this->behaviorManager->setCurrentBehavior($this->behaviorManager->getReadyBehavior());
+			if($this->behaviorManager->getCurrentBehavior() !== null){
+				$this->behaviorManager->getCurrentBehavior()->onTick($tickDiff);
+			}
 		}
 
 		$hasUpdate = false;

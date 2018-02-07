@@ -44,15 +44,15 @@ abstract class Behavior{
 		
 	}
 	
-	public abstract function canContinue() : bool{
+	public function canContinue() : bool{
 		return $this->canStart();
 	}
 	
-	public abstract function onTick(int $tick) : void{
+	public function onTick(int $tick) : void{
 		
 	}
 	
-	public abstract function onEnd() : void{
+	public function onEnd() : void{
 		
 	}
 	

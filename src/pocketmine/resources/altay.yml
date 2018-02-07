@@ -19,3 +19,6 @@ developer:
 
 server:
   allow-server-settings-form: true
+
+level:
+  entity-behaviors-enabled: false
