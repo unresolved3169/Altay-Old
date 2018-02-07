@@ -963,7 +963,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/**
 	 * @param EntityDamageEvent $type
 	 */
-	public function setLastDamageCause(EntityDamageEvent $type){
+	public function setLastDamageCause(EntityDamageEvent $type = null){
 		$this->lastDamageCause = $type;
 	}
 
