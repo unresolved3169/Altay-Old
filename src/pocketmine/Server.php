@@ -95,6 +95,7 @@ use pocketmine\network\rcon\RCON;
 use pocketmine\network\upnp\UPnP;
 use pocketmine\permission\BanList;
 use pocketmine\permission\DefaultPermissions;
+use pocketmine\plugin\FolderPluginLoader;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginLoadOrder;
@@ -298,6 +299,8 @@ class Server{
     public $keepInventory = false;
     /** @var bool */
     public $keepExperience = false;
+    /** @var bool */
+    public $folderPluginLoader = true;
 
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -305,6 +308,7 @@ class Server{
         $this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
         $this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
         $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
+        $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
     }
 
 	/**
@@ -1704,6 +1708,7 @@ class Server{
 			$this->pluginManager->subscribeToPermission(Server::BROADCAST_CHANNEL_ADMINISTRATIVE, $this->consoleSender);
 			$this->pluginManager->setUseTimings($this->getProperty("settings.enable-profiling", false));
 			$this->profilingTickRate = (float) $this->getProperty("settings.profile-report-trigger", 20);
+			$this->pluginManager->registerInterface(FolderPluginLoader::class);
 			$this->pluginManager->registerInterface(PharPluginLoader::class);
 			$this->pluginManager->registerInterface(ScriptPluginLoader::class);
 
@@ -2080,6 +2085,7 @@ class Server{
 			$this->getNetwork()->blockAddress($entry->getName(), -1);
 		}
 
+		$this->pluginManager->registerInterface(FolderPluginLoader::class);
 		$this->pluginManager->registerInterface(PharPluginLoader::class);
 		$this->pluginManager->registerInterface(ScriptPluginLoader::class);
 		$this->pluginManager->loadPlugins($this->pluginPath);

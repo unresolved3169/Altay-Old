@@ -37,7 +37,7 @@ class MakeServerCommand extends VanillaCommand{
             "/makeserver",
             ["ms"]
         );
-        $this->setPermission("pocketmine.command.makeserver");
+        $this->setPermission("altay.command.makeserver");
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -45,10 +45,8 @@ class MakeServerCommand extends VanillaCommand{
             return false;
         }
 
-
-
         $server = $sender->getServer();
-        $pharPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Altay" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . "_" . $server->getApiVersion() . ".phar";
+        $pharPath = Server::getInstance()->getPluginPath() . "Altay" . DIRECTORY_SEPARATOR . $server->getName() . "_" . $server->getPocketMineVersion() . "_" . $server->getApiVersion() . ".phar";
         if (file_exists($pharPath)) {
             $sender->sendMessage("Phar file already exists, overwriting...");
             @unlink($pharPath);
@@ -63,7 +61,7 @@ class MakeServerCommand extends VanillaCommand{
             "protocol" => ProtocolInfo::CURRENT_PROTOCOL,
             "creationDate" => time()
         ]);
-        $phar->setStub('<?php define("pocketmine\\\\PATH", "phar://". __FILE__ ."/"); require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
+        $phar->setStub('<?php require_once("phar://". __FILE__ ."/src/pocketmine/PocketMine.php");  __HALT_COMPILER();');
         $phar->setSignatureAlgorithm(\Phar::SHA1);
         $phar->startBuffering();
 
