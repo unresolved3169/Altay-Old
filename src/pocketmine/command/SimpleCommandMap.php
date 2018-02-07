@@ -40,6 +40,7 @@ use pocketmine\command\defaults\HelpCommand;
 use pocketmine\command\defaults\KickCommand;
 use pocketmine\command\defaults\KillCommand;
 use pocketmine\command\defaults\ListCommand;
+use pocketmine\command\defaults\MakePluginCommand;
 use pocketmine\command\defaults\MakeServerCommand;
 use pocketmine\command\defaults\MeCommand;
 use pocketmine\command\defaults\OpCommand;
@@ -131,8 +132,9 @@ class SimpleCommandMap implements CommandMap{
 
 		if($this->server->getAltayProperty("developer.commands", true)){
 		    $this->registerAll("altay", [
-		        new MakeServerCommand("makeserver"),
-		        new ExtractPluginCommand("extractplugin")
+		        new ExtractPluginCommand("extractplugin"),
+                new MakePluginCommand("makeplugin"),
+                new MakeServerCommand("makeserver")
             ]);
         }
 

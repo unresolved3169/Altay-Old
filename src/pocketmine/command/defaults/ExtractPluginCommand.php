@@ -33,17 +33,17 @@ class ExtractPluginCommand extends VanillaCommand{
 
         $pluginName = trim(implode(" ", $args));
         if($pluginName === "" or !(($plugin = Server::getInstance()->getPluginManager()->getPlugin($pluginName)) instanceof Plugin)){
-            $sender->sendMessage(TextFormat::RED."Invalid plugin name, check the name case.");
+            $sender->sendMessage(TextFormat::RED . "Invalid plugin name, check the name case.");
             return true;
         }
         $description = $plugin->getDescription();
 
         if(!($plugin->getPluginLoader() instanceof PharPluginLoader)){
-            $sender->sendMessage(TextFormat::RED."Plugin ".$description->getName()." is not in Phar structure.");
+            $sender->sendMessage(TextFormat::RED . "Plugin " . $description->getName() . " is not in Phar structure.");
             return true;
         }
 
-        $folderPath = Server::getInstance()->getPluginPath() . DIRECTORY_SEPARATOR . "Altay" . DIRECTORY_SEPARATOR . $description->getFullName() . DIRECTORY_SEPARATOR;
+        $folderPath = Server::getInstance()->getPluginPath() . "Altay" . DIRECTORY_SEPARATOR . $description->getFullName() . DIRECTORY_SEPARATOR;
         if(file_exists($folderPath)){
             $sender->sendMessage("Plugin already exists, overwriting...");
         }else{
