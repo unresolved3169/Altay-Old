@@ -45,15 +45,16 @@ class EntityBehaviorManager{
                 if($this->currentBehavior == null or (array_search($this->currentBehavior, $this->behaviors)) > $index){
                     if($this->currentBehavior != null){
                         $this->currentBehavior->onEnd();
+						$behavior->onStart();
+						return $behavior;
                     }
-                    return $behavior;
                 }
             }
         }
         return null;
     }
 	
-    public function getCurrentBehavior(){
+    public function getCurrentBehavior() : ?Behavior{
         return $this->currentBehavior;
     }
 	
