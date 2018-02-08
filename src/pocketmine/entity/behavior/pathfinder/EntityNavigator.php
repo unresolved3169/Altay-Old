@@ -24,11 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior\pathfinder;
 
-use pocketmine\block\Block;
+use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
 
 class EntityNavigator{
-	
+
+    /** @var Entity */
 	public $entity;
 	
 	public function getRotations() : array{

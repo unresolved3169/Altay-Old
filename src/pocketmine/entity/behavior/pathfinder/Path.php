@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior\pathfinder;
 
+use pocketmine\block\Block;
 use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 
@@ -35,12 +36,12 @@ class Path{
 	
 	public function __construct(Entity $entity, array $vecs){
 		$this->vecs = $vecs;
-		$this->navigator = new EntitiyNavigator();
+		$this->navigator = new EntityNavigator();
 		$this->navigator->entity = $entity;
 	}
 	
 	public static function findPath(Block $pos) : bool{
-		//TODO
+		return true; //TODO
 	}
 	
 	public function havePath() : bool{
