@@ -31,7 +31,7 @@ namespace pocketmine\form;
  * Passing this form to {@link Player::sendForm()} will not show a form with an icon nor set this form as the server
  * settings.
  */
-class ServerSettingsForm extends CustomForm{
+abstract class ServerSettingsForm extends CustomForm{
     /**
      * @var FormIcon|null
      */
