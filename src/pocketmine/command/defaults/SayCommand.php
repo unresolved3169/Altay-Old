@@ -25,6 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
@@ -39,6 +40,8 @@ class SayCommand extends VanillaCommand{
 			"%commands.say.usage"
 		);
 		$this->setPermission("pocketmine.command.say");
+
+        $this->getOverload("default")->setParameter(0, new CommandParameter("message", CommandParameter::ARG_TYPE_RAWTEXT, false));
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

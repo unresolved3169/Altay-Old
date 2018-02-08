@@ -25,6 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
@@ -40,6 +41,8 @@ class SetWorldSpawnCommand extends VanillaCommand{
 			"%commands.setworldspawn.usage"
 		);
 		$this->setPermission("pocketmine.command.setworldspawn");
+
+		$this->getOverload("default")->setParameter(0, new CommandParameter("spawnPoint", CommandParameter::ARG_TYPE_POSITION, false));
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

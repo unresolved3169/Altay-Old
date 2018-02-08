@@ -24,6 +24,9 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 
@@ -36,6 +39,34 @@ class TitleCommand extends VanillaCommand{
 			"%commands.title.usage"
 		);
 		$this->setPermission("pocketmine.command.title");
+
+        $enum = new CommandEnum("test", ["test"]);
+        $parameter = new CommandParameter("enum", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, $enum);
+        $playerParameter = new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false);
+        $int = new CommandParameter("int", CommandParameter::ARG_TYPE_INT, false);
+
+        $this->setOverloads([
+            new CommandOverload("clear", [
+                $playerParameter,
+                (clone $parameter)->setEnum((clone $enum)->setName("clear")->setValues(["clear"]))
+            ]),
+            new CommandOverload("reset", [
+                $playerParameter,
+                (clone $parameter)->setEnum((clone $enum)->setName("reset")->setValues(["reset"]))
+            ]),
+            new CommandOverload("title", [
+                $playerParameter,
+                (clone $parameter)->setName("")->setEnum(new CommandEnum("", ["title", "subtitle", "actionbar"])),
+                new CommandParameter("titleText", CommandParameter::ARG_TYPE_RAWTEXT, false)
+            ]),
+            new CommandOverload("times", [
+                $playerParameter,
+                (clone $parameter)->setEnum((clone $enum)->setName("times")->setValues(["times"])),
+                (clone $int)->setName("fadeIn"),
+                (clone $int)->setName("stay"),
+                (clone $int)->setName("fadeOut")
+            ]),
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

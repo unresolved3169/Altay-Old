@@ -35,4 +35,16 @@ class CommandEnum{
         $this->enumName = $enumName;
         $this->enumValues = $enumValues;
     }
+
+    public function setName(string $enumName) : CommandEnum{
+        $this->enumName = $enumName;
+
+        return $this;
+    }
+
+    public function setValues(array $enumValues) : CommandEnum{
+        $this->enumValues = $enumValues;
+
+        return $this;
+    }
 }

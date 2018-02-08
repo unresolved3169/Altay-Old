@@ -26,6 +26,8 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
@@ -39,7 +41,17 @@ class XpCommand extends VanillaCommand{
             $name,
             "Oyuncu deneyimi ekler veya kaldırır",
             '/xp <değer> [oyuncu]');
+
         $this->setPermission("pocketmine.command.xp");
+
+        $int = new CommandParameter("amount", CommandParameter::ARG_TYPE_INT, false);
+        $player = new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET);
+
+        $this->setOverloads([
+            new CommandOverload("default", [
+                $int, $player
+            ])
+        ]);
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -51,7 +63,7 @@ class XpCommand extends VanillaCommand{
 
         if(count($args) < 2){
             if($sender instanceof ConsoleCommandSender){
-                $sender->sendMessage(TextFormat::RED."Bu komut sadece oyun içi çalışır.");
+                $sender->sendMessage(TextFormat::RED . "Bu komut sadece oyun içi çalışır.");
                 return true;
             }
             $player = $sender;

@@ -38,11 +38,11 @@ class KillCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"%pocketmine.command.kill.description",
-			"%pocketmine.command.kill.usage",
-			["suicide"]
+			"%pocketmine.command.kill.usage"
 		);
 		$this->setPermission("pocketmine.command.kill.self;pocketmine.command.kill.other");
 
+		// TODO : Kill all entities
 		$this->getOverload("default")->setParameter(0, new CommandParameter("target", CommandParameter::ARG_TYPE_TARGET));
 	}
 

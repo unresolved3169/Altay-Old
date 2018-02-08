@@ -25,6 +25,9 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\level\Level;
@@ -40,6 +43,29 @@ class TimeCommand extends VanillaCommand{
 			"%pocketmine.command.time.usage"
 		);
 		$this->setPermission("pocketmine.command.time.add;pocketmine.command.time.set;pocketmine.command.time.start;pocketmine.command.time.stop");
+
+		$enum = new CommandEnum("test", ["test"]);
+		$parameter = new CommandParameter("enum", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, $enum);
+		$amount = new CommandParameter("amount", CommandParameter::ARG_TYPE_INT);
+
+		$this->setOverloads([
+		    new CommandOverload("add", [
+                (clone $parameter)->setEnum((clone $enum)->setName("add")->setValues(["add"])),
+                $amount
+            ]),
+            new CommandOverload("set", [
+                (clone $parameter)->setEnum((clone $enum)->setName("set")->setValues(["set"])),
+                $amount
+            ]),
+            new CommandOverload("set1", [
+                (clone $parameter)->setEnum((clone $enum)->setName("set")->setValues(["set"])),
+                (clone $parameter)->setName("time")->setEnum(new CommandEnum("TimeSpec", ["day", "midnight", "night", "noon", "sunrise", "sunset"]))
+            ]),
+            new CommandOverload("query", [
+                (clone $parameter)->setEnum((clone $enum)->setName("query")->setValues(["query"])),
+                (clone $parameter)->setName("")->setEnum(new CommandEnum("", ["day", "daytime", "gametime"]))
+            ])
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

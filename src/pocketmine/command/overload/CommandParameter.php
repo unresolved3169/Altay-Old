@@ -62,4 +62,22 @@ class CommandParameter{
         $this->enum = $enum;
         $this->postfix = $postfix ?? "";
     }
+
+    public function setName(string $paramName) : CommandParameter{
+        $this->paramName = $paramName;
+
+        return $this;
+    }
+
+    public function setType(int $paramType) : CommandParameter{
+        $this->paramType = $paramType;
+
+        return $this;
+    }
+
+    public function setEnum(?CommandEnum $enum) : CommandParameter{
+        $this->enum = $enum;
+
+        return $this;
+    }
 }

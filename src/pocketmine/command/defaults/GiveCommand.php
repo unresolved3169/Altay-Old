@@ -25,7 +25,11 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\item\ItemIds;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\JsonNBTParser;
@@ -42,6 +46,23 @@ class GiveCommand extends VanillaCommand{
 			"%pocketmine.command.give.usage"
 		);
 		$this->setPermission("pocketmine.command.give");
+
+		$rc = new \ReflectionClass(ItemIds::class);
+		$value = array_map(function($string) : string{ return strtolower($string); }, array_keys($rc->getConstants())); // HACK ! TODO : Daha iyi hale getir çalışıyor fakat mcpe uyarla :D lol
+
+		$itemName = new CommandOverload("itemName", [
+            new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+            new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Item", $value)),
+            new CommandParameter("amount", CommandParameter::ARG_TYPE_INT),
+            new CommandParameter("data", CommandParameter::ARG_TYPE_INT),
+            new CommandParameter("components", CommandParameter::ARG_TYPE_JSON),
+        ]);
+		$itemId = clone $itemName;
+		$itemId->setParameter(1, new CommandParameter("itemId", CommandParameter::ARG_TYPE_INT, false));
+
+		$this->setOverloads([
+		    $itemName, $itemId
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
