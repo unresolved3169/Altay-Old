@@ -96,6 +96,7 @@ class StartGamePacket extends DataPacket{
 	public $defaultPlayerPermission = PlayerPermissions::MEMBER; //TODO
 	/** @var int */
 	public $xboxLiveBroadcastMode = 0; //TODO: find values
+    /** @var int */
 	public $serverChunkTickRadius = 4; //TODO (leave as default for now)
 
 	/** @var string */
