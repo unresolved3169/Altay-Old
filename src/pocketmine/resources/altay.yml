@@ -11,6 +11,11 @@ player:
   keep-inventory: false
   keep-experience: false
 
+developer:
+  folder-plugin-loader: true
+  # If true, not register commands (extractplugin, makeserver... etc)
+  command: true
+
 terminal:
    read-line: true
 
