@@ -27,10 +27,13 @@ namespace pocketmine\entity;
 use pocketmine\entity\behavior\Behavior;
 
 class EntityBehaviorManager{
-	
+
+    /** @var array */
 	protected $behaviors = [];
+	/** @var bool */
 	protected $behaviorsEnabled = false;
-	protected $currentBehavior;
+	/** @var Behavior|null */
+	protected $currentBehavior = null;
 	
     public function getReadyBehavior() : ?Behavior{
         foreach($this->behaviors as $index => $behavior){

@@ -28,9 +28,12 @@ use pocketmine\entity\Living;
 use pocketmine\Player;
 
 class LookAtPlayerBehavior extends Behavior{
-	
+
+    /** @var float */
 	protected $lookDistance = 6.0;
+	/** @var Player */
 	protected $player;
+	/** @var int */
 	protected $duration = 0;
 	
 	public function __construct(Living $mob, float $lookDistance = 6.0){

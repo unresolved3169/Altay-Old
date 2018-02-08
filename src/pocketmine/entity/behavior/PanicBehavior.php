@@ -30,7 +30,7 @@ class PanicBehavior extends Behavior{
 		return $this->mob->getLastDamageCause() !== null;
 	}
 	
-	public function onEnd(){
+	public function onEnd() : void{
 		parent::onEnd();
 		$this->mob->setLastDamageCause();
 	}

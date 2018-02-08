@@ -27,7 +27,8 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Living;
 
 abstract class Behavior{
-	
+
+    /** @var Living */
 	protected $mob;
 	
 	public function getName() : string{
@@ -40,20 +41,14 @@ abstract class Behavior{
 	
 	public abstract function canStart() : bool;
 	
-	public function onStart(){
-		
-	}
+	public function onStart(){}
 	
 	public function canContinue() : bool{
 		return $this->canStart();
 	}
 	
-	public function onTick(int $tick) : void{
-		
-	}
+	public function onTick(int $tick) : void{}
 	
-	public function onEnd() : void{
-		
-	}
+	public function onEnd() : void{}
 	
 }

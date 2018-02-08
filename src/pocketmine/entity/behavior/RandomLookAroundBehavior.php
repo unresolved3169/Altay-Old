@@ -24,12 +24,11 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
-use pocketmine\Player;
-
 class RandomLookAroundBehavior extends Behavior{
-	
+
+    /** @var int */
 	protected $rotation = 0;
+	/** @var int */
 	protected $duration = 0;
 	
 	public function canStart() : bool{
