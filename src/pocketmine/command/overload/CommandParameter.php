@@ -80,4 +80,10 @@ class CommandParameter{
 
         return $this;
     }
+
+    public function setOptional(bool $isOptional): CommandParameter{
+        $this->isOptional = $isOptional;
+
+        return $this;
+    }
 }

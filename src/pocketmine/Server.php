@@ -32,6 +32,7 @@ use pocketmine\block\BlockFactory;
 use pocketmine\command\CommandReader;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
+use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\entity\Attribute;
@@ -1691,6 +1692,7 @@ class Server{
             Enchantment::init();
 
             $this->consoleSender = new ConsoleCommandSender();
+            CommandParameterUtils::init();
             $this->commandMap = new SimpleCommandMap($this);
 
             Entity::init();

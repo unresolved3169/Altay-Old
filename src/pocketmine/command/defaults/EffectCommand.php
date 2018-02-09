@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -25,11 +26,11 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
+use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Effect;
-use pocketmine\utils\Config;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\utils\TextFormat;
 
@@ -43,20 +44,17 @@ class EffectCommand extends VanillaCommand{
 		);
 		$this->setPermission("pocketmine.command.effect");
 
-        $config = new Config(\pocketmine\RESOURCE_PATH . "effects.json", Config::JSON, []);
-        $effects = $config->getAll(true);
-
 		$this->setOverloads([
 		    new CommandOverload("clear", [
-		        new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-		        new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("clear", ["clear"])),
+                CommandParameterUtils::getPlayerParameter(false),
+		        CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("clear", ["clear"]))
             ]),
             new CommandOverload("effect", [
-                new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-                new CommandParameter("effect", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Effect", $effects)),
-                new CommandParameter("seconds", CommandParameter::ARG_TYPE_INT),
-                new CommandParameter("amplifier", CommandParameter::ARG_TYPE_INT),
-                new CommandParameter("bool", CommandParameter::ARG_FLAG_ENUM, true, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("bool", ["true", "false"]))
+                CommandParameterUtils::getPlayerParameter(false),
+                CommandParameterUtils::getStringEnumParameter("effect", CommandEnumValues::getEffect()),
+                CommandParameterUtils::getIntParameter("seconds"),
+                CommandParameterUtils::getIntParameter("amplifier"),
+                CommandParameterUtils::getBoolEnum()
             ])
         ]);
 	}

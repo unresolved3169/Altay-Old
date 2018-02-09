@@ -26,32 +26,28 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
+use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-// TODO : Add Language
+// TODO : Add Language and postfixes
 class XpCommand extends VanillaCommand{
 
     public function __construct(string $name){
         parent::__construct(
             $name,
             "Oyuncu deneyimi ekler veya kaldırır",
-            '/xp <değer> [oyuncu]');
+            '/xp <değer> [oyuncu]',
+            [],
+            [
+                CommandParameterUtils::getIntParameter("amount", false),
+                CommandParameterUtils::getPlayerParameter()
+            ]
+        );
 
         $this->setPermission("pocketmine.command.xp");
-
-        $int = new CommandParameter("amount", CommandParameter::ARG_TYPE_INT, false);
-        $player = new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET);
-
-        $this->setOverloads([
-            new CommandOverload("default", [
-                $int, $player
-            ])
-        ]);
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args){

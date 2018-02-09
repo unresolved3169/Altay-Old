@@ -234,37 +234,5 @@ class Enchantment{
 	    return $this->repairCost;
     }
 
-    public static function getEnchantmentNames() : array{
-        return $names = [
-            self::PROTECTION => "protection",
-            self::FIRE_PROTECTION => "fire_protection",
-            self::FEATHER_FALLING => "feather_falling",
-            self::BLAST_PROTECTION => "blast_protection",
-            self::PROJECTILE_PROTECTION => "projectile_protection",
-            self::THORNS => "thorns",
-            self::RESPIRATION => "respiration",
-            self::DEPTH_STRIDER => "depth_strider",
-            self::AQUA_AFFINITY => "aqua_affinity",
-            self::SHARPNESS => "sharpness",
-            self::SMITE => "smite",
-            self::BANE_OF_ARTHROPODS => "bane_of_arthropods",
-            self::KNOCKBACK => "knockback",
-            self::FIRE_ASPECT => "fire_aspect",
-            self::LOOTING => "looting",
-            self::EFFICIENCY => "efficiency",
-            self::SILK_TOUCH => "silk_touch",
-            self::UNBREAKING => "unbreaking",
-            self::FORTUNE => "fortune",
-            self::POWER => "power",
-            self::PUNCH => "punch",
-            self::FLAME => "flame",
-            self::INFINITY => "infinity",
-            self::LUCK_OF_THE_SEA => "luck_of_the_sea",
-            self::LURE => "lure",
-            self::FROST_WALKER => "frost_walker",
-            self::MENDING => "mending"
-        ];
-    }
-
 	//TODO: methods for min/max XP cost bounds based on enchantment level (not needed yet - enchanting is client-side)
 }

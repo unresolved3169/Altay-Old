@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -25,11 +26,10 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
+use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\item\ItemIds;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\JsonNBTParser;
@@ -47,18 +47,16 @@ class GiveCommand extends VanillaCommand{
 		);
 		$this->setPermission("pocketmine.command.give");
 
-		$rc = new \ReflectionClass(ItemIds::class);
-		$value = array_map(function($string) : string{ return strtolower($string); }, array_keys($rc->getConstants())); // HACK ! TODO : Daha iyi hale getir çalışıyor fakat mcpe uyarla :D lol
-
 		$itemName = new CommandOverload("itemName", [
-            new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-            new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("Item", $value)),
-            new CommandParameter("amount", CommandParameter::ARG_TYPE_INT),
-            new CommandParameter("data", CommandParameter::ARG_TYPE_INT),
-            new CommandParameter("components", CommandParameter::ARG_TYPE_JSON),
+            CommandParameterUtils::getPlayerParameter(false),
+            CommandParameterUtils::getStringEnumParameter("itemName", CommandEnumValues::getItem()),
+            CommandParameterUtils::getIntParameter("amount"),
+            CommandParameterUtils::getIntParameter("data"),
+            CommandParameterUtils::getJsonParameter("components"),
         ]);
+		// NOT VANILLA
 		$itemId = clone $itemName;
-		$itemId->setParameter(1, new CommandParameter("itemId", CommandParameter::ARG_TYPE_INT, false));
+		$itemId->setParameter(1, CommandParameterUtils::getIntParameter("itemId", false));
 
 		$this->setOverloads([
 		    $itemName, $itemId
