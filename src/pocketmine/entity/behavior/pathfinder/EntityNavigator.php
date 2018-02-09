@@ -26,6 +26,7 @@ namespace pocketmine\entity\behavior\pathfinder;
 
 use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
+use pocketmine\math\AxisAlignedBB;
 
 class EntityNavigator{
 	
