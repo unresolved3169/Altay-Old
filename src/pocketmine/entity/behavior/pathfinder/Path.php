@@ -24,31 +24,43 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior\pathfinder;
 
-use pocketmine\block\Block;
 use pocketmine\math\Vector3;
-use pocketmine\entity\Entity;
 
 class Path{
 	
 	/* @var Vector3[] */
-	protected $vecs = [];
-	protected $navigator;
+	protected $vectors = [];
 	
-	public function __construct(Entity $entity, array $vecs){
-		$this->vecs = $vecs;
-		$this->navigator = new EntityNavigator();
-		$this->navigator->entity = $entity;
+	public function __construct(array $vectors = []){
+		$this->vectors = $vectors;
 	}
 	
-	public static function findPath(Block $pos) : bool{
-		return true; //TODO
+	public static function findPath(Entity $entity, Vector3 $pos) : bool{
+		$navigator = new EntityNavigator($entity);
+		return new Path($navigator->navigate($pos));
 	}
 	
 	public function havePath() : bool{
-		return count($this->vecs) > 0;
+		return count($this->vectors) > 0;
 	}
 	
 	public function getNextVector() : ?Vector3{
-		return @array_shift($this->vecs);
+		return @array_shift($this->vectors);
+	}
+	
+	public function getVector(int $index) ?Vector3{
+		return $this->vectors[$index] ?? null;
+	}
+	
+	public function setVector(int $index, Vector3 $vec) : void{
+		$this->vectors[$index] = $vec;
+	}
+	
+	public function getVectors() : array{
+		return $this->vectors;
+	}
+	
+	public function setVectors(array $vectors) : void{
+		return $this->vectors = $vectors;
 	}
 }
