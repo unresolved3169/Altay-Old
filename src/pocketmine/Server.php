@@ -44,7 +44,7 @@ use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\event\TextContainer;
+use pocketmine\lang\TextContainer;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
 use pocketmine\form\element\Label;
@@ -95,6 +95,7 @@ use pocketmine\network\rcon\RCON;
 use pocketmine\network\upnp\UPnP;
 use pocketmine\permission\BanList;
 use pocketmine\permission\DefaultPermissions;
+use pocketmine\plugin\FolderPluginLoader;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginLoadOrder;
@@ -298,6 +299,8 @@ class Server{
     public $keepInventory = false;
     /** @var bool */
     public $keepExperience = false;
+    /** @var bool */
+    public $folderPluginLoader = true;
 
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -305,6 +308,7 @@ class Server{
         $this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
         $this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
         $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
+        $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
     }
 
 	/**
@@ -1527,9 +1531,9 @@ class Server{
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
 
-            $this->setServerSettingsForm(new ServerSettingsForm("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")));
+            $this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
 
-			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
+            define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
 			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
 				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
@@ -1704,6 +1708,7 @@ class Server{
 			$this->pluginManager->subscribeToPermission(Server::BROADCAST_CHANNEL_ADMINISTRATIVE, $this->consoleSender);
 			$this->pluginManager->setUseTimings($this->getProperty("settings.enable-profiling", false));
 			$this->profilingTickRate = (float) $this->getProperty("settings.profile-report-trigger", 20);
+			$this->pluginManager->registerInterface(FolderPluginLoader::class);
 			$this->pluginManager->registerInterface(PharPluginLoader::class);
 			$this->pluginManager->registerInterface(ScriptPluginLoader::class);
 
@@ -2080,6 +2085,7 @@ class Server{
 			$this->getNetwork()->blockAddress($entry->getName(), -1);
 		}
 
+		$this->pluginManager->registerInterface(FolderPluginLoader::class);
 		$this->pluginManager->registerInterface(PharPluginLoader::class);
 		$this->pluginManager->registerInterface(ScriptPluginLoader::class);
 		$this->pluginManager->loadPlugins($this->pluginPath);
@@ -2272,9 +2278,9 @@ class Server{
 
 		ini_set("error_reporting", '0');
 		ini_set("memory_limit", '-1'); //Fix error dump not dumped on memory problems
-		$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
-		try{
-			$dump = new CrashDump($this);
+        try{
+            $this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
+            $dump = new CrashDump($this);
 
 			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.submit", [$dump->getPath()]));
 
@@ -2315,7 +2321,9 @@ class Server{
 			}
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
-			$this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
+			try{
+                $this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
+            }catch(\Throwable $exception){}
 		}
 
 		//$this->checkMemory();

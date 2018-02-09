@@ -24,8 +24,9 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol\types;
 
+use pocketmine\inventory\transaction\action\AnvilMaterialAction;
 use pocketmine\inventory\transaction\action\AnvilResultAction;
-use pocketmine\inventory\transaction\action\AnvilAction;
+use pocketmine\inventory\transaction\action\AnvilInputAction;
 use pocketmine\inventory\transaction\action\CraftingTakeResultAction;
 use pocketmine\inventory\transaction\action\CraftingTransferMaterialAction;
 use pocketmine\inventory\transaction\action\CreativeInventoryAction;
@@ -209,15 +210,15 @@ class NetworkInventoryAction{
 
                     case self::SOURCE_TYPE_ANVIL_INPUT:
                         $window = $player->getAnvilInventory();
-                        return new AnvilAction($window, true, $this->oldItem, $this->newItem);
+                        return new AnvilInputAction($window, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_MATERIAL:
                         $window = $player->getAnvilInventory();
-                        return new AnvilAction($window, false, $this->oldItem, $this->newItem);
+                        return new AnvilMaterialAction($window, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_RESULT:
                         $window = $player->getAnvilInventory();
                         return new AnvilResultAction($window, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_OUTPUT:
-                        throw new \RuntimeException("Source Type: Anvil Output");
+                        throw new \RuntimeException("Anvil inventory source type OUTPUT");
 
                     case self::SOURCE_TYPE_ENCHANT_INPUT:
                         $window = $player->getEnchantInventory();
