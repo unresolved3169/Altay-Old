@@ -54,7 +54,7 @@ class CommandParameter{
     /** @var string|null */
     public $postfix;
 
-    public function __construct(string $paramName, int $paramType, bool $optional = true, int $flag = self::ARG_FLAG_VALID, CommandEnum $enum = null, string $postfix = null){
+    public function __construct(string $paramName, int $paramType, bool $optional = true, int $flag = self::ARG_FLAG_VALID, ?CommandEnum $enum = null, string $postfix = null){
         $this->paramName = $paramName;
         $this->paramType = $paramType;
         $this->isOptional = $optional;
@@ -85,5 +85,43 @@ class CommandParameter{
         $this->isOptional = $isOptional;
 
         return $this;
+    }
+
+    public static function convertString(string $string){
+        switch($string){
+            case "string":
+                return self::ARG_TYPE_STRING;
+            case "int":
+                return self::ARG_TYPE_INT;
+            case "float":
+                return self::ARG_TYPE_FLOAT;
+            case "value":
+                return self::ARG_TYPE_VALUE;
+            case "target":
+            case "player":
+                return self::ARG_TYPE_TARGET;
+            case "position":
+                return self::ARG_TYPE_POSITION;
+            case "rawtext":
+            case "raw_text":
+            case "message":
+                return self::ARG_TYPE_RAWTEXT;
+            case "json":
+                return self::ARG_TYPE_JSON;
+            case "text":
+                return self::ARG_TYPE_TEXT;
+            case "command":
+                return self::ARG_TYPE_COMMAND;
+            // flags
+            case "enum":
+                return self::ARG_FLAG_ENUM;
+            case "valid":
+                return self::ARG_FLAG_VALID;
+            case "postfix":
+                return self::ARG_FLAG_POSTFIX;
+
+            default:
+                return 0;
+        }
     }
 }
