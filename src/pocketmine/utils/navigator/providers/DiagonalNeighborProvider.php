@@ -6,7 +6,7 @@ use pocketmine\utils\navigator\Tile;
 
 class DiagonalNeighborProvider implements NeighborProvider{
 	
-	private $neighbors = [
+	protected $neighbors = [
 	[0,-1],
 	[1,0],
 	[0,1],

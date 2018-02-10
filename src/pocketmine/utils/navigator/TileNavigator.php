@@ -9,7 +9,14 @@ class TileNavigator{
 	private $distanceAlgorithm;
 	private $heuristicAlgorithm;
 	
-	public function navigate(Tile $from, Tile $to, int $maxAttempts = PHP_INT_MAX){
+	public function __construct(BlockedProvider $bp, NeighborProvider $np, DistanceAlgorithm $da, HeuristicAlgorithm $ha){
+		$this->blockedProvider = $bp;
+		$this->neighborProvider = $np;
+		$this->distanceAlgorithm = $da;
+		$this->heuristicAlgorithm = $ha;
+	}
+	
+	public function navigate(Tile $from, Tile $to, int $maxAttempts = PHP_INT_MAX) : ?array{
 		$closed = [];
 		$open = [$from];
 		$path = [];
@@ -64,5 +71,36 @@ class TileNavigator{
 				}
 			}
 		}
+		
+		return null;
+	}
+	
+	public function reConstructPath(array $path, Tile $current) : array{
+		$totalPath = [$current];
+		
+		while(isset($path[$current->__toString()])){
+			$current = $path[$current->__toString()];
+			$this->insertToArray($totalPath, 0, $current);
+		}
+		
+		unset($totalPath[0]);
+		
+		return $totalPath;
+	}
+	
+	public function insertToArray(array &$a, $key, $value) : void{
+		$result = [];
+		$numeric = is_numeric($key);
+		foreach($a as $k => $v){
+			if($k === $key){
+				$result[$key] = $value;
+			}else{
+				if($numeric and is_numeric($k)){
+					$k += 1;
+				}
+				$result[$k] = $v;
+			}
+		}
+		$a = $result;
 	}
 }
