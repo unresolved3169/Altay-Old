@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior\pathfinder;
 
+use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
 
 class Path{
@@ -35,7 +36,7 @@ class Path{
 		$this->vectors = $vectors;
 	}
 	
-	public static function findPath(Entity $entity, Vector3 $pos) : bool{
+	public static function findPath(Entity $entity, Vector3 $pos) : Path{
 		$navigator = new EntityNavigator($entity);
 		return new Path($navigator->navigate($pos));
 	}
@@ -48,7 +49,7 @@ class Path{
 		return @array_shift($this->vectors);
 	}
 	
-	public function getVector(int $index) ?Vector3{
+	public function getVector(int $index) : ?Vector3{
 		return $this->vectors[$index] ?? null;
 	}
 	
@@ -61,6 +62,6 @@ class Path{
 	}
 	
 	public function setVectors(array $vectors) : void{
-		return $this->vectors = $vectors;
+	    $this->vectors = $vectors;
 	}
 }

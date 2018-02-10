@@ -41,10 +41,11 @@ class EntityNavigator{
 		$pathVectors = [];
 		$lastPoint = end($pathVectors);
 		while($lastPoint === null or $lastPoint->distance($pos) > 1){
-			if($this->canGoToVector($pos, true) and $isclear = $this->isClearBetweenPoints($this->entity->asVector3(), $pos)){
+            $isClear = $this->isClearBetweenPoints($this->entity->asVector3(), $pos);
+			if($this->canGoToVector($pos, true) and $isClear){
 				$points = $this->getClearBetweenPoints($this->entity, $pos);
 				$pathVectors = array_merge($pathVectors, $points);
-			}elseif(!$isclear){
+			}elseif(!$isClear){
 				$points = $this->tryFindPath($pos);
 				if(empty($points)){
 					break;
@@ -56,28 +57,30 @@ class EntityNavigator{
 		return $pathVectors;
 	}
 	
-	public function tryFindPath(Vector3 $targetPos) : array
-		$level = $this->entity->getLevel();
-		$dist = $this->entity->distance($targetPos);
-		$rayPos = $this->entity->asVector3();
-		$bb = new AxisAlignedBB($rayPos->x - $dist, $rayPos->y - $dist, $rayPos->z - $dist, $rayPos->x + $dist, $rayPos->y + $dist, $rayPos->z + $dist);
-		$bb2 = $bb->grow(1,1,1);
-		$collides = [];
-		for($z = floor($bb2->minZ); $z <= ceil($bb2->maxZ); ++$z){
-			for($x = floor($bb2->minX); $x <= ceil($bb2->maxX); ++$x){
-				for($y = floor($bb2->minY); $y <= ceil($bb2->maxY); ++$y){
-					$block = $level->getBlockAt($x, $y, $z);
-					if(!$block->isSolid() and $block->collidesWithBB($bb) and $this->canGoToVector($block) and $this->isClearBetweenPoints($block, $targetPos)){
-						$collides[$targetPos->distance($block)] = $block;
-					}
-				}
-			}
-		}
-	 return array_values(ksort($collides));
-	}
+	public function tryFindPath(Vector3 $targetPos) : array{
+        $level = $this->entity->getLevel();
+        $dist = $this->entity->distance($targetPos);
+        $rayPos = $this->entity->asVector3();
+        $bb = new AxisAlignedBB($rayPos->x - $dist, $rayPos->y - $dist, $rayPos->z - $dist, $rayPos->x + $dist, $rayPos->y + $dist, $rayPos->z + $dist);
+        $bb2 = $bb->grow(1, 1, 1);
+        $collides = [];
+        for ($z = floor($bb2->minZ); $z <= ceil($bb2->maxZ); ++$z) {
+            for ($x = floor($bb2->minX); $x <= ceil($bb2->maxX); ++$x) {
+                for ($y = floor($bb2->minY); $y <= ceil($bb2->maxY); ++$y) {
+                    $block = $level->getBlock(new Vector3($x, $y, $z));
+                    if(!$block->isSolid() and $block->collidesWithBB($bb) and $this->canGoToVector($block) and $this->isClearBetweenPoints($block, $targetPos)){
+                        $collides[(int) $targetPos->distance($block)] = $block;
+                    }
+                }
+            }
+        }
+
+        ksort($collides);
+        return array_values($collides);
+    }
 	
 	public function canGoToVector(Vector3 $pos, bool $canFall = false) : bool{
-		$level = $entity->level;
+		$level = $this->entity->level;
 		$val0 = $level->getBlock($pos->getSide(0))->isSolid();
 		$val1 = $level->getBlock($pos->getSide(0, 2))->isSolid();
 		
@@ -89,12 +92,12 @@ class EntityNavigator{
 		$direction = $to->subtract($from)->normalize();
 		$level = $this->entity->level;
 		
-		if($distance->length() < $direction->length()) return true;
+		if($from->length() < $direction->length()) return true;
 		
 		$rayPos = $this->entity->asVector3();
 		
 		while($distance > $this->entity->distance($rayPos)){
-			if($level->getBlockAt(...$rayPos->toArray())->isSolid()) return false;
+			if($level->getBlockAt($rayPos->x, $rayPos->y, $rayPos->z)->isSolid()) return false;
 			$rayPos = $rayPos->add($direction);
 		}
 		
@@ -106,14 +109,14 @@ class EntityNavigator{
 		$direction = $to->subtract($from)->normalize();
 		$level = $this->entity->level;
 		
-		if($distance->length() < $direction->length()) return true;
+		if($from->length() < $direction->length()) return [];
 		
 		$rayPos = $this->entity->asVector3();
 		
 		$points = [];
 		
 		while($distance > $this->entity->distance($rayPos)){
-			if(!$level->getBlockAt(...$rayPos->toArray())->isSolid()){
+			if(!$level->getBlockAt($rayPos->x, $rayPos->y, $rayPos->z)->isSolid()){
 				$points[] = $rayPos;
 			}
 			$rayPos = $rayPos->add($direction);
