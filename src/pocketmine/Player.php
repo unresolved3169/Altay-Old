@@ -184,7 +184,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public const SPECTATOR = 3;
 	public const VIEW = Player::SPECTATOR;
 
-	/**
+    /**
 	 * Checks a supplied username and checks it is valid.
 	 * @param string $name
 	 *
@@ -324,6 +324,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     protected $sentForm = null;
     /** @var Form[] */
     protected $formQueue = [];
+
+    /** @var int */
+    protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
 
 	/**
 	 * @return TranslationContainer|string
@@ -870,7 +873,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->startAction === -1 ? -1 : ($this->server->getTick() - $this->startAction);
 	}
 
-	protected function switchLevel(Level $targetLevel) : bool{
+    public function getCommandPermission() : int{
+        return $this->commandPermission;
+    }
+
+    public function setCommandPermission(int $commandPermission) : void{
+        $this->commandPermission = $commandPermission;
+    }
+
+    protected function switchLevel(Level $targetLevel) : bool{
 		$oldLevel = $this->level;
 		if(parent::switchLevel($targetLevel)){
 			foreach($this->usedChunks as $index => $d){
@@ -1356,6 +1367,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk->setFlag(AdventureSettingsPacket::FLYING, $this->flying);
 
 		$pk->commandPermission = ($this->isOp() ? AdventureSettingsPacket::PERMISSION_OPERATOR : AdventureSettingsPacket::PERMISSION_NORMAL);
+		$this->commandPermission = $pk->commandPermission;
 		$pk->playerPermission = ($this->isOp() ? PlayerPermissions::OPERATOR : PlayerPermissions::MEMBER);
 		$pk->entityUniqueId = $this->getId();
 

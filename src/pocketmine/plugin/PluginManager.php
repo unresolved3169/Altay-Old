@@ -665,7 +665,7 @@ class PluginManager{
                 }
 
                 if(isset($data["permission-level"])){
-				    // todo : add set permission level
+				    $newCmd->setPermissionLevel((int) $data["permission-level"]);
                 }
 
 				$pluginCmds[] = $newCmd;

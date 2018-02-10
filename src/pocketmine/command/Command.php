@@ -33,6 +33,8 @@ use pocketmine\lang\TextContainer;
 use pocketmine\event\TimingsHandler;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\command\overload\CommandParameter;
+use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
@@ -75,6 +77,8 @@ abstract class Command{
 
 	/** @var array */
 	private $overloads = [];
+
+	private $permissionLevel = AdventureSettingsPacket::PERMISSION_NORMAL;
 
     /**
      * @param string $name
@@ -130,7 +134,13 @@ abstract class Command{
 	 */
 	public function testPermission(CommandSender $target) : bool{
 		if($this->testPermissionSilent($target)){
-			return true;
+		    if($target instanceof Player){
+		        if($target->getCommandPermission() >= $this->getPermissionLevel()){
+                    return true;
+                }
+            }else{
+                return true;
+            }
 		}
 
 		if($this->permissionMessage === null){
@@ -365,5 +375,13 @@ abstract class Command{
 
     public function setOverloads(array $overloads): void{
         $this->overloads = $overloads;
+    }
+
+    public function getPermissionLevel(): int{
+        return $this->permissionLevel;
+    }
+
+    public function setPermissionLevel(int $permissionLevel): void{
+        $this->permissionLevel = $permissionLevel;
     }
 }
