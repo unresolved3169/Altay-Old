@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -25,6 +26,9 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\command\overload\CommandEnumValues;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\item\ItemFactory;
@@ -42,6 +46,21 @@ class GiveCommand extends VanillaCommand{
 			"%pocketmine.command.give.usage"
 		);
 		$this->setPermission("pocketmine.command.give");
+
+		$itemName = new CommandOverload("itemName", [
+            CommandParameterUtils::getPlayerParameter(false),
+            CommandParameterUtils::getStringEnumParameter("itemName", CommandEnumValues::getItem()),
+            CommandParameterUtils::getIntParameter("amount"),
+            CommandParameterUtils::getIntParameter("data"),
+            CommandParameterUtils::getJsonParameter("components"),
+        ]);
+		// NOT VANILLA
+		$itemId = clone $itemName;
+		$itemId->setParameter(1, CommandParameterUtils::getIntParameter("itemId", false));
+
+		$this->setOverloads([
+		    $itemName, $itemId
+        ]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
