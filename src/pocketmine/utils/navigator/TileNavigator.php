@@ -55,6 +55,13 @@ class TileNavigator{
 				}
 				
 				$path[$neighbor->__toString()] = $current;
+				
+				$neighbor->gScore = $tentativeG;
+				$neighbor->fScore = $neighbor->gScore + $this->heuristicAlgorithm->calculate($neighbor, $to);
+				if($neighbor->fScore <= $highScore->fScore){
+					$highScore = $neighbor;
+					$last = $neighbor;
+				}
 			}
 		}
 	}
