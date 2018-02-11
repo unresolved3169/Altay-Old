@@ -56,8 +56,4 @@ class ArmorStand extends Item{
         return (round($yaw / 22.5 / 2) * 45) - 180;
     }
 
-    public function getMaxStackSize(): int{
-        return 16;
-    }
-
 }

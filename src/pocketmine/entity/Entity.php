@@ -2123,7 +2123,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, \pocketmine\item\Item $item, Vector3 $clickVector) : bool{
+	public function onInteract(Player $player, \pocketmine\item\Item $item, Vector3 $clickVector, array $actions = []) : bool{
         return false;
 	}
 

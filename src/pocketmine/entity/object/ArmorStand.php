@@ -27,6 +27,9 @@ namespace pocketmine\entity\object;
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\inventory\AltayEntityEquipment;
+use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\inventory\utils\EquipmentSlot;
 use pocketmine\item\Armor;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -34,21 +37,16 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
-use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
-use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\Player;
+
 class ArmorStand extends Entity{
 
     public const TAG_ARMOR = "Armor";
     public const TAG_MAINHAND = "Mainhand";
     public const TAG_OFFHAND = "Offhand";
 
-    /** @var Item */
-    protected $mainhand;
-    /** @var Item */
-    protected $offhand; // TODO : Handle when shield is added
-    /** @var Item[] */
-    protected $armors;
+    /** @var AltayEntityEquipment */
+    protected $equipment;
 
     protected $gravity = 0.04;
 
@@ -90,37 +88,45 @@ class ArmorStand extends Entity{
         /** @var ListTag $offhand */
         $offhand = $this->namedtag->getTag(self::TAG_OFFHAND);
 
-        $this->armors = array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues());
-        $this->mainhand = Item::nbtDeserialize($mainhand[0]);
-        $this->offhand = Item::nbtDeserialize($offhand[0]);
-
-        $this->sendAll();
+        $contents = array_merge(array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues()), [Item::nbtDeserialize($offhand[0])], [Item::nbtDeserialize($mainhand[0])]);
+        $this->equipment = new AltayEntityEquipment($this);
+        $this->equipment->setContents($contents);
     }
 
-    public function onInteract(Player $player, Item $item, Vector3 $clickVector) : bool{
-        if($item->isNull()){
-            var_dump($clickVector->__toString());
-            $player->getInventory()->sendContents($player);
-            // TODO : Remove items from armorstand
-        }else{
-            $newItem = $item->pop();
-            if($newItem instanceof Armor){
-                $this->armors[$newItem->getArmorSlot()] = $newItem;
-            }else{
-                switch($newItem->getId()){
-                    case Item::PUMPKIN:
-                    case Item::SKULL:
-                    case Item::SKULL_BLOCK:
-                        $this->armors[Armor::SKULL] = $newItem;
-                        break;
-                    default:
-                        $this->mainhand = $newItem;
-                        break;
+    public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
+        foreach($actions as $action){
+            if($action instanceof SlotChangeAction){
+                if($action->execute($player)){
+                    $action->onExecuteSuccess($player);
+                }else{
+                    $action->onExecuteFail($player);
                 }
+
+                if($action->getSourceItem()->isNull()){
+                    $first = $this->equipment->first($action->getTargetItem());
+                    $this->equipment->clear($first, false);
+                }else{
+                    $item = $action->getSourceItem();
+                    $slot = $this->getEquipmentSlot($item);
+                    $old = $this->equipment->getItem($slot);
+                    $newItem = $item->pop();
+                    $this->equipment->setItem($slot, $newItem);
+                    $player->getInventory()->setItemInHand($item);
+                    $player->getInventory()->addItem($old);
+                }
+                return true;
             }
-            $this->sendAll();
-            $player->getInventory()->setItemInHand($item);
         }
+
+        if(!$item->isNull()){
+            $slot = $this->getEquipmentSlot($item);
+            $newItem = $item->pop();
+            $this->equipment->setItem($slot, $newItem);
+            $player->getInventory()->setItemInHand($item);
+        }else{
+            $this->equipment->sendContents($player);
+        }
+
         return true;
     }
 
@@ -140,15 +146,16 @@ class ArmorStand extends Entity{
     public function saveNBT(){
         parent::saveNBT();
 
-        $armorNBT = array_map(function(Item $item) : CompoundTag{ return $item->nbtSerialize(); }, $this->armors);
+        $this->namedtag->setTag(new ListTag(self::TAG_MAINHAND, [$this->equipment->getMainhandItem()->nbtSerialize()], NBT::TAG_Compound));
+        $this->namedtag->setTag(new ListTag(self::TAG_OFFHAND, [$this->equipment->getOffhandItem()->nbtSerialize()], NBT::TAG_Compound));
+
+        $armorNBT = array_map(function(Item $item) : CompoundTag{ return $item->nbtSerialize(); }, $this->equipment->getArmorContents());
         $this->namedtag->setTag(new ListTag(self::TAG_ARMOR, $armorNBT, NBT::TAG_Compound));
-        $this->namedtag->setTag(new ListTag(self::TAG_MAINHAND, [$this->mainhand->nbtSerialize()], NBT::TAG_Compound));
-        $this->namedtag->setTag(new ListTag(self::TAG_OFFHAND, [$this->offhand->nbtSerialize()], NBT::TAG_Compound));
     }
 
     public function kill(){
         $dropVector = $this->add(0.5, 0.5, 0.5);
-        $items = array_merge($this->armors, [$this->mainhand], [$this->offhand], [ItemFactory::get(Item::ARMOR_STAND)]);
+        $items = array_merge($this->equipment->getContents(false), [ItemFactory::get(Item::ARMOR_STAND)]);
         $this->level->dropItems($dropVector, $items);
 
         return parent::kill();
@@ -160,54 +167,26 @@ class ArmorStand extends Entity{
         }
     }
 
-    /**
-     * @param Player[]|Player $target
-     */
-    protected function sendArmorSlots($target){
-        if($target instanceof Player){
-            $target = [$target];
-        }
-
-        $pk = new MobArmorEquipmentPacket();
-        $pk->entityRuntimeId = $this->getId();
-        $pk->slots = $this->armors;
-        $pk->encode();
-
-        foreach($target as $t){
-            $t->dataPacket($pk);
-        }
-    }
-
-    /**
-     * @param Player[]|Player $target
-     */
-    protected function sendMainhandItem($target){
-        if($target instanceof Player){
-            $target = [$target];
-        }
-
-        $pk = new MobEquipmentPacket();
-        $pk->entityRuntimeId = $this->getId();
-        $pk->item = $this->mainhand;
-        $pk->hotbarSlot = $pk->inventorySlot = 0;
-
-        foreach ($target as $t){
-            $t->dataPacket($pk);
-        }
-    }
-
-    public function sendAll(){
-        $this->sendMainhandItem($this->getViewers());
-        $this->sendArmorSlots($this->getViewers());
-    }
-
     public function spawnTo(Player $player){
         parent::spawnTo($player);
-        $this->sendArmorSlots($player);
-        $this->sendMainhandItem($player);
+        $this->equipment->sendContents($player);
     }
 
     public function getName(): string{
         return "Armor Stand";
+    }
+
+    public function getEquipmentSlot(Item $item){
+        if($item instanceof Armor){
+            return $item->getArmorSlot() + 2; // HACK :D
+        }else{
+            switch($item->getId()){
+                case Item::SKULL:
+                case Item::SKULL_BLOCK:
+                case Item::PUMPKIN:
+                    return EquipmentSlot::HACK_HEAD;
+            }
+            return EquipmentSlot::MAINHAND;
+        }
     }
 }

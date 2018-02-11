@@ -2425,9 +2425,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
 					    $this->server->getPluginManager()->callEvent($ev = new EntityInteractEvent($target, $this));
 					    if(!$ev->isCancelled()){
-                            $target->onInteract($this, $packet->trData->itemInHand, $packet->trData->clickPos);
+                            $target->onInteract($this, $packet->trData->itemInHand, $packet->trData->clickPos, $actions);
                         }
-						break;
+
+                        return true;
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_ATTACK:
 						if(!$target->isAlive()){
 							return true;
