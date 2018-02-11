@@ -93,7 +93,7 @@ class WanderBehavior extends Behavior{
 			$y = $random->nextRange(0, 2 * $dy + 1) - $dy;
 			$z = $random->nextRange(0, 2 * $dxz + 1) - $dxz;
 			
-			$blockCoords = new Vector3($x,$y,$z):
+			$blockCoords = new Vector3($x,$y,$z);
 			$block = $entity->level->getBlock($blockCoords);
 			$blockDown = $block->getSide(0);
 			if($blockDown->isSolid()){
