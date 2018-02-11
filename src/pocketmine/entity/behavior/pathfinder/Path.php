@@ -44,41 +44,40 @@ class Path{
 	
 	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : bool{
 		try
+		{
+			$entityCoords = [];
+			foreach ($source->level->getEntities() as $entry)
 			{
-				$entityCoords = [];
-				foreach ($source->level->getEntities() as $entry)
-				{
-					$position = $entry->asVector3();
-					if($position == $target) continue;
+				$position = $entry->asVector3();
+				if($position == $target) continue;
 
-					$entityCoords[] = $position;
-				}
-				
-				$level = $source->level;
-
-				$navigator = new TileNavigator(
-					new LevelNavigator($source, $level, $distance, $blockCache, $entityCoords),
-					new BlockDiagonalNeighborProvider($level, $source->y, $blockCache, $source),
-					new BlockDistanceAlgorithm($blockCache, $source->canClimb()),
-					new ManhattanHeuristicAlgorithm()
-				);
-
-				$targetPos = $target;
-				$sourcePos = $source->asVector3();
-				$from = new Tile($sourcePos->x, $sourcePos->z);
-				$to = new Tile($targetPos->x, $targetPos->z);
-
-				$path = $navigator->navigate($from, $to, 200) ?? [];
-				
-				return new Path($blockCache, $path);
+				$entityCoords[] = $position;
 			}
-			catch(\Exception $e)
-			{
-				throw $e;
-			}
+				
+			$level = $source->level;
 
-			return new Path();
+			$navigator = new TileNavigator(
+				new LevelNavigator($source, $level, $distance, $blockCache, $entityCoords),
+				new BlockDiagonalNeighborProvider($level, $source->y, $blockCache, $source),
+				new BlockDistanceAlgorithm($blockCache, $source->canClimb()),
+				new ManhattanHeuristicAlgorithm()
+			);
+
+			$targetPos = $target;
+			$sourcePos = $source->asVector3();
+			$from = new Tile($sourcePos->x, $sourcePos->z);
+			$to = new Tile($targetPos->x, $targetPos->z);
+				
+			$path = $navigator->navigate($from, $to, 200) ?? [];
+				
+			return new Path($blockCache, $path);
 		}
+		catch(\Exception $e)
+		{
+			throw $e;
+		}
+
+		return new Path();
 	}
 	
 	public function havePath() : bool{
