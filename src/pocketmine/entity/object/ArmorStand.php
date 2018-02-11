@@ -37,6 +37,7 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 
 class ArmorStand extends Entity{
@@ -44,9 +45,14 @@ class ArmorStand extends Entity{
     public const TAG_ARMOR = "Armor";
     public const TAG_MAINHAND = "Mainhand";
     public const TAG_OFFHAND = "Offhand";
+    public const TAG_POSE = "Pose";
+    public const TAG_LAST_SIGNAL = "LastSignal";
+    public const TAG_POSE_INDEX = "PoseIndex";
 
     /** @var AltayEntityEquipment */
     protected $equipment;
+    /** @var int */
+    protected $pose = 0; // have 13
 
     protected $gravity = 0.04;
 
@@ -79,7 +85,12 @@ class ArmorStand extends Entity{
             ], NBT::TAG_Compound));
         }
 
-        // TODO : Add POSE
+        if(!$this->namedtag->hasTag(self::TAG_POSE, CompoundTag::class)){
+            $this->namedtag->setTag(new CompoundTag(self::TAG_POSE, [
+                new IntTag(self::TAG_LAST_SIGNAL, 0),
+                new IntTag(self::TAG_POSE_INDEX, 0)
+            ]));
+        }
 
         /** @var ListTag $armor */
         $armor = $this->namedtag->getTag(self::TAG_ARMOR);
@@ -91,9 +102,22 @@ class ArmorStand extends Entity{
         $contents = array_merge(array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues()), [Item::nbtDeserialize($offhand[0])], [Item::nbtDeserialize($mainhand[0])]);
         $this->equipment = new AltayEntityEquipment($this);
         $this->equipment->setContents($contents);
+
+        /** @var CompoundTag $poseTag */
+        $poseTag = $this->namedtag->getTag(self::TAG_POSE);
+        $this->pose = $poseTag->getInt(self::TAG_POSE_INDEX, 0);
     }
 
     public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
+        // TODO : Ses ekle
+        if($player->isSneaking()){
+            // I couldn't find a way to set a pose, but MCPE is doing it himself here.
+            $this->pose++;
+            if($this->pose >= 13)
+                $this->pose = 0;
+
+            return true;
+        }
         foreach($actions as $action){
             if($action instanceof SlotChangeAction){
                 if($action->execute($player)){
@@ -151,6 +175,13 @@ class ArmorStand extends Entity{
 
         $armorNBT = array_map(function(Item $item) : CompoundTag{ return $item->nbtSerialize(); }, $this->equipment->getArmorContents());
         $this->namedtag->setTag(new ListTag(self::TAG_ARMOR, $armorNBT, NBT::TAG_Compound));
+
+        /** @var CompoundTag $poseTag */
+        $poseTag = $this->namedtag->getTag(self::TAG_POSE);
+        $this->namedtag->setTag(new CompoundTag(self::TAG_POSE, [
+            $poseTag->getTag(self::TAG_LAST_SIGNAL),
+            new IntTag(self::TAG_POSE_INDEX, $this->pose)
+        ]));
     }
 
     public function kill(){
@@ -162,6 +193,7 @@ class ArmorStand extends Entity{
     }
 
     public function attack(EntityDamageEvent $source){
+        // TODO : eğer oyuncu gamemode c ise hemen kır drop yapma
         if($source->getCause() != EntityDamageEvent::CAUSE_CONTACT){ // cactus
             parent::attack($source);
         }
