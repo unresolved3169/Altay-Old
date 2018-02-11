@@ -164,23 +164,23 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 	
 	public function checkDiagonals(Block $block, array &$list){
 		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)))){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_EAST)))]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_WEST)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_EAST)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_WEST)), $list)]);
 		}
 		
 		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)))){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_EAST)))]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_WEST)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_EAST)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_WEST)), $list)]);
 		}
 		
 		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)))){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_NORTH)))]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_SOUTH)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_NORTH)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
 		}
 		
 		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)))){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_NORTH)))]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_SOUTH)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_NORTH)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
 		}
 	}
 	

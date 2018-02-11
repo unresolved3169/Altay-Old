@@ -58,7 +58,7 @@ class StrollBehavior extends Behavior{
 			return;
 		}
 		
-		$this->moveForward($this->speedMultiplier);
+		$this->mob->moveForward($this->speedMultiplier);
 	}
 	
 	public function onEnd() : void{
