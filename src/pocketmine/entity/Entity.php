@@ -630,6 +630,14 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		);
 	}
 
+	public function isAffectedByGravity() : bool{
+	    return $this->getGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY);
+    }
+
+    public function setAffectedByGravity(bool $value = true){
+	    $this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, $value);
+    }
+
 	public function isSneaking() : bool{
 		return $this->getGenericFlag(self::DATA_FLAG_SNEAKING);
 	}

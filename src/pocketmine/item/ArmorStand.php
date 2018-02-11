@@ -28,6 +28,7 @@ use pocketmine\block\Block;
 use pocketmine\entity\object\ArmorStand as EntityArmorStand;
 use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 
 class ArmorStand extends Item{
@@ -46,6 +47,7 @@ class ArmorStand extends Item{
             }
 
             $entity->spawnToAll();
+            $player->getLevel()->broadcastLevelEvent($player, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_PLACE);
             return true;
         }
 

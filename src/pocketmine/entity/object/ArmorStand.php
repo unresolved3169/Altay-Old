@@ -26,6 +26,7 @@ namespace pocketmine\entity\object;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\inventory\AltayEntityEquipment;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
@@ -38,6 +39,7 @@ use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 
 class ArmorStand extends Entity{
@@ -109,7 +111,6 @@ class ArmorStand extends Entity{
     }
 
     public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
-        // TODO : Ses ekle
         if($player->isSneaking()){
             // I couldn't find a way to set a pose, but MCPE is doing it himself here.
             $this->pose++;
@@ -156,9 +157,10 @@ class ArmorStand extends Entity{
 
     public function onUpdate(int $currentTick): bool{
         if(($hasUpdated = parent::onUpdate($currentTick))){
-            if($this->getGenericFlag(Entity::DATA_FLAG_AFFECTED_BY_GRAVITY)){
+            if($this->isAffectedByGravity()){
                 if($this->level->getBlock($this->getSide(Vector3::SIDE_DOWN)) === Item::AIR){
                     $this->applyGravity();
+                    $this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
                 }
             }
             return true;
@@ -193,7 +195,18 @@ class ArmorStand extends Entity{
     }
 
     public function attack(EntityDamageEvent $source){
-        // TODO : eğer oyuncu gamemode c ise hemen kır drop yapma
+        if($source instanceof EntityDamageByEntityEvent){
+            $damager = $source->getDamager();
+            if($damager instanceof Player){
+                if($damager->isCreative()){
+                    $this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_BREAK);
+                    $this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_PARTICLE_DESTROY, 5);
+                    $this->flagForDespawn();
+                }else{
+                    $this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_HIT);
+                }
+            }
+        }
         if($source->getCause() != EntityDamageEvent::CAUSE_CONTACT){ // cactus
             parent::attack($source);
         }
