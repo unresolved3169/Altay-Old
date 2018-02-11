@@ -40,7 +40,6 @@ use pocketmine\entity\Skin;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityInteractEvent;
 use pocketmine\event\inventory\InventoryCloseEvent;
 use pocketmine\event\player\cheat\PlayerIllegalMoveEvent;
 use pocketmine\event\player\PlayerAchievementAwardedEvent;
@@ -53,6 +52,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerEditBookEvent;
+use pocketmine\event\player\PlayerEntityInteractEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerToggleGlideEvent;
@@ -2423,7 +2423,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
-					    $this->server->getPluginManager()->callEvent($ev = new EntityInteractEvent($target, $this));
+                        $ev = new PlayerEntityInteractEvent($this, $target);
+                        if($this->isSpectator()) $ev->setCancelled();
+                        $this->server->getPluginManager()->callEvent($ev);
+
 					    if(!$ev->isCancelled()){
                             $target->onInteract($this, $packet->trData->itemInHand, $packet->trData->clickPos, $actions);
                         }

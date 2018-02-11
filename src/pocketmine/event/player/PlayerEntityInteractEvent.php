@@ -22,24 +22,20 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\event\entity;
+namespace pocketmine\event\player;
 
 use pocketmine\entity\Entity;
 use pocketmine\event\Cancellable;
 use pocketmine\Player;
 
-class EntityInteractEvent extends EntityEvent implements Cancellable{
+class PlayerEntityInteractEvent extends PlayerEvent implements Cancellable{
     public static $handlerList = null;
 
-    /** @var Player */
-    protected $player;
+    /** @var Entity */
+    protected $entity;
 
-    public function __construct(Entity $entity, Player $player){
-        $this->entity = $entity;
+    public function __construct(Player $player, Entity $entity){
         $this->player = $player;
-    }
-
-    public function getPlayer() : Player{
-        return $this->player;
+        $this->entity = $entity;
     }
 }
