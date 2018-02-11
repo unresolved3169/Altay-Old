@@ -24,44 +24,83 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior\pathfinder;
 
-use pocketmine\entity\Entity;
 use pocketmine\math\Vector3;
+use pocketmine\utils\navigator\{TileNavigator, Tile};
+use pocketmine\utils\navigator\algorithms\ManhattanHeuristicAlgorithm;
+use pocketmine\entity\behavior\pathfinder\navigator\{BlockDistanceAlgorithm, LevelNavigator, BlockDiagonalNeighborProvider};
+use pocketmine\entity\Entity;
+use pocketmine\block\Block;
 
 class Path{
 	
-	/* @var Vector3[] */
-	protected $vectors = [];
+	/* @var Tile[] */
+	protected $tiles = [];
+	protected $blockCache = [];
 	
-	public function __construct(array $vectors = []){
-		$this->vectors = $vectors;
+	public function __construct(array $blockCache = [], array $tiles = []){
+		$this->tiles = $tiles;
+		$this->blockCache = $blockCache;
 	}
 	
-	public static function findPath(Entity $entity, Vector3 $pos) : Path{
-		$navigator = new EntityNavigator($entity);
-		return new Path($navigator->navigate($pos));
+	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : bool{
+		try
+			{
+				$entityCoords = [];
+				foreach ($source->level->getEntities() as $entry)
+				{
+					$position = $entry->asVector3();
+					if($position == $target) continue;
+
+					$entityCoords[] = $position;
+				}
+				
+				$level = $source->level;
+
+				$navigator = new TileNavigator(
+					new LevelNavigator($source, $level, $distance, $blockCache, $entityCoords),
+					new BlockDiagonalNeighborProvider($level, $source->y, $blockCache, $source),
+					new BlockDistanceAlgorithm($blockCache, $source->canClimb()),
+					new ManhattanHeuristicAlgorithm()
+				);
+
+				$targetPos = $target;
+				$sourcePos = $source->asVector3();
+				$from = new Tile($sourcePos->x, $sourcePos->z);
+				$to = new Tile($targetPos->x, $targetPos->z);
+
+				$path = $navigator->navigate($from, $to, 200) ?? [];
+				
+				return new Path($blockCache, $path);
+			}
+			catch(\Exception $e)
+			{
+				throw $e;
+			}
+
+			return new Path();
+		}
 	}
 	
 	public function havePath() : bool{
-		return count($this->vectors) > 0;
+		return count($this->tiles) > 0;
 	}
 	
-	public function getNextVector() : ?Vector3{
-		return @array_shift($this->vectors);
+	public function getNextTile(Entity $entity) : ?Tile{
+		if($this->havePath()){
+			$next = first($this->tiles);
+			
+			if($next->x === $entity->x and $next->y === $entity->z){
+				unset($this->tiles[array_search($next, $this->tiles)]);
+				
+				if(!$this->getNextTile($entity)) return null;
+			}
+			
+			return $next;
+		}
+		return null;
 	}
 	
-	public function getVector(int $index) : ?Vector3{
-		return $this->vectors[$index] ?? null;
-	}
-	
-	public function setVector(int $index, Vector3 $vec) : void{
-		$this->vectors[$index] = $vec;
-	}
-	
-	public function getVectors() : array{
-		return $this->vectors;
-	}
-	
-	public function setVectors(array $vectors) : void{
-	    $this->vectors = $vectors;
+	public function getBlock(Tile $tile) : ?Block{
+		return $this->blockCache[$title->__toString()] ?? null;
 	}
 }

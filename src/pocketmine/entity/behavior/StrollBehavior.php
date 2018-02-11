@@ -26,13 +26,10 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Living;
 
-class RandomStrollBehavior extends Behavior{
-
-    /** @var float */
+class StrollBehavior extends Behavior{
+	
 	protected $speedMultiplier = 1.0;
-	/** @var int */
 	protected $chance = 120;
-	/** @var int */
 	protected $timeLeft = 0;
 	
 	public function __construct(Living $mob, float $speedMultiplier = 1.0, int $chance = 120){
@@ -61,7 +58,7 @@ class RandomStrollBehavior extends Behavior{
 			return;
 		}
 		
-		$this->mob->moveForward($this->speedMultiplier);
+		$this->moveForward($this->speedMultiplier);
 	}
 	
 	public function onEnd() : void{

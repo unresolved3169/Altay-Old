@@ -1,5 +1,25 @@
 <?php
 
+/*
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
+ *
+ */
+
 namespace pocketmine\entiy\behavior\navigator;
 
 use pocketmine\utils\navigator\Tile;
@@ -143,10 +163,25 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 	}
 	
 	public function checkDiagonals(Block $block, array &$list){
-		//if(!in_array($this->getTileFromBlock($block->getSide(Vector3::NORTH)))){
-			//unset($list[array_search()]);
-		//}
-		// to be continue...
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)))){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_EAST)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_WEST)))]);
+		}
+		
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)))){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_EAST)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_WEST)))]);
+		}
+		
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)))){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_NORTH)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_SOUTH)))]);
+		}
+		
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)))){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_NORTH)))]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_SOUTH)))]);
+		}
 	}
 	
 	public function isObstructed(Vector3 $coord) : bool{

@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-class PanicBehavior extends Behavior{
+class PanicBehavior extends StrollBehavior{
 	
 	public function canStart() : bool{
 		return $this->mob->getLastDamageCause() !== null;

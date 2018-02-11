@@ -55,7 +55,7 @@ class WanderBehavior extends Behavior{
 			
 			if($pos === null) return false;
 			
-			$path = Path::findPath($pos->asVector3());
+			$path = Path::findPath($this->mob, $pos, $this->mob->distance($pos));
 			
 			$this->currentPath = $path;
 			
@@ -70,8 +70,8 @@ class WanderBehavior extends Behavior{
 	
 	public function onTick(int $tick) : void{
 		if($this->currentPath->havePath()){
-			if($vector = $this->currentPath->getNextVector()){
-				$this->mob->lookAt($vector->add(0.5,0.5,0.5));
+			if($next = $this->currentPath->getNextTile($this->mob)){
+				$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
 				$this->mob->moveForward($this->speedMultiplier);
 			}
 		}
