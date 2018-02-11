@@ -32,4 +32,8 @@ class ChainLeggings extends Armor{
 	public function getDefensePoints() : int{
 		return 4;
 	}
+
+    public function getArmorSlot() : int{
+        return Armor::SLOT_LEGGINGS;
+    }
 }

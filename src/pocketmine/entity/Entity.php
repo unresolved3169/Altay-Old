@@ -29,6 +29,7 @@ namespace pocketmine\entity;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\Water;
+use pocketmine\entity\object\ArmorStand;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
@@ -226,6 +227,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		//define legacy save IDs first - use them for saving for maximum compatibility with Minecraft PC
 		//TODO: index them by version to allow proper multi-save compatibility
 
+		Entity::registerEntity(ArmorStand::class, false, ['ArmorStand', 'minecraft:armor_stand']);
 		Entity::registerEntity(Arrow::class, false, ['Arrow', 'minecraft:arrow']);
 		Entity::registerEntity(Egg::class, false, ['Egg', 'minecraft:egg']);
 		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);
@@ -2119,6 +2121,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function __toString(){
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
+	}
+
+	public function onInteract(Player $player, \pocketmine\item\Item $item, Vector3 $clickVector) : bool{
+        return false;
 	}
 
 }
