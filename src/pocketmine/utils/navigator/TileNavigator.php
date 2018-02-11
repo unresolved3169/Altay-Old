@@ -88,16 +88,19 @@ class TileNavigator{
 		return $totalPath;
 	}
 	
-	public function insertToArray(array &$a, $key, $value) : void{
+	public function insertToArray(array &$a, int $key, $value) : void{
 		$result = [];
-		$numeric = is_numeric($key);
+		$changed = false;
 		foreach($a as $k => $v){
+			if(!is_numeric($k)) continue;
+			
 			if($k === $key){
-				$result[$key] = $value;
+				$result[$k] = $value;
+				$result[$k + 1] = $v;
+				$changed = true;
+			}elseif($changed){
+				$result[$k + 1] = $v;
 			}else{
-				if($numeric and is_numeric($k)){
-					$k += 1;
-				}
 				$result[$k] = $v;
 			}
 		}
