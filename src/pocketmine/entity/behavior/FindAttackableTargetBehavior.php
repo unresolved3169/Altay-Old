@@ -68,7 +68,7 @@ class FindAttackableTargetBehavior extends Behavior{
 		return $dist;
 	}
 	
-	public function onStart(){
+	public function onStart() : void{
 		$this->targetUnseenTicks = 0;
 	}
 	

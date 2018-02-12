@@ -25,30 +25,22 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Living;
+use pocketmine\Player;
 
-abstract class Behavior{
-
-    /** @var Living */
-	protected $mob;
+class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 	
-	public function getName() : string{
-		return (new \ReflectionClass($this))->getShortName();
+	public function canStart() : bool{
+		$cause = $this->mob->getLastDamageCause();
+		if($cause !== null){
+			if($cause->getEntity() instanceof Player){
+				return true;
+			}
+		}
+		return false;
 	}
 	
-	public function __construct(Living $mob){
-		$this->mob = $mob;
+	public function onStart() : void{
+		$this->mob->setTargetEntity($this->mob->getLastDamageCause()->getEntity());
+		parent::onStart();
 	}
-	
-	public abstract function canStart() : bool;
-	
-	public function onStart() : void{}
-	
-	public function canContinue() : bool{
-		return $this->canStart();
-	}
-	
-	public function onTick(int $tick) : void{}
-	
-	public function onEnd() : void{}
-	
 }
