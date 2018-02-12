@@ -263,6 +263,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $sleeping = null;
 	protected $clientID = null;
 
+	protected $deviceModel;
+	protected $deviceOS;
+
 	private $loaderId = 0;
 
 	protected $stepHeight = 0.6;
@@ -1827,6 +1830,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$this->uuid = UUID::fromString($packet->clientUUID);
 		$this->rawUUID = $this->uuid->toBinary();
+
+		$this->deviceModel = $packet->clientData["DeviceModel"];
+		$this->deviceOS = $packet->clientData["DeviceOS"];
 
 		$skin = new Skin(
 			$packet->clientData["SkinId"],
@@ -4032,5 +4038,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
      */
     public function getMovementSpeed() : float{
         return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDeviceModel(){
+        return $this->deviceModel;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDeviceOS(){
+        return $this->deviceOS;
     }
 }
