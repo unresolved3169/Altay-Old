@@ -41,7 +41,7 @@ class DiagonalNeighborProvider implements NeighborProvider{
 		$result = [];
 		for($i = 0; $i < count($this->neighbors); $i++){
 			$xy = $this->neighbors[$i];
-			$result[] = new Tile($xy[0], $xy[1];
+			$result[] = new Tile($xy[0], $xy[1]);
 		}
 		return $result;
 	}
