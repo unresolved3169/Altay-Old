@@ -19,6 +19,7 @@
  * @link https://github.com/TuranicTeam/Altay
  *
  */
+ 
 
 namespace pocketmine\entiy\behavior\navigator;
 
@@ -66,14 +67,14 @@ class LevelNavigator implements BlockedProvider{
 			$entityPos = new Vector2($this->entityPos->x, $this->entityPos->z);
 			$tilePos = new Vector2((float) $coord->x, (float) $coord->y);
 
-			if (Vector2.Distance(entityPos, tilePos) > _distance) return true;
+			if ($entityPos->distance($tilePos) > $this->distance) return true;
 
 			$blockCoordinates = $block->asVector3();
 
 			if ($this->isObstructed($blockCoordinates)) return true;
 
 			return false;
-		}elseif($coord instanceof Tile){
+		}elseif($coord instanceof Block){
 		 $block = $this->level->getBlock($coord);
 		
 		 if($block === null or $block->isSolid()){
