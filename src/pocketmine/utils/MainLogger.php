@@ -205,7 +205,7 @@ class MainLogger extends \AttachableThreadedLogger{
 	protected function send($message, $level, $prefix, $color){
 		$now = time();
 
-		$message = TextFormat::toANSI(TextFormat::GREEN . date("H:i:s", $now) . TextFormat::RESET . $color . " " . $prefix . " §7> " . $color . $message . TextFormat::RESET);
+		$message = Terminal::toANSI(TextFormat::GREEN . date("H:i:s", $now) . TextFormat::RESET . $color . " " . $prefix . " §7> " . $color . $message . TextFormat::RESET);
 		$cleanMessage = TextFormat::clean($message);
 
 		if(!Terminal::hasFormattingCodes()){
