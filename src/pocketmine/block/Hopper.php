@@ -35,6 +35,7 @@ use pocketmine\tile\Tile;
 class Hopper extends Transparent{
 
     protected $id = self::HOPPER_BLOCK;
+    protected $itemId = Item::HOPPER;
 
     public function __construct(int $meta = 0){
         $this->meta = $meta;
@@ -54,6 +55,10 @@ class Hopper extends Transparent{
 
     public function getToolHarvestLevel(): int{
         return TieredTool::TIER_WOODEN;
+    }
+
+    public function getName(): string{
+        return "Hopper";
     }
 
     public function onActivate(Item $item, Player $player = null): bool{
