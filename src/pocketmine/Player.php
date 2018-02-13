@@ -264,7 +264,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $sleeping = null;
 	protected $clientID = null;
 
+	/** @var string */
 	protected $deviceModel;
+	/** @var int */
 	protected $deviceOS;
 
 	private $loaderId = 0;
@@ -4049,17 +4051,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDeviceModel(){
+    public function getDeviceModel() : string{
         return $this->deviceModel;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getDeviceOS(){
+    public function getDeviceOS() : int{
         return $this->deviceOS;
     }
 }
