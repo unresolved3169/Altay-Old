@@ -13,11 +13,12 @@ Example servers running Altay
     
 ## Finished & Planned Features
  - [x] Altay Configuration File
- - [x] Elytra
- - [x] FormAPI
  - [x] Anvil
- - [x] EnchantmentTable
- - [x] Hopper
+ - [x] Armor Stand
  - [x] BossbarAPI
+ - [x] Elytra
+ - [x] EnchantmentTable
+ - [x] FormAPI
+ - [x] Hopper
  
 ***more...***

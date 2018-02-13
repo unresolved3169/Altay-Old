@@ -32,4 +32,8 @@ class ChainChestplate extends Armor{
 	public function getDefensePoints() : int{
 		return 5;
 	}
+
+    public function getArmorSlot() : int{
+        return Armor::SLOT_CHESTPLATE;
+    }
 }

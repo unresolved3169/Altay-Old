@@ -32,4 +32,8 @@ class DiamondBoots extends Armor{
 	public function getDefensePoints() : int{
 		return 3;
 	}
+
+    public function getArmorSlot() : int{
+        return Armor::SLOT_BOOTS;
+    }
 }

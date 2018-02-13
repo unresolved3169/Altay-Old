@@ -207,7 +207,7 @@ class ItemFactory{
 			self::registerItem(new Item(Item::PRISMARINE_CRYSTALS, 0, "Prismarine Crystals"));
 			//TODO: MUTTONRAW
 			//TODO: COOKED_MUTTON
-			//TODO: ARMOR_STAND
+			self::registerItem(new ArmorStand());
 			//TODO: END_CRYSTAL
 			self::registerItem(new ItemBlock(Block::SPRUCE_DOOR_BLOCK, 0, Item::SPRUCE_DOOR));
 			self::registerItem(new ItemBlock(Block::BIRCH_DOOR_BLOCK, 0, Item::BIRCH_DOOR));

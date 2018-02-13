@@ -32,4 +32,8 @@ class LeatherCap extends Armor{
 	public function getDefensePoints() : int{
 		return 1;
 	}
+
+    public function getArmorSlot() : int{
+        return Armor::SLOT_HELMET;
+    }
 }
