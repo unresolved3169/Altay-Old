@@ -32,4 +32,8 @@ class DiamondLeggings extends Armor{
 	public function getDefensePoints() : int{
 		return 6;
 	}
+
+    public function getArmorSlot() : int{
+        return Armor::SLOT_LEGGINGS;
+    }
 }

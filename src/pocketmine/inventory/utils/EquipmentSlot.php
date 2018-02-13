@@ -22,15 +22,23 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\inventory\utils;
 
-class Elytra extends Armor{
+class EquipmentSlot{
 
-    public function __construct(int $meta = 0){
-        parent::__construct(Item::ELYTRA, $meta, "Elytra Wings");
-    }
+    /* For MobEquipmentPacket */
+    public const MAINHAND = 0;
+    // TODO : ADD OFFHAND
 
-    public function getArmorSlot() : int{
-        return Armor::SLOT_CHESTPLATE;
-    }
+    /** For MobArmorEquipmentPacket */
+    public const HEAD = 0;
+    public const CHEST = 1;
+    public const LEGS = 2;
+    public const FEET = 3;
+
+    public const HACK_OFFHAND = 1;
+    public const HACK_HEAD = 2;
+    public const HACK_CHEST = 3;
+    public const HACK_LEGS = 4;
+    public const HACK_FEET = 5;
 }

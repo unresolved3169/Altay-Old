@@ -32,4 +32,8 @@ class IronBoots extends Armor{
 	public function getDefensePoints() : int{
 		return 2;
 	}
+
+    public function getArmorSlot() : int{
+        return Armor::SLOT_BOOTS;
+    }
 }

@@ -22,15 +22,20 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\event\player;
 
-class Elytra extends Armor{
+use pocketmine\entity\Entity;
+use pocketmine\event\Cancellable;
+use pocketmine\Player;
 
-    public function __construct(int $meta = 0){
-        parent::__construct(Item::ELYTRA, $meta, "Elytra Wings");
-    }
+class PlayerEntityInteractEvent extends PlayerEvent implements Cancellable{
+    public static $handlerList = null;
 
-    public function getArmorSlot() : int{
-        return Armor::SLOT_CHESTPLATE;
+    /** @var Entity */
+    protected $entity;
+
+    public function __construct(Player $player, Entity $entity){
+        $this->player = $player;
+        $this->entity = $entity;
     }
 }

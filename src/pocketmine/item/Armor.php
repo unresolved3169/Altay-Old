@@ -32,6 +32,11 @@ use pocketmine\utils\Color;
 
 abstract class Armor extends Item{
 
+    public const SLOT_HELMET = 0;
+    public const SLOT_CHESTPLATE = 1;
+    public const SLOT_LEGGINGS = 2;
+    public const SLOT_BOOTS = 3;
+
 	public const TAG_CUSTOM_COLOR = "customColor"; //TAG_Int
 
 	public function getMaxStackSize() : int{
@@ -78,4 +83,6 @@ abstract class Armor extends Item{
 
 		return $epf;
 	}
+
+	abstract public function getArmorSlot() : int;
 }
