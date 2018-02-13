@@ -41,7 +41,7 @@ interface ProtocolInfo{
 	 * Actual Minecraft: BE protocol version
 	 */
 	public const CURRENT_PROTOCOL = 201;
-	public const ACCEPTED_PROTOCOLS = [150, 140, 141, 142, 160, 200, 201];
+	public const ACCEPTED_PROTOCOLS = [200, 201];
 	/**
 	 * Current Minecraft BE version reported by the server. This is usually the earliest currently supported version.
 	 */

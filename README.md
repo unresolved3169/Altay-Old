@@ -1,5 +1,5 @@
 <img src="https://i.hizliresim.com/6JPM7P.png" alt="#Altay" width=400px></img>              
-Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.x. Altay is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).      
+Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10.x. Altay is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).      
        
 | Jenkins (Official) | TravisCI | Discord |
 | :---: | :---: | :---: |
@@ -16,6 +16,7 @@ Example servers running Altay
  - [x] Anvil
  - [x] Armor Stand
  - [x] BossbarAPI
+ - [x] Command Parameters
  - [x] Elytra
  - [x] EnchantmentTable
  - [x] FormAPI
