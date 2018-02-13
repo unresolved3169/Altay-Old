@@ -127,18 +127,16 @@ class ArmorStand extends Entity{
                     $action->onExecuteFail($player);
                 }
 
-                if($action->getSourceItem()->isNull()){
+                if($action->getSourceItem()->getCount() < $action->getTargetItem()->getCount()){
                     $first = $this->equipment->first($action->getTargetItem());
                     $this->equipment->clear($first, false);
                 }else{
                     $item = $action->getSourceItem();
-                    $slot = $this->getEquipmentSlot($item);
-                    $old = $this->equipment->getItem($slot);
                     $newItem = $item->pop();
-                    $this->equipment->setItem($slot, $newItem);
-                    $player->getInventory()->setItemInHand($item);
-                    $player->getInventory()->addItem($old);
+                    $slot = $this->getEquipmentSlot($item);
+                    $this->equipment->setItem($slot, $newItem, false);
                 }
+
                 return true;
             }
         }
