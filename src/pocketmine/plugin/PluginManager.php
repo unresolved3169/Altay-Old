@@ -24,6 +24,9 @@ declare(strict_types=1);
 namespace pocketmine\plugin;
 
 use pocketmine\command\defaults\TimingsCommand;
+use pocketmine\command\overload\CommandEnum;
+use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\PluginCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\event\Event;
@@ -631,6 +634,39 @@ class PluginManager{
 				if(isset($data["permission-message"])){
 					$newCmd->setPermissionMessage($data["permission-message"]);
 				}
+
+				if(isset($data["overloads"]) and is_array($data["overloads"])){
+				    foreach($data["overloads"] as $name => $value){
+				        $parameters = [];
+                        if(isset($value["parameters"]) and is_array($value["parameters"])){
+                            foreach($value["parameters"] as $pname => $pdata){
+                                $enum = null;
+                                if(isset($pdata["enum"]) and is_array($pdata["enum"])){
+                                    foreach($pdata as $enumName => $enumValues){
+                                        if(is_array($enumValues)){
+                                            $enum = new CommandEnum($enumName, $enumValues);
+                                        }
+                                    }
+
+                                    $parameters[] = new CommandParameter(
+                                        $pname,
+                                        isset($pdata["type"]) ? CommandParameter::convertString($pdata["type"]) : CommandParameter::ARG_TYPE_TEXT,
+                                        isset($pdata["optional"]) ? $pdata["optional"] : true,
+                                        isset($pdata["flag"]) ? CommandParameter::convertString($pdata["flag"]) : CommandParameter::ARG_FLAG_VALID,
+                                        $enum,
+                                        isset($pdata["postfix"]) ? $pdata["postfix"] : ""
+                                    );
+                                }
+                            }
+                        }
+
+                        $newCmd->addOverload(new CommandOverload($name, $parameters));
+                    }
+                }
+
+                if(isset($data["permission-level"])){
+				    $newCmd->setPermissionLevel((int) $data["permission-level"]);
+                }
 
 				$pluginCmds[] = $newCmd;
 			}
