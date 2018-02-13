@@ -88,7 +88,12 @@ class Hopper extends Spawnable implements Container, Nameable, InventoryHolder{
     }
 
     public function onUpdate(): bool{
-        $area = clone $this->getBlock()->getBoundingBox(); //Area above hopper to draw items from
+        $block = $this->getBlock();
+        if(!($block instanceof \pocketmine\block\Hopper)){
+            return false;
+        }
+
+        $area = clone $block->getBoundingBox(); //Area above hopper to draw items from
         $area->maxY = ceil($area->maxY) + 1; //Account for full block above, not just 1 + 5/8
 
         $chunkEntities = array_filter($this->getLevel()->getChunkEntities($this->x >> 4, $this->z >> 4),
@@ -132,7 +137,7 @@ class Hopper extends Spawnable implements Container, Nameable, InventoryHolder{
             }
         }
 
-        $side = $this->getBlock()->getDamage();
+        $side = $block->getDamage();
 
         if($side === Vector3::SIDE_DOWN){
             return true;
