@@ -1807,8 +1807,14 @@ class Level implements ChunkManager, Metadatable{
 
 		$item->useOn($target);
 
-		if(!empty($drops)){
-			$dropPos = $target->add(0.5, 0.5, 0.5);
+        $dropPos = $target->add(0.5, 0.5, 0.5);
+
+        $xpDropAmount = $target->getXpDropAmount();
+        if($xpDropAmount > 0 and $target->isXpDropCompatibleWithTool($item) and $player->isSurvival()){
+            $this->dropExperience($dropPos, $xpDropAmount);
+        }
+
+        if(!empty($drops)){
 			foreach($drops as $drop){
 				if(!$drop->isNull()){
 					$this->dropItem($dropPos, $drop);

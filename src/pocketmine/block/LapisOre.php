@@ -57,4 +57,8 @@ class LapisOre extends Solid{
 		];
 	}
 
+    public function getXpDropAmount() : int{
+        return mt_rand(2, 5);
+    }
+
 }

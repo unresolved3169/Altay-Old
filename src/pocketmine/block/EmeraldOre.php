@@ -53,7 +53,12 @@ class EmeraldOre extends Solid{
 
 	public function getDropsForCompatibleTool(Item $item) : array{
 		return [
-				ItemFactory::get(Item::EMERALD)
+            ItemFactory::get(Item::EMERALD)
 		];
 	}
+
+
+    public function getXpDropAmount() : int{
+        return mt_rand(3, 7);
+    }
 }
