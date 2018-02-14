@@ -27,6 +27,7 @@ namespace pocketmine\entity\projectile;
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\ProjectileHitEvent;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
@@ -52,6 +53,8 @@ class EnderPearl extends Throwable{
     }
 
     public function onCollideWithEntity(Entity $entity){
+        $this->server->getPluginManager()->callEvent(new ProjectileHitEvent($this));
+
         if($entity instanceof Player and $entity->isSpectator()){
             return;
         }
