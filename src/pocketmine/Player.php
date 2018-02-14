@@ -52,6 +52,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerEditBookEvent;
+use pocketmine\event\player\PlayerEntityInteractEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerToggleGlideEvent;
@@ -143,9 +144,6 @@ use pocketmine\network\mcpe\protocol\SetTitlePacket;
 use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\network\mcpe\protocol\TransferPacket;
-use pocketmine\network\mcpe\protocol\types\CommandData;
-use pocketmine\network\mcpe\protocol\types\CommandEnum;
-use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
@@ -187,7 +185,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public const SPECTATOR = 3;
 	public const VIEW = Player::SPECTATOR;
 
-	/**
+    /**
 	 * Checks a supplied username and checks it is valid.
 	 * @param string $name
 	 *
@@ -266,6 +264,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $sleeping = null;
 	protected $clientID = null;
 
+	/** @var string */
+	protected $deviceModel;
+	/** @var int */
+	protected $deviceOS;
+
 	private $loaderId = 0;
 
 	protected $stepHeight = 0.6;
@@ -327,6 +330,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     protected $sentForm = null;
     /** @var Form[] */
     protected $formQueue = [];
+
+    /** @var int */
+    protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
 
 	/**
 	 * @return TranslationContainer|string
@@ -672,34 +678,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function sendCommandData(){
-		//TODO: this needs fixing
-
 		$pk = new AvailableCommandsPacket();
 		foreach($this->server->getCommandMap()->getCommands() as $name => $command){
 			if(isset($pk->commandData[$command->getName()]) or $command->getName() === "help"){
 				continue;
 			}
+			if(!$command->testPermissionSilent($this)){
+			    continue;
+            }
 
-			$data = new CommandData();
-			$data->commandName = $command->getName();
-			$data->commandDescription = $this->server->getLanguage()->translateString($command->getDescription());
-			$data->flags = 0;
-			$data->permission = 0;
-
-			$parameter = new CommandParameter();
-			$parameter->paramName = "args";
-			$parameter->paramType = AvailableCommandsPacket::ARG_FLAG_VALID | AvailableCommandsPacket::ARG_TYPE_RAWTEXT;
-			$parameter->isOptional = true;
-			$data->overloads[0][0] = $parameter;
-
-			$aliases = $command->getAliases();
-			if(!empty($aliases)){
-				$data->aliases = new CommandEnum();
-				$data->aliases->enumName = ucfirst($command->getName()) . "Aliases";
-				$data->aliases->enumValues = $aliases;
-			}
-
-			$pk->commandData[$command->getName()] = $data;
+			$pk->commandData[$command->getName()] = $command->getCommandData();
 		}
 
 		$this->dataPacket($pk);
@@ -891,7 +879,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->startAction === -1 ? -1 : ($this->server->getTick() - $this->startAction);
 	}
 
-	protected function switchLevel(Level $targetLevel) : bool{
+    public function getCommandPermission() : int{
+        return $this->commandPermission;
+    }
+
+    public function setCommandPermission(int $commandPermission) : void{
+        $this->commandPermission = $commandPermission;
+    }
+
+    protected function switchLevel(Level $targetLevel) : bool{
 		$oldLevel = $this->level;
 		if(parent::switchLevel($targetLevel)){
 			foreach($this->usedChunks as $index => $d){
@@ -1377,6 +1373,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk->setFlag(AdventureSettingsPacket::FLYING, $this->flying);
 
 		$pk->commandPermission = ($this->isOp() ? AdventureSettingsPacket::PERMISSION_OPERATOR : AdventureSettingsPacket::PERMISSION_NORMAL);
+		$this->commandPermission = $pk->commandPermission;
 		$pk->playerPermission = ($this->isOp() ? PlayerPermissions::OPERATOR : PlayerPermissions::MEMBER);
 		$pk->entityUniqueId = $this->getId();
 
@@ -1836,6 +1833,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$this->uuid = UUID::fromString($packet->clientUUID);
 		$this->rawUUID = $this->uuid->toBinary();
+
+		$this->deviceModel = $packet->clientData["DeviceModel"];
+		$this->deviceOS = $packet->clientData["DeviceOS"];
 
 		$skin = new Skin(
 			$packet->clientData["SkinId"],
@@ -2433,7 +2433,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
-						break; //TODO
+                        $ev = new PlayerEntityInteractEvent($this, $target);
+                        if($this->isSpectator()) $ev->setCancelled();
+                        $this->server->getPluginManager()->callEvent($ev);
+
+					    if(!$ev->isCancelled()){
+                            $target->onInteract($this, $packet->trData->itemInHand, $packet->trData->clickPos, $actions);
+                        }
+
+                        return true;
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_ATTACK:
 						if(!$target->isAlive()){
 							return true;
@@ -4005,24 +4013,33 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	// ALTAY TODO : OPTIMIZE
+  
+  public function getAnvilInventory() : ?AnvilInventory{
+      foreach($this->windowIndex as $inventory){
+          if($inventory instanceof AnvilInventory){
+              return $inventory;
+          }
+      }
 
-    public function getAnvilInventory() : ?AnvilInventory{
-        foreach($this->windowIndex as $inventory){
-            if($inventory instanceof AnvilInventory){
-                return $inventory;
-            }
-        }
+      return null;
+  }
 
-        return null;
-    }
+  public function getEnchantInventory() : ?EnchantInventory{
+      foreach($this->windowIndex as $inventory){
+          if($inventory instanceof EnchantInventory){
+              return $inventory;
+          }
+      }
 
-    public function getEnchantInventory() : ?EnchantInventory{
-        foreach($this->windowIndex as $inventory){
-            if($inventory instanceof EnchantInventory){
-                return $inventory;
-            }
-        }
+      return null;
+  }
 
-        return null;
-    }
+  public function getDeviceModel() : string{
+      return $this->deviceModel;
+  }
+
+  public function getDeviceOS() : int{
+      return $this->deviceOS;
+  }
+
 }

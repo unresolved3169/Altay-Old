@@ -22,15 +22,29 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\command\overload;
 
-class Elytra extends Armor{
+class CommandEnum{
 
-    public function __construct(int $meta = 0){
-        parent::__construct(Item::ELYTRA, $meta, "Elytra Wings");
+    /** @var string */
+    public $enumName;
+    /** @var string[] */
+    public $enumValues = [];
+
+    public function __construct(string $enumName, array $enumValues = []){
+        $this->enumName = $enumName;
+        $this->enumValues = $enumValues;
     }
 
-    public function getArmorSlot() : int{
-        return Armor::SLOT_CHESTPLATE;
+    public function setName(string $enumName) : CommandEnum{
+        $this->enumName = $enumName;
+
+        return $this;
+    }
+
+    public function setValues(array $enumValues) : CommandEnum{
+        $this->enumValues = $enumValues;
+
+        return $this;
     }
 }

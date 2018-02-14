@@ -32,6 +32,7 @@ use pocketmine\block\BlockFactory;
 use pocketmine\command\CommandReader;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
+use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\entity\Attribute;
@@ -1688,14 +1689,15 @@ class Server{
 
 
 			Timings::init();
+            Enchantment::init();
 
-			$this->consoleSender = new ConsoleCommandSender();
-			$this->commandMap = new SimpleCommandMap($this);
+            $this->consoleSender = new ConsoleCommandSender();
+            CommandParameterUtils::init();
+            $this->commandMap = new SimpleCommandMap($this);
 
-			Entity::init();
-			Tile::init();
-			BlockFactory::init();
-			Enchantment::init();
+            Entity::init();
+            Tile::init();
+            BlockFactory::init();
 			ItemFactory::init();
 			Biome::init();
 			Effect::init();

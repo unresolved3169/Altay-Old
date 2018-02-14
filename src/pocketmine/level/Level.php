@@ -1630,13 +1630,13 @@ class Level implements ChunkManager, Metadatable{
 	 *
 	 * @return DroppedItem|null
 	 */
-	public function dropItem(Vector3 $source, Item $item, Vector3 $motion = null, int $delay = 10){
+	public function dropItem(Vector3 $source, Item $item, Vector3 $motion = null, int $delay = 10) :?DroppedItem{
 		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
-		$itemTag = $item->nbtSerialize();
-		$itemTag->setName("Item");
 
-		if(!$item->isNull()){
-			$nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
+        if(!$item->isNull()){
+            $itemTag = $item->nbtSerialize();
+            $itemTag->setName("Item");
+            $nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
 			$nbt->setShort("Health", 5);
 			$nbt->setShort("PickupDelay", $delay);
 			$nbt->setTag($itemTag);
@@ -1650,6 +1650,39 @@ class Level implements ChunkManager, Metadatable{
 		}
 		return null;
 	}
+
+    /**
+     * @param Vector3 $source
+     * @param Item[] $items
+     * @param Vector3|null $motion
+     * @param int $delay
+     * @return DroppedItem[]
+     */
+    public function dropItems(Vector3 $source, array $items, Vector3 $motion = null, int $delay = 10) : array{
+        $motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
+        $droppedItems = [];
+
+        foreach ($items as $item) {
+            if(!$item->isNull()){
+                $itemTag = $item->nbtSerialize();
+                $itemTag->setName("Item");
+                $nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
+                $nbt->setShort("Health", 5);
+                $nbt->setShort("PickupDelay", $delay);
+                $nbt->setTag($itemTag);
+                $itemEntity = Entity::createEntity("Item", $this, $nbt);
+
+                if($itemEntity instanceof DroppedItem){
+                    $itemEntity->spawnToAll();
+
+                    $droppedItems[] = $itemEntity;
+                }
+            }
+        }
+
+
+        return $droppedItems;
+    }
 
 	/**
 	 * Drops XP orbs into the world for the specified amount, splitting the amount into several orbs if necessary.

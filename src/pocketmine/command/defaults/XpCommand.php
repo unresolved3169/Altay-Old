@@ -26,19 +26,27 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
+use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-// TODO : Add Language
+// TODO : Add Language and postfixes
 class XpCommand extends VanillaCommand{
 
     public function __construct(string $name){
         parent::__construct(
             $name,
             "Oyuncu deneyimi ekler veya kaldırır",
-            '/xp <değer> [oyuncu]');
+            '/xp <değer> [oyuncu]',
+            [],
+            [
+                CommandParameterUtils::getIntParameter("amount", false),
+                CommandParameterUtils::getPlayerParameter()
+            ]
+        );
+
         $this->setPermission("pocketmine.command.xp");
     }
 
@@ -51,7 +59,7 @@ class XpCommand extends VanillaCommand{
 
         if(count($args) < 2){
             if($sender instanceof ConsoleCommandSender){
-                $sender->sendMessage(TextFormat::RED."Bu komut sadece oyun içi çalışır.");
+                $sender->sendMessage(TextFormat::RED . "Bu komut sadece oyun içi çalışır.");
                 return true;
             }
             $player = $sender;
