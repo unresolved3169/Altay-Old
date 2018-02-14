@@ -43,6 +43,7 @@ class Path{
 	}
 	
 	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : bool{
+		$resultPath = new Path();
 		try
 		{
 			$entityCoords = [];
@@ -70,14 +71,14 @@ class Path{
 				
 			$path = $navigator->navigate($from, $to, 200) ?? [];
 				
-			return new Path($blockCache, $path);
+			$resultPath = new Path($blockCache, $path);
 		}
 		catch(\Exception $e)
 		{
 			throw $e;
 		}
 
-		return new Path();
+		return $resultPath;
 	}
 	
 	public function havePath() : bool{

@@ -34,6 +34,7 @@ use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDespawnEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\entity\EntityMotionEvent;
@@ -467,6 +468,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	
 	/** @var EntityBehaviorManager */
 	protected $behaviorManager;
+	
+	public $lastAttackCause = null;
 
 
 	public function __construct(Level $level, CompoundTag $nbt){
@@ -746,7 +749,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}elseif($owner->closed){
 			throw new \InvalidArgumentException("Supplied owning entity is garbage and cannot be used");
 		}else{
-			$this->propertyManager->setLong(self::DATA_OWNER_EID, $owner->getId());
+			$this->propertyManager->setLong(self::DATA_OWNER_EID,$owner->getId());
 		}
 	}
 
@@ -893,6 +896,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 
 		$this->setLastDamageCause($source);
+		if($source instanceof EntityDamageByEntityEvent){
+			$source->getDamager()->setLastAttackCause($source);
+		}
 
 		$this->setHealth($this->getHealth() - $source->getFinalDamage());
 	}
@@ -976,12 +982,26 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function setLastDamageCause(EntityDamageEvent $type = null){
 		$this->lastDamageCause = $type;
 	}
+	
+	/**
+	 * @param EntityDamageEvent $type
+	 */
+	public function setLastAttackCause(EntityDamageByEntityEvent $type = null){
+		$this->lastAttackCause = $type;
+	}
 
 	/**
 	 * @return EntityDamageEvent|null
 	 */
 	public function getLastDamageCause(){
 		return $this->lastDamageCause;
+	}
+	
+	/**
+	 * @return EntityDamageByEntityEvent|null
+	 */
+	public function getLastAttackCause(){
+		return $this->lastAttackCause;
 	}
 
 	public function getAttributeMap(){

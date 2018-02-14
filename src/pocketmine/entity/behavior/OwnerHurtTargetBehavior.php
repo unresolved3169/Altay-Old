@@ -28,20 +28,23 @@ use pocketmine\entity\Living;
 use pocketmine\Player;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 
-class HurtByTargetBehavior extends FindAttackableTargetBehavior{
+class OwnerHurtTargetBehavior extends Behavior{
 	
 	public function canStart() : bool{
-		$cause = $this->mob->getLastDamageCause();
-		if($cause instanceof EntityDamageByEntityEvent){
-			if($cause->getDamager() instanceof Player){
+		$owner = $this->mob->getOwningEntity();
+		
+		if($owner !== null){
+			$cause = $owner->getLastAttackCause();
+			if($cause instanceof EntityDamageByEntityEvent){
+				$this->mob->setTargetEntity($cause->getEntity());
 				return true;
 			}
 		}
+		
 		return false;
 	}
 	
-	public function onStart() : void{
-		$this->mob->setTargetEntity($this->mob->getLastDamageCause()->getDamager());
-		parent::onStart();
+	public function canContinue() : bool{
+		return false:
 	}
 }

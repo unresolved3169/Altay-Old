@@ -65,8 +65,8 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 			$item = new Tile($tile->x + $this->neighbors[$index][0], $tile->y + $this->neighbors[$index][1]);
 
 			// Check for too high steps
-			$$coord = new Vector3((int) $item->x, $block->y, (int) $item->y);
-			if ($this->level->getBlock($$coord)->isSolid())
+			$coord = new Vector3((int) $item->x, $block->y, (int) $item->y);
+			if ($this->level->getBlock($coord)->isSolid())
 			{
 				if ($this->entity->canClimb())
 				{
