@@ -2705,7 +2705,7 @@ class Level implements ChunkManager, Metadatable{
 			throw new LevelException("Invalid Tile level");
 		}
 		$this->tiles[$tile->getId()] = $tile;
-		$this->clearChunkCache($tile->getX() >> 4, $tile->getZ() >> 4);
+		$this->clearChunkCache($tile->getFloorX() >> 4, $tile->getFloorZ() >> 4);
 	}
 
 	/**
@@ -2720,7 +2720,7 @@ class Level implements ChunkManager, Metadatable{
 
 		unset($this->tiles[$tile->getId()]);
 		unset($this->updateTiles[$tile->getId()]);
-		$this->clearChunkCache($tile->getX() >> 4, $tile->getZ() >> 4);
+		$this->clearChunkCache($tile->getFloorX() >> 4, $tile->getFloorZ() >> 4);
 	}
 
 	/**
