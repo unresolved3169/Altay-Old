@@ -123,18 +123,28 @@ class ArmorStand extends Entity{
             if($action instanceof SlotChangeAction){
                 if($action->execute($player)){
                     $action->onExecuteSuccess($player);
+
+                    $targetItem = $action->getTargetItem();
+                    if($action->getSourceItem()->getCount() < $targetItem->getCount()){
+                        $first = $this->equipment->first($targetItem);
+                        if($first !== -1){
+                            $this->equipment->clear($first, false);
+                        }else{
+                            $slot = $this->getEquipmentSlot($targetItem);
+                            $equipmentItem = $this->equipment->getItem($slot);
+                            if(!$equipmentItem->isNull()){
+                                $this->server->getLogger()->debug($targetItem->__toString()." item was not found in the ArmorStandInventory, but there is a ".$equipmentItem->__toString()." item in slot ".$slot.".");
+                                $this->equipment->clear($slot);
+                            }
+                        }
+                    }else{
+                        $item = $action->getSourceItem();
+                        $newItem = $item->pop();
+                        $slot = $this->getEquipmentSlot($item);
+                        $this->equipment->setItem($slot, $newItem, false);
+                    }
                 }else{
                     $action->onExecuteFail($player);
-                }
-
-                if($action->getSourceItem()->getCount() < $action->getTargetItem()->getCount()){
-                    $first = $this->equipment->first($action->getTargetItem());
-                    $this->equipment->clear($first, false);
-                }else{
-                    $item = $action->getSourceItem();
-                    $newItem = $item->pop();
-                    $slot = $this->getEquipmentSlot($item);
-                    $this->equipment->setItem($slot, $newItem, false);
                 }
 
                 return true;
