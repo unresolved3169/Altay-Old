@@ -126,14 +126,15 @@ class ArmorStand extends Entity{
 
                     $targetItem = $action->getTargetItem();
                     if($action->getSourceItem()->getCount() < $targetItem->getCount()){
-                        $first = $this->equipment->first($targetItem);
+                        $targetItemPOP = $targetItem->pop();
+                        $first = $this->equipment->first($targetItemPOP);
                         if($first !== -1){
                             $this->equipment->clear($first);
                         }else{
-                            $slot = $this->getEquipmentSlot($targetItem);
+                            $slot = $this->getEquipmentSlot($targetItemPOP);
                             $equipmentItem = $this->equipment->getItem($slot);
                             if(!$equipmentItem->isNull()){
-                                $this->server->getLogger()->debug($targetItem->__toString()." item was not found in the ArmorStandInventory, but there is a ".$equipmentItem->__toString()." item in slot ".$slot.".");
+                                $this->server->getLogger()->debug($targetItemPOP->__toString()." item was not found in the ArmorStandInventory, but there is a ".$equipmentItem->__toString()." item in slot ".$slot.".");
                                 $this->equipment->clear($slot);
                             }
                         }

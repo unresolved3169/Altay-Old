@@ -111,6 +111,10 @@ class AltayEntityEquipment extends BaseInventory{
         return $armors;
     }
 
+    public function getViewers(): array{
+        return $this->holder->getViewers();
+    }
+
     public function getMainhandItem() : Item{
         return $this->getItem(EquipmentSlot::MAINHAND);
     }
