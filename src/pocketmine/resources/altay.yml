@@ -13,7 +13,7 @@ player:
 
 developer:
   folder-plugin-loader: true
-  # If true, not register commands (extractplugin, makeserver... etc)
+  # If true, it will not register the commands like (extractplugin, makeserver... etc)
   command: true
 
 terminal:
