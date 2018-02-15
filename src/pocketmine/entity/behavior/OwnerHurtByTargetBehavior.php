@@ -24,8 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
-use pocketmine\Player;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 
 class OwnerHurtByTargetBehavior extends Behavior{
@@ -45,6 +43,6 @@ class OwnerHurtByTargetBehavior extends Behavior{
 	}
 	
 	public function canContinue() : bool{
-		return false:
+		return false;
 	}
 }

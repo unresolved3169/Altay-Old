@@ -42,6 +42,7 @@ class FindAttackableTargetBehavior extends Behavior{
 	
 	public function canStart() : bool{
 		if(rand(0,10) === 0){
+		    /** @var Player $player */
 			$player = null;
 			foreach($this->mob->level->getPlayers() as $p){
 				if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)){
@@ -63,7 +64,7 @@ class FindAttackableTargetBehavior extends Behavior{
 	public function getTargetDistance(Player $p){
 		$dist = $this->targetDistance;
 		if($p->isSneaking()){
-			$dist->multiply(0.8);
+			$dist *= 0.8;
 		}
 		return $dist;
 	}
@@ -79,7 +80,8 @@ class FindAttackableTargetBehavior extends Behavior{
 		
 		if($target instanceof Player){
 			if($this->mob->distance($target) > $this->getTargetDistance($target)) return false;
-			
+
+			// TODO : Emre canSee fonksiyonu yok
 			if($this->mob->canSee($target)){
 				$this->targetUnseenTicks = 0;
 			}elseif($this->targetUnseenTicks++ > 60){

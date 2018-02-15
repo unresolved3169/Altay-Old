@@ -61,6 +61,7 @@ class WanderBehavior extends Behavior{
 			
 			return $path->havePath();
 		}
+
 		return false;
 	}
 	
@@ -84,7 +85,6 @@ class WanderBehavior extends Behavior{
 	
 	public function findRandomTargetBlock(Entity $entity, int $dxz, int $dy) : ?Block{
 		$random = new Random();
-		$coords = $entity->asVector3();
 		
 		$currentWeight = 0;
 		$currentBlock = null;
@@ -109,14 +109,14 @@ class WanderBehavior extends Behavior{
 	}
 	
 	public function calculateBlockWeight(Entity $entity, Block $block, Block $blockDown) : int{
-		$vec = $block->asVector3()->toArray();
-		$chunk = $entity->level->getChunk($entity->x >> 4, $entity->z >> 4);
+	    $vec = [$block->getX(), $block->getY(), $block->getZ()];
+		$chunk = $entity->level->getChunk($entity->getFloorX() >> 4, $entity->getFloorZ() >> 4);
 		if($entity instanceof Animal){
 			if($blockDown instanceof Grass) return 20;
 			
-			return max($chunk->getBlockLight(...$vec), $chunk->getBlockSkyLight(...$vec)) - 0.5;
+			return (int) (max($chunk->getBlockLight(...$vec), $chunk->getBlockSkyLight(...$vec)) - 0.5);
 		}else{
-			return 0.5 - max($chunk->getBlockLight(...$vec), $chunk->getBlockSkyLight(...$vec));
+			return (int) 0.5 - max($chunk->getBlockLight(...$vec), $chunk->getBlockSkyLight(...$vec));
 		}
 	}
 }

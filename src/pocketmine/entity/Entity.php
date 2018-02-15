@@ -473,7 +473,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	
 	/** @var EntityBehaviorManager */
 	protected $behaviorManager;
-	
+
+	/** @var EntityDamageByEntityEvent|null */
 	public $lastAttackCause = null;
 
 
@@ -526,7 +527,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->propertyManager = new DataPropertyManager();
 		$this->behaviorManager = new EntityBehaviorManager();
-		$this->behaviorManager->setBehaviorsEnabled(Server::getInstance()->getAltayProperty("level.entity-behaviors-enabled",  false));
+		$this->behaviorManager->setBehaviorsEnabled($this->server->enableEntityBehaviors);
 
 		$this->propertyManager->setLong(self::DATA_FLAGS, 0);
 		$this->propertyManager->setShort(self::DATA_MAX_AIR, 400);
@@ -796,7 +797,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 *
 	 * @throws \InvalidArgumentException if the target entity is not valid
 	 */
-	public function setTargetEntity(Entity $target = null){
+	public function setTargetEntity(?Entity $target = null){
 		if($target === null){
 			$this->propertyManager->removeProperty(self::DATA_TARGET_EID);
 		}elseif($target->closed){
@@ -998,7 +999,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 	
 	/**
-	 * @param EntityDamageEvent $type
+	 * @param EntityDamageByEntityEvent $type
 	 */
 	public function setLastAttackCause(EntityDamageByEntityEvent $type = null){
 		$this->lastAttackCause = $type;
@@ -2178,12 +2179,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-<<<<<<< HEAD
-}
-=======
 	public function onInteract(Player $player, \pocketmine\item\Item $item, Vector3 $clickVector, array $actions = []) : bool{
         return false;
 	}
 
 }
->>>>>>> branch 'behavior-system' of git@github.com:TuranicTeam/Altay.git

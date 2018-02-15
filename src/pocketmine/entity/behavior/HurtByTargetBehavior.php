@@ -24,7 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
 use pocketmine\Player;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 
@@ -41,7 +40,9 @@ class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 	}
 	
 	public function onStart() : void{
-		$this->mob->setTargetEntity($this->mob->getLastDamageCause()->getDamager());
+	    $lastAttackCause = $this->mob->getLastAttackCause();
+	    $lastAttackCause = $lastAttackCause !== null ? $lastAttackCause->getDamager() : null;
+		$this->mob->setTargetEntity($lastAttackCause);
 		parent::onStart();
 	}
 }

@@ -42,21 +42,19 @@ class Path{
 		$this->blockCache = $blockCache;
 	}
 	
-	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : bool{
-		$resultPath = new Path();
-		try
-		{
+	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : Path{
+		try{
 			$entityCoords = [];
-			foreach ($source->level->getEntities() as $entry)
-			{
+			foreach($source->level->getEntities() as $entry) {
 				$position = $entry->asVector3();
-				if($position == $target) continue;
+				if($position === $target) continue;
 
 				$entityCoords[] = $position;
 			}
 				
 			$level = $source->level;
 
+			// FIXME : Emre verdiğin değer ve TileNavigator constant eşleşmiyor
 			$navigator = new TileNavigator(
 				new LevelNavigator($source, $level, $distance, $blockCache, $entityCoords),
 				new BlockDiagonalNeighborProvider($level, $source->y, $blockCache, $source),
@@ -72,9 +70,7 @@ class Path{
 			$path = $navigator->navigate($from, $to, 200) ?? [];
 				
 			$resultPath = new Path($blockCache, $path);
-		}
-		catch(\Exception $e)
-		{
+		}catch(\Exception $e){
 			throw $e;
 		}
 
@@ -87,9 +83,9 @@ class Path{
 	
 	public function getNextTile(Entity $entity) : ?Tile{
 		if($this->havePath()){
-			$next = first($this->tiles);
+			$next = array_shift($this->tiles);
 			
-			if($next->x === $entity->x and $next->y === $entity->z){
+			if($next->x === $entity->x and $next->y === $entity->z){ // wtf?!
 				unset($this->tiles[array_search($next, $this->tiles)]);
 				
 				if(!$this->getNextTile($entity)) return null;
@@ -101,6 +97,6 @@ class Path{
 	}
 	
 	public function getBlock(Tile $tile) : ?Block{
-		return $this->blockCache[$title->__toString()] ?? null;
+		return $this->blockCache[$tile->__toString()] ?? null;
 	}
 }
