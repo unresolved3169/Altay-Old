@@ -9,7 +9,7 @@ Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10
 Example servers running Altay
 --------------------
 - **oyna.minecraftpetr.net:19132**
-- **entengames.net:702**
+- **entengames.de:703**
 ------------     
     
 ## Finished & Planned Features
