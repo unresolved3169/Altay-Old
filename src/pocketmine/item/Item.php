@@ -42,7 +42,6 @@ use pocketmine\nbt\tag\NamedTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-use pocketmine\Server;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Config;
 
@@ -123,7 +122,7 @@ class Item implements ItemIds, \JsonSerializable{
 	public static function initCreativeItems(){
 		self::clearCreativeItems();
 
-		$creativeItems = new Config(Server::getInstance()->getFilePath() . "src/pocketmine/resources/creativeitems.json", Config::JSON, []);
+		$creativeItems = new Config(\pocketmine\RESOURCE_PATH . "creativeitems.json", Config::JSON, []);
 
 		foreach($creativeItems->getAll() as $data){
 			$item = Item::jsonDeserialize($data);
@@ -843,7 +842,7 @@ class Item implements ItemIds, \JsonSerializable{
 					return true;
 				}elseif($this->hasCompoundTag() and $item->hasCompoundTag()){
 					//Serialized NBT didn't match, check the cached object tree.
-					return NBT::matchTree($this->getNamedTag(), $item->getNamedTag());
+					return $this->getNamedTag()->equals($item->getNamedTag());
 				}
 			}else{
 				return true;

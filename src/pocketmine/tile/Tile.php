@@ -38,7 +38,6 @@ use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\nbt\tag\NamedTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -210,12 +209,10 @@ abstract class Tile extends Position{
 		static::createAdditionalNBT($nbt, $pos, $face, $item, $player);
 
 		if($item !== null){
-			if($item->hasCustomBlockData()){
-				foreach($item->getCustomBlockData() as $customBlockDataTag){
-					if(!($customBlockDataTag instanceof NamedTag)){
-						continue;
-					}
-					$nbt->setTag($customBlockDataTag);
+		    $customBlockData = $item->getCustomBlockData();
+			if($customBlockData != null){
+				foreach($customBlockData as $customBlockDataTag){
+					$nbt->setTag(clone $customBlockDataTag);
 				}
 			}
 		}
