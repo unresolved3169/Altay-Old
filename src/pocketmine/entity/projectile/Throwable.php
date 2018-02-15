@@ -42,8 +42,8 @@ abstract class Throwable extends Projectile{
 		if($this->age > 1200 or $this->isCollided){
 		    //TODO: hit particles
 		    $this->throwOver();
-			$this->flagForDespawn();
-			$hasUpdate = true;
+		    $this->flagForDespawn();
+		    $hasUpdate = true;
 		}
 
 		return $hasUpdate;
