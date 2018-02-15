@@ -39,5 +39,3 @@ test_data/*
 
 # Doxygen
 Documentation/*
-src/pocketmine/utils/BinaryStream.php
-src/pocketmine/utils/Binary.php

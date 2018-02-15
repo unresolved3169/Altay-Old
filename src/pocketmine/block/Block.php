@@ -699,4 +699,12 @@ class Block extends Position implements BlockIds, Metadatable{
 			$this->getLevel()->getBlockMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
 		}
 	}
+
+    public function getXpDropAmount() : int{
+        return 0;
+    }
+
+    public function isXpDropCompatibleWithTool(Item $tool) : bool{
+	    return $this->isCompatibleWithTool($tool) ? ($this->isAffectedBySilkTouch() ? !$tool->hasEnchantment(Enchantment::SILK_TOUCH) : true) : false;
+    }
 }

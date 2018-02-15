@@ -101,7 +101,7 @@ class ArmorStand extends Entity{
         /** @var ListTag $offhand */
         $offhand = $this->namedtag->getTag(self::TAG_OFFHAND);
 
-        $contents = array_merge(array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues()), [Item::nbtDeserialize($offhand[0])], [Item::nbtDeserialize($mainhand[0])]);
+        $contents = array_merge(array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues()), [Item::nbtDeserialize($offhand->offsetGet(0))], [Item::nbtDeserialize($mainhand->offsetGet(0))]);
         $this->equipment = new AltayEntityEquipment($this);
         $this->equipment->setContents($contents);
 
@@ -123,18 +123,29 @@ class ArmorStand extends Entity{
             if($action instanceof SlotChangeAction){
                 if($action->execute($player)){
                     $action->onExecuteSuccess($player);
+
+                    $targetItem = $action->getTargetItem();
+                    if($action->getSourceItem()->getCount() < $targetItem->getCount()){
+                        $targetItemPOP = $targetItem->pop();
+                        $first = $this->equipment->first($targetItemPOP);
+                        if($first !== -1){
+                            $this->equipment->clear($first);
+                        }else{
+                            $slot = $this->getEquipmentSlot($targetItemPOP);
+                            $equipmentItem = $this->equipment->getItem($slot);
+                            if(!$equipmentItem->isNull()){
+                                $this->server->getLogger()->debug($targetItemPOP->__toString()." item was not found in the ArmorStandInventory, but there is a ".$equipmentItem->__toString()." item in slot ".$slot.".");
+                                $this->equipment->clear($slot);
+                            }
+                        }
+                    }else{
+                        $item = $action->getSourceItem();
+                        $newItem = $item->pop();
+                        $slot = $this->getEquipmentSlot($item);
+                        $this->equipment->setItem($slot, $newItem);
+                    }
                 }else{
                     $action->onExecuteFail($player);
-                }
-
-                if($action->getSourceItem()->getCount() < $action->getTargetItem()->getCount()){
-                    $first = $this->equipment->first($action->getTargetItem());
-                    $this->equipment->clear($first, false);
-                }else{
-                    $item = $action->getSourceItem();
-                    $newItem = $item->pop();
-                    $slot = $this->getEquipmentSlot($item);
-                    $this->equipment->setItem($slot, $newItem, false);
                 }
 
                 return true;

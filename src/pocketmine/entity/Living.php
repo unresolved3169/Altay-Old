@@ -30,7 +30,6 @@ use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\entity\EntityEffectAddEvent;
 use pocketmine\event\entity\EntityEffectRemoveEvent;
-use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\event\Timings;
 use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Armor;
@@ -171,15 +170,6 @@ abstract class Living extends Entity implements Damageable{
 		//TODO: head height
 		return true;
 		//return $this->getLevel()->rayTraceBlocks(Vector3::createVector($this->x, $this->y + $this->height, $this->z), Vector3::createVector($entity->x, $entity->y + $entity->height, $entity->z)) === null;
-	}
-
-	public function heal(EntityRegainHealthEvent $source){
-		parent::heal($source);
-		if($source->isCancelled()){
-			return;
-		}
-
-		$this->attackTime = 0;
 	}
 
 	/**
@@ -545,9 +535,6 @@ abstract class Living extends Entity implements Damageable{
 	}
 
 	public function kill(){
-		if(!$this->isAlive()){
-			return;
-		}
 		parent::kill();
 		$this->onDeath();
 	}

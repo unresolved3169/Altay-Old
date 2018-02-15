@@ -26,7 +26,9 @@ namespace pocketmine\item;
 
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\enchantment\ProtectionEnchantment;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\Player;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Color;
 
@@ -84,5 +86,18 @@ abstract class Armor extends Item{
 		return $epf;
 	}
 
-	abstract public function getArmorSlot() : int;
+	public function onClickAir(Player $player, Vector3 $directionVector): bool{
+	    $slot = $this->getArmorSlot();
+	    if($player->getArmorInventory()->getItem($slot)->isNull()){
+            $player->getArmorInventory()->setItem($slot, $this);
+
+            $this->count--;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    abstract public function getArmorSlot() : int;
 }

@@ -322,6 +322,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 */
 	protected $lastPingMeasure = 1;
 
+	/**
+     * @var int
+     * Last time when player used ender pearl
+     */
+    protected $lastEnderPearlUse = 0;
+
     /** @var int */
     protected $formIdCounter = 0;
     /** @var int|null */
@@ -1017,7 +1023,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		if($this->getHealth() <= 0){
-			$this->sendRespawnPacket($this->getSpawn());
+			$this->respawn();
 		}
 	}
 
@@ -1043,8 +1049,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$newOrder = [];
 		$unloadChunks = $this->usedChunks;
 
-		$centerX = $this->x >> 4;
-		$centerZ = $this->z >> 4;
+		$centerX = $this->getFloorX() >> 4;
+		$centerZ = $this->getFloorZ() >> 4;
 
 		for($x = 0; $x < $radius; ++$x){
 			for($z = 0; $z <= $x; ++$z){
@@ -1153,9 +1159,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 		$this->spawnPosition = new WeakPosition($pos->x, $pos->y, $pos->z, $level);
 		$pk = new SetSpawnPositionPacket();
-		$pk->x = (int) $this->spawnPosition->x;
-		$pk->y = (int) $this->spawnPosition->y;
-		$pk->z = (int) $this->spawnPosition->z;
+		$pk->x = $this->spawnPosition->getFloorX();
+		$pk->y = $this->spawnPosition->getFloorY();
+		$pk->z = $this->spawnPosition->getFloorZ();
 		$pk->spawnType = SetSpawnPositionPacket::TYPE_PLAYER_SPAWN;
 		$pk->spawnForced = false;
 		$this->dataPacket($pk);
@@ -1497,24 +1503,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$revert = false;
 
-		if(($distanceSquared / ($tickDiff ** 2)) > 100){
-			$this->server->getLogger()->warning($this->getName() . " moved too fast, reverting movement");
-			$this->server->getLogger()->debug("Old position: " . $this->asVector3() . ", new position: " . $this->newPosition);
-			$revert = true;
-		}else{
-			if($this->chunk === null or !$this->chunk->isGenerated()){
-				$chunk = $this->level->getChunk($newPos->x >> 4, $newPos->z >> 4, false);
-				if($chunk === null or !$chunk->isGenerated()){
-					$revert = true;
-					$this->nextChunkOrderRun = 0;
-				}else{
-					if($this->chunk !== null){
-						$this->chunk->removeEntity($this);
-					}
-					$this->chunk = $chunk;
-				}
-			}
-		}
+        if($this->chunk === null or !$this->chunk->isGenerated()){
+            $chunk = $this->level->getChunk($newPos->getFloorX() >> 4, $newPos->getFloorZ() >> 4, false);
+            if($chunk === null or !$chunk->isGenerated()){
+                $revert = true;
+                $this->nextChunkOrderRun = 0;
+            }else{
+                if($this->chunk !== null){
+                    $this->chunk->removeEntity($this);
+                }
+                $this->chunk = $chunk;
+            }
+        }
 
 		if(!$revert and $distanceSquared != 0){
 			$dx = $newPos->x - $this->x;
@@ -1980,7 +1980,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->server->onPlayerLogin($this);
 
 		$pk = new ResourcePacksInfoPacket();
-		$manager = $this->server->getResourceManager();
+		$manager = $this->server->getResourcePackManager();
 		$pk->resourcePackEntries = $manager->getResourceStack();
 		$pk->behaviorPackEntries = $manager->getBehaviorStack();
 		$pk->mustAccept = $manager->resourcePacksRequired();
@@ -1994,7 +1994,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->close("", "You must accept resource packs to join this server.", true);
 				break;
 			case ResourcePackClientResponsePacket::STATUS_SEND_PACKS:
-				$manager = $this->server->getResourceManager();
+				$manager = $this->server->getResourcePackManager();
 				foreach($packet->packIds as $uuid){
 					$pack = $manager->getPackById($uuid);
 					if(!($pack instanceof ResourcePack)){
@@ -2017,7 +2017,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				break;
 			case ResourcePackClientResponsePacket::STATUS_HAVE_ALL_PACKS:
 				$pk = new ResourcePackStackPacket();
-				$manager = $this->server->getResourceManager();
+				$manager = $this->server->getResourcePackManager();
 				$pk->resourcePackStack = $manager->getResourceStack();
 				$pk->behaviorPackStack = $manager->getBehaviorStack();
 				$pk->mustAccept = $manager->resourcePacksRequired();
@@ -2680,50 +2680,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					break;
 				}
 
-				if($this->server->isHardcore()){
-					$this->setBanned(true);
-					break;
-				}
-
-				$this->server->getPluginManager()->callEvent($ev = new PlayerRespawnEvent($this, $this->getSpawn()));
-
-				$realSpawn = Position::fromObject($ev->getRespawnPosition()->add(0.5, 0, 0.5), $ev->getRespawnPosition()->getLevel());
-
-				if($realSpawn->distanceSquared($this->getSpawn()->add(0.5, 0, 0.5)) > 0.01){
-					$this->teleport($realSpawn); //If the destination was modified by plugins
-				}else{
-					$this->setPosition($realSpawn); //The client will move to the position of its own accord once chunks are sent
-					$this->nextChunkOrderRun = 0;
-					$this->isTeleporting = true;
-					$this->newPosition = null;
-				}
-
-				$this->resetLastMovements();
-				$this->resetFallDistance();
-
-				$this->setSprinting(false);
-				$this->setSneaking(false);
-
-				$this->extinguish();
-				$this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
-				$this->deadTicks = 0;
-				$this->noDamageTicks = 60;
-
-				$this->removeAllEffects();
-				$this->setHealth($this->getMaxHealth());
-
-				foreach($this->attributeMap->getAll() as $attr){
-					$attr->resetToDefault();
-				}
-
-				$this->sendData($this);
-
-				$this->sendSettings();
-				$this->inventory->sendContents($this);
-				$this->armorInventory->sendContents($this);
-
-				$this->spawnToAll();
-				$this->scheduleUpdate();
+				$this->respawn();
 				break;
 			case PlayerActionPacket::ACTION_JUMP:
 				$this->jump();
@@ -2960,7 +2917,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function handleResourcePackChunkRequest(ResourcePackChunkRequestPacket $packet) : bool{
-		$manager = $this->server->getResourceManager();
+		$manager = $this->server->getResourcePackManager();
 		$pack = $manager->getPackById($packet->packId);
 		if(!($pack instanceof ResourcePack)){
 			$this->close("", "disconnectionScreen.resourcePack", true);
@@ -3547,9 +3504,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		if($this->hasValidSpawnPosition()){
 			$this->namedtag->setString("SpawnLevel", $this->spawnPosition->getLevel()->getFolderName());
-			$this->namedtag->setInt("SpawnX", (int) $this->spawnPosition->x);
-			$this->namedtag->setInt("SpawnY", (int) $this->spawnPosition->y);
-			$this->namedtag->setInt("SpawnZ", (int) $this->spawnPosition->z);
+			$this->namedtag->setInt("SpawnX", $this->spawnPosition->getFloorX());
+			$this->namedtag->setInt("SpawnY", $this->spawnPosition->getFloorY());
+			$this->namedtag->setInt("SpawnZ", $this->spawnPosition->getFloorZ());
+
+			if(!$this->isAlive()){
+                //hack for respawn after quit
+                $this->namedtag->setTag(new ListTag("Pos", [
+                    new DoubleTag("", $this->spawnPosition->x),
+                    new DoubleTag("", $this->spawnPosition->y),
+                    new DoubleTag("", $this->spawnPosition->z)
+                ]));
+            }
 		}
 
 		$achievements = new CompoundTag("Achievements");
@@ -3723,6 +3689,45 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		return false; //never flag players for despawn
 	}
+
+	protected function respawn() : void{
+        if($this->server->isHardcore()){
+            $this->setBanned(true);
+            return;
+        }
+
+        $this->server->getPluginManager()->callEvent($ev = new PlayerRespawnEvent($this, $this->getSpawn()));
+
+        $realSpawn = Position::fromObject($ev->getRespawnPosition()->add(0.5, 0, 0.5), $ev->getRespawnPosition()->getLevel());
+        $this->teleport($realSpawn);
+
+        $this->resetLastMovements();
+        $this->resetFallDistance();
+
+        $this->setSprinting(false);
+        $this->setSneaking(false);
+
+        $this->extinguish();
+        $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
+        $this->deadTicks = 0;
+        $this->noDamageTicks = 60;
+
+        $this->removeAllEffects();
+        $this->setHealth($this->getMaxHealth());
+
+        foreach($this->attributeMap->getAll() as $attr){
+            $attr->resetToDefault();
+        }
+
+        $this->sendData($this);
+
+        $this->sendSettings();
+        $this->inventory->sendContents($this);
+        $this->armorInventory->sendContents($this);
+
+        $this->spawnToAll();
+        $this->scheduleUpdate();
+    }
 
 	protected function applyPostDamageEffects(EntityDamageEvent $source) : void{
 		parent::applyPostDamageEffects($source);
@@ -4042,4 +4047,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
       return $this->deviceOS;
   }
 
+  public function canUseEnderPearl() : bool{
+      return time() - $this->lastEnderPearlUse >= 1;
+  }
+
+  public function onUseEnderPearl() : void{
+      $this->lastEnderPearlUse = time();
+  }
+
+  public function resetLastEnderPearlUse() : void{
+      $this->lastEnderPearlUse = 0;
+  }
 }
