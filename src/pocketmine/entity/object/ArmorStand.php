@@ -101,7 +101,7 @@ class ArmorStand extends Entity{
         /** @var ListTag $offhand */
         $offhand = $this->namedtag->getTag(self::TAG_OFFHAND);
 
-        $contents = array_merge(array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues()), [Item::nbtDeserialize($offhand[0])], [Item::nbtDeserialize($mainhand[0])]);
+        $contents = array_merge(array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues()), [Item::nbtDeserialize($offhand->offsetGet(0))], [Item::nbtDeserialize($mainhand->offsetGet(0))]);
         $this->equipment = new AltayEntityEquipment($this);
         $this->equipment->setContents($contents);
 
@@ -128,7 +128,7 @@ class ArmorStand extends Entity{
                     if($action->getSourceItem()->getCount() < $targetItem->getCount()){
                         $first = $this->equipment->first($targetItem);
                         if($first !== -1){
-                            $this->equipment->clear($first, false);
+                            $this->equipment->clear($first);
                         }else{
                             $slot = $this->getEquipmentSlot($targetItem);
                             $equipmentItem = $this->equipment->getItem($slot);
@@ -141,7 +141,7 @@ class ArmorStand extends Entity{
                         $item = $action->getSourceItem();
                         $newItem = $item->pop();
                         $slot = $this->getEquipmentSlot($item);
-                        $this->equipment->setItem($slot, $newItem, false);
+                        $this->equipment->setItem($slot, $newItem);
                     }
                 }else{
                     $action->onExecuteFail($player);
