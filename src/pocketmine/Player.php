@@ -1503,24 +1503,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$revert = false;
 
-		if(($distanceSquared / ($tickDiff ** 2)) > 100){
-			$this->server->getLogger()->warning($this->getName() . " moved too fast, reverting movement");
-			$this->server->getLogger()->debug("Old position: " . $this->asVector3() . ", new position: " . $this->newPosition);
-			$revert = true;
-		}else{
-			if($this->chunk === null or !$this->chunk->isGenerated()){
-				$chunk = $this->level->getChunk($newPos->getFloorX() >> 4, $newPos->getFloorZ() >> 4, false);
-				if($chunk === null or !$chunk->isGenerated()){
-					$revert = true;
-					$this->nextChunkOrderRun = 0;
-				}else{
-					if($this->chunk !== null){
-						$this->chunk->removeEntity($this);
-					}
-					$this->chunk = $chunk;
-				}
-			}
-		}
+        if($this->chunk === null or !$this->chunk->isGenerated()){
+            $chunk = $this->level->getChunk($newPos->getFloorX() >> 4, $newPos->getFloorZ() >> 4, false);
+            if($chunk === null or !$chunk->isGenerated()){
+                $revert = true;
+                $this->nextChunkOrderRun = 0;
+            }else{
+                if($this->chunk !== null){
+                    $this->chunk->removeEntity($this);
+                }
+                $this->chunk = $chunk;
+            }
+        }
 
 		if(!$revert and $distanceSquared != 0){
 			$dx = $newPos->x - $this->x;
