@@ -322,6 +322,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 */
 	protected $lastPingMeasure = 1;
 
+	/**
+     * @var int
+     * Last time when player used ender pearl
+     */
+    protected $lastEnderPearlUse = 0;
+
     /** @var int */
     protected $formIdCounter = 0;
     /** @var int|null */
@@ -4062,5 +4068,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
     public function getDeviceOS() : int{
         return $this->deviceOS;
+    }
+
+    public function canUseEnderPearl() : bool{
+        return time() - $this->lastEnderPearlUse >= 1;
+    }
+
+    public function onUseEnderPearl() : void{
+        $this->lastEnderPearlUse = time();
+    }
+
+    public function resetLastEnderPearlUse() : void{
+        $this->lastEnderPearlUse = 0;
     }
 }
