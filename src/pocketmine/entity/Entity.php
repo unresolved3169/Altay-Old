@@ -523,7 +523,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->propertyManager = new DataPropertyManager();
 		$this->behaviorManager = new EntityBehaviorManager();
-		$this->behaviorManager->setBehaviorsEnabled(Server::getInstance()->getProperty("level.entity-behaviors-enabled",  false));
+		$this->behaviorManager->setBehaviorsEnabled(Server::getInstance()->getAltayProperty("level.entity-behaviors-enabled",  false));
 
 		$this->propertyManager->setLong(self::DATA_FLAGS, 0);
 		$this->propertyManager->setShort(self::DATA_MAX_AIR, 400);
