@@ -22,6 +22,9 @@
 
 namespace pocketmine\utils\navigator;
 
+use pocketmine\utils\navigator\providers\{NeighborProvider, BlockedProvider};
+use pocketmine\utils\navigator\algorithms\{DistanceAlgorithm, HeuristicAlgorithm};
+
 class TileNavigator{
 	
 	private $blockedProvider;
