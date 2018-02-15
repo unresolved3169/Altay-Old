@@ -42,7 +42,7 @@ class EnderPearl extends Throwable{
     protected $gravity = 0.03;
     protected $drag = 0.01;
 
-    public function throwOver(){
+    public function throwOver() : void{
         if(($player = $this->getOwningEntity()) instanceof Player && $player->isAlive() && $this->y > 0){
             // TODO : %5 spawn endemites (when added endermites on Altay)
             $player->attack(new EntityDamageEvent($player, EntityDamageEvent::CAUSE_FALL, 5));

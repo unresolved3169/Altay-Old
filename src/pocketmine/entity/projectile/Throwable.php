@@ -49,5 +49,5 @@ abstract class Throwable extends Projectile{
 		return $hasUpdate;
 	}
 
-	public function throwOver(){}
+	public function throwOver() : void{}
 }
