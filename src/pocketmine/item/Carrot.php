@@ -28,11 +28,14 @@ use pocketmine\block\BlockFactory;
 
 class Carrot extends Food{
 	public function __construct(int $meta = 0){
-		$this->block = BlockFactory::get(Block::CARROT_BLOCK);
 		parent::__construct(self::CARROT, $meta, "Carrot");
 	}
 
-	public function getFoodRestore() : int{
+	public function getBlock() : Block{
+        return BlockFactory::get(Block::CARROT_BLOCK);
+    }
+
+    public function getFoodRestore() : int{
 		return 3;
 	}
 

@@ -1841,7 +1841,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$packet->clientData["SkinGeometryName"] ?? "",
 			base64_decode($packet->clientData["SkinGeometry"] ?? "")
 		);
-		$skin->debloatGeometryData();
 
 		if(!$skin->isValid()){
 			$this->close("", "disconnectionScreen.invalidSkin");
@@ -2890,13 +2889,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$tile = $this->level->getTileAt($packet->x, $packet->y, $packet->z);
 		if($tile instanceof ItemFrame){
 			$ev = new PlayerInteractEvent($this, $this->inventory->getItemInHand(), $tile->getBlock(), null, 5 - $tile->getBlock()->getDamage(), PlayerInteractEvent::LEFT_CLICK_BLOCK);
-			$this->server->getPluginManager()->callEvent($ev);
 
-			if($this->isSpectator()){
+			if($this->isSpectator() or $this->level->checkSpawnProtection($this, $tile)){
 				$ev->setCancelled();
 			}
 
-			if($ev->isCancelled()){
+            $this->server->getPluginManager()->callEvent($ev);
+            if($ev->isCancelled()){
 				$tile->spawnTo($this);
 				return true;
 			}

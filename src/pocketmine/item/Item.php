@@ -174,9 +174,6 @@ class Item implements ItemIds, \JsonSerializable{
 
 		return -1;
 	}
-
-	/** @var Block|null */
-	protected $block;
 	/** @var int */
 	protected $id;
 	/** @var int */
@@ -205,10 +202,6 @@ class Item implements ItemIds, \JsonSerializable{
 		$this->id = $id & 0xffff;
 		$this->setDamage($meta);
 		$this->name = $name;
-		if(!isset($this->block) and $this->id <= 0xff){
-			$this->block = BlockFactory::get($this->id, $this->meta);
-			$this->name = $this->block->getName();
-		}
 	}
 
 	/**
@@ -632,14 +625,18 @@ class Item implements ItemIds, \JsonSerializable{
 	 * @return string
 	 */
 	final public function getName() : string{
-		return $this->hasCustomName() ? $this->getCustomName() : $this->name;
+		return $this->hasCustomName() ? $this->getCustomName() : $this->getVanillaName();
 	}
+
+	public function getVanillaName() : string{
+	    return $this->name;
+    }
 
 	/**
 	 * @return bool
 	 */
 	final public function canBePlaced() : bool{
-		return $this->block !== null and $this->block->canBePlaced();
+		return $this->getBlock()->canBePlaced();
 	}
 
 	/**
@@ -647,11 +644,7 @@ class Item implements ItemIds, \JsonSerializable{
 	 * @return Block
 	 */
 	public function getBlock() : Block{
-		if($this->block instanceof Block){
-			return clone $this->block;
-		}else{
-			return BlockFactory::get(self::AIR);
-		}
+        return BlockFactory::get(Block::AIR);
 	}
 
 	/**
@@ -988,10 +981,6 @@ class Item implements ItemIds, \JsonSerializable{
 	}
 
 	public function __clone(){
-		if($this->block !== null){
-			$this->block = clone $this->block;
-		}
-
 		$this->cachedNBT = null;
 	}
 

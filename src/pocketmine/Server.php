@@ -45,6 +45,7 @@ use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
+use pocketmine\item\Item;
 use pocketmine\lang\TextContainer;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
@@ -1699,6 +1700,7 @@ class Server{
             Tile::init();
             BlockFactory::init();
 			ItemFactory::init();
+            Item::initCreativeItems();
 			Biome::init();
 			Effect::init();
 			Attribute::init();
