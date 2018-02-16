@@ -3487,45 +3487,44 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * @throws \InvalidStateException if the player is closed
 	 */
 	public function save(bool $async = false){
-		if($this->closed){
-			throw new \InvalidStateException("Tried to save closed player");
-		}
+        if($this->closed){
+            throw new \InvalidStateException("Tried to save closed player");
+        }
 
-		parent::saveNBT();
+        parent::saveNBT();
 
-		if($this->isValid()){
-			$this->namedtag->setString("Level", $this->level->getFolderName());
-		}
+        if($this->isValid()){
+            $this->namedtag->setString("Level", $this->level->getFolderName());
+        }
 
-		if($this->hasValidSpawnPosition()){
-			$this->namedtag->setString("SpawnLevel", $this->spawnPosition->getLevel()->getFolderName());
-			$this->namedtag->setInt("SpawnX", $this->spawnPosition->getFloorX());
-			$this->namedtag->setInt("SpawnY", $this->spawnPosition->getFloorY());
-			$this->namedtag->setInt("SpawnZ", $this->spawnPosition->getFloorZ());
+        if ($this->hasValidSpawnPosition()) {
+            $this->namedtag->setString("SpawnLevel", $this->spawnPosition->getLevel()->getFolderName());
+            $this->namedtag->setInt("SpawnX", $this->spawnPosition->getFloorX());
+            $this->namedtag->setInt("SpawnY", $this->spawnPosition->getFloorY());
+            $this->namedtag->setInt("SpawnZ", $this->spawnPosition->getFloorZ());
 
-			if(!$this->isAlive()){
-                //hack for respawn after quit
+            if(!$this->isAlive()){
                 $this->namedtag->setTag(new ListTag("Pos", [
                     new DoubleTag("", $this->spawnPosition->x),
                     new DoubleTag("", $this->spawnPosition->y),
                     new DoubleTag("", $this->spawnPosition->z)
                 ]));
             }
-		}
+        }
 
-		$achievements = new CompoundTag("Achievements");
-		foreach($this->achievements as $achievement => $status){
-			$achievements->setByte($achievement, $status === true ? 1 : 0);
-		}
-		$this->namedtag->setTag($achievements);
+        $achievements = new CompoundTag("Achievements");
+        foreach($this->achievements as $achievement => $status){
+            $achievements->setByte($achievement, $status === true ? 1 : 0);
+        }
+        $this->namedtag->setTag($achievements);
 
-		$this->namedtag->setInt("playerGameType", $this->gamemode);
-		$this->namedtag->setLong("lastPlayed", (int) floor(microtime(true) * 1000));
+        $this->namedtag->setInt("playerGameType", $this->gamemode);
+        $this->namedtag->setLong("lastPlayed", (int)floor(microtime(true) * 1000));
 
-		if($this->username != "" and $this->namedtag instanceof CompoundTag){
-			$this->server->saveOfflinePlayerData($this->username, $this->namedtag, $async);
-		}
-	}
+        if($this->username != "" and $this->namedtag instanceof CompoundTag){
+            $this->server->saveOfflinePlayerData($this->username, $this->namedtag, $async);
+        }
+    }
 
 	public function kill(){
 		if(!$this->spawned){
@@ -3654,8 +3653,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		//main inventory and drops the rest on the ground.
 		$this->resetCraftingGridType();
 
-        $ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params));
-        $ev->setKeepInventory($this->server->keepInventory);
+		$ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params));
+		$ev->setKeepInventory($this->server->keepInventory);
 		$this->server->getPluginManager()->callEvent($ev);
 
 		if(!$ev->getKeepInventory()){
@@ -3686,49 +3685,48 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	protected function respawn() : void{
-        if($this->server->isHardcore()){
-            $this->setBanned(true);
-            return;
-        }
+	    if($this->server->isHardcore()){
+	        $this->setBanned(true);
+	        return;
+	    }
 
-        $this->server->getPluginManager()->callEvent($ev = new PlayerRespawnEvent($this, $this->getSpawn()));
+	    $this->server->getPluginManager()->callEvent($ev = new PlayerRespawnEvent($this, $this->getSpawn()));
 
-        $realSpawn = Position::fromObject($ev->getRespawnPosition()->add(0.5, 0, 0.5), $ev->getRespawnPosition()->getLevel());
-        $this->teleport($realSpawn);
+	    $realSpawn = Position::fromObject($ev->getRespawnPosition()->add(0.5, 0, 0.5), $ev->getRespawnPosition()->getLevel());
+	    $this->teleport($realSpawn);
 
-        $this->resetLastMovements();
-        $this->resetFallDistance();
+	    $this->resetLastMovements();
+	    $this->resetFallDistance();
 
-        $this->setSprinting(false);
-        $this->setSneaking(false);
+	    $this->setSprinting(false);
+	    $this->setSneaking(false);
 
-        $this->extinguish();
-        $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
-        $this->deadTicks = 0;
-        $this->noDamageTicks = 60;
+	    $this->extinguish();
+	    $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
+	    $this->deadTicks = 0;
+	    $this->noDamageTicks = 60;
 
-        $this->removeAllEffects();
-        $this->setHealth($this->getMaxHealth());
+	    $this->removeAllEffects();
+	    $this->setHealth($this->getMaxHealth());
 
-        $xp = $this->getCurrentTotalXp();
+	    $xp = $this->getCurrentTotalXp();
 
-        foreach($this->attributeMap->getAll() as $attr){
-            $attr->resetToDefault();
-        }
+	    foreach($this->attributeMap->getAll() as $attr){
+	        $attr->resetToDefault();
+	    }
 
-        if($this->server->keepExperience){
-            $this->setCurrentTotalXp($xp);
-        }
+	    if($this->server->keepExperience)
+	        $this->setCurrentTotalXp($xp);
 
-        $this->sendData($this);
+	    $this->sendData($this);
 
-        $this->sendSettings();
-        $this->inventory->sendContents($this);
-        $this->armorInventory->sendContents($this);
+	    $this->sendSettings();
+	    $this->inventory->sendContents($this);
+	    $this->armorInventory->sendContents($this);
 
-        $this->spawnToAll();
-        $this->scheduleUpdate();
-    }
+	    $this->spawnToAll();
+	    $this->scheduleUpdate();
+	}
 
 	protected function applyPostDamageEffects(EntityDamageEvent $source) : void{
 		parent::applyPostDamageEffects($source);
@@ -4018,26 +4016,20 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->isConnected();
 	}
 
-	// ALTAY TODO : OPTIMIZE
-
-    public function getAnvilInventory() : ?AnvilInventory{
-        foreach($this->windowIndex as $inventory){
-            if($inventory instanceof AnvilInventory){
+	public function getAnvilInventory() : ?AnvilInventory{
+	    foreach($this->windowIndex as $inventory)
+	        if($inventory instanceof AnvilInventory)
                 return $inventory;
-            }
-        }
 
-        return null;
-    }
+	    return null;
+	}
 
-    public function getEnchantInventory() : ?EnchantInventory{
-        foreach($this->windowIndex as $inventory){
-            if($inventory instanceof EnchantInventory){
-                return $inventory;
-            }
-        }
+	public function getEnchantInventory() : ?EnchantInventory{
+	    foreach($this->windowIndex as $inventory)
+	        if($inventory instanceof EnchantInventory)
+	            return $inventory;
 
-        return null;
+	    return null;
     }
 
     /**
