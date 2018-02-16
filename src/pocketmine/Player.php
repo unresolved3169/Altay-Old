@@ -3713,8 +3713,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         $this->removeAllEffects();
         $this->setHealth($this->getMaxHealth());
 
+        $xp = $this->getCurrentTotalXp();
+
         foreach($this->attributeMap->getAll() as $attr){
             $attr->resetToDefault();
+        }
+
+        if($this->server->keepExperience){
+            $this->setCurrentTotalXp($xp);
         }
 
         $this->sendData($this);
