@@ -26,7 +26,7 @@ namespace pocketmine\entity\projectile;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
-use pocketmine\item\Fireworks;
+use pocketmine\item\FireworkRocket;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
@@ -46,12 +46,12 @@ class FireworksRocket extends Projectile{
     protected $gravity = 0.0;
     protected $drag = 0.1;
 
-    /** @var Fireworks */
+    /** @var FireworkRocket */
     public $fireworksItem;
     /** @var int */
     public $lifeTime;
 
-    public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null, Fireworks $fireworks, Random $random = null){
+    public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null, FireworkRocket $fireworks, Random $random = null){
         $this->fireworksItem = $fireworks;
         $random = $random ?? new Random();
 

@@ -184,7 +184,7 @@ class ItemFactory{
         //TODO: CARROTONASTICK
         self::registerItem(new Item(Item::NETHER_STAR, 0, "Nether Star"));
         self::registerItem(new PumpkinPie());
-        self::registerItem(new Fireworks());
+        self::registerItem(new FireworkRocket());
         //TODO: FIREWORKSCHARGE
         self::registerItem(new EnchantedBook());
         self::registerItem(new ItemBlock(Block::COMPARATOR_BLOCK, 0, Item::COMPARATOR));
