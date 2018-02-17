@@ -48,7 +48,7 @@ class Fireworks extends Item{
         $random = new Random();
         $loc = $blockReplace->asVector3()->add(0.5, 0, 0.5);
         $yaw = $random->nextBoundedInt(360);
-        $pitch = -1 * (90 + ($random->nextFloat() * $this->spread - $this->spread / 2));
+        $pitch = -1 * (float) (90 + ($random->nextFloat() * $this->spread - $this->spread / 2));
         $nbt = FireworksRocket::createBaseNBT($loc, null, $yaw, $pitch);
 
         /** @var CompoundTag $tags */

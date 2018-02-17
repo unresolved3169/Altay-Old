@@ -25,6 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\entity\projectile;
 
 use pocketmine\entity\Entity;
+use pocketmine\entity\EntityIds;
 use pocketmine\item\Fireworks;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
@@ -34,6 +35,8 @@ use pocketmine\Player;
 use pocketmine\utils\Random;
 
 class FireworksRocket extends Projectile{
+
+    public const NETWORK_ID = EntityIds::FIREWORKS_ROCKET;
 
     public const DATA_FIREWORK_ITEM = 16;
 
