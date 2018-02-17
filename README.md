@@ -20,6 +20,7 @@ Example servers running Altay
  - [x] Command Parameters
  - [x] Elytra
  - [x] EnchantmentTable
+ - [x] Firework Rocket and Star
  - [x] Forms
  - [x] Hopper
  
