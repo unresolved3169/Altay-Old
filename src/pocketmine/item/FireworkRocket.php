@@ -37,7 +37,7 @@ class FireworkRocket extends Item{
     public $spread = 5.0;
 
     public function __construct(int $meta = 0){
-        parent::__construct(self::FIREWORKS, $meta, "Fireworks");
+        parent::__construct(self::FIREWORKS, $meta, "Firework Rocket");
     }
 
     public function getMaxStackSize() : int{
