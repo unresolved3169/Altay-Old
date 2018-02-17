@@ -34,6 +34,12 @@ use pocketmine\utils\Random;
 
 class FireworksUtils{
 
+    public const SMALL_BALL = 0;
+    public const LARGE_BALL = 1;
+    public const STAR_SHAPED = 2;
+    public const CREEPER_SHAPED = 3;
+    public const BURST = 4;
+
     /**
      * @param int $flight
      * @param CompoundTag[] $explosionTags

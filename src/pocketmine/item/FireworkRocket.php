@@ -34,6 +34,7 @@ use pocketmine\utils\Random;
 
 class FireworkRocket extends Item{
 
+    /** @var float */
     public $spread = 5.0;
 
     public function __construct(int $meta = 0){
