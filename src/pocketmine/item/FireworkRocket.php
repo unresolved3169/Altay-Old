@@ -27,8 +27,8 @@ namespace pocketmine\item;
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\FireworksRocket;
+use pocketmine\entity\utils\FireworksUtils;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\Random;
 
@@ -46,17 +46,7 @@ class FireworkRocket extends Item{
 
     public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector): bool{
         $random = new Random();
-        $loc = $blockReplace->asVector3()->add(0.5, 0, 0.5);
-        $yaw = $random->nextBoundedInt(360);
-        $pitch = -1 * (float) (90 + ($random->nextFloat() * $this->spread - $this->spread / 2));
-        $nbt = FireworksRocket::createBaseNBT($loc, null, $yaw, $pitch);
-
-        /** @var CompoundTag $tags */
-        $tags = $this->getNamedTagEntry("Fireworks");
-        if (!is_null($tags)){
-            $nbt->setTag($tags);
-        }
-
+        $nbt = FireworksUtils::createNBTforEntity($blockReplace, null, $this, $this->spread, $random);
         $fireworkRocket = new FireworksRocket($player->level, $nbt, $player, clone $this, $random);
         $player->level->addEntity($fireworkRocket);
 
@@ -65,6 +55,27 @@ class FireworkRocket extends Item{
 
             $fireworkRocket->spawnToAll();
             return true;
+        }
+
+        return false;
+    }
+
+    public function onClickAir(Player $player, Vector3 $directionVector): bool{
+        if($player->isGliding()){
+            $random = new Random();
+            $motion = $player->getDirectionVector()->add(0,1.2);
+            $nbt = FireworksUtils::createNBTforEntity($player, $motion, $this, $this->spread, $random, $player->getYaw(), $player->getPitch());
+            $fireworkRocket = new FireworksRocket($player->level, $nbt, $player, clone $this, $random);
+            $player->level->addEntity($fireworkRocket);
+
+            if ($fireworkRocket instanceof Entity){
+                --$this->count;
+
+                $fireworkRocket->spawnToAll();
+                $player->setMotion($motion);
+                $fireworkRocket->setMotion($motion->multiply(2.6));
+                return true;
+            }
         }
 
         return false;
