@@ -32,7 +32,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\utils\Random;
 
-class Fireworks extends Item{
+class FireworkRocket extends Item{
 
     public $spread = 5.0;
 
