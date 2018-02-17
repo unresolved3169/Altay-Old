@@ -59,10 +59,11 @@ class FireworksRocket extends Projectile{
         $lifeTime = null;
 
         try{
-            if($nbt->hasTag("Fireworks", CompoundTag::class))
+            if($nbt->hasTag("Fireworks", CompoundTag::class)){
                 $fireworkCompound = $nbt->getCompoundTag("Fireworks");
                 $flyTime = $fireworkCompound->getByte("Flight", 1);
                 $lifeTime = $fireworkCompound->getInt("LifeTime", 20 * $flyTime + $random->nextBoundedInt(5) + $random->nextBoundedInt(7));
+            }
         }catch(\Exception $exception){
             $this->server->getLogger()->debug($exception);
         }
