@@ -23,7 +23,7 @@
 namespace pocketmine\utils\navigator;
 
 use pocketmine\utils\navigator\providers\{NeighborProvider, BlockedProvider};
-use pocketmine\utils\navigator\algorithms\{DistanceAlgorithm, HeuristicAlgorithm};
+use pocketmine\utils\navigator\algorithms\{DistanceAlgorithm, ManhattanHeuristicAlgorithm};
 
 class TileNavigator{
 	
@@ -32,7 +32,7 @@ class TileNavigator{
 	private $distanceAlgorithm;
 	private $heuristicAlgorithm;
 	
-	public function __construct(BlockedProvider $bp, NeighborProvider $np, DistanceAlgorithm $da, HeuristicAlgorithm $ha){
+	public function __construct(BlockedProvider $bp, NeighborProvider $np, DistanceAlgorithm $da, ManhattanHeuristicAlgorithm $ha){
 		$this->blockedProvider = $bp;
 		$this->neighborProvider = $np;
 		$this->distanceAlgorithm = $da;
