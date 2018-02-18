@@ -396,4 +396,15 @@ abstract class TextFormat{
 		return $newString;
 	}
 
+    public static function center(string $text) : string{
+        $lines = explode("\n", $text);
+        $max = max(array_map("strlen", $lines));
+        return implode("\n", array_map(function($value) use ($max) { return str_pad($value, $max + self::colorCount($value), " ", STR_PAD_BOTH); }, $lines));
+    }
+
+    public static function colorCount(string $yazi) : int{
+        preg_replace("/(" . TextFormat::ESCAPE ."[0123456789abcdeflo])/", "", $yazi, -1, $sayi);
+        return $sayi;
+    }
+
 }
