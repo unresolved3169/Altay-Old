@@ -28,11 +28,14 @@ use pocketmine\block\BlockFactory;
 
 class Sign extends Item{
 	public function __construct(int $meta = 0){
-		$this->block = BlockFactory::get(Block::SIGN_POST);
 		parent::__construct(self::SIGN, $meta, "Sign");
 	}
 
-	public function getMaxStackSize() : int{
+	public function getBlock() : Block{
+        return BlockFactory::get(Block::SIGN_POST);
+    }
+
+    public function getMaxStackSize() : int{
 		return 16;
 	}
 }

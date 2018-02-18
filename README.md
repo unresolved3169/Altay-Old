@@ -3,7 +3,7 @@ Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10
        
 | Jenkins (Official) | TravisCI | Discord |
 | :---: | :---: | :---: |
-| [![Download](https://img.shields.io/badge/download-latest-blue.svg)](http://turanic.io:8080/job/Altay/) | [![Build Status](https://travis-ci.org/TuranicTeam/Altay.svg?branch=master)](https://travis-ci.org/TuranicTeam/Altay) | [![Discord](https://camo.githubusercontent.com/455152269a0ed38255ed15e375084d4dd08e0c98/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f636861742d6f6e253230646973636f72642d3732383944412e737667)](https://discord.gg/4GZxrdk) |
+| [![Download](https://img.shields.io/badge/download-latest-blue.svg)](http://turanic.io:8181/job/Altay/) | [![Build Status](https://travis-ci.org/TuranicTeam/Altay.svg?branch=master)](https://travis-ci.org/TuranicTeam/Altay) | [![Discord](https://camo.githubusercontent.com/455152269a0ed38255ed15e375084d4dd08e0c98/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f636861742d6f6e253230646973636f72642d3732383944412e737667)](https://discord.gg/4GZxrdk) |
 
 -------------
 Example servers running Altay
@@ -20,7 +20,8 @@ Example servers running Altay
  - [x] Command Parameters
  - [x] Elytra
  - [x] EnchantmentTable
- - [x] FormAPI
+ - [x] Firework Rocket and Star
+ - [x] Forms
  - [x] Hopper
  
 ***more...***

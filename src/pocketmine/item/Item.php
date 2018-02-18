@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -66,9 +67,7 @@ class Item implements ItemIds, \JsonSerializable{
 			self::$cachedParser = new LittleEndianNBTStream();
 		}
 
-		self::$cachedParser->read($tag);
-		$data = self::$cachedParser->getData();
-
+        $data = self::$cachedParser->read($tag);
 		if(!($data instanceof CompoundTag)){
 			throw new \InvalidArgumentException("Invalid item NBT string given, it could not be deserialized");
 		}
@@ -81,8 +80,7 @@ class Item implements ItemIds, \JsonSerializable{
 			self::$cachedParser = new LittleEndianNBTStream();
 		}
 
-		self::$cachedParser->setData($tag);
-		return self::$cachedParser->write();
+        return self::$cachedParser->write($tag);
 	}
 
 	/**
@@ -174,9 +172,6 @@ class Item implements ItemIds, \JsonSerializable{
 
 		return -1;
 	}
-
-	/** @var Block|null */
-	protected $block;
 	/** @var int */
 	protected $id;
 	/** @var int */
@@ -205,10 +200,6 @@ class Item implements ItemIds, \JsonSerializable{
 		$this->id = $id & 0xffff;
 		$this->setDamage($meta);
 		$this->name = $name;
-		if(!isset($this->block) and $this->id <= 0xff){
-			$this->block = BlockFactory::get($this->id, $this->meta);
-			$this->name = $this->block->getName();
-		}
 	}
 
 	/**
@@ -632,14 +623,18 @@ class Item implements ItemIds, \JsonSerializable{
 	 * @return string
 	 */
 	final public function getName() : string{
-		return $this->hasCustomName() ? $this->getCustomName() : $this->name;
+		return $this->hasCustomName() ? $this->getCustomName() : $this->getVanillaName();
 	}
+
+	public function getVanillaName() : string{
+	    return $this->name;
+    }
 
 	/**
 	 * @return bool
 	 */
 	final public function canBePlaced() : bool{
-		return $this->block !== null and $this->block->canBePlaced();
+		return $this->getBlock()->canBePlaced();
 	}
 
 	/**
@@ -647,11 +642,7 @@ class Item implements ItemIds, \JsonSerializable{
 	 * @return Block
 	 */
 	public function getBlock() : Block{
-		if($this->block instanceof Block){
-			return clone $this->block;
-		}else{
-			return BlockFactory::get(self::AIR);
-		}
+        return BlockFactory::get(Block::AIR);
 	}
 
 	/**
@@ -988,10 +979,6 @@ class Item implements ItemIds, \JsonSerializable{
 	}
 
 	public function __clone(){
-		if($this->block !== null){
-			$this->block = clone $this->block;
-		}
-
 		$this->cachedNBT = null;
 	}
 

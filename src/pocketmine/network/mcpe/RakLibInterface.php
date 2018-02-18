@@ -128,11 +128,11 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 	}
 
 	public function openSession($identifier, $address, $port, $clientID){
-		$ev = new PlayerCreationEvent($this, Player::class, Player::class, null, $address, $port);
+		$ev = new PlayerCreationEvent($this, Player::class, Player::class, $address, $port);
 		$this->server->getPluginManager()->callEvent($ev);
 		$class = $ev->getPlayerClass();
 
-		$player = new $class($this, $ev->getClientId(), $ev->getAddress(), $ev->getPort());
+		$player = new $class($this, $ev->getAddress(), $ev->getPort());
 		$this->players[$identifier] = $player;
 		$this->identifiersACK[$identifier] = 0;
 		$this->identifiers[spl_object_hash($player)] = $identifier;
@@ -145,7 +145,7 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 			$address = $this->players[$identifier]->getAddress();
 			try{
 				if($packet->buffer !== ""){
-					$pk = $this->getPacket($packet->buffer);
+					$pk = PacketPool::getPacket($packet->buffer);
 					$this->players[$identifier]->handleDataPacket($pk);
 				}
 			}catch(\Throwable $e){
@@ -247,15 +247,5 @@ class RakLibInterface implements ServerInstance, AdvancedSourceInterface{
 		if(isset($this->players[$identifier])){
 			$this->players[$identifier]->updatePing($pingMS);
 		}
-	}
-
-	private function getPacket($buffer){
-		$pid = ord($buffer{0});
-		if(($data = PacketPool::getPacketById($pid)) === null){
-			return null;
-		}
-		$data->setBuffer($buffer, 1);
-
-		return $data;
 	}
 }
