@@ -42,6 +42,7 @@ use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\EntityFallPacket;
 use pocketmine\network\mcpe\protocol\EntityPickRequestPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
@@ -117,6 +118,10 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 		return false;
 	}
 
+    public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+        return $this->player->handleMoveEntity($packet);
+    }
+
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
 		return $this->player->handleMovePlayer($packet);
 	}
@@ -187,7 +192,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handlePlayerInput(PlayerInputPacket $packet) : bool{
-		return false; //TODO
+		return $this->player->handlePlayerInput($packet);
 	}
 
 	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{

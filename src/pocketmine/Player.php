@@ -118,6 +118,8 @@ use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\ServerSettingsResponsePacket;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
@@ -2151,6 +2153,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return true;
 	}
 
+	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+	    return true;
+    }
+
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
 		$newPos = $packet->position->subtract(0, $this->baseOffset, 0);
 
@@ -2879,6 +2885,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		return true;
 	}
+
+    public function handlePlayerInput(PlayerInputPacket $packet) : bool{
+        return true;
+    }
 
 	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
 		if($packet->gamemode !== $this->gamemode){

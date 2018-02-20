@@ -37,6 +37,7 @@ use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\EnderPearl;
 use pocketmine\entity\projectile\FireworksRocket;
 use pocketmine\entity\projectile\Snowball;
+use pocketmine\entity\vehicle\Boat;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDespawnEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
@@ -232,6 +233,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		Entity::registerEntity(ArmorStand::class, false, ['ArmorStand', 'minecraft:armor_stand']);
 		Entity::registerEntity(Arrow::class, false, ['Arrow', 'minecraft:arrow']);
+		Entity::registerEntity(Boat::class, false, ['Boat', 'minecraft:boat']);
 		Entity::registerEntity(Egg::class, false, ['Egg', 'minecraft:egg']);
 		Entity::registerEntity(EnderPearl::class, false, ['EnderPearl', 'minecraft:ender_pearl']);
 		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);

@@ -23,6 +23,11 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use pocketmine\block\Block;
+use pocketmine\entity\vehicle\Boat as EntityBoat;
+use pocketmine\math\Vector3;
+use pocketmine\Player;
+
 class Boat extends Item{
 	public function __construct(int $meta = 0){
 		parent::__construct(self::BOAT, $meta, "Boat");
@@ -32,5 +37,14 @@ class Boat extends Item{
 		return 1200; //400 in PC
 	}
 
-	//TODO
+	public function onActivate(Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector): bool{
+	    $nbt = EntityBoat::createBaseNBT($blockReplace);
+
+	    $entity = EntityBoat::createEntity("Boat", $player->level, $nbt);
+	    $entity->spawnToAll();
+
+	    $this->count--;
+
+	    return true;
+    }
 }
