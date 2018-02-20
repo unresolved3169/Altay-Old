@@ -2175,7 +2175,7 @@ class Server{
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 			$this->logger->emergency("Crashed while crashing, killing process");
-			@kill(getmypid());
+			@Utils::kill(getmypid());
 		}
 
 	}
@@ -2257,7 +2257,7 @@ class Server{
 
 		$errstr = preg_replace('/\s+/', ' ', trim($errstr));
 
-		$errfile = cleanPath($errfile);
+		$errfile = Utils::cleanPath($errfile);
 
 		$this->logger->logException($e, $trace);
 
@@ -2267,7 +2267,7 @@ class Server{
 			"fullFile" => $e->getFile(),
 			"file" => $errfile,
 			"line" => $errline,
-			"trace" => getTrace(0, $trace)
+			"trace" => Utils::getTrace(0, $trace)
 		];
 
 		global $lastExceptionError, $lastError;
@@ -2339,7 +2339,7 @@ class Server{
 
 		$this->forceShutdown();
 		$this->isRunning = false;
-		@kill(getmypid());
+		@Utils::kill(getmypid());
 		exit(1);
 	}
 
