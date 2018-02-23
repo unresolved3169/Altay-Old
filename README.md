@@ -16,12 +16,19 @@ Example servers running Altay
  - [x] Altay Configuration File
  - [x] Anvil
  - [x] Armor Stand
+ - [ ] Beacons
+ - [ ] Boats
  - [x] BossbarAPI
  - [x] Command Parameters
+ - [ ] Config Auto Updater
  - [x] Elytra
  - [x] EnchantmentTable
- - [x] Firework Rocket and Star
+ - [ ] Entity Behaviors (MobAI)
+ - [x] Fireworks
  - [x] Forms
  - [x] Hopper
+ - [ ] Level Dimensions
+ - [ ] Redstone
+ - [ ] Shulker Boxes
  
 ***more...***
