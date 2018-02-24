@@ -1146,7 +1146,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$pk->yaw = $this->yaw;
 			$pk->pitch = $this->pitch;
 			$pk->headYaw = $this->yaw; //TODO
-            $pk->teleported = $teleport;
+			$pk->teleported = $teleport;
 
 			$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
 		}
