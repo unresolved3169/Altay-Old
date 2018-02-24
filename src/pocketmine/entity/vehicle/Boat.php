@@ -26,7 +26,6 @@ namespace pocketmine\entity\vehicle;
 
 use pocketmine\entity\EntityIds;
 use pocketmine\entity\Vehicle;
-use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\Vector3;
