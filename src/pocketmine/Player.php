@@ -1629,7 +1629,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return false;
 	}
 
-	protected function updateMovement(){
+	protected function updateMovement(bool $teleport = false){
 
 	}
 
