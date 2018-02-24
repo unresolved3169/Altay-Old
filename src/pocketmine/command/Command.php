@@ -251,9 +251,9 @@ abstract class Command{
 	}
 
 	/**
-	 * @return string
+	 * @return string|null
 	 */
-	public function getPermissionMessage() : string{
+	public function getPermissionMessage() : ?string{
 		return $this->permissionMessage;
 	}
 
@@ -377,11 +377,11 @@ abstract class Command{
         $this->overloads = $overloads;
     }
 
-    public function getPermissionLevel(): int{
+    public function getPermissionLevel() : int{
         return $this->permissionLevel;
     }
 
-    public function setPermissionLevel(int $permissionLevel): void{
+    public function setPermissionLevel(int $permissionLevel) : void{
         $this->permissionLevel = $permissionLevel;
     }
 }
