@@ -28,7 +28,10 @@ use pocketmine\entity\EntityIds;
 use pocketmine\entity\Vehicle;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\Player;
@@ -37,12 +40,23 @@ class Boat extends Vehicle{
 
     public const NETWORK_ID = EntityIds::BOAT;
 
+    public const TAG_VARIANT = "Variant";
+
     public $height = 0.455;
+
+    public function __construct(Level $level, CompoundTag $nbt){
+        if(!$nbt->hasTag(self::TAG_VARIANT, IntTag::class)){
+            $nbt->setInt(self::TAG_VARIANT, 0);
+        }
+
+        parent::__construct($level, $nbt);
+    }
 
     protected function initEntity(){
         $this->setGenericFlag(self::DATA_FLAG_STACKABLE, true);
         $this->setGenericFlag(self::DATA_FLAG_NO_AI, false);
 
+        $this->setBoatType($this->namedtag->getInt(self::TAG_VARIANT));
         $this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1.02001, 0));
         $this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
         $this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
@@ -66,6 +80,10 @@ class Boat extends Vehicle{
     }
 
     public function getBoatType() : int{
-        return 0; // TODO
+        return $this->propertyManager->getInt(self::DATA_VARIANT);
+    }
+
+    public function setBoatType(int $boatType) : void{
+        $this->propertyManager->setInt(self::DATA_VARIANT, $boatType);
     }
 }
