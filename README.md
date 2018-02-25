@@ -3,7 +3,7 @@ Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10
        
 | Jenkins (Official) | TravisCI | Discord |
 | :---: | :---: | :---: |
-| [![Jenkins](https://img.shields.io/jenkins/s/http/turanic.io:8181/job/Altay.svg?style=flat-square&colorB=1C6BA0)](http://turanic.io:8181/job/Altay/) | [![Travis branch](https://img.shields.io/travis/TuranicTeam/Altay/master.svg?style=flat-square)](https://travis-ci.org/TuranicTeam/Altay) | [![Discord](https://img.shields.io/discord/357257013144715266.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/4GZxrdk) |
+| [![Jenkins](https://img.shields.io/jenkins/s/http/turanic.io:8181/job/Altay.svg?style=flat-square&colorB=1C6BA0)](http://turanic.io:8181/job/Altay/) | [![Travis branch](https://img.shields.io/travis/TuranicTeam/Altay/master.svg?style=flat-square)](https://travis-ci.org/TuranicTeam/Altay) | [![Discord](https://img.shields.io/discord/357257013144715266.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/pAh3Bja) |
 
 -------------
 Example servers running Altay
