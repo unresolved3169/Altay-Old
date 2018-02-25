@@ -44,19 +44,11 @@ class Boat extends Vehicle{
 
     public $height = 0.455;
 
-    public function __construct(Level $level, CompoundTag $nbt){
-        if(!$nbt->hasTag(self::TAG_VARIANT, IntTag::class)){
-            $nbt->setInt(self::TAG_VARIANT, 0);
-        }
-
-        parent::__construct($level, $nbt);
-    }
-
     protected function initEntity(){
         $this->setGenericFlag(self::DATA_FLAG_STACKABLE, true);
         $this->setGenericFlag(self::DATA_FLAG_NO_AI, false);
 
-        $this->setBoatType($this->namedtag->getInt(self::TAG_VARIANT));
+        $this->setBoatType($this->namedtag->getInt(self::TAG_VARIANT, 0));
         $this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1.02001, 0));
         $this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
         $this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
@@ -85,5 +77,11 @@ class Boat extends Vehicle{
 
     public function setBoatType(int $boatType) : void{
         $this->propertyManager->setInt(self::DATA_VARIANT, $boatType);
+    }
+
+    public function saveNBT(){
+        parent::saveNBT();
+
+        $this->namedtag->setInt(self::TAG_VARIANT, $this->getBoatType());
     }
 }
