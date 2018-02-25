@@ -25,18 +25,22 @@ namespace pocketmine\network\mcpe\protocol\types;
 
 class EntityLink{
 
+    public const TYPE_REMOVE = 0;
+    public const TYPE_RIDE = 1;
+    public const TYPE_PASSENGER = 0;
+
 	/** @var int */
-	public $fromEntityUniqueId;
+	public $riddenId;
 	/** @var int */
-	public $toEntityUniqueId;
+	public $riderId;
 	/** @var int */
 	public $type;
 	/** @var bool */
 	public $bool1;
 
-	public function __construct(int $fromEntityUniqueId = null, int $toEntityUniqueId = null, int $type = null, bool $bool1 = null){
-		$this->fromEntityUniqueId = $fromEntityUniqueId;
-		$this->toEntityUniqueId = $toEntityUniqueId;
+	public function __construct(int $riddenId = null, int $riderId = null, int $type = null, bool $bool1 = null){
+		$this->riddenId = $riddenId;
+		$this->riderId = $riderId;
 		$this->type = $type;
 		$this->bool1 = $bool1;
 	}
