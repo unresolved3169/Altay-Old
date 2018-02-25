@@ -59,9 +59,13 @@ class Boat extends Vehicle{
         return true;
     }
 
-    public function kill(){
-        parent::kill();
-        // TODO : Implement Entity->getDrops
-        $this->getLevel()->dropItem($this, ItemFactory::get(Item::BOAT));
+    public function getDrops(): array{
+        return [
+            ItemFactory::get(Item::BOAT, $this->getBoatType())
+        ];
+    }
+
+    public function getBoatType() : int{
+        return 0; // TODO
     }
 }

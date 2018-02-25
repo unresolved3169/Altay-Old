@@ -39,6 +39,7 @@ use pocketmine\entity\projectile\FireworksRocket;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\entity\vehicle\Boat;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\entity\EntityDespawnEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\entity\EntityMotionEvent;
@@ -47,6 +48,7 @@ use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
+use pocketmine\item\Item;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
@@ -919,7 +921,15 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function kill(){
 		$this->health = 0;
 		$this->scheduleUpdate();
+		$this->onDeath();
 	}
+
+	protected function onDeath(){
+        $this->server->getPluginManager()->callEvent($ev = new EntityDeathEvent($this, $this->getDrops()));
+        foreach($ev->getDrops() as $item){
+            $this->getLevel()->dropItem($this, $item);
+        }
+    }
 
 	/**
 	 * Called to tick entities while dead. Returns whether the entity should be flagged for despawn yet.
@@ -2141,8 +2151,15 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, \pocketmine\item\Item $item, Vector3 $clickVector, array $actions = []) : bool{
+	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
         return false;
 	}
+
+    /**
+     * @return Item[]
+     */
+    public function getDrops() : array{
+        return [];
+    }
 
 }

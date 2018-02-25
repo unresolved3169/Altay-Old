@@ -27,7 +27,6 @@ use pocketmine\block\Block;
 use pocketmine\event\entity\EntityDamageByChildEntityEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\entity\EntityEffectAddEvent;
 use pocketmine\event\entity\EntityEffectRemoveEvent;
 use pocketmine\event\Timings;
@@ -35,7 +34,6 @@ use pocketmine\inventory\ArmorInventory;
 use pocketmine\item\Armor;
 use pocketmine\item\Consumable;
 use pocketmine\item\enchantment\Enchantment;
-use pocketmine\item\Item as ItemItem;
 use pocketmine\math\Vector3;
 use pocketmine\math\VoxelRayTrace;
 use pocketmine\nbt\tag\ByteTag;
@@ -534,18 +532,6 @@ abstract class Living extends Entity implements Damageable{
 		$this->setMotion($motion);
 	}
 
-	public function kill(){
-		parent::kill();
-		$this->onDeath();
-	}
-
-	protected function onDeath(){
-		$this->server->getPluginManager()->callEvent($ev = new EntityDeathEvent($this, $this->getDrops()));
-		foreach($ev->getDrops() as $item){
-			$this->getLevel()->dropItem($this, $item);
-		}
-	}
-
 	protected function onDeathUpdate(int $tickDiff) : bool{
 		if($this->deadTicks < $this->maxDeadTicks){
 			$this->deadTicks += $tickDiff;
@@ -698,13 +684,6 @@ abstract class Living extends Entity implements Damageable{
 	public function onAirExpired(){
 		$ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
 		$this->attack($ev);
-	}
-
-	/**
-	 * @return ItemItem[]
-	 */
-	public function getDrops() : array{
-		return [];
 	}
 
 	/**
