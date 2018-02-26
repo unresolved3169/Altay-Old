@@ -343,6 +343,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     /** @var int */
     protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
 
+    /** @var int */
+    public $vehicleEid = 0;
+
 	/**
 	 * @return TranslationContainer|string
 	 */
@@ -2175,6 +2178,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->isTeleporting = false;
 			}
 
+			$packet->ridingEid = $this->vehicleEid;
+			$packet->mode = ($this->vehicleEid == 0 ? MovePlayerPacket::MODE_NORMAL : MovePlayerPacket::MODE_PITCH);
+			$packet->onGround = !$this->isGliding() && $this->onGround;
+
 			$packet->yaw = fmod($packet->yaw, 360);
 			$packet->pitch = fmod($packet->pitch, 360);
 
@@ -2595,6 +2602,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
 			    $this->setGenericFlag(self::DATA_FLAG_RIDING, false);
+			    $this->vehicleEid = 0;
 
 			    $pk = new SetEntityLinkPacket();
                 $pk->link = new EntityLink($target->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);

@@ -52,17 +52,19 @@ class Boat extends Vehicle{
 
     public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
         $player->setGenericFlag(self::DATA_FLAG_RIDING);
+        $player->vehicleEid = $this->getId();
 
-        $player->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1.02001, 0));
-        $player->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
-        $player->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
-        $player->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
+        $metadata = [
+            self::DATA_RIDER_SEAT_POSITION => [self::DATA_TYPE_VECTOR3F, new Vector3(0, 1.02001, 0)],
+            self::DATA_RIDER_ROTATION_LOCKED => [self::DATA_TYPE_BYTE, 1],
+            self::DATA_RIDER_MAX_ROTATION => [self::DATA_TYPE_FLOAT, 90],
+            self::DATA_RIDER_MIN_ROTATION => [self::DATA_TYPE_FLOAT, -90]
+        ];
 
-        $player->sendData($player->getViewers(), $this->propertyManager->getDirty());
-        $this->propertyManager->clearDirtyProperties();
+        $player->sendData($player->getViewers(), $metadata);
 
         $pk = new SetEntityLinkPacket();
-        $pk->link = new EntityLink($this->getId(), $player->getId(), EntityLink::TYPE_RIDE, true);
+        $pk->link = new EntityLink($this->getId(), $player->getId(), EntityLink::TYPE_RIDE, false);
         $player->dataPacket($pk);
 
         return true;

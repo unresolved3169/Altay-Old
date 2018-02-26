@@ -157,7 +157,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handleEntityPickRequest(EntityPickRequestPacket $packet) : bool{
-		return false; //TODO
+		return true; //TODO : Test for boat
 	}
 
 	public function handlePlayerAction(PlayerActionPacket $packet) : bool{
