@@ -466,8 +466,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	/** @var TimingsHandler */
 	protected $timings;
-	/** @var bool */
-	protected $isPlayer = false;
 
 	/** @var bool */
 	protected $constructed = false;
