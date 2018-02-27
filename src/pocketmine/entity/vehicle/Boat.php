@@ -41,9 +41,11 @@ class Boat extends Vehicle{
 
     public $height = 0.455;
 
+    public $gravity = 0; // 0.009
+
     protected function initEntity(){
-        $this->setGenericFlag(self::DATA_FLAG_STACKABLE, true);
-        $this->setGenericFlag(self::DATA_FLAG_NO_AI, false);
+        $this->setGenericFlag(self::DATA_FLAG_STACKABLE);
+        $this->setImmobile(false);
 
         $this->setBoatType($this->namedtag->getInt(self::TAG_VARIANT, 0));
 
@@ -54,20 +56,44 @@ class Boat extends Vehicle{
         $player->setGenericFlag(self::DATA_FLAG_RIDING);
         $player->vehicleEid = $this->getId();
 
-        $metadata = [
+        /*$metadata = [
             self::DATA_RIDER_SEAT_POSITION => [self::DATA_TYPE_VECTOR3F, new Vector3(0, 1.02001, 0)],
             self::DATA_RIDER_ROTATION_LOCKED => [self::DATA_TYPE_BYTE, 1],
             self::DATA_RIDER_MAX_ROTATION => [self::DATA_TYPE_FLOAT, 90],
             self::DATA_RIDER_MIN_ROTATION => [self::DATA_TYPE_FLOAT, -90]
-        ];
+        ];*/
 
-        $player->sendData($player->getViewers(), $metadata);
+        $player->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1.02001, 0));
+        $player->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
+        $player->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
+        $player->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
+
+        //$player->sendData($player->getViewers(), $metadata);
+
+        $changedProperties = $this->propertyManager->getDirty();
+        if(!empty($changedProperties)){
+            $this->sendData($this->hasSpawned, $changedProperties);
+            $this->propertyManager->clearDirtyProperties();
+        }
 
         $pk = new SetEntityLinkPacket();
         $pk->link = new EntityLink($this->getId(), $player->getId(), EntityLink::TYPE_RIDE, false);
         $player->dataPacket($pk);
 
         return true;
+    }
+
+    public function entityBaseTick(int $tickDiff = 1): bool{
+        if(parent::entityBaseTick($tickDiff)){
+
+            if($this->isInsideOfWater()){
+                $this->move(0, 2, 0);
+                $this->updateMovement();
+            }
+            return true;
+        }
+
+        return false;
     }
 
     public function getDrops(): array{
@@ -88,5 +114,9 @@ class Boat extends Vehicle{
         parent::saveNBT();
 
         $this->namedtag->setInt(self::TAG_VARIANT, $this->getBoatType());
+    }
+
+    public function getName(): string{
+        return "Boat";
     }
 }
