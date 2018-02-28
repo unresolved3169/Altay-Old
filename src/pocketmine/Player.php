@@ -2610,7 +2610,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
 			    $this->unlinkFromVehicle($target);
-                break;
+            	break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
 			default:
