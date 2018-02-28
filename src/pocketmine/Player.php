@@ -2613,8 +2613,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			    $this->setGenericFlag(self::DATA_FLAG_RIDING, false);
 			    $this->vehicleEid = 0;
 
-                if($target instanceof Vehicle)
-                    $target->onLeave();
+			    if($target instanceof Vehicle)
+			        $target->onLeave();
 
 			    $pk = new SetEntityLinkPacket();
                 $pk->link = new EntityLink($target->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
