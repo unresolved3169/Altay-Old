@@ -919,13 +919,6 @@ class Server{
 	}
 
 	/**
-	 * @param Player $player
-	 */
-	public function removePlayer(Player $player){
-		unset($this->players[spl_object_hash($player)]);
-	}
-
-	/**
 	 * @return Level[]
 	 */
 	public function getLevels() : array{
@@ -2322,17 +2315,19 @@ class Server{
 		$this->loggedInPlayers[$player->getRawUniqueId()] = $player;
 	}
 
-	public function onPlayerCompleteLoginSequence(Player $player){
-		$this->sendFullPlayerListData($player);
-		$player->dataPacket($this->craftingManager->getCraftingDataPacket());
-	}
-
 	public function onPlayerLogout(Player $player){
 		unset($this->loggedInPlayers[$player->getRawUniqueId()]);
 	}
 
 	public function addPlayer(Player $player){
         $this->players[spl_object_hash($player)] = $player;
+	}
+
+    /**
+     * @param Player $player
+     */
+    public function removePlayer(Player $player){
+	    unset($this->players[spl_object_hash($player)]);
 	}
 
 	public function addOnlinePlayer(Player $player){
