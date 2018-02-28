@@ -2168,8 +2168,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	    $target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
 
 	    $this->server->broadcastPacket($this->getViewers(), $packet);
-        return true;
-    }
+	    return true;
+	}
 
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
 		$newPos = $packet->position->subtract(0, $this->baseOffset, 0);
@@ -2613,9 +2613,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			    $this->setGenericFlag(self::DATA_FLAG_RIDING, false);
 			    $this->vehicleEid = 0;
 
-                if($target instanceof Vehicle){
+                if($target instanceof Vehicle)
                     $target->onLeave();
-                }
 
 			    $pk = new SetEntityLinkPacket();
                 $pk->link = new EntityLink($target->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
