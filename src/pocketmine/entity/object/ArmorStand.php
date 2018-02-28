@@ -110,7 +110,7 @@ class ArmorStand extends Entity{
         $this->pose = $poseTag->getInt(self::TAG_POSE_INDEX, 0);
     }
 
-    public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
+    public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){
         if($player->isSneaking()){
             // I couldn't find a way to set a pose, but MCPE is doing it himself here.
             $this->pose++;

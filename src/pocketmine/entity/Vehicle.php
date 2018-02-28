@@ -24,10 +24,18 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\item\Item;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 abstract class Vehicle extends Entity implements Rideable{
 
     abstract public function onLeave(Player $rider) : void;
+
+    abstract public function onBoard(Player $rider) : void;
+
+    public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){
+        $this->onBoard($player);
+    }
 
 }

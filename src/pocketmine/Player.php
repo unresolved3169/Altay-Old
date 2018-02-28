@@ -345,7 +345,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
 
     /** @var int */
-    public $vehicleEid = 0;
+    protected $vehicleEid = 0;
 
 	/**
 	 * @return TranslationContainer|string
@@ -2609,15 +2609,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
-			    $this->setGenericFlag(self::DATA_FLAG_RIDING, false);
-			    $this->vehicleEid = 0;
-
-			    if($target instanceof Vehicle)
-			        $target->onLeave($this);
-
-			    $pk = new SetEntityLinkPacket();
-                $pk->link = new EntityLink($target->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
-                $this->server->broadcastPacket($this->getViewers(), $packet);
+			    $this->unlinkFromVehicle($target);
                 break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
@@ -4119,5 +4111,27 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
     public function resetLastEnderPearlUse() : void{
         $this->lastEnderPearlUse = 0;
+    }
+
+    public function linkToVehicle(Vehicle $vehicle, int $type = EntityLink::TYPE_RIDE){
+        $this->setGenericFlag(self::DATA_FLAG_RIDING);
+        $this->vehicleEid = $vehicle->getId();
+
+        $pk = new SetEntityLinkPacket();
+        $pk->link = new EntityLink($this->getId(), $this->getId(), $type, false);
+        $this->dataPacket($pk);
+    }
+
+    public function unlinkFromVehicle(Vehicle $vehicle = null){
+        $vehicle = $vehicle ?? $this->level->getEntity($this->vehicleEid);
+
+        $this->setGenericFlag(self::DATA_FLAG_RIDING, false);
+        $this->vehicleEid = 0;
+
+        $vehicle->onLeave($this);
+
+        $pk = new SetEntityLinkPacket();
+        $pk->link = new EntityLink($vehicle->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
+        $this->server->broadcastPacket($this->getViewers(), $pk);
     }
 }

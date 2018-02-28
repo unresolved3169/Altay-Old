@@ -2151,9 +2151,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
-        return false;
-	}
+	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){}
 
     /**
      * @return Item[]

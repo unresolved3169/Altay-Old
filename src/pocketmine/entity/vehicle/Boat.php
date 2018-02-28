@@ -29,8 +29,6 @@ use pocketmine\entity\Vehicle;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
-use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\Player;
 
 class Boat extends Vehicle{
@@ -41,7 +39,7 @@ class Boat extends Vehicle{
 
     public $height = 0.455;
 
-    protected $gravity = 0;
+    protected $gravity = 0; // 0.009 TODO
 
     protected function initEntity(){
         $this->setHealth(4);
@@ -53,34 +51,24 @@ class Boat extends Vehicle{
         parent::initEntity();
     }
 
-    public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []) : bool{
-        $player->setGenericFlag(self::DATA_FLAG_RIDING);
-        $player->vehicleEid = $this->getId();
-
-        $player->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1.02001, 0));
-        $player->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
-        $player->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
-        $player->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
-
-        $changedProperties = $this->propertyManager->getDirty();
-        if(!empty($changedProperties)){
-            $this->sendData($this->hasSpawned, $changedProperties);
-            $this->propertyManager->clearDirtyProperties();
-        }
+    public function onBoard(Player $rider) : void{
+        $rider->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, 1.02001, 0));
+        $rider->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
+        $rider->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
+        $rider->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
 
         $this->motionY = 0.1; // HACK for gravity problem
 
-        $pk = new SetEntityLinkPacket();
-        $pk->link = new EntityLink($this->getId(), $player->getId(), EntityLink::TYPE_RIDE, false);
-        $player->dataPacket($pk);
-
-        return true;
+        $rider->linkToVehicle($this);
     }
 
-    public function getDrops(): array{
-        return [
-            ItemFactory::get(Item::BOAT, $this->getBoatType())
-        ];
+    public function onLeave(Player $rider) : void{
+        $this->motionY = 0;
+
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_SEAT_POSITION);
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_ROTATION_LOCKED);
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_MAX_ROTATION);
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_MIN_ROTATION);
     }
 
     public function getBoatType() : int{
@@ -97,11 +85,9 @@ class Boat extends Vehicle{
         $this->namedtag->setInt(self::TAG_VARIANT, $this->getBoatType());
     }
 
-    public function onLeave(Player $rider) : void{
-        $this->motionY = 0;
-        $rider->propertyManager->removeProperty(self::DATA_RIDER_SEAT_POSITION);
-        $rider->propertyManager->removeProperty(self::DATA_RIDER_ROTATION_LOCKED);
-        $rider->propertyManager->removeProperty(self::DATA_RIDER_MAX_ROTATION);
-        $rider->propertyManager->removeProperty(self::DATA_RIDER_MIN_ROTATION);
+    public function getDrops() : array{
+        return [
+            ItemFactory::get(Item::BOAT, $this->getBoatType())
+        ];
     }
 }
