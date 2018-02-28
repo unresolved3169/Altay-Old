@@ -97,8 +97,11 @@ class Boat extends Vehicle{
         $this->namedtag->setInt(self::TAG_VARIANT, $this->getBoatType());
     }
 
-    public function onLeave() : void{
+    public function onLeave(Player $rider) : void{
         $this->motionY = 0;
-        // TODO : Add remove metadata from player
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_SEAT_POSITION);
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_ROTATION_LOCKED);
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_MAX_ROTATION);
+        $rider->propertyManager->removeProperty(self::DATA_RIDER_MIN_ROTATION);
     }
 }
