@@ -120,8 +120,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
     public function handleMoveEntity(MoveEntityPacket $packet) : bool{
-        $this->player->getServer()->broadcastPacket($this->player->getViewers(), $packet);
-        return true;
+        return $this->player->handleMoveEntity($packet);
     }
 
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{

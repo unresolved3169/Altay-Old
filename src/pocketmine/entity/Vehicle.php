@@ -25,4 +25,6 @@ namespace pocketmine\entity;
 
 abstract class Vehicle extends Entity implements Rideable{
 
+    abstract public function onLeave() : void;
+
 }

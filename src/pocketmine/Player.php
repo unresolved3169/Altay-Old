@@ -33,6 +33,8 @@ use pocketmine\entity\Attribute;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
+use pocketmine\entity\Vehicle;
+use pocketmine\entity\vehicle\Boat;
 use pocketmine\entity\Item as DroppedItem;
 use pocketmine\entity\Living;
 use pocketmine\entity\projectile\Arrow;
@@ -2159,7 +2161,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
-	    return true;
+	    $target = $this->level->getEntity($packet->entityRuntimeId);
+	    if($target === null)
+	        return false;
+
+	    $target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
+
+	    $this->server->broadcastPacket($this->getViewers(), $packet);
+        return true;
     }
 
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
@@ -2604,10 +2613,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			    $this->setGenericFlag(self::DATA_FLAG_RIDING, false);
 			    $this->vehicleEid = 0;
 
+                if($target instanceof Vehicle){
+                    $target->onLeave();
+                }
+
 			    $pk = new SetEntityLinkPacket();
                 $pk->link = new EntityLink($target->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
                 $this->server->broadcastPacket($this->getViewers(), $packet);
-
                 break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
