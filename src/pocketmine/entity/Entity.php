@@ -641,11 +641,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function isAffectedByGravity() : bool{
 	    return $this->getGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY);
-    }
+	}
 
-    public function setAffectedByGravity(bool $value = true){
-	    $this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, $value);
-    }
+	public function setAffectedByGravity(bool $value = true){
+		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, $value);
+	}
 
 	public function isSneaking() : bool{
 		return $this->getGenericFlag(self::DATA_FLAG_SNEAKING);
@@ -685,11 +685,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function isGliding() : bool{
 	    return $this->getGenericFlag(self::DATA_FLAG_GLIDING);
-    }
+	}
 
-    public function setGliding(bool $value = true) : void{
-	    $this->setGenericFlag(self::DATA_FLAG_GLIDING, $value);
-    }
+	public function setGliding(bool $value = true) : void{
+		$this->setGenericFlag(self::DATA_FLAG_GLIDING, $value);
+	}
 
 	/**
 	 * Returns whether the entity is able to climb blocks such as ladders or vines.
@@ -925,11 +925,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function onDeath(){
-        $this->server->getPluginManager()->callEvent($ev = new EntityDeathEvent($this, $this->getDrops()));
-        foreach($ev->getDrops() as $item){
-            $this->getLevel()->dropItem($this, $item);
-        }
-    }
+		$this->server->getPluginManager()->callEvent($ev = new EntityDeathEvent($this, $this->getDrops()));
+		foreach($ev->getDrops() as $item){
+			$this->getLevel()->dropItem($this, $item);
+		}
+	}
 
 	/**
 	 * Called to tick entities while dead. Returns whether the entity should be flagged for despawn yet.
@@ -2153,11 +2153,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){}
 
-    /**
-     * @return Item[]
-     */
-    public function getDrops() : array{
-        return [];
-    }
+	/**
+	 * @return Item[]
+	 */
+	public function getDrops() : array{
+		return [];
+	}
 
 }

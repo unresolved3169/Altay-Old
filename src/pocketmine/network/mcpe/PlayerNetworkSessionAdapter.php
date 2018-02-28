@@ -119,9 +119,9 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 		return false;
 	}
 
-    public function handleMoveEntity(MoveEntityPacket $packet) : bool{
-        return $this->player->handleMoveEntity($packet);
-    }
+	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+		return $this->player->handleMoveEntity($packet);
+	}
 
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
 		return $this->player->handleMovePlayer($packet);
@@ -168,10 +168,10 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 		return true;
 	}
 
-    public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
-        $this->player->getServer()->broadcastPacket($this->player->getViewers(), $packet);
-        return true;
-    }
+	public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
+		$this->player->getServer()->broadcastPacket($this->player->getViewers(), $packet);
+		return true;
+	}
 
 	public function handleAnimate(AnimatePacket $packet) : bool{
 		return $this->player->handleAnimate($packet);
@@ -255,8 +255,9 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 
 	public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
 		if($this->server->allowServerSettingsForm){
-		    $this->player->sendServerSettings($this->server->getServerSettingsForm());
-        }
-        return true;
+			$this->player->sendServerSettings($this->server->getServerSettingsForm());
+		}
+
+		return true;
 	}
 }
