@@ -36,6 +36,7 @@ abstract class Vehicle extends Entity implements Rideable{
 
     public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){
         $this->onBoard($player);
+        $player->linkToVehicle($this);
     }
 
 }

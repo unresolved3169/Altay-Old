@@ -58,8 +58,6 @@ class Boat extends Vehicle{
         $rider->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
 
         $this->motionY = 0.1; // HACK for gravity problem
-
-        $rider->linkToVehicle($this);
     }
 
     public function onLeave(Player $rider) : void{
