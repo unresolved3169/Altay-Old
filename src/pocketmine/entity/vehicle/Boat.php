@@ -27,6 +27,7 @@ namespace pocketmine\entity\vehicle;
 use pocketmine\block\Water;
 use pocketmine\entity\EntityIds;
 use pocketmine\entity\Vehicle;
+use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\Math;
@@ -39,9 +40,11 @@ class Boat extends Vehicle{
 
     public const TAG_VARIANT = "Variant";
 
-    public $height = 0.455;
+    public $height = 0.7; // 0.455 on pc ?
+    public $width = 1.6;
 
     protected $gravity = 0.09;
+    protected $drag = 0.1;
 
     protected function initEntity(){
         $this->setHealth(4);
@@ -104,6 +107,10 @@ class Boat extends Vehicle{
 
         if($this->isInsideOfWater()){
             $this->gravity = 0.0;
+        }
+
+        if($this->getHealth() < $this->getMaxHealth()){
+            $this->heal(new EntityRegainHealthEvent($this, 0.1, EntityRegainHealthEvent::CAUSE_REGEN));
         }
 
         return parent::onUpdate($currentTick);
