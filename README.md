@@ -25,6 +25,7 @@ Example servers running Altay
  - [x] Elytra
  - [x] EnchantmentTable
  - [ ] Entity Behaviors (MobAI)
+ - [ ] Riding
  - [x] Fireworks
  - [x] Forms
  - [x] Hopper
