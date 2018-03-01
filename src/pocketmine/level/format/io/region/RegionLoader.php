@@ -1,29 +1,31 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
-
+ */
+ 
 declare(strict_types=1);
 
 namespace pocketmine\level\format\io\region;
 
 use pocketmine\level\format\ChunkException;
+use pocketmine\level\format\io\exception\CorruptedChunkException;
 use pocketmine\utils\Binary;
 use pocketmine\utils\MainLogger;
 
@@ -95,10 +97,18 @@ class RegionLoader{
 		return !($this->locationTable[$index][0] === 0 or $this->locationTable[$index][1] === 0);
 	}
 
+	/**
+	 * @param int $x
+	 * @param int $z
+	 *
+	 * @return null|string
+	 * @throws \InvalidArgumentException if invalid coordinates are given
+	 * @throws CorruptedChunkException if chunk corruption is detected
+	 */
 	public function readChunk(int $x, int $z) : ?string{
 		$index = self::getChunkOffset($x, $z);
 		if($index < 0 or $index >= 4096){
-			return null;
+			throw new \InvalidArgumentException("Invalid chunk position in region, expected x/z in range 0-31, got x=$x, z=$z");
 		}
 
 		$this->lastUsed = time();
@@ -115,27 +125,26 @@ class RegionLoader{
 			if($length >= self::MAX_SECTOR_LENGTH){
 				$this->locationTable[$index][0] = ++$this->lastSector;
 				$this->locationTable[$index][1] = 1;
-				MainLogger::getLogger()->error("Corrupted chunk header detected");
+				throw new CorruptedChunkException("Corrupted chunk header detected (sector count larger than max)");
 			}
 			return null;
 		}
 
 		if($length > ($this->locationTable[$index][1] << 12)){ //Invalid chunk, bigger than defined number of sectors
-			MainLogger::getLogger()->error("Corrupted bigger chunk detected");
+			MainLogger::getLogger()->error("Corrupted bigger chunk detected (bigger than number of sectors given in header)");
 			$this->locationTable[$index][1] = $length >> 12;
 			$this->writeLocationIndex($index);
 		}elseif($compression !== self::COMPRESSION_ZLIB and $compression !== self::COMPRESSION_GZIP){
-			MainLogger::getLogger()->error("Invalid compression type");
-			return null;
+			throw new CorruptedChunkException("Invalid compression type (got $compression, expected " . self::COMPRESSION_ZLIB . " or " . self::COMPRESSION_GZIP . ")");
 		}
 
 		$chunkData = fread($this->filePointer, $length - 1);
-		if($chunkData !== false){
-			return $chunkData;
-		}else{
-			MainLogger::getLogger()->error("Corrupted chunk detected");
-			return null;
+		if($chunkData === false){
+			throw new CorruptedChunkException("Corrupted chunk detected (failed to read chunk data from disk)");
+
 		}
+
+		return $chunkData;
 	}
 
 	public function chunkExists(int $x, int $z) : bool{
