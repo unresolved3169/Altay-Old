@@ -117,46 +117,46 @@ abstract class Tile extends Position{
 		return null;
 	}
 
-    /**
-     * @param       $className
-     * @param array $saveNames
-     *
-     * @return bool
-     * @throws \ReflectionException
-     */
-    public static function registerTile($className, array $saveNames = []) : bool{
-        $class = new \ReflectionClass($className);
-        if(is_a($className, Tile::class, true) and !$class->isAbstract()){
-            $shortName = $class->getShortName();
-            if(!in_array($shortName, $saveNames, true)){
-                $saveNames[] = $shortName;
-            }
+	/**
+	 * @param       $className
+	 * @param array $saveNames
+	 *
+	 * @return bool
+	 * @throws \ReflectionException
+	 */
+	public static function registerTile($className, array $saveNames = []) : bool{
+		$class = new \ReflectionClass($className);
+		if(is_a($className, Tile::class, true) and !$class->isAbstract()){
+			$shortName = $class->getShortName();
+			if(!in_array($shortName, $saveNames, true)){
+				$saveNames[] = $shortName;
+			}
 
-            foreach($saveNames as $name){
-                self::$knownTiles[$name] = $className;
-            }
+			foreach($saveNames as $name){
+				self::$knownTiles[$name] = $className;
+			}
 
-            self::$saveNames[$className] = $saveNames;
+			self::$saveNames[$className] = $saveNames;
 
 
-            return true;
-        }
+			return true;
+		}
 
-        return false;
-    }
+		return false;
+	}
 
-    /**
-     * Returns the short save name
-     * @return string
-     */
-    public static function getSaveId() : string{
-        if(!isset(self::$saveNames[static::class])){
-            throw new \InvalidStateException("Tile is not registered");
-        }
+	/**
+	 * Returns the short save name
+	 * @return string
+	 */
+	public static function getSaveId() : string{
+		if(!isset(self::$saveNames[static::class])){
+			throw new \InvalidStateException("Tile is not registered");
+		}
 
-        reset(self::$saveNames[static::class]);
-        return current(self::$saveNames[static::class]);
-    }
+		reset(self::$saveNames[static::class]);
+		return current(self::$saveNames[static::class]);
+	}
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->timings = Timings::getTileEntityTimings($this);

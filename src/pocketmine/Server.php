@@ -276,32 +276,32 @@ class Server{
 
 	// ALTAY
 
-    /** @var ServerSettingsForm */
-    protected $serverSettingsForm = null;
+	/** @var ServerSettingsForm */
+	protected $serverSettingsForm = null;
 
-    /** ALTAY CONFIG */
+	/** ALTAY CONFIG */
 
-    /** @var bool */
-    public static $readLine = false;
-    /** @var bool */
-    public $loadIncompatibleApi = true;
-    /** @var bool */
-    public $allowServerSettingsForm = true;
-    /** @var bool */
-    public $keepInventory = false;
-    /** @var bool */
-    public $keepExperience = false;
-    /** @var bool */
-    public $folderPluginLoader = true;
+	/** @var bool */
+	public static $readLine = false;
+	/** @var bool */
+	public $loadIncompatibleApi = true;
+	/** @var bool */
+	public $allowServerSettingsForm = true;
+	/** @var bool */
+	public $keepInventory = false;
+	/** @var bool */
+	public $keepExperience = false;
+	/** @var bool */
+	public $folderPluginLoader = true;
 
-    public function loadAltayConfig(){
-        self::$readLine = $this->getAltayProperty("terminal.read-line", true);
-        $this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
-        $this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
-        $this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
-        $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
-        $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
-    }
+	public function loadAltayConfig(){
+		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
+		$this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
+		$this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
+		$this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
+		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
+		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
+	}
 
 	/**
 	 * @return string
@@ -911,27 +911,27 @@ class Server{
 		return $matchedPlayers;
 	}
 
-    /**
-     * Returns the player online with the specified raw UUID, or null if not found
-     *
-     * @param string $rawUUID
-     *
-     * @return null|Player
-     */
-    public function getPlayerByRawUUID(string $rawUUID) : ?Player{
-        return $this->playerList[$rawUUID] ?? null;
-    }
+	/**
+	 * Returns the player online with the specified raw UUID, or null if not found
+	 *
+	 * @param string $rawUUID
+	 *
+	 * @return null|Player
+	 */
+	public function getPlayerByRawUUID(string $rawUUID) : ?Player{
+		return $this->playerList[$rawUUID] ?? null;
+	}
 
-    /**
-     * Returns the player online with a UUID equivalent to the specified UUID object, or null if not found
-     *
-     * @param UUID $uuid
-     *
-     * @return null|Player
-     */
-    public function getPlayerByUUID(UUID $uuid) : ?Player{
-        return $this->getPlayerByRawUUID($uuid->toBinary());
-    }
+	/**
+	 * Returns the player online with a UUID equivalent to the specified UUID object, or null if not found
+	 *
+	 * @param UUID $uuid
+	 *
+	 * @return null|Player
+	 */
+	public function getPlayerByUUID(UUID $uuid) : ?Player{
+		return $this->getPlayerByRawUUID($uuid->toBinary());
+	}
 
 	/**
 	 * @return Level[]
@@ -1213,17 +1213,17 @@ class Server{
 	}
 
 	public function getAltayProperty(string $variable, $defaultValue = null){
-        if(!array_key_exists($variable, $this->altayPropertyCache)){
-            $v = getopt("", ["$variable::"]);
-            if(isset($v[$variable])){
-                $this->altayPropertyCache[$variable] = $v[$variable];
-            }else{
-                $this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
-            }
-        }
+		if(!array_key_exists($variable, $this->altayPropertyCache)){
+			$v = getopt("", ["$variable::"]);
+			if(isset($v[$variable])){
+				$this->altayPropertyCache[$variable] = $v[$variable];
+			}else{
+				$this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
+			}
+		}
 
-        return $this->altayPropertyCache[$variable] ?? $defaultValue;
-    }
+		return $this->altayPropertyCache[$variable] ?? $defaultValue;
+	}
 
 	/**
 	 * @param string $variable
@@ -1313,8 +1313,8 @@ class Server{
 	 * @return PluginIdentifiableCommand|null
 	 */
 	public function getPluginCommand(string $name) : ?PluginIdentifiableCommand{
-        $command = $this->commandMap->getCommand($name);
-        return $command instanceof PluginIdentifiableCommand ? $command : null;
+		$command = $this->commandMap->getCommand($name);
+		return $command instanceof PluginIdentifiableCommand ? $command : null;
 	}
 
 	/**
@@ -1500,9 +1500,9 @@ class Server{
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
 
-            $this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
+			$this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
 
-            define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
+			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
 			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
 				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
@@ -1558,7 +1558,7 @@ class Server{
 				}
 			}else{
 			    $poolSize = (int) $poolSize;
-            }
+			}
 
 			ServerScheduler::$WORKERS = $poolSize;
 
@@ -1618,15 +1618,15 @@ class Server{
 			$this->maxPlayers = $this->getConfigInt("max-players", 20);
 			$this->setAutoSave($this->getConfigBool("auto-save", true));
 
-            $this->onlineMode = $this->getConfigBool("xbox-auth", true);
-            if($this->onlineMode){
-                $this->logger->notice($this->getLanguage()->translateString("pocketmine.server.auth.enabled"));
-                $this->logger->notice($this->getLanguage()->translateString("pocketmine.server.authProperty.enabled"));
-            }else{
-                $this->logger->warning($this->getLanguage()->translateString("pocketmine.server.auth.disabled"));
-                $this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authWarning"));
-                $this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authProperty.disabled"));
-            }
+			$this->onlineMode = $this->getConfigBool("xbox-auth", true);
+			if($this->onlineMode){
+				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.auth.enabled"));
+				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.authProperty.enabled"));
+			}else{
+				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.auth.disabled"));
+				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authWarning"));
+				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authProperty.disabled"));
+			}
 
 			if($this->getConfigBool("hardcore", false) === true and $this->getDifficulty() < Level::DIFFICULTY_HARD){
 				$this->setConfigInt("difficulty", Level::DIFFICULTY_HARD);
@@ -1657,17 +1657,17 @@ class Server{
 
 
 			Timings::init();
-            Enchantment::init();
+			Enchantment::init();
 
-            $this->consoleSender = new ConsoleCommandSender();
-            CommandParameterUtils::init();
-            $this->commandMap = new SimpleCommandMap($this);
+			$this->consoleSender = new ConsoleCommandSender();
+			CommandParameterUtils::init();
+			$this->commandMap = new SimpleCommandMap($this);
 
-            Entity::init();
-            Tile::init();
-            BlockFactory::init();
+			Entity::init();
+			Tile::init();
+			BlockFactory::init();
 			ItemFactory::init();
-            Item::initCreativeItems();
+			Item::initCreativeItems();
 			Biome::init();
 			Effect::init();
 			Attribute::init();
@@ -1916,12 +1916,12 @@ class Server{
 	 * @param bool         $immediate
 	 */
 	public function batchPackets(array $players, array $packets, bool $forceSync = false, bool $immediate = false){
-	    if(empty($packets)){
-	        throw new \InvalidArgumentException("Cannot send empty batch");
-        }
+		if(empty($packets)){
+			throw new \InvalidArgumentException("Cannot send empty batch");
+		}
 		Timings::$playerNetworkTimer->startTiming();
 
-        $targets = array_filter($players, function(Player $player) : bool{ return $player->isConnected(); });
+		$targets = array_filter($players, function(Player $player) : bool{ return $player->isConnected(); });
 
 		if(!empty($targets)){
 			$pk = new BatchPacket();
@@ -1948,18 +1948,18 @@ class Server{
 		Timings::$playerNetworkTimer->stopTiming();
 	}
 
-    /**
-     * @param BatchPacket $pk
-     * @param Player[]    $players
-     * @param bool        $immediate
-     */
-    public function broadcastPacketsCallback(BatchPacket $pk, array $players, bool $immediate = false){
+	/**
+	 * @param BatchPacket $pk
+	 * @param Player[]    $players
+	 * @param bool        $immediate
+	 */
+	public function broadcastPacketsCallback(BatchPacket $pk, array $players, bool $immediate = false){
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
 
-        foreach($players as $player){
-		    $player->sendDataPacket($pk, false, $immediate);
+		foreach($players as $player){
+			$player->sendDataPacket($pk, false, $immediate);
 		}
 	}
 
@@ -2239,9 +2239,9 @@ class Server{
 
 		ini_set("error_reporting", '0');
 		ini_set("memory_limit", '-1'); //Fix error dump not dumped on memory problems
-        try{
-            $this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
-            $dump = new CrashDump($this);
+		try{
+			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
+			$dump = new CrashDump($this);
 
 			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.submit", [$dump->getPath()]));
 
@@ -2283,8 +2283,8 @@ class Server{
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 			try{
-                $this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
-            }catch(\Throwable $exception){}
+				$this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
+			}catch(\Throwable $exception){}
 		}
 
 		//$this->checkMemory();
@@ -2328,13 +2328,13 @@ class Server{
 	}
 
 	public function addPlayer(Player $player){
-        $this->players[spl_object_hash($player)] = $player;
+		$this->players[spl_object_hash($player)] = $player;
 	}
 
-    /**
-     * @param Player $player
-     */
-    public function removePlayer(Player $player){
+	/**
+	 * @param Player $player
+	 */
+	public function removePlayer(Player $player){
 	    unset($this->players[spl_object_hash($player)]);
 	}
 
@@ -2352,14 +2352,14 @@ class Server{
 		}
 	}
 
-    /**
-     * @param UUID $uuid
-     * @param int $entityId
-     * @param string $name
-     * @param Skin $skin
-     * @param string $xboxUserId
-     * @param Player[]|null $players
-     */
+	/**
+	 * @param UUID $uuid
+	 * @param int $entityId
+	 * @param string $name
+	 * @param Skin $skin
+	 * @param string $xboxUserId
+	 * @param Player[]|null $players
+	 */
 	public function updatePlayerListData(UUID $uuid, int $entityId, string $name, Skin $skin, string $xboxUserId, array $players = null){
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
@@ -2514,14 +2514,14 @@ class Server{
 		Timings::$titleTickTimer->stopTiming();
 	}
 
-    /**
-     * @param AdvancedSourceInterface $interface
-     * @param string $address
-     * @param int $port
-     * @param string $payload
-     *
-     * TODO: move this to Network
-     */
+	/**
+	 * @param AdvancedSourceInterface $interface
+	 * @param string $address
+	 * @param int $port
+	 * @param string $payload
+	 *
+	 * TODO: move this to Network
+	 */
 	public function handlePacket(AdvancedSourceInterface $interface, string $address, int $port, string $payload){
 		try{
 			if(strlen($payload) > 2 and substr($payload, 0, 2) === "\xfe\xfd" and $this->queryHandler instanceof QueryHandler){
@@ -2653,17 +2653,17 @@ class Server{
 
 	// ALTAY
 
-    /**
-     * @return ServerSettingsForm
-     */
-    public function getServerSettingsForm(): ServerSettingsForm{
-        return $this->serverSettingsForm;
-    }
+	/**
+	 * @return ServerSettingsForm
+	 */
+	public function getServerSettingsForm(): ServerSettingsForm{
+		return $this->serverSettingsForm;
+	}
 
-    /**
-     * @param ServerSettingsForm $serverSettingsForm
-     */
-    public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
-        $this->serverSettingsForm = $serverSettingsForm;
-    }
+	/**
+	 * @param ServerSettingsForm $serverSettingsForm
+	 */
+	public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
+		$this->serverSettingsForm = $serverSettingsForm;
+	}
 }
