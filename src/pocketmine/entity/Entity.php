@@ -926,9 +926,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	protected function onDeath(){
 		$this->server->getPluginManager()->callEvent($ev = new EntityDeathEvent($this, $this->getDrops()));
-		foreach($ev->getDrops() as $item){
-			$this->getLevel()->dropItem($this, $item);
-		}
+		$this->level->dropItems($this, $ev->getDrops());
 	}
 
 	/**

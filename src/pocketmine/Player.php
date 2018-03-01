@@ -4120,7 +4120,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->vehicleEid = $vehicle->getId();
 
 		$pk = new SetEntityLinkPacket();
-		$pk->link = new EntityLink($this->getId(), $this->getId(), $type, false);
+		$pk->link = new EntityLink($vehicle->getId(), $this->getId(), $type, false);
 		$this->dataPacket($pk);
 	}
 

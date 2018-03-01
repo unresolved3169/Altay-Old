@@ -32,11 +32,11 @@ abstract class Vehicle extends Entity implements Rideable{
 
     abstract public function onLeave(Player $rider) : void;
 
-    abstract public function onBoard(Player $rider) : void;
+    abstract public function onBoard(Player $rider) : bool;
 
     public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){
-        $this->onBoard($player);
-        $player->linkToVehicle($this);
+        if($this->onBoard($player))
+            $player->linkToVehicle($this);
     }
 
 }
