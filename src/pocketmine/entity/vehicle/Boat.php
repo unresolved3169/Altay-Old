@@ -24,10 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\vehicle;
 
+use pocketmine\block\Water;
 use pocketmine\entity\EntityIds;
 use pocketmine\entity\Vehicle;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\math\Math;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -39,7 +41,7 @@ class Boat extends Vehicle{
 
     public $height = 0.455;
 
-    protected $gravity = 0; // 0.009 TODO
+    protected $gravity = 0.09;
 
     protected function initEntity(){
         $this->setHealth(4);
@@ -87,5 +89,33 @@ class Boat extends Vehicle{
         return [
             ItemFactory::get(Item::BOAT, $this->getBoatType())
         ];
+    }
+
+    public function onUpdate(int $currentTick): bool{
+        if($this->closed){
+            return false;
+        }
+
+        if($this->isOnGround()){
+            $this->onGround = true;
+        }else{
+            $this->onGround = false;
+        }
+
+        if($this->isInsideOfWater()){
+            $this->gravity = 0.0;
+        }
+
+        return parent::onUpdate($currentTick);
+    }
+
+    public function isOnGround() : bool{
+        $block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = (($this->y - 1) + $this->getEyeHeight())), Math::floorFloat($this->z));
+
+        if($block instanceof Water or $block->isSolid()){
+            return true;
+        }
+
+        return false;
     }
 }
