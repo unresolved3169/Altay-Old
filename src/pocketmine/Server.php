@@ -1618,15 +1618,15 @@ class Server{
 			$this->maxPlayers = $this->getConfigInt("max-players", 20);
 			$this->setAutoSave($this->getConfigBool("auto-save", true));
 
-			$this->onlineMode = $this->getConfigBool("xbox-auth", true);
-			if($this->onlineMode){
-				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.auth", ["enabled", "will"]));
-				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.authProperty", ["disable", "false"]));
-			}else{
-				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.auth", ["disabled", "will not"]));
-				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authWarning"));
-				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authProperty", ["enable", "true"]));
-			}
+            $this->onlineMode = $this->getConfigBool("xbox-auth", true);
+            if($this->onlineMode){
+                $this->logger->notice($this->getLanguage()->translateString("pocketmine.server.auth.enabled"));
+                $this->logger->notice($this->getLanguage()->translateString("pocketmine.server.authProperty.enabled"));
+            }else{
+                $this->logger->warning($this->getLanguage()->translateString("pocketmine.server.auth.disabled"));
+                $this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authWarning"));
+                $this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authProperty.disabled"));
+            }
 
 			if($this->getConfigBool("hardcore", false) === true and $this->getDifficulty() < Level::DIFFICULTY_HARD){
 				$this->setConfigInt("difficulty", Level::DIFFICULTY_HARD);
