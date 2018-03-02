@@ -1,24 +1,25 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
-
+ */
+ 
 declare(strict_types=1);
 
 /**
@@ -27,6 +28,7 @@ declare(strict_types=1);
 namespace pocketmine\level\generator;
 
 use pocketmine\level\ChunkManager;
+use pocketmine\level\generator\hell\Nether;
 use pocketmine\level\generator\noise\Noise;
 use pocketmine\level\generator\normal\Normal;
 use pocketmine\math\Vector3;
@@ -34,6 +36,14 @@ use pocketmine\utils\Random;
 
 abstract class Generator{
 	private static $list = [];
+
+	public static function registerDefaultGenerators() : void{
+		self::addGenerator(Flat::class, "flat");
+		self::addGenerator(Normal::class, "normal");
+		self::addGenerator(Normal::class, "default");
+		self::addGenerator(Nether::class, "hell");
+		self::addGenerator(Nether::class, "nether");
+	}
 
 	public static function addGenerator($object, $name) : bool{
 		if(is_subclass_of($object, Generator::class) and !isset(Generator::$list[$name = strtolower($name)])){

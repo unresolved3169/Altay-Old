@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -93,16 +94,17 @@ interface LevelProvider{
 	public function saveChunk(Chunk $chunk) : void;
 
 	/**
-	 * Loads a chunk (usually from disk storage) and returns it. If the chunk does not exist, null is returned, or an
-	 * empty Chunk if $create is specified.
+	 * Loads a chunk (usually from disk storage) and returns it. If the chunk does not exist, null is returned.
 	 *
-	 * @param int  $chunkX
-	 * @param int  $chunkZ
-	 * @param bool $create
+	 * @param int $chunkX
+	 * @param int $chunkZ
 	 *
 	 * @return null|Chunk
+	 *
+	 * @throws \Exception any of a range of exceptions that could be thrown while reading chunks. See individual
+	 * implementations for details.
 	 */
-	public function loadChunk(int $chunkX, int $chunkZ, bool $create = false) : ?Chunk;
+	public function loadChunk(int $chunkX, int $chunkZ) : ?Chunk;
 
 	/**
 	 * @return string

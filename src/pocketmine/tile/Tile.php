@@ -68,8 +68,8 @@ abstract class Tile extends Position{
 
 	/** @var string[] classes that extend Tile */
 	private static $knownTiles = [];
-	/** @var string[] */
-	private static $shortNames = [];
+	/** @var string[][] */
+	private static $saveNames = [];
 
 	/** @var Chunk */
 	public $chunk;
@@ -87,17 +87,17 @@ abstract class Tile extends Position{
 	protected $timings;
 
 	public static function init(){
-		self::registerTile(Banner::class);
-		self::registerTile(Bed::class);
-		self::registerTile(Chest::class);
-		self::registerTile(EnchantTable::class);
-		self::registerTile(EnderChest::class);
-		self::registerTile(FlowerPot::class);
-		self::registerTile(Furnace::class);
-		self::registerTile(Hopper::class);
-		self::registerTile(ItemFrame::class);
-		self::registerTile(Sign::class);
-		self::registerTile(Skull::class);
+		self::registerTile(Banner::class, [self::BANNER, "minecraft:banner"]);
+		self::registerTile(Bed::class, [self::BED, "minecraft:bed"]);
+		self::registerTile(Chest::class, [self::CHEST, "minecraft:chest"]);
+		self::registerTile(EnchantTable::class, [self::ENCHANT_TABLE, "minecraft:enchanting_table"]);
+		self::registerTile(EnderChest::class, [self::ENDER_CHEST, "minecraft:ender_chest"]);
+		self::registerTile(FlowerPot::class, [self::FLOWER_POT, "minecraft:flower_pot"]);
+		self::registerTile(Furnace::class, [self::FURNACE, "minecraft:furnace"]);
+		self::registerTile(Hopper::class, [self::HOPPER, "minecraft:hopper"]);
+		self::registerTile(ItemFrame::class, [self::ITEM_FRAME]); //this is an entity in PC
+		self::registerTile(Sign::class, [self::SIGN, "minecraft:sign"]);
+		self::registerTile(Skull::class, [self::SKULL, "minecraft:skull"]);
 	}
 
 	/**
@@ -118,15 +118,27 @@ abstract class Tile extends Position{
 	}
 
 	/**
-	 * @param $className
+	 * @param       $className
+	 * @param array $saveNames
 	 *
 	 * @return bool
+	 * @throws \ReflectionException
 	 */
-	public static function registerTile($className) : bool{
+	public static function registerTile($className, array $saveNames = []) : bool{
 		$class = new \ReflectionClass($className);
 		if(is_a($className, Tile::class, true) and !$class->isAbstract()){
-			self::$knownTiles[$class->getShortName()] = $className;
-			self::$shortNames[$className] = $class->getShortName();
+			$shortName = $class->getShortName();
+			if(!in_array($shortName, $saveNames, true)){
+				$saveNames[] = $shortName;
+			}
+
+			foreach($saveNames as $name){
+				self::$knownTiles[$name] = $className;
+			}
+
+			self::$saveNames[$className] = $saveNames;
+
+
 			return true;
 		}
 
@@ -138,7 +150,12 @@ abstract class Tile extends Position{
 	 * @return string
 	 */
 	public static function getSaveId() : string{
-		return self::$shortNames[static::class];
+		if(!isset(self::$saveNames[static::class])){
+			throw new \InvalidStateException("Tile is not registered");
+		}
+
+		reset(self::$saveNames[static::class]);
+		return current(self::$saveNames[static::class]);
 	}
 
 	public function __construct(Level $level, CompoundTag $nbt){

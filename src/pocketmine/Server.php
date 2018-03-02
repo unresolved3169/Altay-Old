@@ -53,21 +53,13 @@ use pocketmine\form\element\Label;
 use pocketmine\form\FormIcon;
 use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\CraftingManager;
-use pocketmine\inventory\Recipe;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\ItemFactory;
 use pocketmine\lang\BaseLang;
-use pocketmine\level\format\io\leveldb\LevelDB;
 use pocketmine\level\format\io\LevelProvider;
 use pocketmine\level\format\io\LevelProviderManager;
-use pocketmine\level\format\io\region\Anvil;
-use pocketmine\level\format\io\region\McRegion;
-use pocketmine\level\format\io\region\PMAnvil;
 use pocketmine\level\generator\biome\Biome;
-use pocketmine\level\generator\Flat;
 use pocketmine\level\generator\Generator;
-use pocketmine\level\generator\hell\Nether;
-use pocketmine\level\generator\normal\Normal;
 use pocketmine\level\Level;
 use pocketmine\level\LevelException;
 use pocketmine\metadata\EntityMetadataStore;
@@ -84,6 +76,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\LongTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\network\AdvancedSourceInterface;
 use pocketmine\network\CompressBatchedTask;
 use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
@@ -275,9 +268,6 @@ class Server{
 	/** @var Player[] */
 	private $playerList = [];
 
-	/** @var string[] */
-	private $identifiers = [];
-
 	/** @var Level[] */
 	private $levels = [];
 
@@ -286,32 +276,32 @@ class Server{
 
 	// ALTAY
 
-    /** @var ServerSettingsForm */
-    protected $serverSettingsForm = null;
+	/** @var ServerSettingsForm */
+	protected $serverSettingsForm = null;
 
-    /** ALTAY CONFIG */
+	/** ALTAY CONFIG */
 
-    /** @var bool */
-    public static $readLine = false;
-    /** @var bool */
-    public $loadIncompatibleApi = true;
-    /** @var bool */
-    public $allowServerSettingsForm = true;
-    /** @var bool */
-    public $keepInventory = false;
-    /** @var bool */
-    public $keepExperience = false;
-    /** @var bool */
-    public $folderPluginLoader = true;
+	/** @var bool */
+	public static $readLine = false;
+	/** @var bool */
+	public $loadIncompatibleApi = true;
+	/** @var bool */
+	public $allowServerSettingsForm = true;
+	/** @var bool */
+	public $keepInventory = false;
+	/** @var bool */
+	public $keepExperience = false;
+	/** @var bool */
+	public $folderPluginLoader = true;
 
-    public function loadAltayConfig(){
-        self::$readLine = $this->getAltayProperty("terminal.read-line", true);
-        $this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
-        $this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
-        $this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
-        $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
-        $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
-    }
+	public function loadAltayConfig(){
+		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
+		$this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
+		$this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
+		$this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
+		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
+		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
+	}
 
 	/**
 	 * @return string
@@ -563,16 +553,6 @@ class Server{
 	}
 
 	/**
-	 * @deprecated Moved to {@link Level#getDifficultyFromString}
-	 *
-	 * @param string $str
-	 * @return int
-	 */
-	public static function getDifficultyFromString(string $str) : int{
-		return Level::getDifficultyFromString($str);
-	}
-
-	/**
 	 * Returns Server global difficulty. Note that this may be overridden in individual Levels.
 	 * @return int
 	 */
@@ -756,10 +736,6 @@ class Server{
 		return $this->playerList;
 	}
 
-	public function addRecipe(Recipe $recipe){
-		$this->craftingManager->registerRecipe($recipe);
-	}
-
 	public function shouldSavePlayerData() : bool{
 		return (bool) $this->getProperty("player.save-player-data", true);
 	}
@@ -936,23 +912,25 @@ class Server{
 	}
 
 	/**
-	 * @param Player $player
+	 * Returns the player online with the specified raw UUID, or null if not found
+	 *
+	 * @param string $rawUUID
+	 *
+	 * @return null|Player
 	 */
-	public function removePlayer(Player $player){
-		if(isset($this->identifiers[$hash = spl_object_hash($player)])){
-			$identifier = $this->identifiers[$hash];
-			unset($this->players[$identifier]);
-			unset($this->identifiers[$hash]);
-			return;
-		}
+	public function getPlayerByRawUUID(string $rawUUID) : ?Player{
+		return $this->playerList[$rawUUID] ?? null;
+	}
 
-		foreach($this->players as $identifier => $p){
-			if($player === $p){
-				unset($this->players[$identifier]);
-				unset($this->identifiers[spl_object_hash($player)]);
-				break;
-			}
-		}
+	/**
+	 * Returns the player online with a UUID equivalent to the specified UUID object, or null if not found
+	 *
+	 * @param UUID $uuid
+	 *
+	 * @return null|Player
+	 */
+	public function getPlayerByUUID(UUID $uuid) : ?Player{
+		return $this->getPlayerByRawUUID($uuid->toBinary());
 	}
 
 	/**
@@ -1093,11 +1071,11 @@ class Server{
 	}
 
 	/**
-	 * Generates a new level if it does not exists
+	 * Generates a new level if it does not exist
 	 *
 	 * @param string      $name
 	 * @param int|null    $seed
-	 * @param string|null $generator Class name that extends pocketmine\level\generator\Noise
+	 * @param string|null $generator Class name that extends pocketmine\level\generator\Generator
 	 * @param array       $options
 	 *
 	 * @return bool
@@ -1235,17 +1213,17 @@ class Server{
 	}
 
 	public function getAltayProperty(string $variable, $defaultValue = null){
-        if(!array_key_exists($variable, $this->altayPropertyCache)){
-            $v = getopt("", ["$variable::"]);
-            if(isset($v[$variable])){
-                $this->altayPropertyCache[$variable] = $v[$variable];
-            }else{
-                $this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
-            }
-        }
+		if(!array_key_exists($variable, $this->altayPropertyCache)){
+			$v = getopt("", ["$variable::"]);
+			if(isset($v[$variable])){
+				$this->altayPropertyCache[$variable] = $v[$variable];
+			}else{
+				$this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
+			}
+		}
 
-        return $this->altayPropertyCache[$variable] ?? $defaultValue;
-    }
+		return $this->altayPropertyCache[$variable] ?? $defaultValue;
+	}
 
 	/**
 	 * @param string $variable
@@ -1322,18 +1300,6 @@ class Server{
 	}
 
 	/**
-	 * @deprecated
-	 *
-	 * @param string $variable
-	 * @param bool   $defaultValue
-	 *
-	 * @return bool
-	 */
-	public function getConfigBoolean(string $variable, bool $defaultValue = false) : bool{
-		return $this->getConfigBool($variable, $defaultValue);
-	}
-
-	/**
 	 * @param string $variable
 	 * @param bool   $value
 	 */
@@ -1347,8 +1313,8 @@ class Server{
 	 * @return PluginIdentifiableCommand|null
 	 */
 	public function getPluginCommand(string $name) : ?PluginIdentifiableCommand{
-        $command = $this->commandMap->getCommand($name);
-        return $command instanceof PluginIdentifiableCommand ? $command : null;
+		$command = $this->commandMap->getCommand($name);
+		return $command instanceof PluginIdentifiableCommand ? $command : null;
 	}
 
 	/**
@@ -1534,9 +1500,9 @@ class Server{
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
 
-            $this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
+			$this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
 
-            define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
+			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
 			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
 				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
@@ -1592,7 +1558,7 @@ class Server{
 				}
 			}else{
 			    $poolSize = (int) $poolSize;
-            }
+			}
 
 			ServerScheduler::$WORKERS = $poolSize;
 
@@ -1654,12 +1620,12 @@ class Server{
 
 			$this->onlineMode = $this->getConfigBool("xbox-auth", true);
 			if($this->onlineMode){
-				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.auth", ["enabled", "will"]));
-				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.authProperty", ["disable", "false"]));
+				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.auth.enabled"));
+				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.authProperty.enabled"));
 			}else{
-				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.auth", ["disabled", "will not"]));
+				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.auth.disabled"));
 				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authWarning"));
-				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authProperty", ["enable", "true"]));
+				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authProperty.disabled"));
 			}
 
 			if($this->getConfigBool("hardcore", false) === true and $this->getDifficulty() < Level::DIFFICULTY_HARD){
@@ -1691,17 +1657,17 @@ class Server{
 
 
 			Timings::init();
-            Enchantment::init();
+			Enchantment::init();
 
-            $this->consoleSender = new ConsoleCommandSender();
-            CommandParameterUtils::init();
-            $this->commandMap = new SimpleCommandMap($this);
+			$this->consoleSender = new ConsoleCommandSender();
+			CommandParameterUtils::init();
+			$this->commandMap = new SimpleCommandMap($this);
 
-            Entity::init();
-            Tile::init();
-            BlockFactory::init();
+			Entity::init();
+			Tile::init();
+			BlockFactory::init();
 			ItemFactory::init();
-            Item::initCreativeItems();
+			Item::initCreativeItems();
 			Biome::init();
 			Effect::init();
 			Attribute::init();
@@ -1730,19 +1696,12 @@ class Server{
 			$this->network->registerInterface(new RakLibInterface($this));
 
 
-			LevelProviderManager::addProvider(Anvil::class);
-			LevelProviderManager::addProvider(McRegion::class);
-			LevelProviderManager::addProvider(PMAnvil::class);
-			LevelProviderManager::addProvider(LevelDB::class);
+			LevelProviderManager::init();
 			if(extension_loaded("leveldb")){
 				$this->logger->debug($this->getLanguage()->translateString("pocketmine.debug.enable"));
 			}
 
-			Generator::addGenerator(Flat::class, "flat");
-			Generator::addGenerator(Normal::class, "normal");
-			Generator::addGenerator(Normal::class, "default");
-			Generator::addGenerator(Nether::class, "hell");
-			Generator::addGenerator(Nether::class, "nether");
+			Generator::registerDefaultGenerators();
 
 			foreach((array) $this->getProperty("worlds", []) as $name => $options){
 				if(!is_array($options)){
@@ -1957,19 +1916,14 @@ class Server{
 	 * @param bool         $immediate
 	 */
 	public function batchPackets(array $players, array $packets, bool $forceSync = false, bool $immediate = false){
-	    if(empty($packets)){
-	        throw new \InvalidArgumentException("Cannot send empty batch");
-        }
+		if(empty($packets)){
+			throw new \InvalidArgumentException("Cannot send empty batch");
+		}
 		Timings::$playerNetworkTimer->startTiming();
 
-		$targets = [];
-		foreach($players as $p){
-			if($p->isConnected()){
-				$targets[] = $this->identifiers[spl_object_hash($p)];
-			}
-		}
+		$targets = array_filter($players, function(Player $player) : bool{ return $player->isConnected(); });
 
-		if(count($targets) > 0){
+		if(!empty($targets)){
 			$pk = new BatchPacket();
 
 			foreach($packets as $p){
@@ -1994,17 +1948,19 @@ class Server{
 		Timings::$playerNetworkTimer->stopTiming();
 	}
 
-	public function broadcastPacketsCallback(BatchPacket $pk, array $identifiers, bool $immediate = false){
+	/**
+	 * @param BatchPacket $pk
+	 * @param Player[]    $players
+	 * @param bool        $immediate
+	 */
+	public function broadcastPacketsCallback(BatchPacket $pk, array $players, bool $immediate = false){
 		if(!$pk->isEncoded){
 			$pk->encode();
 		}
 
-		foreach($identifiers as $i){
-			if(isset($this->players[$i])){
-				$this->players[$i]->sendDataPacket($pk, false, $immediate);
-			}
+		foreach($players as $player){
+			$player->sendDataPacket($pk, false, $immediate);
 		}
-
 	}
 
 
@@ -2250,10 +2206,7 @@ class Server{
 
 		$errstr = $e->getMessage();
 		$errfile = $e->getFile();
-		$errno = $e->getCode();
 		$errline = $e->getLine();
-
-		$type = ($errno === E_ERROR or $errno === E_USER_ERROR) ? \LogLevel::ERROR : (($errno === E_USER_WARNING or $errno === E_WARNING) ? \LogLevel::WARNING : \LogLevel::NOTICE);
 
 		$errstr = preg_replace('/\s+/', ' ', trim($errstr));
 
@@ -2262,7 +2215,7 @@ class Server{
 		$this->logger->logException($e, $trace);
 
 		$lastError = [
-			"type" => $type,
+			"type" => \get_class($e),
 			"message" => $errstr,
 			"fullFile" => $e->getFile(),
 			"file" => $errfile,
@@ -2286,9 +2239,9 @@ class Server{
 
 		ini_set("error_reporting", '0');
 		ini_set("memory_limit", '-1'); //Fix error dump not dumped on memory problems
-        try{
-            $this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
-            $dump = new CrashDump($this);
+		try{
+			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.create"));
+			$dump = new CrashDump($this);
 
 			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.submit", [$dump->getPath()]));
 
@@ -2330,8 +2283,8 @@ class Server{
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 			try{
-                $this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
-            }catch(\Throwable $exception){}
+				$this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
+			}catch(\Throwable $exception){}
 		}
 
 		//$this->checkMemory();
@@ -2370,18 +2323,19 @@ class Server{
 		$this->loggedInPlayers[$player->getRawUniqueId()] = $player;
 	}
 
-	public function onPlayerCompleteLoginSequence(Player $player){
-		$this->sendFullPlayerListData($player);
-		$player->dataPacket($this->craftingManager->getCraftingDataPacket());
-	}
-
 	public function onPlayerLogout(Player $player){
 		unset($this->loggedInPlayers[$player->getRawUniqueId()]);
 	}
 
-	public function addPlayer(string $identifier, Player $player){
-		$this->players[$identifier] = $player;
-		$this->identifiers[spl_object_hash($player)] = $identifier;
+	public function addPlayer(Player $player){
+		$this->players[spl_object_hash($player)] = $player;
+	}
+
+	/**
+	 * @param Player $player
+	 */
+	public function removePlayer(Player $player){
+	    unset($this->players[spl_object_hash($player)]);
 	}
 
 	public function addOnlinePlayer(Player $player){
@@ -2398,14 +2352,14 @@ class Server{
 		}
 	}
 
-    /**
-     * @param UUID $uuid
-     * @param int $entityId
-     * @param string $name
-     * @param Skin $skin
-     * @param string $xboxUserId
-     * @param Player[]|null $players
-     */
+	/**
+	 * @param UUID $uuid
+	 * @param int $entityId
+	 * @param string $name
+	 * @param Skin $skin
+	 * @param string $xboxUserId
+	 * @param Player[]|null $players
+	 */
 	public function updatePlayerListData(UUID $uuid, int $entityId, string $name, Skin $skin, string $xboxUserId, array $players = null){
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
@@ -2561,16 +2515,17 @@ class Server{
 	}
 
 	/**
+	 * @param AdvancedSourceInterface $interface
 	 * @param string $address
-	 * @param int    $port
+	 * @param int $port
 	 * @param string $payload
 	 *
 	 * TODO: move this to Network
 	 */
-	public function handlePacket(string $address, int $port, string $payload){
+	public function handlePacket(AdvancedSourceInterface $interface, string $address, int $port, string $payload){
 		try{
 			if(strlen($payload) > 2 and substr($payload, 0, 2) === "\xfe\xfd" and $this->queryHandler instanceof QueryHandler){
-				$this->queryHandler->handle($address, $port, $payload);
+				$this->queryHandler->handle($interface, $address, $port, $payload);
 			}
 		}catch(\Throwable $e){
 			if(\pocketmine\DEBUG > 1){
@@ -2698,17 +2653,17 @@ class Server{
 
 	// ALTAY
 
-    /**
-     * @return ServerSettingsForm
-     */
-    public function getServerSettingsForm(): ServerSettingsForm{
-        return $this->serverSettingsForm;
-    }
+	/**
+	 * @return ServerSettingsForm
+	 */
+	public function getServerSettingsForm(): ServerSettingsForm{
+		return $this->serverSettingsForm;
+	}
 
-    /**
-     * @param ServerSettingsForm $serverSettingsForm
-     */
-    public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
-        $this->serverSettingsForm = $serverSettingsForm;
-    }
+	/**
+	 * @param ServerSettingsForm $serverSettingsForm
+	 */
+	public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
+		$this->serverSettingsForm = $serverSettingsForm;
+	}
 }

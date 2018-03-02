@@ -3,25 +3,34 @@ Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10
        
 | Jenkins (Official) | TravisCI | Discord |
 | :---: | :---: | :---: |
-| [![Download](https://img.shields.io/badge/download-latest-blue.svg)](http://turanic.io:8181/job/Altay/) | [![Build Status](https://travis-ci.org/TuranicTeam/Altay.svg?branch=master)](https://travis-ci.org/TuranicTeam/Altay) | [![Discord](https://camo.githubusercontent.com/455152269a0ed38255ed15e375084d4dd08e0c98/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f636861742d6f6e253230646973636f72642d3732383944412e737667)](https://discord.gg/4GZxrdk) |
+| [![Jenkins](https://img.shields.io/jenkins/s/http/turanic.io:8181/job/Altay.svg?style=flat-square&colorB=1C6BA0)](http://turanic.io:8181/job/Altay/) | [![Travis branch](https://img.shields.io/travis/TuranicTeam/Altay/master.svg?style=flat-square)](https://travis-ci.org/TuranicTeam/Altay) | [![Discord](https://img.shields.io/discord/357257013144715266.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/pAh3Bja) |
 
 -------------
 Example servers running Altay
 --------------------
-- **oyna.minecraftpetr.net:19132**
 - **entengames.de:703**
+- **oyna.minecraftpetr.net:19132**
+- **play.minefever.net:19132**
 ------------     
     
 ## Finished & Planned Features
  - [x] Altay Configuration File
  - [x] Anvil
  - [x] Armor Stand
+ - [ ] Beacons
+ - [ ] Boats
  - [x] BossbarAPI
  - [x] Command Parameters
+ - [ ] Config Auto Updater
  - [x] Elytra
  - [x] EnchantmentTable
- - [x] Firework Rocket and Star
+ - [ ] Entity Behaviors (MobAI)
+ - [ ] Riding
+ - [x] Fireworks
  - [x] Forms
  - [x] Hopper
+ - [ ] Level Dimensions
+ - [ ] Redstone
+ - [ ] Shulker Boxes
  
 ***more...***

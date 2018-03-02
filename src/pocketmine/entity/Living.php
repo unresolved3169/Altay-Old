@@ -230,6 +230,14 @@ abstract class Living extends Entity implements Damageable{
 		return isset($this->effects[$effectId]);
 	}
 
+    /**
+     * Returns whether the mob has any active effects.
+     * @return bool
+     */
+    public function hasEffects() : bool{
+	    return !empty($this->effects);
+    }
+
 	/**
 	 * Adds an effect to the mob.
 	 * If a weaker effect of the same type is already applied, it will be replaced.
@@ -780,4 +788,14 @@ abstract class Living extends Entity implements Damageable{
 
 		$this->armorInventory->sendContents($player);
 	}
+
+	public function close(){
+	    if(!$this->closed){
+	        if($this->armorInventory !== null){
+	            $this->armorInventory->removeAllViewers(true);
+	            $this->armorInventory = null;
+            }
+            parent::close();
+        }
+    }
 }
