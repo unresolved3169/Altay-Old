@@ -1,24 +1,25 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
-
+ */
+ 
 declare(strict_types=1);
 
 /**
@@ -824,8 +825,8 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		if(!empty($this->players) and !empty($this->globalPackets)){
-            $this->server->batchPackets($this->players, $this->globalPackets);
-            $this->globalPackets = [];
+			$this->server->batchPackets($this->players, $this->globalPackets);
+			$this->globalPackets = [];
 		}
 
 		foreach($this->chunkPackets as $index => $entries){
@@ -1121,16 +1122,6 @@ class Level implements ChunkManager, Metadatable{
 		if(!$ev->isCancelled()){
 			$ev->getBlock()->onUpdate(self::BLOCK_UPDATE_NORMAL);
 		}
-	}
-
-	/**
-	 * @deprecated This method will be removed in the future due to misleading/ambiguous name. Use {@link Level#scheduleDelayedBlockUpdate} instead.
-	 *
-	 * @param Vector3 $pos
-	 * @param int     $delay
-	 */
-	public function scheduleUpdate(Vector3 $pos, int $delay){
-		$this->scheduleDelayedBlockUpdate($pos, $delay);
 	}
 
 	/**
@@ -1635,10 +1626,10 @@ class Level implements ChunkManager, Metadatable{
 	public function dropItem(Vector3 $source, Item $item, Vector3 $motion = null, int $delay = 10) :?DroppedItem{
 		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
 
-        if(!$item->isNull()){
-            $itemTag = $item->nbtSerialize();
-            $itemTag->setName("Item");
-            $nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
+		if(!$item->isNull()){
+			$itemTag = $item->nbtSerialize();
+			$itemTag->setName("Item");
+			$nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
 			$nbt->setShort("Health", 5);
 			$nbt->setShort("PickupDelay", $delay);
 			$nbt->setTag($itemTag);
@@ -1653,38 +1644,38 @@ class Level implements ChunkManager, Metadatable{
 		return null;
 	}
 
-    /**
-     * @param Vector3 $source
-     * @param Item[] $items
-     * @param Vector3|null $motion
-     * @param int $delay
-     * @return DroppedItem[]
-     */
-    public function dropItems(Vector3 $source, array $items, Vector3 $motion = null, int $delay = 10) : array{
-        $motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
-        $droppedItems = [];
+	/**
+	 * @param Vector3 $source
+	 * @param Item[] $items
+	 * @param Vector3|null $motion
+	 * @param int $delay
+	 * @return DroppedItem[]
+	 */
+	public function dropItems(Vector3 $source, array $items, Vector3 $motion = null, int $delay = 10) : array{
+		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
+		$droppedItems = [];
 
-        foreach ($items as $item) {
-            if(!$item->isNull()){
-                $itemTag = $item->nbtSerialize();
-                $itemTag->setName("Item");
-                $nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
-                $nbt->setShort("Health", 5);
-                $nbt->setShort("PickupDelay", $delay);
-                $nbt->setTag($itemTag);
-                $itemEntity = Entity::createEntity("Item", $this, $nbt);
+		foreach($items as $item){
+			if(!$item->isNull()){
+				$itemTag = $item->nbtSerialize();
+				$itemTag->setName("Item");
+				$nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
+				$nbt->setShort("Health", 5);
+				$nbt->setShort("PickupDelay", $delay);
+				$nbt->setTag($itemTag);
+				$itemEntity = Entity::createEntity("Item", $this, $nbt);
 
-                if($itemEntity instanceof DroppedItem){
-                    $itemEntity->spawnToAll();
+				if($itemEntity instanceof DroppedItem){
+					$itemEntity->spawnToAll();
 
-                    $droppedItems[] = $itemEntity;
-                }
-            }
-        }
+					$droppedItems[] = $itemEntity;
+				}
+			}
+		}
 
 
-        return $droppedItems;
-    }
+		return $droppedItems;
+	}
 
 	/**
 	 * Drops XP orbs into the world for the specified amount, splitting the amount into several orbs if necessary.
@@ -1809,14 +1800,14 @@ class Level implements ChunkManager, Metadatable{
 
 		$item->useOn($target);
 
-        $dropPos = $target->add(0.5, 0.5, 0.5);
+		$dropPos = $target->add(0.5, 0.5, 0.5);
 
-        $xpDropAmount = $target->getXpDropAmount();
-        if($xpDropAmount > 0 and $target->isXpDropCompatibleWithTool($item) and $player->isSurvival()){
-            $this->dropExperience($dropPos, $xpDropAmount);
-        }
+		$xpDropAmount = $target->getXpDropAmount();
+		if($xpDropAmount > 0 and $target->isXpDropCompatibleWithTool($item) and $player->isSurvival()){
+			$this->dropExperience($dropPos, $xpDropAmount);
+		}
 
-        if(!empty($drops)){
+		if(!empty($drops)){
 			foreach($drops as $drop){
 				if(!$drop->isNull()){
 					$this->dropItem($dropPos, $drop);
@@ -2755,14 +2746,24 @@ class Level implements ChunkManager, Metadatable{
 
 		$this->timings->syncChunkLoadDataTimer->startTiming();
 
-		$chunk = $this->provider->loadChunk($x, $z, $create);
+		$chunk = null;
+
+		try{
+			$chunk = $this->provider->loadChunk($x, $z);
+		}catch(\Exception $e){
+			$logger = $this->server->getLogger();
+			$logger->critical("An error occurred while loading chunk x=$x z=$z: " . $e->getMessage());
+			$logger->logException($e);
+		}
+
+		if($chunk === null and $create){
+			$chunk = new Chunk($x, $z);
+		}
 
 		$this->timings->syncChunkLoadDataTimer->stopTiming();
 
 		if($chunk === null){
-			if($create){
-				throw new \InvalidStateException("Could not create new Chunk");
-			}
+			$this->timings->syncChunkLoadTimer->stopTiming();
 			return false;
 		}
 

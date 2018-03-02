@@ -1629,7 +1629,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return false;
 	}
 
-	protected function updateMovement(){
+	protected function updateMovement(bool $teleport = false){
 
 	}
 
@@ -1963,9 +1963,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		$this->namedtag->setLong("lastPlayed", (int) floor(microtime(true) * 1000));
-		if($this->server->getAutoSave()){
-			$this->server->saveOfflinePlayerData($this->username, $this->namedtag, true);
-		}
 
 		$this->sendPlayStatus(PlayStatusPacket::LOGIN_SUCCESS);
 
@@ -2102,9 +2099,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->armorInventory->sendContents($this);
 		$this->inventory->sendCreativeContents();
 		$this->inventory->sendHeldItem($this);
+		$this->dataPacket($this->server->getCraftingManager()->getCraftingDataPacket());
 
 		$this->server->addOnlinePlayer($this);
-		$this->server->onPlayerCompleteLoginSequence($this);
+		$this->server->sendFullPlayerListData($this);
 	}
 
 	/**
@@ -2462,6 +2460,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							$ev->setCancelled();
 						}
 
+						if(!$this->isSprinting() and !$this->isFlying() and $this->fallDistance > 0 and !$this->hasEffect(Effect::BLINDNESS) and !$this->isInsideOfWater()){
+						    $ev->setDamage($ev->getFinalDamage() / 2, EntityDamageEvent::MODIFIER_CRITICAL);
+						}
+
 						$target->attack($ev);
 
 						if($ev->isCancelled()){
@@ -2469,6 +2471,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 								$this->inventory->sendContents($this);
 							}
 							return true;
+						}
+
+						if($ev->getDamage(EntityDamageEvent::MODIFIER_CRITICAL) > 0){
+						    $pk = new AnimatePacket();
+						    $pk->action = AnimatePacket::ACTION_CRITICAL_HIT;
+						    $pk->entityRuntimeId = $target->getId();
+						    $this->server->broadcastPacket($target->getViewers(), $pk);
+						    if($target instanceof Player){
+						        $target->dataPacket($pk);
+						    }
 						}
 
 						if($this->isSurvival()){
@@ -3810,19 +3822,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		return false;
-	}
-
-	/**
-	 * @deprecated This functionality is now performed in {@link Player#teleport}.
-	 *
-	 * @param Vector3    $pos
-	 * @param float|null $yaw
-	 * @param float|null $pitch
-	 *
-	 * @return bool
-	 */
-	public function teleportImmediate(Vector3 $pos, float $yaw = null, float $pitch = null) : bool{
-		return $this->teleport($pos, $yaw, $pitch);
 	}
 
 	protected function addDefaultWindows(){
