@@ -875,8 +875,9 @@ abstract class Living extends Entity implements Damageable{
 	    if(!$this->closed){
 	        if($this->armorInventory !== null){
 	            $this->armorInventory->removeAllViewers(true);
-	            $this->armorInventory = null;
+	            $this->armorInventory = null;}
             }
             parent::close();
         }
 }
+	
