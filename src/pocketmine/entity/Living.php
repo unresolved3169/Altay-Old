@@ -870,7 +870,6 @@ abstract class Living extends Entity implements Damageable{
 			}
 		}
 	}
-}
 
 	public function close(){
 	    if(!$this->closed){
@@ -880,5 +879,4 @@ abstract class Living extends Entity implements Damageable{
             }
             parent::close();
         }
-    }
 }
