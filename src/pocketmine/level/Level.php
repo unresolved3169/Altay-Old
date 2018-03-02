@@ -1644,36 +1644,36 @@ class Level implements ChunkManager, Metadatable{
 		return null;
 	}
 
-    /**
-     * @param Vector3 $source
-     * @param Item[] $items
-     * @param Vector3|null $motion
-     * @param int $delay
-     * @return DroppedItem[]
-     */
-    public function dropItems(Vector3 $source, array $items, Vector3 $motion = null, int $delay = 10) : array{
-        $motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
-        $droppedItems = [];
+	/**
+	 * @param Vector3 $source
+	 * @param Item[] $items
+	 * @param Vector3|null $motion
+	 * @param int $delay
+	 * @return DroppedItem[]
+	 */
+	public function dropItems(Vector3 $source, array $items, Vector3 $motion = null, int $delay = 10) : array{
+		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
+		$droppedItems = [];
 
-        $nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
-        $nbt->setShort("Health", 5);
-        $nbt->setShort("PickupDelay", $delay);
+		$nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
+		$nbt->setShort("Health", 5);
+		$nbt->setShort("PickupDelay", $delay);
 
-        foreach ($items as $item) {
-            if(!$item->isNull()){
-                $itemTag = $item->nbtSerialize();
-                $itemTag->setName("Item");
-                $tag = clone $nbt;
-                $tag->setTag($itemTag);
-                $itemEntity = Entity::createEntity("Item", $this, $tag);
+		foreach($items as $item){
+			if(!$item->isNull()){
+				$itemTag = $item->nbtSerialize();
+				$itemTag->setName("Item");
+				$tag = clone $nbt;
+				$tag->setTag($itemTag);
+				$itemEntity = Entity::createEntity("Item", $this, $tag);
 
-                if($itemEntity instanceof DroppedItem){
-                    $itemEntity->spawnToAll();
+				if($itemEntity instanceof DroppedItem){
+					$itemEntity->spawnToAll();
 
-                    $droppedItems[] = $itemEntity;
-                }
-            }
-        }
+					$droppedItems[] = $itemEntity;
+				}
+			}
+		}
 
 
 		return $droppedItems;
