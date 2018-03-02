@@ -281,7 +281,6 @@ class Server{
 
 	/** ALTAY CONFIG */
 
-<<<<<<< HEAD
     /** @var bool */
     public static $readLine = false;
     /** @var bool */
@@ -296,7 +295,7 @@ class Server{
     public $folderPluginLoader = true;
     /** @var bool */
     public $enableEntityBehaviors = false;
-=======
+
 	/** @var bool */
 	public static $readLine = false;
 	/** @var bool */
@@ -309,9 +308,7 @@ class Server{
 	public $keepExperience = false;
 	/** @var bool */
 	public $folderPluginLoader = true;
->>>>>>> refs/heads/master
 
-<<<<<<< HEAD
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
         $this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
@@ -321,7 +318,7 @@ class Server{
         $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
         $this->enableEntityBehaviors = $this->getAltayProperty("level.entity-behaviors-enabled", false);
     }
-=======
+  
 	public function loadAltayConfig(){
 		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
 		$this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
@@ -330,7 +327,7 @@ class Server{
 		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
 		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
 	}
->>>>>>> refs/heads/master
+
 
 	/**
 	 * @return string
@@ -2703,4 +2700,8 @@ class Server{
 	public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
 		$this->serverSettingsForm = $serverSettingsForm;
 	}
+
 }
+
+}
+

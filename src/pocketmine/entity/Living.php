@@ -809,7 +809,6 @@ abstract class Living extends Entity implements Damageable{
 
 		$this->armorInventory->sendContents($player);
 	}
-<<<<<<< HEAD
 	
 	/**
 	 * Sets the movement speed of player
@@ -872,7 +871,6 @@ abstract class Living extends Entity implements Damageable{
 		}
 	}
 }
-=======
 
 	public function close(){
 	    if(!$this->closed){
@@ -884,4 +882,3 @@ abstract class Living extends Entity implements Damageable{
         }
     }
 }
->>>>>>> refs/heads/master
