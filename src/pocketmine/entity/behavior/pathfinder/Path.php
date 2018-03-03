@@ -78,14 +78,14 @@ class Path{
 	}
 	
 	public function havePath() : bool{
-		return count($this->tiles) > 0;
+		return !empty($this->tiles);
 	}
 	
 	public function getNextTile(Entity $entity) : ?Tile{
 		if($this->havePath()){
-			$next = array_shift($this->tiles);
+			$next = array_shift(array_values($this->tiles));
 			
-			if($next->x === $entity->x and $next->y === $entity->z){ // wtf?!
+			if($next->x === $entity->x and $next->y === $entity->z){
 				unset($this->tiles[array_search($next, $this->tiles)]);
 				
 				if(!$this->getNextTile($entity)) return null;
@@ -93,6 +93,7 @@ class Path{
 			
 			return $next;
 		}
+
 		return null;
 	}
 	

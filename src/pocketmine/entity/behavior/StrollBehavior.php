@@ -27,6 +27,8 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Living;
 
 class StrollBehavior extends Behavior{
+
+    // TODO : WRONG!! NEED REBASE
 	
 	protected $speedMultiplier = 1.0;
 	protected $chance = 120;
