@@ -27,6 +27,7 @@ namespace pocketmine\entity\behavior\pathfinder;
 use pocketmine\math\Vector3;
 use pocketmine\utils\navigator\{TileNavigator, Tile};
 use pocketmine\utils\navigator\algorithms\ManhattanHeuristicAlgorithm;
+use pocketmine\entity\behavior\pathfinder\navigator\{BlockDistanceAlgorithm, LevelNavigator, BlockDiagonalNeighborProvider};
 use pocketmine\entity\Entity;
 use pocketmine\block\Block;
 
@@ -41,19 +42,21 @@ class Path{
 		$this->blockCache = $blockCache;
 	}
 	
-	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : Path{
-		try{
+	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : bool{
+		$resultPath = new Path();
+		try
+		{
 			$entityCoords = [];
-			foreach($source->level->getEntities() as $entry) {
+			foreach ($source->level->getEntities() as $entry)
+			{
 				$position = $entry->asVector3();
-				if($position === $target) continue;
+				if($position == $target) continue;
 
 				$entityCoords[] = $position;
 			}
 				
 			$level = $source->level;
 
-			// FIXME : Emre verdiğin değer ve TileNavigator constant eşleşmiyor
 			$navigator = new TileNavigator(
 				new LevelNavigator($source, $level, $distance, $blockCache, $entityCoords),
 				new BlockDiagonalNeighborProvider($level, $source->y, $blockCache, $source),
@@ -67,9 +70,13 @@ class Path{
 			$to = new Tile($targetPos->x, $targetPos->z);
 				
 			$path = $navigator->navigate($from, $to, 200) ?? [];
-				
+			if(empty($blockCache)){
+				var_dump("blockCache is empty"); // test code
+			}
 			$resultPath = new Path($blockCache, $path);
-		}catch(\Exception $e){
+		}
+		catch(\Exception $e)
+		{
 			throw $e;
 		}
 
@@ -77,12 +84,12 @@ class Path{
 	}
 	
 	public function havePath() : bool{
-		return !empty($this->tiles);
+		return count($this->tiles) > 0;
 	}
 	
 	public function getNextTile(Entity $entity) : ?Tile{
 		if($this->havePath()){
-			$next = array_shift($this->tiles);
+			$next = first($this->tiles);
 			
 			if($next->x === $entity->x and $next->y === $entity->z){
 				unset($this->tiles[array_search($next, $this->tiles)]);
@@ -92,11 +99,10 @@ class Path{
 			
 			return $next;
 		}
-
 		return null;
 	}
 	
 	public function getBlock(Tile $tile) : ?Block{
-		return $this->blockCache[$tile->__toString()] ?? null;
+		return $this->blockCache[$title->__toString()] ?? null;
 	}
 }
