@@ -83,7 +83,7 @@ class Path{
 	
 	public function getNextTile(Entity $entity) : ?Tile{
 		if($this->havePath()){
-			$next = array_shift(array_values($this->tiles));
+			$next = array_shift($this->tiles);
 			
 			if($next->x === $entity->x and $next->y === $entity->z){
 				unset($this->tiles[array_search($next, $this->tiles)]);
