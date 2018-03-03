@@ -24,9 +24,8 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol\types;
 
-use pocketmine\inventory\transaction\action\AnvilMaterialAction;
+use pocketmine\block\Block;
 use pocketmine\inventory\transaction\action\AnvilResultAction;
-use pocketmine\inventory\transaction\action\AnvilInputAction;
 use pocketmine\inventory\transaction\action\CraftingTakeResultAction;
 use pocketmine\inventory\transaction\action\CraftingTransferMaterialAction;
 use pocketmine\inventory\transaction\action\CreativeInventoryAction;
@@ -35,6 +34,7 @@ use pocketmine\inventory\transaction\action\EnchantAction;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\Player;
 
@@ -120,9 +120,6 @@ class NetworkInventoryAction{
 					case self::SOURCE_TYPE_CRAFTING_RESULT:
 						$packet->inventoryType = "Crafting";
 						break;
-                    case self::SOURCE_TYPE_ANVIL_RESULT:
-                        $packet->inventoryType = "Anvil";
-                        break;
                     case self::SOURCE_TYPE_ENCHANT_OUTPUT:
                         $packet->inventoryType = "Enchant";
                         break;
@@ -210,13 +207,18 @@ class NetworkInventoryAction{
 
                     case self::SOURCE_TYPE_ANVIL_INPUT:
                         $window = $player->getAnvilInventory();
-                        return new AnvilInputAction($window, $this->oldItem, $this->newItem);
+                        return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_MATERIAL:
                         $window = $player->getAnvilInventory();
-                        return new AnvilMaterialAction($window, $this->oldItem, $this->newItem);
+                        $this->inventorySlot = 1;
+                        return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_RESULT:
                         $window = $player->getAnvilInventory();
-                        return new AnvilResultAction($window, $this->oldItem, $this->newItem);
+                        $air = ItemFactory::get(Block::AIR);
+                        $window->setContents([
+                            $air, $air, $this->oldItem
+                        ], false);
+                        return new SlotChangeAction($window, 2, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_OUTPUT:
                         throw new \RuntimeException("Anvil inventory source type OUTPUT");
 

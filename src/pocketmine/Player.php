@@ -80,7 +80,6 @@ use pocketmine\inventory\AnvilInventory;
 use pocketmine\inventory\BigCraftingGrid;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\EnchantInventory;
-use pocketmine\inventory\transaction\AnvilTransaction;
 use pocketmine\inventory\transaction\EnchantTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\inventory\PlayerCursorInventory;
@@ -2282,10 +2281,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
                     $this->craftingTransaction->execute();
                     $this->craftingTransaction = null;
                 }
-                return true;
-            case "Anvil":
-                $anvilTransaction = new AnvilTransaction($this, $actions);
-                $anvilTransaction->execute();
                 return true;
             case "Enchant":
                 $enchantTransaction = new EnchantTransaction($this, $actions);
