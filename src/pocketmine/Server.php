@@ -281,21 +281,6 @@ class Server{
 
 	/** ALTAY CONFIG */
 
-    /** @var bool */
-    public static $readLine = false;
-    /** @var bool */
-    public $loadIncompatibleApi = true;
-    /** @var bool */
-    public $allowServerSettingsForm = true;
-    /** @var bool */
-    public $keepInventory = false;
-    /** @var bool */
-    public $keepExperience = false;
-    /** @var bool */
-    public $folderPluginLoader = true;
-    /** @var bool */
-    public $enableEntityBehaviors = false;
-
 	/** @var bool */
 	public static $readLine = false;
 	/** @var bool */
@@ -309,16 +294,6 @@ class Server{
 	/** @var bool */
 	public $folderPluginLoader = true;
 
-    public function loadAltayConfig(){
-        self::$readLine = $this->getAltayProperty("terminal.read-line", true);
-        $this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
-        $this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
-        $this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
-        $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
-        $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
-        $this->enableEntityBehaviors = $this->getAltayProperty("level.entity-behaviors-enabled", false);
-    }
-  
 	public function loadAltayConfig(){
 		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
 		$this->loadIncompatibleApi = $this->getAltayProperty("developer.load-incompatible-api", true);
@@ -327,7 +302,6 @@ class Server{
 		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
 		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
 	}
-
 
 	/**
 	 * @return string
@@ -1043,14 +1017,6 @@ class Server{
 	 */
 	public function removeLevel(Level $level) : void{
 		unset($this->levels[$level->getId()]);
-	}
-	
-	/**
-	 * @internal
-	 * @param Level $level
-	 */
-	public function addLevel(Level $level) : void{
-		$this->levels[$level->getId()] = $level;
 	}
 
 	/**
@@ -2700,8 +2666,4 @@ class Server{
 	public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
 		$this->serverSettingsForm = $serverSettingsForm;
 	}
-
 }
-
-}
-
