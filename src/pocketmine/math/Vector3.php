@@ -120,6 +120,10 @@ class Vector3{
 		return new Vector3($this->x * $number, $this->y * $number, $this->z * $number);
 	}
 
+	public function multiplyVector(Vector3 $v){
+	    return new Vector3($this->x * $v->x, $this->y * $v->y, $this->z * $v->z);
+    }
+
 	public function divide($number){
 		return new Vector3($this->x / $number, $this->y / $number, $this->z / $number);
 	}

@@ -24,47 +24,124 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
+use pocketmine\block\Air;
+use pocketmine\block\Block;
 use pocketmine\entity\Living;
+use pocketmine\level\Level;
+use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
+use pocketmine\utils\Random;
 
 class StrollBehavior extends Behavior{
 
-    // TODO : WRONG!! NEED REBASE
-	
-	protected $speedMultiplier = 1.0;
-	protected $chance = 120;
-	protected $timeLeft = 0;
-	
-	public function __construct(Living $mob, float $speedMultiplier = 1.0, int $chance = 120){
-		parent::__construct($mob);
-		
-		$this->speedMultiplier = $speedMultiplier;
-		$this->chance = $chance;
-	}
-	
-	public function canStart() : bool{
-		if(rand(0,$this->chance) === 0){
-			$this->timeLeft = rand(50,80);
-			
-			return true;
-		}
-		return false;
-	}
-	
-	public function canContinue() : bool{
-		return $this->timeLeft-- > 0;
-	}
-	
-	public function onTick(int $tick) : void{
-		if($this->mob->motionY < 0){
-			$this->timeLeft = 0;
-			return;
-		}
-		
-		$this->mob->moveForward($this->speedMultiplier);
-	}
-	
-	public function onEnd() : void{
-		$this->mob->motionX = 0; $this->mob->motionZ = 0;
-		$this->timeLeft = 0;
-	}
+    /** @var int */
+    protected $duration;
+    /** @var float */
+    protected $speed;
+    /** @var float */
+    protected $speedMultiplier;
+    /** @var int */
+    protected $timeLeft;
+
+    /** @var Random */
+    protected $random;
+
+    public function __construct(Living $mob, int $duration, float $speed, float $speedMultiplier){
+        parent::__construct($mob);
+
+        $this->duration = $this->timeLeft = $duration;
+        $this->speed = $speed;
+        $this->speedMultiplier = $speedMultiplier;
+        $this->random = new Random();
+    }
+
+    public  function canStart(): bool{
+        return $this->random->nextBoundedInt(120) == 0;
+    }
+
+    public function canContinue(): bool{
+        return $this->timeLeft-- > 0;
+    }
+
+    public function onTick(int $tick) : void{
+        $speedFactor = (float) ($this->speed*$this->speedMultiplier*0.7*($this->mob->isInsideOfWater() ? 0.3 : 1.0)); // 0.7 is a general mob base factor
+        $level = $this->mob->level;
+        $coordinates = $this->mob->asVector3();
+        $direction = $this->mob->getDirectionVector()->multiplyVector(new Vector3(1, 0, 1));
+
+        $blockDown = $level->getBlock($coordinates->getSide(Vector3::SIDE_DOWN));
+        if ($this->mob->motionY < 0 && $blockDown instanceof Air) {
+            $this->timeLeft = 0;
+            return;
+        }
+
+        // todo : check it
+        $offset = $direction->multiply($speedFactor)->add($direction->multiply((float) $this->mob->getY() + $this->mob->getEyeHeight() / 2));
+        $coord = $coordinates->add($offset);
+
+        $players = $level->getPlayers();
+        $entityCollide = false;
+        $boundingBox = $this->mob->getBoundingBox()->offset($offset->x, $offset->y, $offset->z);
+        foreach($players as $player) {
+            if($player->getBoundingBox()->intersectsWith($boundingBox)){
+                $entityCollide = true;
+                break;
+            }
+        }
+
+        if(!$entityCollide){
+            foreach($this->mob->getViewers() as $ent){
+                if($ent === $this->mob) continue;
+
+                if($ent->getId() > $this->mob->getId() /* && TODO $this->mob->IsColliding(bbox, ent) */) {
+                    if($this->mob->getMotion()->equals(new Vector3()) && $this->random->nextBoundedInt(1000) == 0){
+                        break;
+                    }
+                    $entityCollide = true;
+                    break;
+                }
+            }
+        }
+
+        $block = $level->getBlock($coord);
+        $blockUp = $block->getSide(Vector3::SIDE_UP);
+        $blockUpUp = $block->getSide(Vector3::SIDE_UP, 2);
+
+        $colliding = $block->isSolid() || ($this->mob->height >= 1 && $blockUp->isSolid());
+        if(!$colliding && !$entityCollide){
+            $velocity = $direction->multiply($speedFactor);
+
+            if($this->mob->getMotion()->multiplyVector(new Vector3(1, 0, 1))->length() < $velocity->length()){
+                $this->mob->setMotion($this->mob->getMotion()->add($velocity->subtract($this->mob->getMotion())));
+            }else{
+                $this->mob->setMotion($velocity);
+            }
+        }else{
+            if(!$entityCollide && !$blockUp->isSolid() && !($this->mob->height > 1 && $blockUpUp->isSolid()) && $this->random->nextBoundedInt(4) != 0){
+                $this->mob->motionY = 0.42;
+            }else{
+                $rot = $this->random->nextBoundedInt(2) == 0 ? $this->random->nextMinMax(45, 180) : $this->random->nextMinMax(-180, -45);
+                $this->mob->yaw += $rot;
+                $this->mob->pitch += $rot;
+                $this->mob->lookAt($this->mob->getDirectionVector());
+            }
+        }
+    }
+
+    public function onEnd(): void{
+        $this->timeLeft = $this->duration;
+        $this->mob->getMotion()->multiplyVector(new Vector3(0, 1, 0));
+    }
+
+    protected function areaIsClear(Level $level, AxisAlignedBB $aabb) : bool{
+        for($x = $aabb->minX; $x < $aabb->maxX; $x++){
+            for($y = $aabb->minY; $y < $aabb->maxY; $y++){
+                for($z = $aabb->minZ; $z < $aabb->maxZ; $z++){
+                    if($level->getBlock(new Vector3($x, $y, $z))->getId() != Block::AIR) return false;
+                }
+            }
+        }
+
+        return true;
+    }
 }

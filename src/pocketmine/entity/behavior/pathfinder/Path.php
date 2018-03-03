@@ -27,7 +27,6 @@ namespace pocketmine\entity\behavior\pathfinder;
 use pocketmine\math\Vector3;
 use pocketmine\utils\navigator\{TileNavigator, Tile};
 use pocketmine\utils\navigator\algorithms\ManhattanHeuristicAlgorithm;
-use pocketmine\entity\behavior\pathfinder\navigator\{BlockDistanceAlgorithm, LevelNavigator, BlockDiagonalNeighborProvider};
 use pocketmine\entity\Entity;
 use pocketmine\block\Block;
 
