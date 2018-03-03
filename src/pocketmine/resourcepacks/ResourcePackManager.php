@@ -28,6 +28,9 @@ use pocketmine\utils\Config;
 use pocketmine\utils\MainLogger;
 
 class ResourcePackManager{
+	
+	public const TYPE_BEHAVIOR_PACK = "data";
+	public const TYPE_RESOURCE_PACK = "resources";
 
 	/** @var string */
 	private $path;
@@ -37,6 +40,7 @@ class ResourcePackManager{
 
 	/** @var ResourcePack[] */
 	private $resourcePacks = [];
+	private $behaviorPacks = [];
 
 	/** @var ResourcePack[] */
 	private $uuidList = [];
@@ -88,7 +92,11 @@ class ResourcePackManager{
 					}
 
 					if($newPack instanceof ResourcePack){
-						$this->resourcePacks[] = $newPack;
+						if($newPack->getType() == self::TYPE_BEHAVIOR_PACK){
+							$this->behaviorPacks[] = $newPack;
+						}else{
+						 $this->resourcePacks[] = $newPack;
+						}
 						$this->uuidList[strtolower($newPack->getPackId())] = $newPack;
 					}
 				}else{
@@ -124,6 +132,14 @@ class ResourcePackManager{
 	 */
 	public function getResourceStack() : array{
 		return $this->resourcePacks;
+	}
+	
+	/**
+	 * Returns an array of behavior packs in use, sorted in order of priority.
+	 * @return ResourcePack[]
+	 */
+	public function getBehaviorStack() : array{
+		return $this->behaviorPacks;
 	}
 
 	/**

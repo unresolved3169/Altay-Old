@@ -39,6 +39,7 @@ use pocketmine\entity\projectile\FireworksRocket;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\entity\vehicle\Boat;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\entity\EntityDespawnEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
@@ -473,6 +474,12 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	/** @var bool */
 	protected $constructed = false;
+	
+	/** @var EntityBehaviorManager */
+	protected $behaviorManager;
+
+	/** @var EntityDamageByEntityEvent|null */
+	public $lastAttackCause = null;
 
 
 	public function __construct(Level $level, CompoundTag $nbt){
@@ -521,6 +528,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->fallDistance = $this->namedtag->getFloat("FallDistance", 0.0);
 
 		$this->propertyManager = new DataPropertyManager();
+		$this->behaviorManager = new EntityBehaviorManager();
+		$this->behaviorManager->setBehaviorsEnabled($this->server->enableEntityBehaviors);
 
 		$this->propertyManager->setLong(self::DATA_FLAGS, 0);
 		$this->propertyManager->setShort(self::DATA_MAX_AIR, 400);
@@ -539,6 +548,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->attributeMap = new AttributeMap();
 		$this->addAttributes();
+		$this->addBehaviors();
 
 		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, true);
 		$this->setGenericFlag(self::DATA_FLAG_HAS_COLLISION, true);
@@ -755,7 +765,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}elseif($owner->closed){
 			throw new \InvalidArgumentException("Supplied owning entity is garbage and cannot be used");
 		}else{
-			$this->propertyManager->setLong(self::DATA_OWNER_EID, $owner->getId());
+			$this->propertyManager->setLong(self::DATA_OWNER_EID,$owner->getId());
 		}
 	}
 
@@ -789,7 +799,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 *
 	 * @throws \InvalidArgumentException if the target entity is not valid
 	 */
-	public function setTargetEntity(Entity $target = null){
+	public function setTargetEntity(?Entity $target = null){
 		if($target === null){
 			$this->propertyManager->removeProperty(self::DATA_TARGET_EID);
 		}elseif($target->closed){
@@ -887,6 +897,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	protected function addAttributes(){
 
 	}
+	
+	protected function addBehaviors(){
+		
+	}
 
 	/**
 	 * @param EntityDamageEvent $source
@@ -898,6 +912,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 
 		$this->setLastDamageCause($source);
+		if($source instanceof EntityDamageByEntityEvent){
+			$source->getDamager()->setLastAttackCause($source);
+		}
 
 		$this->setHealth($this->getHealth() - $source->getFinalDamage());
 	}
@@ -985,8 +1002,15 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/**
 	 * @param EntityDamageEvent $type
 	 */
-	public function setLastDamageCause(EntityDamageEvent $type){
+	public function setLastDamageCause(EntityDamageEvent $type = null){
 		$this->lastDamageCause = $type;
+	}
+	
+	/**
+	 * @param EntityDamageByEntityEvent $type
+	 */
+	public function setLastAttackCause(EntityDamageByEntityEvent $type = null){
+		$this->lastAttackCause = $type;
 	}
 
 	/**
@@ -995,6 +1019,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function getLastDamageCause(){
 		return $this->lastDamageCause;
 	}
+	
+	/**
+	 * @return EntityDamageByEntityEvent|null
+	 */
+	public function getLastAttackCause(){
+		return $this->lastAttackCause;
+	}
 
 	public function getAttributeMap(){
 		return $this->attributeMap;
@@ -1002,6 +1033,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function getDataPropertyManager() : DataPropertyManager{
 		return $this->propertyManager;
+	}
+	
+	public function getBehaviorManager() : EntityBehaviorManager{
+		return $this->behaviorManager;
 	}
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
@@ -1013,6 +1048,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		if(!empty($changedProperties)){
 			$this->sendData($this->hasSpawned, $changedProperties);
 			$this->propertyManager->clearDirtyProperties();
+		}
+		
+		if($this->behaviorManager->isBehaviorsEnabled()){
+			$this->behaviorManager->setCurrentBehavior($this->behaviorManager->getReadyBehavior());
+			if($this->behaviorManager->getCurrentBehavior() !== null){
+				$this->behaviorManager->getCurrentBehavior()->onTick($tickDiff);
+			}
 		}
 
 		$hasUpdate = false;
