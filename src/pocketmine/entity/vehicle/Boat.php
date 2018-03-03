@@ -45,7 +45,8 @@ class Boat extends Vehicle{
     public $height = 0.455;
     public $width = 1;
 
-    protected $gravity = 0.09;
+    protected $gravity = 0.9;
+    protected $drag = 0.1;
 
     protected function initEntity(){
         $this->setHealth(4);
@@ -104,9 +105,6 @@ class Boat extends Vehicle{
 
         $this->onGround = $this->isOnGround() and !$this->isInsideOfWater();
 
-        if(!$this->onGround)
-            $this->motionY -= $this->gravity;
-
         if($this->getHealth() < $this->getMaxHealth() and $currentTick % 10 == 0 /* because of invincible normal 0/10 per tick*/)
             $this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_REGEN));
 
@@ -120,6 +118,7 @@ class Boat extends Vehicle{
                 $source->setDamage($this->getHealth());
             }
         }
+
         return parent::attack($source);
     }
 
@@ -133,5 +132,7 @@ class Boat extends Vehicle{
         return false;
     }
 
-    protected function applyGravity(){}
+    protected function applyGravity(){
+        if(!$this->onGround) parent::applyGravity();
+    }
 }
