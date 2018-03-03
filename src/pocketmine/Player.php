@@ -33,6 +33,7 @@ use pocketmine\entity\Attribute;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
+use pocketmine\entity\Vehicle;
 use pocketmine\entity\Item as DroppedItem;
 use pocketmine\entity\Living;
 use pocketmine\entity\projectile\Arrow;
@@ -118,7 +119,11 @@ use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\ServerSettingsResponsePacket;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
@@ -185,7 +190,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public const SPECTATOR = 3;
 	public const VIEW = Player::SPECTATOR;
 
-    /**
+       /**
 	 * Checks a supplied username and checks it is valid.
 	 * @param string $name
 	 *
@@ -322,22 +327,25 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $lastPingMeasure = 1;
 
 	/**
-     * @var int
-     * Last time when player used ender pearl
-     */
-    protected $lastEnderPearlUse = 0;
+	 * @var int
+	 * Last time when player used ender pearl
+	 */
+	protected $lastEnderPearlUse = 0;
 
-    /** @var int */
-    protected $formIdCounter = 0;
-    /** @var int|null */
-    protected $sentFormId = null;
-    /** @var Form|null */
-    protected $sentForm = null;
-    /** @var Form[] */
-    protected $formQueue = [];
+	/** @var int */
+	protected $formIdCounter = 0;
+	/** @var int|null */
+	protected $sentFormId = null;
+	/** @var Form|null */
+	protected $sentForm = null;
+	/** @var Form[] */
+	protected $formQueue = [];
 
-    /** @var int */
-    protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
+	/** @var int */
+	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
+
+	/** @var int */
+	protected $vehicleEid = 0;
 
 	/**
 	 * @return TranslationContainer|string
@@ -2151,6 +2159,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return true;
 	}
 
+	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+	    $target = $this->level->getEntity($packet->entityRuntimeId);
+	    if($target === null)
+	        return false;
+
+	    $target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
+
+	    $this->server->broadcastPacket($this->getViewers(), $packet);
+	    return true;
+	}
+
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
 		$newPos = $packet->position->subtract(0, $this->baseOffset, 0);
 
@@ -2166,6 +2185,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			if($this->isTeleporting){
 				$this->isTeleporting = false;
 			}
+
+			$packet->ridingEid = $this->vehicleEid;
+			$packet->mode = ($this->vehicleEid == 0 ? MovePlayerPacket::MODE_NORMAL : MovePlayerPacket::MODE_PITCH);
+			$packet->onGround = !$this->isGliding() && $this->onGround;
 
 			$packet->yaw = fmod($packet->yaw, 360);
 			$packet->pitch = fmod($packet->pitch, 360);
@@ -2586,6 +2609,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
+				$this->unlinkFromVehicle($target);
+				break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
 			default:
@@ -2727,30 +2752,30 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}
 				return true;
 			case PlayerActionPacket::ACTION_START_GLIDE:
-                $ev = new PlayerToggleGlideEvent($this, true);
-                $this->server->getPluginManager()->callEvent($ev);
-                if($ev->isCancelled()){
-                    $this->sendData($this);
-                }else{
-                    $this->setGliding(true);
-                }
-			    break;
+				$ev = new PlayerToggleGlideEvent($this, true);
+				$this->server->getPluginManager()->callEvent($ev);
+				if($ev->isCancelled()){
+					$this->sendData($this);
+				}else{
+					$this->setGliding(true);
+				}
+				break;
 			case PlayerActionPacket::ACTION_STOP_GLIDE:
-                $ev = new PlayerToggleGlideEvent($this, false);
-                $this->server->getPluginManager()->callEvent($ev);
-                if($ev->isCancelled()){
-                    $this->sendData($this);
-                }else{
-                    $this->setGliding(false);
-                }
+				$ev = new PlayerToggleGlideEvent($this, false);
+				$this->server->getPluginManager()->callEvent($ev);
+				if($ev->isCancelled()){
+					$this->sendData($this);
+				}else{
+					$this->setGliding(false);
+				}
 				break;
 			case PlayerActionPacket::ACTION_CONTINUE_BREAK:
 				$block = $this->level->getBlock($pos);
 				$this->level->broadcastLevelEvent($pos, LevelEventPacket::EVENT_PARTICLE_PUNCH_BLOCK, $block->getId() | ($block->getDamage() << 8) | ($packet->face << 16));
 				break;
-            case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
-                // TODO
-                break;
+			case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
+				// TODO
+				break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
 				return false;
@@ -2866,17 +2891,22 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$t = $this->level->getTile($pos);
 		if($t instanceof Spawnable){
-            $nbt = new NetworkLittleEndianNBTStream();
-            $compound = $nbt->read($packet->namedtag);
+			$nbt = new NetworkLittleEndianNBTStream();
+			$compound = $nbt->read($packet->namedtag);
 
-            if(!($compound instanceof CompoundTag)){
-                throw new \InvalidArgumentException("Expected " . CompoundTag::class . " in block entity NBT, got " . (is_object($compound) ? get_class($compound) : gettype($compound)));
-            }
-            if(!$t->updateCompoundTag($compound, $this)){
-                $t->spawnTo($this);
-            }
-        }
+			if(!($compound instanceof CompoundTag)){
+				throw new \InvalidArgumentException("Expected " . CompoundTag::class . " in block entity NBT, got " . (is_object($compound) ? get_class($compound) : gettype($compound)));
+			}
 
+			if(!$t->updateCompoundTag($compound, $this)){
+				$t->spawnTo($this);
+			}
+		}
+
+		return true;
+	}
+
+	public function handlePlayerInput(PlayerInputPacket $packet) : bool{
 		return true;
 	}
 
@@ -2908,8 +2938,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$ev->setCancelled();
 			}
 
-            $this->server->getPluginManager()->callEvent($ev);
-            if($ev->isCancelled()){
+			$this->server->getPluginManager()->callEvent($ev);
+			if($ev->isCancelled()){
 				$tile->spawnTo($this);
 				return true;
 			}
@@ -2917,6 +2947,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			if(lcg_value() <= $tile->getItemDropChance()){
 				$this->level->dropItem($tile->getBlock(), $tile->getItem());
 			}
+
 			$tile->setItem(null);
 			$tile->setItemRotation(0);
 		}
@@ -3297,90 +3328,90 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->dataPacket($pk);
 	}
 
-    /**
-     * Sends a Form to the player, or queue to send it if a form is already open.
-     *
-     * @param Form $form
-     * @param bool $prepend if true, the form will be sent immediately after the current form is closed (if any), before other queued forms.
-     */
-    public function sendForm(Form $form, bool $prepend = false) : void{
-        $form->setInUse();
+	/**
+	 * Sends a Form to the player, or queue to send it if a form is already open.
+	 *
+	 * @param Form $form
+	 * @param bool $prepend if true, the form will be sent immediately after the current form is closed (if any), before other queued forms.
+	 */
+	public function sendForm(Form $form, bool $prepend = false) : void{
+		$form->setInUse();
 
-        if($this->sentForm !== null){
-            if($prepend){
-                array_unshift($this->formQueue, $form);
-            }else{
-                $this->formQueue[] = $form;
-            }
-            return;
-        }
+		if($this->sentForm !== null){
+			if($prepend){
+				array_unshift($this->formQueue, $form);
+			}else{
+				$this->formQueue[] = $form;
+			}
+			return;
+		}
 
-        $this->sendFormRequestPacket($form);
-    }
+		$this->sendFormRequestPacket($form);
+	}
 
-    /**
-     * @param int   $formId
-     * @param mixed $responseData
-     *
-     * @return bool
-     */
-    public function onFormSubmit(int $formId, $responseData) : bool{
-        if($formId !== $this->sentFormId){
-            $this->server->getLogger()->debug("Got unexpected response for form $formId, but waiting for response for $this->sentFormId");
-            return false;
-        }
+	/**
+	 * @param int   $formId
+	 * @param mixed $responseData
+	 *
+	 * @return bool
+	 */
+	public function onFormSubmit(int $formId, $responseData) : bool{
+		if($formId !== $this->sentFormId){
+			$this->server->getLogger()->debug("Got unexpected response for form $formId, but waiting for response for $this->sentFormId");
+			return false;
+		}
 
-        $form = null;
+		$form = null;
 
-        try{
-            $form = $this->sentForm->handleResponse($this, $responseData);
-        }catch(\Throwable $e){
-            $this->server->getLogger()->logException($e);
-        }
+		try{
+			$form = $this->sentForm->handleResponse($this, $responseData);
+		}catch(\Throwable $e){
+			$this->server->getLogger()->logException($e);
+		}
 
-        $this->sentFormId = null;
-        $this->sentForm = null;
+		$this->sentFormId = null;
+		$this->sentForm = null;
 
-        try{
-            if($form !== null){
-                $form->setInUse(); //forms in the queue will already be marked as "in use", we only need to check here
-            }else{
-                $form = array_shift($this->formQueue);
-            }
+		try{
+			if($form !== null){
+				$form->setInUse(); //forms in the queue will already be marked as "in use", we only need to check here
+			}else{
+				$form = array_shift($this->formQueue);
+			}
 
-            if($form !== null){
-                $this->sendFormRequestPacket($form);
-            }
-        }catch(\Throwable $e){
-            $this->server->getLogger()->logException($e);
-        }
+			if($form !== null){
+				$this->sendFormRequestPacket($form);
+			}
+		}catch(\Throwable $e){
+			$this->server->getLogger()->logException($e);
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    private function sendFormRequestPacket(Form $form) : void{
-        $id = $this->formIdCounter++;
-        $pk = new ModalFormRequestPacket();
-        $pk->formId = $id;
-        $pk->formData = json_encode($form);
-        if($this->dataPacket($pk)){
-            $this->sentFormId = $id;
-            $this->sentForm = $form;
-        }
-    }
+	private function sendFormRequestPacket(Form $form) : void{
+		$id = $this->formIdCounter++;
+		$pk = new ModalFormRequestPacket();
+		$pk->formId = $id;
+		$pk->formData = json_encode($form);
+		if($this->dataPacket($pk)){
+			$this->sentFormId = $id;
+			$this->sentForm = $form;
+		}
+	}
 
-    public function sendServerSettings(Form $form){
-        $id = $this->formIdCounter++;
-        $pk = new ServerSettingsResponsePacket();
-        $pk->formId = $id;
-        $pk->formData = json_encode($form);
-        if($this->dataPacket($pk)){
-            $this->sentFormId = $id;
-            $this->sentForm = $form;
-        }
-    }
+	public function sendServerSettings(Form $form){
+		$id = $this->formIdCounter++;
+		$pk = new ServerSettingsResponsePacket();
+		$pk->formId = $id;
+		$pk->formData = json_encode($form);
+		if($this->dataPacket($pk)){
+			$this->sentFormId = $id;
+			$this->sentForm = $form;
+		}
+	}
 
-    /**
+	/**
 	 * Note for plugin developers: use kick() with the isAdmin
 	 * flag set to kick without the "Kicked by admin" part instead of this method.
 	 *
@@ -3500,44 +3531,44 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * @throws \InvalidStateException if the player is closed
 	 */
 	public function save(bool $async = false){
-        if($this->closed){
-            throw new \InvalidStateException("Tried to save closed player");
-        }
+		if($this->closed){
+			throw new \InvalidStateException("Tried to save closed player");
+		}
 
-        parent::saveNBT();
+		parent::saveNBT();
 
-        if($this->isValid()){
-            $this->namedtag->setString("Level", $this->level->getFolderName());
-        }
+		if($this->isValid()){
+			$this->namedtag->setString("Level", $this->level->getFolderName());
+		}
 
-        if ($this->hasValidSpawnPosition()) {
-            $this->namedtag->setString("SpawnLevel", $this->spawnPosition->getLevel()->getFolderName());
-            $this->namedtag->setInt("SpawnX", $this->spawnPosition->getFloorX());
-            $this->namedtag->setInt("SpawnY", $this->spawnPosition->getFloorY());
-            $this->namedtag->setInt("SpawnZ", $this->spawnPosition->getFloorZ());
+		if($this->hasValidSpawnPosition()){
+			$this->namedtag->setString("SpawnLevel", $this->spawnPosition->getLevel()->getFolderName());
+			$this->namedtag->setInt("SpawnX", $this->spawnPosition->getFloorX());
+			$this->namedtag->setInt("SpawnY", $this->spawnPosition->getFloorY());
+			$this->namedtag->setInt("SpawnZ", $this->spawnPosition->getFloorZ());
 
-            if(!$this->isAlive()){
-                $this->namedtag->setTag(new ListTag("Pos", [
-                    new DoubleTag("", $this->spawnPosition->x),
-                    new DoubleTag("", $this->spawnPosition->y),
-                    new DoubleTag("", $this->spawnPosition->z)
-                ]));
-            }
-        }
+			if(!$this->isAlive()){
+				$this->namedtag->setTag(new ListTag("Pos", [
+					new DoubleTag("", $this->spawnPosition->x),
+					new DoubleTag("", $this->spawnPosition->y),
+					new DoubleTag("", $this->spawnPosition->z)
+				]));
+			}
+		}
 
-        $achievements = new CompoundTag("Achievements");
-        foreach($this->achievements as $achievement => $status){
-            $achievements->setByte($achievement, $status === true ? 1 : 0);
-        }
-        $this->namedtag->setTag($achievements);
+		$achievements = new CompoundTag("Achievements");
+		foreach($this->achievements as $achievement => $status){
+			$achievements->setByte($achievement, $status === true ? 1 : 0);
+		}
+		$this->namedtag->setTag($achievements);
 
-        $this->namedtag->setInt("playerGameType", $this->gamemode);
-        $this->namedtag->setLong("lastPlayed", (int)floor(microtime(true) * 1000));
+		$this->namedtag->setInt("playerGameType", $this->gamemode);
+		$this->namedtag->setLong("lastPlayed", (int)floor(microtime(true) * 1000));
 
-        if($this->username != "" and $this->namedtag instanceof CompoundTag){
-            $this->server->saveOfflinePlayerData($this->username, $this->namedtag, $async);
-        }
-    }
+		if($this->username != "" and $this->namedtag instanceof CompoundTag){
+			$this->server->saveOfflinePlayerData($this->username, $this->namedtag, $async);
+		}
+	}
 
 	public function kill(){
 		if(!$this->spawned){
@@ -4015,46 +4046,62 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function isLoaderActive() : bool{
 		return $this->isConnected();
 	}
-  
-	// ALTAY TODO : OPTIMIZE
-  
-  public function getAnvilInventory() : ?AnvilInventory{
-      foreach($this->windowIndex as $inventory){
-          if($inventory instanceof AnvilInventory){
-              return $inventory;
-          }
-      }
 
-      return null;
-  }
+	public function getAnvilInventory() : ?AnvilInventory{
+	    foreach($this->windowIndex as $inventory)
+	        if($inventory instanceof AnvilInventory)
+                return $inventory;
 
-  public function getEnchantInventory() : ?EnchantInventory{
-      foreach($this->windowIndex as $inventory){
-          if($inventory instanceof EnchantInventory){
-              return $inventory;
-          }
-      }
+	    return null;
+	}
 
-      return null;
-  }
+	public function getEnchantInventory() : ?EnchantInventory{
+	    foreach($this->windowIndex as $inventory)
+	        if($inventory instanceof EnchantInventory)
+	            return $inventory;
 
-  public function getDeviceModel() : string{
-      return $this->deviceModel;
-  }
+	    return null;
+	}
 
-  public function getDeviceOS() : int{
-      return $this->deviceOS;
-  }
+	public function getDeviceModel() : string{
+		return $this->deviceModel;
+	}
 
-  public function canUseEnderPearl() : bool{
-      return time() - $this->lastEnderPearlUse >= 1;
-  }
+	public function getDeviceOS() : int{
+		return $this->deviceOS;
+	}
 
-  public function onUseEnderPearl() : void{
-      $this->lastEnderPearlUse = time();
-  }
+	public function canUseEnderPearl() : bool{
+		return time() - $this->lastEnderPearlUse >= 1;
+	}
 
-  public function resetLastEnderPearlUse() : void{
-      $this->lastEnderPearlUse = 0;
-  }
+	public function onUseEnderPearl() : void{
+		$this->lastEnderPearlUse = time();
+	}
+
+	public function resetLastEnderPearlUse() : void{
+		$this->lastEnderPearlUse = 0;
+	}
+
+	public function linkToVehicle(Vehicle $vehicle, int $type = EntityLink::TYPE_RIDE){
+		$this->setGenericFlag(self::DATA_FLAG_RIDING);
+		$this->vehicleEid = $vehicle->getId();
+
+		$pk = new SetEntityLinkPacket();
+		$pk->link = new EntityLink($vehicle->getId(), $this->getId(), $type, false);
+		$this->dataPacket($pk);
+	}
+
+	public function unlinkFromVehicle(Vehicle $vehicle = null){
+		$vehicle = $vehicle ?? $this->level->getEntity($this->vehicleEid);
+
+		$this->setGenericFlag(self::DATA_FLAG_RIDING, false);
+		$this->vehicleEid = 0;
+
+		$vehicle->onLeave($this);
+
+		$pk = new SetEntityLinkPacket();
+		$pk->link = new EntityLink($vehicle->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
+		$this->server->broadcastPacket($this->getViewers(), $pk);
+	}
 }

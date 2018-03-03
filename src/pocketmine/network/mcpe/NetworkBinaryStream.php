@@ -485,8 +485,8 @@ class NetworkBinaryStream extends BinaryStream{
 	 * @param EntityLink $link
 	 */
 	protected function putEntityLink(EntityLink $link) : void{
-		$this->putEntityUniqueId($link->fromEntityUniqueId);
-		$this->putEntityUniqueId($link->toEntityUniqueId);
+		$this->putEntityUniqueId($link->riddenId);
+		$this->putEntityUniqueId($link->riderId);
 		$this->putByte($link->type);
 		$this->putBool($link->bool1);
 	}

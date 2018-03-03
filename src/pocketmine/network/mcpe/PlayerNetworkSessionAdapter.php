@@ -42,6 +42,8 @@ use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\EntityFallPacket;
 use pocketmine\network\mcpe\protocol\EntityPickRequestPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
 use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
@@ -117,6 +119,10 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 		return false;
 	}
 
+	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+		return $this->player->handleMoveEntity($packet);
+	}
+
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
 		return $this->player->handleMovePlayer($packet);
 	}
@@ -150,7 +156,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handleEntityPickRequest(EntityPickRequestPacket $packet) : bool{
-		return false; //TODO
+		return true; //TODO : Test for boat
 	}
 
 	public function handlePlayerAction(PlayerActionPacket $packet) : bool{
@@ -159,6 +165,11 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 
 	public function handleEntityFall(EntityFallPacket $packet) : bool{
 	    $this->player->fall($packet->fallDistance);
+		return true;
+	}
+
+	public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
+		$this->player->getServer()->broadcastPacket($this->player->getViewers(), $packet);
 		return true;
 	}
 
@@ -187,7 +198,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handlePlayerInput(PlayerInputPacket $packet) : bool{
-		return false; //TODO
+		return $this->player->handlePlayerInput($packet);
 	}
 
 	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
@@ -244,8 +255,9 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 
 	public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
 		if($this->server->allowServerSettingsForm){
-		    $this->player->sendServerSettings($this->server->getServerSettingsForm());
-        }
-        return true;
+			$this->player->sendServerSettings($this->server->getServerSettingsForm());
+		}
+
+		return true;
 	}
 }

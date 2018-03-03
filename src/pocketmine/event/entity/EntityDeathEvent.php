@@ -23,7 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\event\entity;
 
-use pocketmine\entity\Living;
+use pocketmine\entity\Entity;
 use pocketmine\item\Item;
 
 class EntityDeathEvent extends EntityEvent{
@@ -34,16 +34,16 @@ class EntityDeathEvent extends EntityEvent{
 
 
 	/**
-	 * @param Living $entity
+	 * @param Entity $entity
 	 * @param Item[] $drops
 	 */
-	public function __construct(Living $entity, array $drops = []){
+	public function __construct(Entity $entity, array $drops = []){
 		$this->entity = $entity;
 		$this->drops = $drops;
 	}
 
 	/**
-	 * @return Living
+	 * @return Entity
 	 */
 	public function getEntity(){
 		return $this->entity;
