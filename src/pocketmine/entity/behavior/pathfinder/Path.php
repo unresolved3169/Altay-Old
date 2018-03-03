@@ -47,10 +47,10 @@ class Path{
 		try
 		{
 			$entityCoords = [];
-			foreach ($source->level->getEntities() as $entry)
+			foreach($source->level->getEntities() as $entry)
 			{
 				$position = $entry->asVector3();
-				if($position == $target) continue;
+				if($position === $target) continue;
 
 				$entityCoords[] = $position;
 			}
@@ -84,12 +84,12 @@ class Path{
 	}
 	
 	public function havePath() : bool{
-		return count($this->tiles) > 0;
+		return !empty($this->tiles);
 	}
 	
 	public function getNextTile(Entity $entity) : ?Tile{
 		if($this->havePath()){
-			$next = first($this->tiles);
+			$next = reset($this->tiles);
 			
 			if($next->x === $entity->x and $next->y === $entity->z){
 				unset($this->tiles[array_search($next, $this->tiles)]);
@@ -103,6 +103,6 @@ class Path{
 	}
 	
 	public function getBlock(Tile $tile) : ?Block{
-		return $this->blockCache[$title->__toString()] ?? null;
+		return $this->blockCache[$tile->__toString()] ?? null;
 	}
 }
