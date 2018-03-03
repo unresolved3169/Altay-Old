@@ -25,6 +25,7 @@ namespace pocketmine\entity;
 
 use pocketmine\item\Item as ItemItem;
 use pocketmine\item\ItemFactory;
+use pocketmine\entity\behavior\{WanderBehavior, RandomLookAroundBehavior, LookAtPlayerBehavior, FindAttackableTargetBehavior};
 
 class Zombie extends Monster{
 	public const NETWORK_ID = self::ZOMBIE;
@@ -61,5 +62,12 @@ class Zombie extends Monster{
 	public function getXpDropAmount() : int{
 		//TODO: check for equipment and whether it's a baby
 		return 5;
+	}
+	
+	protected function addBehaviors() : void{
+		$this->addBehavior(new FindAttackableTargetBehavior($this, 35));
+		$this->addBehavior(new WanderBehavior($this, 1.0));
+		$this->addBehavior(new LookAtPlayerBehavior($this, 8.0));
+		$this->addBehavior(new RandomLookAroundBehavior($this));
 	}
 }

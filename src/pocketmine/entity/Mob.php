@@ -35,6 +35,11 @@ abstract class Mob extends Entity{
 	protected $behaviorsEnabled = true; // test
 	/** @var Behavior|null */
 	protected $currentBehavior = null;
+
+ protected function initEntity(){
+  parent::initEntity();
+  $this->addBehaviors();
+ }
 	
  public function getReadyBehavior() : ?Behavior{
   foreach($this->behaviors as $index => $behavior){
@@ -49,9 +54,9 @@ abstract class Mob extends Entity{
     if($this->currentBehavior == null or (array_search($this->currentBehavior, $this->behaviors)) > $index){
      if($this->currentBehavior != null){
       $this->currentBehavior->onEnd();
-						$behavior->onStart();
-						return $behavior;
      }
+     $behavior->onStart();
+     return $behavior;
     }
    }
   }
