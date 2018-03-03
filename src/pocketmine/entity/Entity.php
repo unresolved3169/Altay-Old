@@ -37,7 +37,9 @@ use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\EnderPearl;
 use pocketmine\entity\projectile\FireworksRocket;
 use pocketmine\entity\projectile\Snowball;
+use pocketmine\entity\vehicle\Boat;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\event\entity\EntityDeathEvent;
 use pocketmine\event\entity\EntityDespawnEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
 use pocketmine\event\entity\EntityMotionEvent;
@@ -46,6 +48,7 @@ use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
+use pocketmine\item\Item;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
@@ -232,6 +235,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		Entity::registerEntity(ArmorStand::class, false, ['ArmorStand', 'minecraft:armor_stand']);
 		Entity::registerEntity(Arrow::class, false, ['Arrow', 'minecraft:arrow']);
+		Entity::registerEntity(Boat::class, false, ['Boat', 'minecraft:boat']);
 		Entity::registerEntity(Egg::class, false, ['Egg', 'minecraft:egg']);
 		Entity::registerEntity(EnderPearl::class, false, ['EnderPearl', 'minecraft:ender_pearl']);
 		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);
@@ -633,11 +637,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function isAffectedByGravity() : bool{
 	    return $this->getGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY);
-    }
+	}
 
-    public function setAffectedByGravity(bool $value = true){
-	    $this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, $value);
-    }
+	public function setAffectedByGravity(bool $value = true){
+		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, $value);
+	}
 
 	public function isSneaking() : bool{
 		return $this->getGenericFlag(self::DATA_FLAG_SNEAKING);
@@ -677,11 +681,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function isGliding() : bool{
 	    return $this->getGenericFlag(self::DATA_FLAG_GLIDING);
-    }
+	}
 
-    public function setGliding(bool $value = true) : void{
-	    $this->setGenericFlag(self::DATA_FLAG_GLIDING, $value);
-    }
+	public function setGliding(bool $value = true) : void{
+		$this->setGenericFlag(self::DATA_FLAG_GLIDING, $value);
+	}
 
 	/**
 	 * Returns whether the entity is able to climb blocks such as ladders or vines.
@@ -913,6 +917,12 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function kill(){
 		$this->health = 0;
 		$this->scheduleUpdate();
+		$this->onDeath();
+	}
+
+	protected function onDeath(){
+		$this->server->getPluginManager()->callEvent($ev = new EntityDeathEvent($this, $this->getDrops()));
+		$this->level->dropItems($this, $ev->getDrops());
 	}
 
 	/**
@@ -2129,8 +2139,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, \pocketmine\item\Item $item, Vector3 $clickVector, array $actions = []) : bool{
-        return false;
+	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){}
+
+	/**
+	 * @return Item[]
+	 */
+	public function getDrops() : array{
+		return [];
 	}
 
 }

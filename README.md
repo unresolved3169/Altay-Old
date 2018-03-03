@@ -18,14 +18,13 @@ Example servers running Altay
  - [x] Anvil
  - [x] Armor Stand
  - [ ] Beacons
- - [ ] Boats
+ - [x] Boats
  - [x] BossbarAPI
  - [x] Command Parameters
  - [ ] Config Auto Updater
  - [x] Elytra
  - [x] EnchantmentTable
  - [ ] Entity Behaviors (MobAI)
- - [ ] Riding
  - [x] Fireworks
  - [x] Forms
  - [x] Hopper

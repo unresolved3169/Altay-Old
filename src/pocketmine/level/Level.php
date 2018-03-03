@@ -1655,15 +1655,17 @@ class Level implements ChunkManager, Metadatable{
 		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
 		$droppedItems = [];
 
+		$nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
+		$nbt->setShort("Health", 5);
+		$nbt->setShort("PickupDelay", $delay);
+
 		foreach($items as $item){
 			if(!$item->isNull()){
 				$itemTag = $item->nbtSerialize();
 				$itemTag->setName("Item");
-				$nbt = Entity::createBaseNBT($source, $motion, lcg_value() * 360, 0);
-				$nbt->setShort("Health", 5);
-				$nbt->setShort("PickupDelay", $delay);
-				$nbt->setTag($itemTag);
-				$itemEntity = Entity::createEntity("Item", $this, $nbt);
+				$tag = clone $nbt;
+				$tag->setTag($itemTag);
+				$itemEntity = Entity::createEntity("Item", $this, $tag);
 
 				if($itemEntity instanceof DroppedItem){
 					$itemEntity->spawnToAll();
