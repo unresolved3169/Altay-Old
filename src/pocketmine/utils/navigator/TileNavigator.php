@@ -54,7 +54,7 @@ class TileNavigator{
 			$current = $last;
 			
 			if($last !== $highScore){
-				$current = first(usort($open, function($a, $b){
+				$current = reset(usort($open, function($a, $b){
 					if($a->fScore == $b->fScore) return 0;
 					
 					return ($a->fScore > $b->fScore) ? 1 : -1;

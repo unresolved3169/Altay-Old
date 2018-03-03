@@ -47,7 +47,7 @@ use pocketmine\Player;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Color;
 
-abstract class Living extends Entity implements Damageable{
+abstract class Living extends Mob implements Damageable{
 
 	protected $gravity = 0.08;
 	protected $drag = 0.02;
@@ -787,6 +787,14 @@ abstract class Living extends Entity implements Damageable{
 		parent::sendSpawnPacket($player);
 
 		$this->armorInventory->sendContents($player);
+	}
+	
+	public function getMovementSpeed() : float{
+		return $this->attributeMap->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
+	}
+	
+	public function setMovementSpeed(float $speed) : void{
+		$this->attributeMap->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed);
 	}
 
 	public function close(){
