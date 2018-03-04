@@ -81,7 +81,7 @@ class FindAttackableTargetBehavior extends Behavior{
 		if($target instanceof Player){
 			if($this->mob->distance($target) > $this->getTargetDistance($target)) return false;
 
-			if($this->mob->canSee($target)){ // TODO : Implement canSee
+			if($this->mob->canSeeEntity($target)){
 				$this->targetUnseenTicks = 0;
 			}elseif($this->targetUnseenTicks++ > 60){
 				return false;
