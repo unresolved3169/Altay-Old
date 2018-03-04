@@ -35,8 +35,8 @@ class PingCommand extends VanillaCommand{
     public function __construct(string $name){
         parent::__construct(
             $name,
-            "Kendinizin veya başka bir oyuncunun gecikmesini gösterir",
-            "/ping [oyuncu]",
+            "%pocketmine.command.ping.description",
+            "%commands.ping.usage",
             [],
             [CommandParameterUtils::getPlayerParameter()]
         );
