@@ -48,7 +48,7 @@ use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
-use pocketmine\item\Item;
+use pocketmine\item\Item as ItemItem;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
@@ -2139,10 +2139,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){}
+	public function onInteract(Player $player, ItemItem $item, Vector3 $clickVector, array $actions = []){}
 
 	/**
-	 * @return Item[]
+	 * @return ItemItem[]
 	 */
 	public function getDrops() : array{
 		return [];
