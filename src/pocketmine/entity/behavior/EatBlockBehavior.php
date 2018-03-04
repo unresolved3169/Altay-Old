@@ -32,19 +32,14 @@ use pocketmine\entity\Mob;
 use pocketmine\level\particle\DestroyBlockParticle;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
-use pocketmine\utils\Random;
 
 class EatBlockBehavior extends Behavior{
 
     /** @var int */
     protected $duration;
-    /** @var Random */
-    protected $random;
 
     public function __construct(Mob $mob){
-        parent::__construct($mob);
-
-        $this->random = new Random();
+        parent::__construct($mob, true);
     }
 
     public function canStart(): bool{

@@ -789,7 +789,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 *
 	 * @throws \InvalidArgumentException if the target entity is not valid
 	 */
-	public function setTargetEntity(Entity $target = null){
+	public function setTargetEntity(?Entity $target = null){
 		if($target === null){
 			$this->propertyManager->removeProperty(self::DATA_TARGET_EID);
 		}elseif($target->closed){

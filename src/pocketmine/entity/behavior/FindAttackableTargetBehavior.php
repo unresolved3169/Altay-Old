@@ -35,20 +35,19 @@ class FindAttackableTargetBehavior extends Behavior{
 	protected $targetUnseenTicks = 0;
 	
 	public function __construct(Mob $mob, float $targetDistance = 16.0){
-		parent::__construct($mob);
+		parent::__construct($mob, true);
 		
 		$this->targetDistance = $targetDistance;
 	}
 	
 	public function canStart() : bool{
-		if(rand(0,10) === 0){
+		if($this->random->nextBoundedInt(10) === 0){
 		    /** @var Player $player */
 			$player = null;
 			foreach($this->mob->level->getPlayers() as $p){
 				if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)){
-					if($player === null or $p->distance($this->mob) < $player->distance($this->mob)){
-						$player = $p;
-					}
+					$player = $p;
+					break;
 				}
 			}
 			
@@ -58,14 +57,15 @@ class FindAttackableTargetBehavior extends Behavior{
 				return true;
 			}
 		}
+
 		return false;
 	}
 	
 	public function getTargetDistance(Player $p){
 		$dist = $this->targetDistance;
-		if($p->isSneaking()){
+		if($p->isSneaking())
 			$dist *= 0.8;
-		}
+
 		return $dist;
 	}
 	
@@ -81,12 +81,12 @@ class FindAttackableTargetBehavior extends Behavior{
 		if($target instanceof Player){
 			if($this->mob->distance($target) > $this->getTargetDistance($target)) return false;
 
-			// TODO : Emre canSee fonksiyonu yok
-			if($this->mob->canSee($target)){
+			if($this->mob->canSee($target)){ // TODO : Implement canSee
 				$this->targetUnseenTicks = 0;
 			}elseif($this->targetUnseenTicks++ > 60){
 				return false;
 			}
+
 			$this->mob->setTargetEntity($target);
 		}else{
 			if($this->mob->distance($target) > $this->targetDistance){
@@ -95,9 +95,6 @@ class FindAttackableTargetBehavior extends Behavior{
 		}
 		
 		return true;
-	}
-	
-	public function onTick(int $tick) : void{
 	}
 	
 	public function onEnd() : void{

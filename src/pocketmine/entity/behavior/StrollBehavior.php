@@ -30,7 +30,6 @@ use pocketmine\entity\Mob;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\utils\Random;
 
 class StrollBehavior extends Behavior{
 
@@ -43,16 +42,12 @@ class StrollBehavior extends Behavior{
     /** @var int */
     protected $timeLeft;
 
-    /** @var Random */
-    protected $random;
-
     public function __construct(Mob $mob, int $duration, float $speed, float $speedMultiplier){
-        parent::__construct($mob);
+        parent::__construct($mob, true);
 
         $this->duration = $this->timeLeft = $duration;
         $this->speed = $speed;
         $this->speedMultiplier = $speedMultiplier;
-        $this->random = new Random();
     }
 
     public  function canStart(): bool{

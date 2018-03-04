@@ -25,18 +25,23 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
+use pocketmine\utils\Random;
 
 abstract class Behavior{
 
     /** @var Mob */
 	protected $mob;
+	/** @var Random */
+	protected $random = null;
 	
 	public function getName() : string{
 		return (new \ReflectionClass($this))->getShortName();
 	}
 	
-	public function __construct(Mob $mob){
+	public function __construct(Mob $mob, bool $random = false){
 		$this->mob = $mob;
+
+		if($random) $this->random = new Random();
 	}
 	
 	public abstract function canStart() : bool;
