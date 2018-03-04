@@ -46,8 +46,9 @@ class FindAttackableTargetBehavior extends Behavior{
 			$player = null;
 			foreach($this->mob->level->getPlayers() as $p){
 				if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)){
-					$player = $p;
-					break;
+					if($player === null or $p->distance($this->mob) < $player->distance($this->mob)){
+-						$player = $p;
+-					}
 				}
 			}
 			
