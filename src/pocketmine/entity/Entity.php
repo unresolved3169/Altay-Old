@@ -2151,5 +2151,28 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function getDrops() : array{
 		return [];
 	}
+	
+	public function canSeeEntity(Entity $target) : bool{
+		$entityPos = $this->asVector3()->add(new Vector3(0,($this instanceof Player ? 1.62 : $this->height), 0));
+		$targetPos = $target->asVector3()->add(new Vector3(0,($target instanceof Player ? 1.62 : $target->height), 0));
+		$distance = $entityPos->distance($targetPos);
+
+		$rayPos = $entityPos;
+		$direction = $targetPos->subtract($entityPos)->normalize();
+
+		if ($distance < $direction->length()){
+			return true;
+		}
+
+		do{
+			if ($this->level->getBlock($rayPos)->isSolid()){
+				return false;
+			}
+
+			$rayPos = $rayPos->add($direction);
+		}while ($distance > $entityPos->distance($rayPos));
+		
+		return true;
+	}
 
 }
