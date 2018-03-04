@@ -26,7 +26,7 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\block\Air;
 use pocketmine\block\Block;
-use pocketmine\entity\Living;
+use pocketmine\entity\Mob;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
@@ -46,7 +46,7 @@ class StrollBehavior extends Behavior{
     /** @var Random */
     protected $random;
 
-    public function __construct(Living $mob, int $duration, float $speed, float $speedMultiplier){
+    public function __construct(Mob $mob, int $duration, float $speed, float $speedMultiplier){
         parent::__construct($mob);
 
         $this->duration = $this->timeLeft = $duration;

@@ -24,11 +24,11 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
 use pocketmine\entity\behavior\pathfinder\Path;
 use pocketmine\entity\Entity;
 use pocketmine\block\Block;
 use pocketmine\block\Grass;
+use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 use pocketmine\entity\Animal;
@@ -42,7 +42,7 @@ class WanderBehavior extends Behavior{
 	/** @var Path */
 	protected $currentPath = null;
 	
-	public function __construct(Living $mob, float $speedMultiplier = 1.0, int $chance = 120){
+	public function __construct(Mob $mob, float $speedMultiplier = 1.0, int $chance = 120){
 		parent::__construct($mob);
 		
 		$this->speedMultiplier = $speedMultiplier;

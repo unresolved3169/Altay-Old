@@ -47,7 +47,7 @@ use pocketmine\Player;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Color;
 
-abstract class Living extends Mob implements Damageable{
+abstract class Living extends Entity implements Damageable{
 
 	protected $gravity = 0.08;
 	protected $drag = 0.02;

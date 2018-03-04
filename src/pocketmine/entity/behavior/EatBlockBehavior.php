@@ -28,7 +28,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\Grass;
 use pocketmine\block\TallGrass;
-use pocketmine\entity\Living;
+use pocketmine\entity\Mob;
 use pocketmine\level\particle\DestroyBlockParticle;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
@@ -41,7 +41,7 @@ class EatBlockBehavior extends Behavior{
     /** @var Random */
     protected $random;
 
-    public function __construct(Living $mob){
+    public function __construct(Mob $mob){
         parent::__construct($mob);
 
         $this->random = new Random();
@@ -59,7 +59,7 @@ class EatBlockBehavior extends Behavior{
 
         $this->duration = 40;
 
-        $this->mob->setMotion($this->mob->getMotion()->multiplyVector(new Vector3(0, 1, 0)));
+        $this->mob->motionX = $this->mob->motionZ = 0;
         $this->mob->broadcastEntityEvent(EntityEventPacket::EAT_GRASS_ANIMATION);
 
         return true;

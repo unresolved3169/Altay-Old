@@ -25,7 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\behavior\pathfinder\Path;
-use pocketmine\entity\Living;
+use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -50,7 +50,7 @@ class TemptedBehavior extends Behavior{
     /** @var Path */
     protected $pathfinder;
 
-    public function __construct(Living $mob, string $temptingItem, float $lookDistance, float $speedMultiplier){
+    public function __construct(Mob $mob, string $temptingItem, float $lookDistance, float $speedMultiplier){
         parent::__construct($mob);
 
         $this->speedMultiplier = $speedMultiplier;
@@ -90,7 +90,7 @@ class TemptedBehavior extends Behavior{
         $distanceToPlayer = $this->mob->distance($this->temptingPlayer);
 
         if($distanceToPlayer < 1.75){
-            $this->mob->setMotion(new Vector3());
+            $this->mob->resetMotion();
             $this->mob->lookAt($this->temptingPlayer);
 
             $this->currentPath = null;
@@ -117,7 +117,7 @@ class TemptedBehavior extends Behavior{
 
             if($distanceToPlayer < 1.75){
                 // if within x m stop following (walking)
-                $this->mob->setMotion(new Vector3());
+                $this->mob->resetMotion();
                 $this->currentPath = null;
             }else{
                 // else find path to player
@@ -128,7 +128,7 @@ class TemptedBehavior extends Behavior{
                 // TODO :  Mob->moveForward($this->speedMultiplier*$m, $this->entity->getViewers());
             }
         }else{
-            $this->mob->setMotion(new Vector3());
+            $this->mob->resetMotion();
             $this->currentPath = null;
         }
 
@@ -137,7 +137,7 @@ class TemptedBehavior extends Behavior{
 
     public function onEnd(): void{
         $this->coolDown = 100;
-        $this->mob->setMotion(new Vector3());
+        $this->mob->resetMotion();
         $this->temptingPlayer = null;
         $this->mob->pitch = 0;
         $this->currentPath = null;

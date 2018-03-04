@@ -24,18 +24,18 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
+use pocketmine\entity\Mob;
 
 abstract class Behavior{
 
-    /** @var Living */
+    /** @var Mob */
 	protected $mob;
 	
 	public function getName() : string{
 		return (new \ReflectionClass($this))->getShortName();
 	}
 	
-	public function __construct(Living $mob){
+	public function __construct(Mob $mob){
 		$this->mob = $mob;
 	}
 	

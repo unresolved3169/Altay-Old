@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
+use pocketmine\entity\Mob;
 use pocketmine\Player;
 
 class LookAtPlayerBehavior extends Behavior{
@@ -36,7 +36,7 @@ class LookAtPlayerBehavior extends Behavior{
 	/** @var int */
 	protected $duration = 0;
 	
-	public function __construct(Living $mob, float $lookDistance = 6.0){
+	public function __construct(Mob $mob, float $lookDistance = 6.0){
         parent::__construct($mob);
 
         $this->lookDistance = $lookDistance;

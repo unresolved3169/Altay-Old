@@ -1847,6 +1847,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return true;
 	}
 
+	public function resetMotion() : void{
+	    $this->motionX = $this->motionY = $this->motionZ = 0;
+    }
+
 	public function isOnGround() : bool{
 		return $this->onGround === true;
 	}

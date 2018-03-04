@@ -42,8 +42,7 @@ class Path{
 		$this->blockCache = $blockCache;
 	}
 	
-	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : bool{
-		$resultPath = new Path();
+	public static function findPath(Entity $source, Vector3 $target, float $distance, array $blockCache = []) : Path{
 		try
 		{
 			$entityCoords = [];

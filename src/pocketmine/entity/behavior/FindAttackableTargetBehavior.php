@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Living;
+use pocketmine\entity\Mob;
 use pocketmine\Player;
 
 class FindAttackableTargetBehavior extends Behavior{
@@ -34,7 +34,7 @@ class FindAttackableTargetBehavior extends Behavior{
 	/** @var int */
 	protected $targetUnseenTicks = 0;
 	
-	public function __construct(Living $mob, float $targetDistance = 16.0){
+	public function __construct(Mob $mob, float $targetDistance = 16.0){
 		parent::__construct($mob);
 		
 		$this->targetDistance = $targetDistance;
