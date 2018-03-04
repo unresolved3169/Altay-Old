@@ -1213,16 +1213,11 @@ class Server{
 	}
 
 	public function getAltayProperty(string $variable, $defaultValue = null){
-		if(!array_key_exists($variable, $this->altayPropertyCache)){
-			$v = getopt("", ["$variable::"]);
-			if(isset($v[$variable])){
-				$this->altayPropertyCache[$variable] = $v[$variable];
-			}else{
-				$this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
-			}
-		}
+	    if(!array_key_exists($variable, $this->altayPropertyCache)){
+	        $this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
+	    }
 
-		return $this->altayPropertyCache[$variable] ?? $defaultValue;
+	    return $this->altayPropertyCache[$variable] ?? $defaultValue;
 	}
 
 	/**
