@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Attribute;
-use pocketmine\entity\behavior\pathfinder\Path;
 use pocketmine\entity\Mob;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;

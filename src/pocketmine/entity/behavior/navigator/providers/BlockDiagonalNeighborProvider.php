@@ -20,10 +20,11 @@
  *
  */
 
-namespace pocketmine\entiy\behavior\navigator;
+declare(strict_types=1);
 
-use pocketmine\utils\navigator\Tile;
-use pocketmine\utils\navigator\providers\NeighborProvider;
+namespace pocketmine\entiy\behavior\navigator\providers;
+
+use pocketmine\entiy\behavior\navigator\Tile;
 use pocketmine\level\Level;
 use pocketmine\block\Block;
 use pocketmine\math\Vector3;

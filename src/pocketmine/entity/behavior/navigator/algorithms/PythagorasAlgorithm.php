@@ -20,7 +20,9 @@
  *
  */
 
-namespace pocketmine\utils\navigator\algorithms;
+declare(strict_types=1);
+
+namespace pocketmine\entiy\behavior\navigator\algorithms;
 
 use pocketmine\utils\navigator\Tile;
 

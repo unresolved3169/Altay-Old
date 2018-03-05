@@ -24,7 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\behavior\pathfinder\Path;
 use pocketmine\entity\Entity;
 use pocketmine\block\Block;
 use pocketmine\block\Grass;

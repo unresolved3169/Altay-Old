@@ -20,9 +20,11 @@
  *
  */
 
-namespace pocketmine\utils\navigator\algorithms;
+declare(strict_types=1);
 
-use pocketmine\utils\navigator\Tile;
+namespace pocketmine\entiy\behavior\navigator\algorithms;
+
+use pocketmine\entiy\behavior\navigator\Tile;
 
 class ManhattanHeuristicAlgorithm implements DistanceAlgorithm{
 	

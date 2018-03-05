@@ -20,9 +20,11 @@
  *
  */
 
-namespace pocketmine\utils\navigator\providers;
+declare(strict_types=1);
 
-use pocketmine\utils\navigator\Tile;
+namespace pocketmine\entiy\behavior\navigator\providers;
+
+use pocketmine\entiy\behavior\navigator\Tile;
 
 interface NeighborProvider{
 

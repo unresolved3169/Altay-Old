@@ -20,7 +20,9 @@
  *
  */
 
-namespace pocketmine\utils\navigator\providers;
+declare(strict_types=1);
+
+namespace pocketmine\entiy\behavior\navigator\providers;
 
 use pocketmine\utils\navigator\Tile;
 

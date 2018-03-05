@@ -20,11 +20,10 @@
  *
  */
 
-namespace pocketmine\entiy\behavior\navigator;
+namespace pocketmine\entiy\behavior\navigator\algorithms;
 
-use pocketmine\utils\navigator\Tile;
 use pocketmine\block\Block;
-use pocketmine\utils\navigator\algorithms\DistanceAlgorithm;
+use pocketmine\entiy\behavior\navigator\Tile;
 
 class BlockDistanceAlgorithm implements DistanceAlgorithm{
 

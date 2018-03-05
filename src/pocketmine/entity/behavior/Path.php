@@ -22,16 +22,17 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity\behavior\pathfinder;
+namespace pocketmine\entity\behavior;
 
-use pocketmine\entiy\behavior\navigator\BlockDiagonalNeighborProvider;
-use pocketmine\entiy\behavior\navigator\BlockDistanceAlgorithm;
-use pocketmine\entiy\behavior\navigator\LevelNavigator;
-use pocketmine\math\Vector3;
-use pocketmine\utils\navigator\{TileNavigator, Tile};
-use pocketmine\utils\navigator\algorithms\ManhattanHeuristicAlgorithm;
-use pocketmine\entity\Entity;
 use pocketmine\block\Block;
+use pocketmine\entity\Entity;
+use pocketmine\entiy\behavior\navigator\algorithms\BlockDistanceAlgorithm;
+use pocketmine\entiy\behavior\navigator\algorithms\LevelNavigator;
+use pocketmine\entiy\behavior\navigator\algorithms\ManhattanHeuristicAlgorithm;
+use pocketmine\entiy\behavior\navigator\providers\BlockDiagonalNeighborProvider;
+use pocketmine\entiy\behavior\navigator\Tile;
+use pocketmine\entiy\behavior\navigator\TileNavigator;
+use pocketmine\math\Vector3;
 
 class Path{
 	
