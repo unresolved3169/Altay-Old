@@ -27,28 +27,30 @@ use pocketmine\block\Block;
 use pocketmine\utils\navigator\algorithms\DistanceAlgorithm;
 
 class BlockDistanceAlgorithm implements DistanceAlgorithm{
-	
-	private $blockCache = [];
-	private $canClimb = false;
-	
-	public function __construct(array $cache, bool $canClimb){
-		$this->blockCache = $cache;
-		$this->canClimb = $canClimb;
-	}
-	
-	public function calculate(Tile $from, Tile $to) : int{
-		$vFrom = $this->getBlock($from);
-		$vTo = $this->getBlock($to);
-		
-		if($this->canClimb){
-			$vFrom->y = 0;
-			$vTo->y = 0;
-		}
-		
-		return $vFrom->distance($vTo);
-	}
-	
-	public function getBlock(Tile $tile) : ?Block{
-		return $this->blockCache[$tile->__toString()] ?? null;
-	}
+
+    /** @var Block[] */
+    private $blockCache = [];
+    /** @var bool */
+    private $canClimb;
+
+    public function __construct(array $cache, bool $canClimb = false){
+        $this->blockCache = $cache;
+        $this->canClimb = $canClimb;
+    }
+
+    public function calculate(Tile $from, Tile $to) : float{
+        $vFrom = $this->getBlock($from);
+        $vTo = $this->getBlock($to);
+
+        if($this->canClimb){
+            $vFrom->y = 0;
+            $vTo->y = 0;
+        }
+
+        return $vFrom->distance($vTo);
+    }
+
+    public function getBlock(Tile $tile) : ?Block{
+        return isset($this->blockCache[$tile->__toString()]) ? $this->blockCache[$tile->__toString()] : null;
+    }
 }

@@ -30,34 +30,40 @@ use pocketmine\math\Vector3;
 use pocketmine\entity\Entity;
 
 class BlockDiagonalNeighborProvider implements NeighborProvider{
-	
-	private $blockCache = [];
-	private $entity;
-	private $level;
-	private $startY = 0;
-	
-	protected $neighbors = [
-	    [0,-1],
-        [1,0],
-        [0,1],
-        [-1,0],
-        [-1,-1],
-        [1,-1],
-        [1,1],
-        [-1,1]
+
+    /** @var Level */
+    private $level;
+    /** @var int */
+    private $startY = 0;
+    /** @var Entity */
+    private $entity;
+    /** @var Block[] */
+    private $blockCache = [];
+
+    protected $neighbors = [
+        [0, -1],
+        [1, 0],
+        [0, 1],
+        [-1, 0],
+        [-1, -1],
+        [1, -1],
+        [1, 1],
+        [-1, 1]
     ];
 
     public function __construct(Level $level, int $startY, array $blockCache, Entity $entity){
-		$this->level = $level;
-		$this->startY = $startY;
-		$this->blockCache = $blockCache;
-		$this->entity = $entity;
-	}
-	
-	public function getNeighbors(Tile $tile) : array{
+        $this->level = $level;
+        $this->startY = $startY;
+        $this->blockCache = $blockCache;
+        $this->entity = $entity;
+    }
+
+    public function getNeighbors(Tile $tile) : array{
         if(!isset($this->blockCache[$tile->__toString()])){
             $block = $this->level->getBlock(new Vector3($tile->x, $this->startY, $tile->y));
             $this->blockCache[$tile->__toString()] = $block;
+        }else{
+            $block = $this->blockCache[$tile->__toString()];
         }
 
         $list = [];
@@ -68,11 +74,11 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
             $coord = new Vector3((int)$item->x, $block->y, (int)$item->y);
             if($this->level->getBlock($coord)->isSolid()){
                 if($this->entity->canClimb()){
-                    $blockUp = $this->level->getBlock($coord->add(0, 1, 0));
+                    $blockUp = $this->level->getBlock($coord->getSide(Vector3::SIDE_UP));
                     $canMove = false;
                     for($i = 0; $i < 10; $i++){
                         if($this->isBlocked($blockUp->asVector3())){
-                            $blockUp = $this->level->getBlock($blockUp->add(0, 1, 0));
+                            $blockUp = $this->level->getBlock($blockUp->getSide(Vector3::SIDE_UP));
                             continue;
                         }
 
@@ -86,13 +92,13 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 
                     $this->blockCache[$item->__toString()] = $blockUp;
                 }else{
-                    $blockUp = $this->level->getBlock($coord->add(0, 1, 0));
-                    if ($blockUp->isSolid()) {
+                    $blockUp = $this->level->getBlock($coord->getSide(Vector3::SIDE_UP));
+                    if($blockUp->isSolid()){
                         // Can't jump
                         continue;
                     }
 
-                    if ($this->isObstructed($blockUp)) continue;
+                    if($this->isObstructed($blockUp)) continue;
 
                     $this->blockCache[$item->__toString()] = $blockUp;
                 }
@@ -101,9 +107,9 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
                 if(!$blockDown->isSolid()){
                     if($this->entity->canClimb()){
                         $canClimb = false;
-                        $blockDown = $this->level->getBlock($blockDown->add(0, -1, 0));
-                        for ($i = 0; $i < 10; $i++) {
-                            if (!$blockDown->isSolid()) {
+                        $blockDown = $this->level->getBlock($blockDown->getSide(Vector3::SIDE_DOWN));
+                        for($i = 0; $i < 10; $i++){
+                            if(!$blockDown->isSolid()){
                                 $blockDown = $this->level->getBlock($blockDown->add(0, -1, 0));
                                 continue;
                             }
@@ -114,13 +120,13 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 
                         if(!$canClimb) continue;
 
-                        $blockDown = $this->level->getBlock($blockDown->add(0, 1, 0));
+                        $blockDown = $this->level->getBlock($blockDown->getSide(Vector3::SIDE_UP));
 
-                        if ($this->isObstructed($blockDown)) continue;
+                        if($this->isObstructed($blockDown)) continue;
 
                         $this->blockCache[$item->__toString()] = $blockDown;
                     }else{
-                        if(!$this->level->getBlock($coord->add(0, -2, 0))->isSolid()){
+                        if(!$this->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()){
                             // Will fall
                             continue;
                         }
@@ -143,45 +149,42 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 
         return $list;
     }
-	
-	public function checkDiagonals(Block $block, array &$list){
-		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)), $list)){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_EAST)), $list)]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_WEST)), $list)]);
-		}
-		
-		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)), $list)){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_EAST)), $list)]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_WEST)), $list)]);
-		}
-		
-		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)), $list)){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_NORTH)), $list)]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
-		}
-		
-		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)), $list)){
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_NORTH)), $list)]);
-			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
-		}
-	}
-	
-	public function isObstructed(Vector3 $coord) : bool{
-		for($i = 1; $i < $this->entity->height; $i++)
-			if($this->isBlocked($coord->add(0,$i,0))) return true;
 
-		return false;
-	}
-	
-	public function isBlocked(Vector3 $coord) : bool{
-		$block = $this->level->getBlock($coord);
-		if($block === null or $block->isSolid())
-			return true;
+    public function isObstructed(Vector3 $coord): bool{
+        for($i = 1; $i < $this->entity->height; $i++)
+            if($this->isBlocked($coord->add(0, $i, 0))) return true;
 
-		return false;
-	}
-	
-	public function getTileFromBlock(Vector3 $coord) : Tile{
-		return new Tile($coord->x, $coord->z);
-	}
+        return false;
+    }
+
+    public function isBlocked(Vector3 $coord): bool{
+        $block = $this->level->getBlock($coord);
+        return $block === null or $block->isSolid();
+    }
+
+    public function checkDiagonals(Block $block, array &$list){
+        if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)), $list)){
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_EAST)), $list)]);
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_WEST)), $list)]);
+        }
+
+        if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)), $list)){
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_EAST)), $list)]);
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_WEST)), $list)]);
+        }
+
+        if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)), $list)){
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_NORTH)), $list)]);
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
+        }
+
+        if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)), $list)){
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_NORTH)), $list)]);
+            unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
+        }
+    }
+
+    public function getTileFromBlock(Vector3 $coord): Tile{
+        return new Tile($coord->x, $coord->z);
+    }
 }

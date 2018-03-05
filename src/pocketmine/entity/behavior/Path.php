@@ -24,10 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior\pathfinder;
 
+use pocketmine\entiy\behavior\navigator\BlockDiagonalNeighborProvider;
+use pocketmine\entiy\behavior\navigator\BlockDistanceAlgorithm;
+use pocketmine\entiy\behavior\navigator\LevelNavigator;
 use pocketmine\math\Vector3;
 use pocketmine\utils\navigator\{TileNavigator, Tile};
 use pocketmine\utils\navigator\algorithms\ManhattanHeuristicAlgorithm;
-use pocketmine\entity\behavior\pathfinder\navigator\{BlockDistanceAlgorithm, LevelNavigator, BlockDiagonalNeighborProvider};
 use pocketmine\entity\Entity;
 use pocketmine\block\Block;
 
