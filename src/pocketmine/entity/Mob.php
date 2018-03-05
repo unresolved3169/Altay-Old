@@ -72,6 +72,7 @@ abstract class Mob extends Living{
                 $this->currentBehavior->onTick($tick);
             }
         }
+
         return parent::onUpdate($tick);
     }
 
