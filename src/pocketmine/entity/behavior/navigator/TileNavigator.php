@@ -20,23 +20,29 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace pocketmine\utils\navigator;
 
+use pocketmine\utils\navigator\algorithms\DistanceAlgorithm;
 use pocketmine\utils\navigator\providers\{NeighborProvider, BlockedProvider};
-use pocketmine\utils\navigator\algorithms\{DistanceAlgorithm, ManhattanHeuristicAlgorithm};
 
 class TileNavigator{
-	
+
+    /** @var BlockedProvider */
 	private $blockedProvider;
+	/** @var NeighborProvider */
 	private $neighborProvider;
+	/** @var DistanceAlgorithm */
 	private $distanceAlgorithm;
+	/** @var DistanceAlgorithm */
 	private $heuristicAlgorithm;
 	
-	public function __construct(BlockedProvider $bp, NeighborProvider $np, DistanceAlgorithm $da, ManhattanHeuristicAlgorithm $ha){
-		$this->blockedProvider = $bp;
-		$this->neighborProvider = $np;
-		$this->distanceAlgorithm = $da;
-		$this->heuristicAlgorithm = $ha;
+	public function __construct(BlockedProvider $blockedProvider, NeighborProvider $neighborProvider, DistanceAlgorithm $distanceAlgorithm, DistanceAlgorithm $heuristicAlgorithm){
+		$this->blockedProvider = $blockedProvider;
+		$this->neighborProvider = $neighborProvider;
+		$this->distanceAlgorithm = $distanceAlgorithm;
+		$this->heuristicAlgorithm = $heuristicAlgorithm;
 	}
 	
 	public function navigate(Tile $from, Tile $to, int $maxAttempts = PHP_INT_MAX) : ?array{
@@ -47,18 +53,18 @@ class TileNavigator{
 		$from->fScore = $this->heuristicAlgorithm->calculate($from, $to);
 		
 		$noOfAttempts = 0;
+
 		$highScore = $from;
 		$last = $from;
-		
-		while(count($open) > 0){
+		while(!empty($open)){
 			$current = $last;
-			
 			if($last !== $highScore){
-				$current = reset(usort($open, function($a, $b){
-					if($a->fScore == $b->fScore) return 0;
-					
-					return ($a->fScore > $b->fScore) ? 1 : -1;
-				}));
+                usort($open, function($a, $b){
+                    if($a->fScore == $b->fScore) return 0;
+
+                    return ($a->fScore > $b->fScore) ? 1 : -1;
+                });
+				$current = reset($open);
 			}
 			
 			$last = null;
@@ -70,9 +76,9 @@ class TileNavigator{
 				$this->reConstructPath($path, $current);
 			}
 			
-			$open[array_search($current, $open)];
-			array_push($closed, $current);
-			
+			unset($open[array_search($current, $open)]);
+			$closed[] = $current;
+
 			foreach($this->neighborProvider->getNeighbors($current) as $neighbor){
 				if(in_array($neighbor, $closed) or $this->blockedProvider->isBlocked($neighbor)){
 					continue;

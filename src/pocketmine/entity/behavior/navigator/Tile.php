@@ -20,26 +20,30 @@
  *
  */
 
-namespace pocketmine\utils\navigator;
+declare(strict_types=1);
 
-/**
- * Ported from NiclasOlofsson's AStarNavigator fork
- */
+namespace pocketmine\utils\navigator;
  
 class Tile{
+
+    /** @var int */
+	public $x;
+	/** @var int */
+	public $y;
+	/** @var float */
+	public $fScore;
+	/** @var float */
+	public $gScore;
 	
-	public $x = 0;
-	public $y = 0;
-	public $fScore = 0;
-	public $gScore = 0;
-	
-	public function __construct(int $x, int $y){
+	public function __construct(int $x, int $y, float $fScore = 0.0, float $gScore = 0.0){
 		$this->x = $x;
 		$this->y = $y;
+		$this->fScore = $fScore;
+		$this->gScore = $gScore;
 	}
 	
-	public function equals(Tile $tile) : bool{
-		return $this->x === $tile->x and $this->y === $tile->y;
+	public function equals(Tile $other) : bool{
+		return $this->x == $other->x && $this->y == $other->y;
 	}
 	
 	public function getHashCode() : int{
@@ -47,17 +51,16 @@ class Tile{
 	}
 	
 	public function __toString(){
-		return $this->x . ":" . $this->y . ":" . $this->fScore . ":" . $this->gScore;
+		return "Tile : " . $this->x . ":" . $this->y . ":" . $this->fScore . ":" . $this->gScore;
 	}
 	
-	public static function fromString(string $str) : Tile{
-		$part = explode(":", $str);
-		$tile = new Tile();
-		$tile->x = (int) $part[0] ?? 0;
-		$tile->y = (int) $part[1] ?? 0;
-		$tile->fScore = (int) $part[2] ?? 0;
-		$tile->gScore = (int) $part[3] ?? 0;
-		
-		return $tile;
-	}
+	public static function fromString(string $str) : ?Tile{
+        $parts = explode(":", $str);
+
+        if(count($parts) !== 5)
+            return null; // TODO : Throw ekleriz belki
+
+        array_shift($parts);
+        return new Tile((int)$parts[0], (int)$parts[1], (float)$parts[2], (float)$parts[3]);
+    }
 }

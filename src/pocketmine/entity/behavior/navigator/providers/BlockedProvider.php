@@ -26,5 +26,5 @@ use pocketmine\utils\navigator\Tile;
 
 interface BlockedProvider{
 	
-	public function isBlocked(Tile $tile) : bool;
+	public function isBlocked(Tile $coord) : bool;
 }

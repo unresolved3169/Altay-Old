@@ -26,7 +26,7 @@ use pocketmine\utils\navigator\Tile;
 
 class EmptyBlockedProvider implements BlockedProvider{
 	
-	public function isBlocked(Tile $tile) : bool{
+	public function isBlocked(Tile $coord) : bool{
 		return false;
 	}
 }
