@@ -42,7 +42,7 @@ class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 
     public function getLastAttackSource(): ?Entity{
         $cause = $this->mob->getLastDamageCause();
-        if ($cause instanceof EntityDamageByEntityEvent)
+        if($cause instanceof EntityDamageByEntityEvent)
             return $cause->getDamager();
 
         return null;

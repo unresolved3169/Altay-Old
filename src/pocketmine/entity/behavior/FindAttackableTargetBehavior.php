@@ -44,13 +44,14 @@ class FindAttackableTargetBehavior extends Behavior{
 		if($this->random->nextBoundedInt(10) === 0){
 		    /** @var Player $player */
 			$player = null;
+			// TODO : DAHA OPTIMIZE ET
 			foreach($this->mob->level->getPlayers() as $p){
-				if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)){
-					if($player === null or $p->distance($this->mob) < $player->distance($this->mob)){
--						$player = $p;
--					}
-				}
-			}
+                if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)) {
+                    if($player === null or $p->distance($this->mob) < $player->distance($this->mob)){
+                        $player = $p;
+                    }
+                }
+            }
 			
 			$this->mob->setTargetEntity($player);
 			
