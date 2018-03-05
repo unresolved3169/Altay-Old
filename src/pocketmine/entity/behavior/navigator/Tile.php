@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entiy\behavior\navigator;
+namespace pocketmine\entity\behavior\navigator;
  
 class Tile{
 

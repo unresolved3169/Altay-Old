@@ -26,12 +26,12 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
-use pocketmine\entiy\behavior\navigator\algorithms\BlockDistanceAlgorithm;
-use pocketmine\entiy\behavior\navigator\algorithms\LevelNavigator;
-use pocketmine\entiy\behavior\navigator\algorithms\ManhattanHeuristicAlgorithm;
-use pocketmine\entiy\behavior\navigator\providers\BlockDiagonalNeighborProvider;
-use pocketmine\entiy\behavior\navigator\Tile;
-use pocketmine\entiy\behavior\navigator\TileNavigator;
+use pocketmine\entity\behavior\navigator\algorithms\BlockDistanceAlgorithm;
+use pocketmine\entity\behavior\navigator\algorithms\LevelNavigator;
+use pocketmine\entity\behavior\navigator\algorithms\ManhattanHeuristicAlgorithm;
+use pocketmine\entity\behavior\navigator\providers\BlockDiagonalNeighborProvider;
+use pocketmine\entity\behavior\navigator\Tile;
+use pocketmine\entity\behavior\navigator\TileNavigator;
 use pocketmine\math\Vector3;
 
 class Path{

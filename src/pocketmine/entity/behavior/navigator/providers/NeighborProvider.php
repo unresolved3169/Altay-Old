@@ -22,9 +22,9 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entiy\behavior\navigator\providers;
+namespace pocketmine\entity\behavior\navigator\providers;
 
-use pocketmine\entiy\behavior\navigator\Tile;
+use pocketmine\entity\behavior\navigator\Tile;
 
 interface NeighborProvider{
 

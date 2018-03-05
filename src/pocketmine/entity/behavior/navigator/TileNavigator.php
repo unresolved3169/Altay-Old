@@ -22,11 +22,10 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entiy\behavior\navigator;
+namespace pocketmine\entity\behavior\navigator;
 
-use pocketmine\entiy\behavior\navigator\algorithms\DistanceAlgorithm;
-use pocketmine\entiy\behavior\navigator\providers\BlockedProvider;
-use pocketmine\entiy\behavior\navigator\providers\NeighborProvider;
+use pocketmine\entity\behavior\navigator\algorithms\DistanceAlgorithm;
+use pocketmine\entity\behavior\navigator\providers\{NeighborProvider, BlockedProvider};
 
 class TileNavigator{
 
