@@ -125,7 +125,7 @@ class TemptedBehavior extends Behavior{
                 $m = 2 - $distanceToPlayer;
                 $m = ($m <= 0) ? 1 : $m / 2.0;
 
-                // TODO :  Mob->moveForward($this->speedMultiplier*$m, $this->entity->getViewers());
+                $this->mob->moveForward($this->speedMultiplier * $m);
             }
         }else{
             $this->mob->resetMotion();
