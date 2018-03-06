@@ -24,8 +24,10 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\entity\behavior\Behavior;
+use pocketmine\utils\Random;
 
 abstract class Mob extends Living{
 
@@ -35,6 +37,8 @@ abstract class Mob extends Living{
     protected $behaviorsEnabled = true; // test
     /** @var Behavior|null */
     protected $currentBehavior = null;
+    /** @var int */
+    protected $jumpCooldown = 0;
 
     protected function initEntity(){
         parent::initEntity();
@@ -115,43 +119,85 @@ abstract class Mob extends Living{
     }
 
     public function moveForward(float $spm) : void{
-        $sf = $this->getMovementSpeed() * $spm * 0.7;
+        if($this->jumpCooldown > 0){
+            $this->jumpCooldown--;
+        }
+
+        $speedFactor = $this->getMovementSpeed() * $spm * 0.7;
         $level = $this->level;
         $dir = $this->getDirectionVector()->normalize();
-        $dir->y = 0;
 
-        $entityCollide = $level->getCollidingEntities($this->getBoundingBox()->grow(0.15, 0.15, 0.15), $this);
-        $coord = $this->add($dir->multiply($sf)->add($dir->multiply(1 * 0.5)));
+        $entityCollide = false;
+        $boundingBox = $this->getBoundingBox()->offset($dir * $speedFactor, $dir * $speedFactor, $dir * $speedFactor);
 
-        $block = $level->getBlock($coord);
-        $blockUp = $level->getBlock($coord->add(0, 1, 0));
-        $blockUpUp = $level->getBlock($coord->add(0, 2, 0));
+        $players = $level->getPlayers();
+        foreach($players as $player){
+            $bbox = $boundingBox->grow(0.15, 0.15, 0.15);
+            if ($player->getBoundingBox()->intersectsWith($bbox)) {
+                $entityCollide = true;
+                break;
+            }
+        }
 
-        $collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
+        if(!$entityCollide){
+            $bbox = $boundingBox->grow(0.3, 0.3, 0.3);
+            foreach($this->getViewers() as $ent){
+                if($ent === $this) continue;
 
-        if(!$collide and !$entityCollide){
-            $blockDown = $level->getBlock($coord->add(0, -1, 0));
-
-            if($this->isOnGround() and $blockDown->isSolid()){
-                $velocity = $dir->multiply($sf);
-                $entityVelocity = $this->getMotion();
-                $entityVelocity->y = 0;
-                if($entityVelocity->length() < $velocity->length()){
-                    $this->setMotion($entityVelocity->add($velocity->subtract($entityVelocity->x, $entityVelocity->y, $entityVelocity->z)));
-                }else{
-                    $this->setMotion($velocity);
+                if($ent->getId() < $this->getId() && $this->isColliding($bbox, $ent)){
+                    if($this->getMotion()->equals(new Vector3()) && (new Random())->nextBoundedInt(1000) == 0){
+                        break;
+                    }
+                    $entityCollide = true;
+                    break;
                 }
             }
+        }
+
+        $coord = $this->add($dir->multiply($speedFactor)->multiply((float)($this->length() * 0.5))); // TODO : Add length
+        $block = $this->level->getBlock($coord);
+        $blockUp = $block->getSide(Vector3::SIDE_UP);
+        $blockUpUp = $blockUp->getSide(Vector3::SIDE_UP);
+
+        $colliding = $block->isSolid() || ($this->height >= 1 && $blockUp->isSolid());
+
+        if(!$colliding && !$entityCollide){
+            $blockDown = $block->getSide(Vector3::SIDE_DOWN);
+            if(!$this->isOnGround() && !$blockDown->isSolid()) return;
+
+            $velocity = $dir->multiply($speedFactor);
+            if(($this->getMotion()->multiplyVector(new Vector3(1, 0, 1))->length() < $velocity->length())){
+                $this->setMotion($this->getMotion()->add($velocity->subtract($this->getMotion())));
+            }else{
+                $this->setMotion($velocity);
+            }
         }else{
-            if($this->canClimb() and !$entityCollide){
+            if($this->canClimb() && !$entityCollide){
                 $this->setMotion(new Vector3(0, 0.2, 0));
-            }elseif (!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
-                if($this->isOnGround() and $this->motionY === 0){
-                    $this->jump();
+            }elseif(!$entityCollide && !$blockUp->isSolid() && !($this->height > 1 && $blockUpUp->isSolid())){
+                // Above is wrong. Checks the wrong block in the wrong way.
+
+                if($this->isOnGround() && $this->jumpCooldown <= 0){
+                    $this->jumpCooldown = 10;
+                    $this->motionY += 0.42;
                 }
             }else{
                 $this->motionX = $this->motionZ = 0;
             }
         }
+    }
+
+    public function isColliding(AxisAlignedBB $aabb, Entity $entity){
+        if (!$this->compare((int) $this->x, (int) $entity->x, 4)) return false;
+        if (!$this->compare((int) $this->z, (int) $entity->z, 4)) return false;
+        if (!$aabb->intersectsWith($entity->getBoundingBox())) return false;
+
+        return true;
+    }
+
+    public function compare(int $a, int $b, int $m) : bool{
+        $a = $a >> $m;
+        $b = $b >> $m;
+        return $a == $b || $a == ($b - 1) || $a == ($b + 1);
     }
 }
