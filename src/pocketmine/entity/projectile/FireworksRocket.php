@@ -36,72 +36,72 @@ use pocketmine\utils\Random;
 
 class FireworksRocket extends Projectile{
 
-    public const NETWORK_ID = EntityIds::FIREWORKS_ROCKET;
+	public const NETWORK_ID = EntityIds::FIREWORKS_ROCKET;
 
-    public const DATA_FIREWORK_ITEM = 16;
+	public const DATA_FIREWORK_ITEM = 16;
 
-    public $width = 0.25;
-    public $height = 0.25;
+	public $width = 0.25;
+	public $height = 0.25;
 
-    protected $gravity = 0.0;
-    protected $drag = 0.1;
+	protected $gravity = 0.0;
+	protected $drag = 0.1;
 
-    /** @var FireworkRocket */
-    public $fireworksItem;
-    /** @var int */
-    public $lifeTime;
+	/** @var FireworkRocket */
+	public $fireworksItem;
+	/** @var int */
+	public $lifeTime;
 
-    public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null, FireworkRocket $fireworks, Random $random = null){
-        $this->fireworksItem = $fireworks;
-        $random = $random ?? new Random();
+	public function __construct(Level $level, CompoundTag $nbt, FireworkRocket $fireworks, Entity $shootingEntity = null, Random $random = null){
+		$this->fireworksItem = $fireworks;
+		$random = $random ?? new Random();
 
-        $flyTime = 1;
-        $lifeTime = null;
+		$flyTime = 1;
+		$lifeTime = null;
 
-        try{
-            if($nbt->hasTag("Fireworks", CompoundTag::class)){
-                $fireworkCompound = $nbt->getCompoundTag("Fireworks");
-                $flyTime = $fireworkCompound->getByte("Flight", 1);
-                $lifeTime = $fireworkCompound->getInt("LifeTime", 20 * $flyTime + $random->nextBoundedInt(5) + $random->nextBoundedInt(7));
-            }
-        }catch(\Exception $exception){
-            $this->server->getLogger()->debug($exception);
-        }
+		try{
+			if($nbt->hasTag("Fireworks", CompoundTag::class)){
+				$fireworkCompound = $nbt->getCompoundTag("Fireworks");
+				$flyTime = $fireworkCompound->getByte("Flight", 1);
+				$lifeTime = $fireworkCompound->getInt("LifeTime", 20 * $flyTime + $random->nextBoundedInt(5) + $random->nextBoundedInt(7));
+			}
+		}catch(\Exception $exception){
+			$this->server->getLogger()->debug($exception);
+		}
 
-        $this->lifeTime = $lifeTime ?? 20 * $flyTime + $random->nextBoundedInt(5) + $random->nextBoundedInt(7);
+		$this->lifeTime = $lifeTime ?? 20 * $flyTime + $random->nextBoundedInt(5) + $random->nextBoundedInt(7);
 
-        $nbt->setInt("Life", $this->lifeTime);
-        $nbt->setInt("LifeTime", $this->lifeTime);
+		$nbt->setInt("Life", $this->lifeTime);
+		$nbt->setInt("LifeTime", $this->lifeTime);
 
-        parent::__construct($level, $nbt, $shootingEntity);
-    }
+		parent::__construct($level, $nbt, $shootingEntity);
+	}
 
-    protected function initEntity(){
-        $this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, true);
-        $this->setGenericFlag(self::DATA_FLAG_HAS_COLLISION, true);
-        $this->propertyManager->setItem(self::DATA_FIREWORK_ITEM, $this->fireworksItem);
+	protected function initEntity(){
+		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, true);
+		$this->setGenericFlag(self::DATA_FLAG_HAS_COLLISION, true);
+		$this->propertyManager->setItem(self::DATA_FIREWORK_ITEM, $this->fireworksItem);
 
-        parent::initEntity();
-    }
+		parent::initEntity();
+	}
 
-    public function spawnTo(Player $player){
-        $this->setMotion($this->getDirectionVector());
-        $this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_LAUNCH);
-        parent::spawnTo($player);
-    }
+	public function spawnTo(Player $player){
+		$this->setMotion($this->getDirectionVector());
+		$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_LAUNCH);
+		parent::spawnTo($player);
+	}
 
-    public function despawnFromAll(){
-        $this->broadcastEntityEvent(EntityEventPacket::FIREWORK_PARTICLES, 0);
-        parent::despawnFromAll();
-        $this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_BLAST);
-    }
+	public function despawnFromAll(){
+		$this->broadcastEntityEvent(EntityEventPacket::FIREWORK_PARTICLES, 0);
+		parent::despawnFromAll();
+		$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_BLAST);
+	}
 
-    public function entityBaseTick(int $tickDiff = 1) : bool{
-        if($this->lifeTime-- <= 0)
-            $this->flagForDespawn();
-        else
-            return parent::entityBaseTick($tickDiff);
+	public function entityBaseTick(int $tickDiff = 1) : bool{
+		if($this->lifeTime-- <= 0)
+			$this->flagForDespawn();
+		else
+			return parent::entityBaseTick($tickDiff);
 
-        return true;
-    }
+		return true;
+	}
 }
