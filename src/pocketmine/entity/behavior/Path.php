@@ -71,7 +71,7 @@ class Path{
 			$from = new Tile($sourcePos->x, $sourcePos->z);
 			$to = new Tile($targetPos->x, $targetPos->z);
 				
-			$path = $navigator->navigate($from, $to, 200) ?? [];
+			$path = $navigator->navigate($from, $to, 200);
 			if(empty($blockCache)){
 				var_dump("blockCache is empty"); // test code
 			}
