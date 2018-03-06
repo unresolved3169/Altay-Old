@@ -38,7 +38,8 @@ abstract class Mob extends Living{
 
     protected function initEntity(){
         parent::initEntity();
-        $this->addBehaviors();
+
+        $this->behaviors = $this->getNormalBehaviors();
     }
 
     public function getReadyBehavior(): ?Behavior{
@@ -62,8 +63,6 @@ abstract class Mob extends Living{
         }
         return null;
     }
-
-    protected function addBehaviors(): void{}
 
     public function onUpdate(int $tick): bool{
         if($this->isAlive() and $this->behaviorsEnabled){
@@ -106,6 +105,13 @@ abstract class Mob extends Living{
 
     public function getBehaviors() : array{
         return $this->behaviors;
+    }
+
+    /**
+     * @return Behavior[]
+     */
+    protected function getNormalBehaviors() : array{
+        return [];
     }
 
     public function moveForward(float $spm) : void{

@@ -65,14 +65,16 @@ class Zombie extends Monster{
 		//TODO: check for equipment and whether it's a baby
 		return 5;
 	}
-	
-	protected function addBehaviors() : void{
-	    $this->addBehavior(new HurtByTargetBehavior($this));
-		$this->addBehavior(new FindAttackableTargetBehavior($this, 35));
 
-		$this->addBehavior(new MeleeAttackBehavior($this, 1.0, 35));
-		$this->addBehavior(new WanderBehavior($this, 1.0));
-		$this->addBehavior(new LookAtPlayerBehavior($this, 8.0));
-		$this->addBehavior(new RandomLookAroundBehavior($this));
-	}
+	protected function getNormalBehaviors(): array{
+        return [
+            new HurtByTargetBehavior($this),
+            new FindAttackableTargetBehavior($this, 35),
+
+            new MeleeAttackBehavior($this, 1.0, 35),
+            new WanderBehavior($this, 1.0),
+            new LookAtPlayerBehavior($this, 8.0),
+            new RandomLookAroundBehavior($this)
+        ];
+    }
 }
