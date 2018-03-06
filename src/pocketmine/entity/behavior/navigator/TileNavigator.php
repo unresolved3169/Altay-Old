@@ -45,7 +45,7 @@ class TileNavigator{
 		$this->heuristicAlgorithm = $heuristicAlgorithm;
 	}
 	
-	public function navigate(Tile $from, Tile $to, int $maxAttempts = PHP_INT_MAX) : ?array{
+	public function navigate(Tile $from, Tile $to, int $maxAttempts = PHP_INT_MAX) : array{
 		$closed = [];
 		$open = [$from];
 		$path = [];
@@ -70,10 +70,10 @@ class TileNavigator{
 			$last = null;
 			
 			if(++$noOfAttempts > $maxAttempts){
-				$this->reConstructPath($path, $highScore);
+				return $this->reConstructPath($path, $highScore);
 			}
 			if($current->equals($to)){
-				$this->reConstructPath($path, $current);
+				return $this->reConstructPath($path, $current);
 			}
 			
 			unset($open[array_search($current, $open)]);
@@ -101,7 +101,7 @@ class TileNavigator{
 			}
 		}
 		
-		return null;
+		return [];
 	}
 	
 	public function reConstructPath(array $path, Tile $current) : array{
@@ -109,30 +109,11 @@ class TileNavigator{
 		
 		while(isset($path[$current->__toString()])){
 			$current = $path[$current->__toString()];
-			$this->insertToArray($totalPath, 0, $current);
+			array_unshift($totalPath, $current);
 		}
 		
 		unset($totalPath[0]);
 		
 		return $totalPath;
-	}
-	
-	public function insertToArray(array &$a, int $key, $value) : void{
-		$result = [];
-		$changed = false;
-		foreach($a as $k => $v){
-			if(!is_numeric($k)) continue;
-			
-			if($k === $key){
-				$result[$k] = $value;
-				$result[$k + 1] = $v;
-				$changed = true;
-			}elseif($changed){
-				$result[$k + 1] = $v;
-			}else{
-				$result[$k] = $v;
-			}
-		}
-		$a = $result;
 	}
 }
