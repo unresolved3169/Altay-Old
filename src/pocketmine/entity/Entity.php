@@ -32,11 +32,13 @@ use pocketmine\block\BlockFactory;
 use pocketmine\block\Water;
 use pocketmine\entity\object\ArmorStand;
 use pocketmine\entity\object\ExperienceOrb;
+use pocketmine\entity\object\Painting;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\EnderPearl;
 use pocketmine\entity\projectile\FireworksRocket;
 use pocketmine\entity\projectile\Snowball;
+use pocketmine\entity\utils\PaintingMotive;
 use pocketmine\entity\vehicle\Boat;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDeathEvent;
@@ -242,6 +244,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(FallingSand::class, false, ['FallingSand', 'minecraft:falling_block']);
 		Entity::registerEntity(FireworksRocket::class, false, ['FireworkRocket', 'FireworksRocket', 'minecraft:fireworks_rocket']);
 		Entity::registerEntity(Item::class, false, ['Item', 'minecraft:item']);
+		Entity::registerEntity(Painting::class, false, ['Painting', 'minecraft:painting']);
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
 		Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:snowball']);
 		Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);
@@ -249,6 +252,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(Zombie::class, false, ['Zombie',	'minecraft:zombie']);
 
 		Entity::registerEntity(Human::class, true);
+
+        Effect::init();
+        Attribute::init();
+        PaintingMotive::init();
 	}
 
 

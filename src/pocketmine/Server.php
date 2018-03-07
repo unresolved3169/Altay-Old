@@ -1664,8 +1664,6 @@ class Server{
 			ItemFactory::init();
 			Item::initCreativeItems();
 			Biome::init();
-			Effect::init();
-			Attribute::init();
 			$this->craftingManager = new CraftingManager();
 
 			$this->resourceManager = new ResourcePackManager($this->getDataPath() . "resource_packs" . DIRECTORY_SEPARATOR);
