@@ -48,10 +48,10 @@ class VirtualInventory extends CustomInventory{
     }
 
     public function getDefaultSize() : int{
-        return 27;
+        return $this->holder->getSize();
     }
 
     public function getNetworkType() : int{
-        return WindowTypes::CONTAINER;
+        return $this->holder->getNetworkType();
     }
 }

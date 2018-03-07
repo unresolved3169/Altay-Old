@@ -25,6 +25,8 @@ declare(strict_types=1);
 namespace pocketmine\tile;
 
 use pocketmine\block\Block;
+use pocketmine\block\Chest;
+use pocketmine\block\Hopper;
 use pocketmine\inventory\VirtualInventory;
 use pocketmine\inventory\InventoryHolder;
 use pocketmine\item\Item;
@@ -33,6 +35,7 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
+use pocketmine\network\mcpe\protocol\types\WindowTypes;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
 use pocketmine\Player;
 
@@ -45,9 +48,16 @@ class VirtualHolder extends Spawnable implements InventoryHolder, Container, Nam
     protected $translateBlock;
     /** @var Block */
     protected $holderBlock;
+    /** @var int */
+    protected $size;
+    /** @var int */
+    protected $networkType;
 
     public function __construct(Level $level, CompoundTag $nbt, Block $block){
         parent::__construct($level, $nbt);
+
+        $this->holderBlock = $block;
+        $this->validBlock();
 
         if(!$this->hasName()) $this->setName($this->getDefaultName());
 
@@ -55,7 +65,6 @@ class VirtualHolder extends Spawnable implements InventoryHolder, Container, Nam
         $this->loadItems();
 
         $this->translateBlock = $this->getBlock();
-        $this->holderBlock = $block;
     }
 
     public function translateBlocks(Player $player){
@@ -107,4 +116,27 @@ class VirtualHolder extends Spawnable implements InventoryHolder, Container, Nam
     }
 
     public function spawnToAll(){}
+
+    private function validBlock(){
+        $validBlocks = [
+            Chest::class => [27, WindowTypes::CONTAINER],
+            Hopper::class => [5, WindowTypes::HOPPER]
+        ];
+
+        $class = get_class($this->holderBlock);
+        if(isset($validBlocks[$class])){
+            $this->size = $validBlocks[$class][0];
+            $this->networkType = $validBlocks[$class][1];
+        }else{
+            throw new \InvalidArgumentException("$class is not valid block for virtual inventories.");
+        }
+    }
+
+    public function getSize() : int{
+        return $this->size;
+    }
+
+    public function getNetworkType() : int{
+        return $this->networkType;
+    }
 }
