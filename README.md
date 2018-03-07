@@ -21,6 +21,11 @@ Example servers running Altay
  - [x] Boats
  - [x] BossbarAPI
  - [x] Command Parameters
+ - [ ] Commands
+   - [x] ClearCommand
+   - [ ] PlaySound
+   - [ ] StopSound
+   - [ ] SetBlock
  - [ ] Config Auto Updater
  - [x] Elytra
  - [x] EnchantmentTable
