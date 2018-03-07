@@ -61,7 +61,7 @@ abstract class Living extends Entity implements Damageable{
 
 	protected $jumpVelocity = 0.42;
 
-	/** @var Effect[] */
+	/** @var EffectInstance[] */
 	protected $effects = [];
 
 	/** @var ArmorInventory */
@@ -89,22 +89,24 @@ abstract class Living extends Entity implements Damageable{
 
 		$this->setHealth($health);
 
-		/** @var CompoundTag[]|ListTag $activeEffectsTag */
-		$activeEffectsTag = $this->namedtag->getListTag("ActiveEffects");
-		if($activeEffectsTag !== null){
-			foreach($activeEffectsTag as $e){
-				$amplifier = Binary::unsignByte($e->getByte("Amplifier")); //0-255 only
+        /** @var CompoundTag[]|ListTag $activeEffectsTag */
+        $activeEffectsTag = $this->namedtag->getListTag("ActiveEffects");
+        if($activeEffectsTag !== null){
+            foreach($activeEffectsTag as $e){
+                $effect = Effect::getEffect($e->getByte("Id"));
+                if($effect === null){
+                    continue;
+                }
 
-				$effect = Effect::getEffect($e->getByte("Id"));
-				if($effect === null){
-					continue;
-				}
-
-				$effect->setAmplifier($amplifier)->setDuration($e->getInt("Duration"))->setVisible($e->getByte("ShowParticles", 1) > 0)->setAmbient($e->getByte("Ambient", 0) !== 0);
-
-				$this->addEffect($effect);
-			}
-		}
+                $this->addEffect(new EffectInstance(
+                    $effect,
+                    $e->getInt("Duration"),
+                    Binary::unsignByte($e->getByte("Amplifier")),
+                    $e->getByte("ShowParticles", 1) !== 0,
+                    $e->getByte("Ambient", 0) !== 0
+                ));
+            }
+        }
 	}
 
 	protected function addAttributes(){
@@ -172,7 +174,7 @@ abstract class Living extends Entity implements Damageable{
 
 	/**
 	 * Returns an array of Effects currently active on the mob.
-	 * @return Effect[]
+	 * @return EffectInstance[]
 	 */
 	public function getEffects() : array{
 		return $this->effects;
@@ -201,7 +203,8 @@ abstract class Living extends Entity implements Damageable{
 			}
 
 			unset($this->effects[$effectId]);
-			$effect->remove($this);
+			$effect->getType()->remove($this, $effect);
+			$this->sendEffectRemove($effect);
 
 			$this->recalculateEffectColor();
 		}
@@ -213,7 +216,7 @@ abstract class Living extends Entity implements Damageable{
 	 *
 	 * @param int $effectId
 	 *
-	 * @return Effect|null
+	 * @return EffectInstance|null
 	 */
 	public function getEffect(int $effectId){
 		return $this->effects[$effectId] ?? null;
@@ -243,38 +246,44 @@ abstract class Living extends Entity implements Damageable{
 	 * If a weaker effect of the same type is already applied, it will be replaced.
 	 * If a weaker or equal-strength effect is already applied but has a shorter duration, it will be replaced.
 	 *
-	 * @param Effect $effect
+	 * @param EffectInstance $effect
 	 *
 	 * @return bool whether the effect has been successfully applied.
 	 */
-	public function addEffect(Effect $effect) : bool{
-		$oldEffect = null;
-		$cancelled = false;
+	public function addEffect(EffectInstance $effect) : bool{
+        $oldEffect = null;
+        $cancelled = false;
 
-		if(isset($this->effects[$effect->getId()])){
-			$oldEffect = $this->effects[$effect->getId()];
-			if(
-				abs($effect->getAmplifier()) < $oldEffect->getAmplifier()
-				or (abs($effect->getAmplifier()) === abs($oldEffect->getAmplifier()) and $effect->getDuration() < $oldEffect->getDuration())
-			){
-				$cancelled = true;
-			}
-		}
+        if(isset($this->effects[$effect->getId()])){
+            $oldEffect = $this->effects[$effect->getId()];
+            if(
+                abs($effect->getAmplifier()) < $oldEffect->getAmplifier()
+                or (abs($effect->getAmplifier()) === abs($oldEffect->getAmplifier()) and $effect->getDuration() < $oldEffect->getDuration())
+            ){
+                $cancelled = true;
+            }
+        }
 
-		$ev = new EntityEffectAddEvent($this, $effect, $oldEffect);
-		$ev->setCancelled($cancelled);
+        $ev = new EntityEffectAddEvent($this, $effect, $oldEffect);
+        $ev->setCancelled($cancelled);
 
-		$this->server->getPluginManager()->callEvent($ev);
-		if($ev->isCancelled()){
-			return false;
-		}
+        $this->server->getPluginManager()->callEvent($ev);
+        if($ev->isCancelled()){
+            return false;
+        }
 
-		$effect->add($this, $oldEffect);
-		$this->effects[$effect->getId()] = $effect;
+        if($oldEffect !== null){
+            $oldEffect->getType()->remove($this, $oldEffect);
+        }
 
-		$this->recalculateEffectColor();
+        $effect->getType()->add($this, $effect);
+        $this->sendEffectAdd($effect, $oldEffect !== null);
 
-		return true;
+        $this->effects[$effect->getId()] = $effect;
+
+        $this->recalculateEffectColor();
+
+        return true;
 	}
 
 	/**
@@ -285,7 +294,7 @@ abstract class Living extends Entity implements Damageable{
 		$colors = [];
 		$ambient = true;
 		foreach($this->effects as $effect){
-			if($effect->isVisible() and $effect->hasBubbles()){
+			if($effect->isVisible() and $effect->getType()->hasBubbles()){
 				$level = $effect->getEffectLevel();
 				$color = $effect->getColor();
 				for($i = 0; $i < $level; ++$i){
@@ -324,6 +333,14 @@ abstract class Living extends Entity implements Damageable{
 			$player->dataPacket($pk);
 		}
 	}
+
+    protected function sendEffectAdd(EffectInstance $effect, bool $replacesOldEffect) : void{
+
+    }
+
+    protected function sendEffectRemove(EffectInstance $effect) : void{
+
+    }
 
 	/**
 	 * Causes the mob to consume the given Consumable object, applying applicable effects, health bonuses, food bonuses,
@@ -595,15 +612,16 @@ abstract class Living extends Entity implements Damageable{
 	}
 
 	protected function doEffectsTick(int $tickDiff = 1){
-		foreach($this->effects as $effect){
-			if($effect->canTick()){
-				$effect->applyEffect($this);
-			}
-			$effect->setDuration(max(0, $effect->getDuration() - $tickDiff));
-			if($effect->getDuration() <= 0){
-				$this->removeEffect($effect->getId());
-			}
-		}
+        foreach($this->effects as $instance){
+            $type = $instance->getType();
+            if($type->canTick($instance)){
+                $type->applyEffect($this, $instance);
+            }
+            $instance->decreaseDuration($tickDiff);
+            if($instance->hasExpired()){
+                $this->removeEffect($instance->getId());
+            }
+        }
 	}
 
 	/**
