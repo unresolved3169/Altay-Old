@@ -32,7 +32,6 @@ use pocketmine\block\BlockFactory;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Item as DroppedItem;
 use pocketmine\entity\object\ExperienceOrb;
-use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
@@ -105,9 +104,11 @@ class Level implements ChunkManager, Metadatable{
 	public const BLOCK_UPDATE_WEAK = 4;
 	public const BLOCK_UPDATE_TOUCH = 5;
 
-	public const TIME_DAY = 0;
+	public const TIME_DAY = 1000;
+	public const TIME_NOON = 6000;
 	public const TIME_SUNSET = 12000;
-	public const TIME_NIGHT = 14000;
+	public const TIME_NIGHT = 13000;
+	public const TIME_MIDNIGHT = 18000;
 	public const TIME_SUNRISE = 23000;
 
 	public const TIME_FULL = 24000;
