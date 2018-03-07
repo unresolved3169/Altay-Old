@@ -1888,10 +1888,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			return true;
 		}
 
-		if(
-			($this->isBanned() or $this->server->getIPBans()->isBanned($this->getAddress())) and
-			$this->kick("You are banned", false)
-		){
+		if(($this->isBanned() or $this->server->getIPBans()->isBanned($this->getAddress())) and $this->kick("You are banned", false)){
 			return true;
 		}
 
@@ -2009,8 +2006,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool{
 		switch($packet->status){
 			case ResourcePackClientResponsePacket::STATUS_REFUSED:
-				//TODO: add lang strings for this
-				$this->close("", "You must accept resource packs to join this server.", true);
+                $this->close("", "You must accept resource packs to join this server.", true);
+			    //TODO $this->close("", Server::getInstance()->getLanguage()->translateString("pocketmine.disconnect.mustacceptResourcePack"), true);
 				break;
 			case ResourcePackClientResponsePacket::STATUS_SEND_PACKS:
 				$manager = $this->server->getResourcePackManager();
