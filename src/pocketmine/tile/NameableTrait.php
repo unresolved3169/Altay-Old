@@ -45,7 +45,7 @@ trait NameableTrait{
 	 */
 	public function getName() : string{
 		$nbt = $this->getNBT();
-		return $nbt->getString("CustomName") ?? $this->getDefaultName();
+		return $nbt->getString("CustomName", $this->getDefaultName());
 	}
 
 	/**
