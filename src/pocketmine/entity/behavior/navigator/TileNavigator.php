@@ -58,7 +58,7 @@ class TileNavigator{
 		$last = $from;
 		while(!empty($open)){
 			$current = $last;
-			if($last !== $highScore){
+			if($last != $highScore){
                 usort($open, function($a, $b){
                     if($a->fScore == $b->fScore) return 0;
 
@@ -70,10 +70,10 @@ class TileNavigator{
 			$last = null;
 			
 			if(++$noOfAttempts > $maxAttempts){
-				return $this->reConstructPath($path, $highScore);
+				return array_reverse($path);
 			}
 			if($current->equals($to)){
-				return $this->reConstructPath($path, $current);
+				return array_reverse($path);
 			}
 			
 			unset($open[array_search($current, $open)]);
@@ -86,11 +86,11 @@ class TileNavigator{
 				
 				$tentativeG = $current->gScore + $this->distanceAlgorithm->calculate($current, $neighbor);
 				
-				if(in_array($neighbor, $open) or $tentativeG >= $neighbor->gScore){
+				/*if(in_array($neighbor, $open) and $tentativeG >= $neighbor->gScore){
 					continue;
-				}
+				}*/
 				
-				$path[$neighbor->__toString()] = $current;
+				$path[$neighbor->getHashCode()] = $current;
 				
 				$neighbor->gScore = $tentativeG;
 				$neighbor->fScore = $neighbor->gScore + $this->heuristicAlgorithm->calculate($neighbor, $to);
@@ -98,22 +98,10 @@ class TileNavigator{
 					$highScore = $neighbor;
 					$last = $neighbor;
 				}
+       $open[] = $neighbor;
 			}
 		}
 		
 		return [];
-	}
-	
-	public function reConstructPath(array $path, Tile $current) : array{
-		$totalPath = [$current];
-		
-		while(isset($path[$current->__toString()])){
-			$current = $path[$current->__toString()];
-			array_unshift($totalPath, $current);
-		}
-		
-		unset($totalPath[0]);
-		
-		return $totalPath;
 	}
 }

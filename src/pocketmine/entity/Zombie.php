@@ -34,6 +34,7 @@ class Zombie extends Monster{
 
 	public $width = 0.6;
 	public $height = 1.8;
+  protected $jumpVelocity = 0.7;
 
 	public function getName() : string{
 		return "Zombie";
@@ -72,7 +73,7 @@ class Zombie extends Monster{
             new FindAttackableTargetBehavior($this, 35),
 
             new MeleeAttackBehavior($this, 1.0, 35),
-            new WanderBehavior($this, 1.0),
+            new WanderBehavior($this),
             new LookAtPlayerBehavior($this, 8.0),
             new RandomLookAroundBehavior($this)
         ];

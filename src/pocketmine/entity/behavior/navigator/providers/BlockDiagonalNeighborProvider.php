@@ -39,7 +39,7 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
     /** @var Entity */
     private $entity;
     /** @var Block[] */
-    private $blockCache = [];
+    private $blockCache;
 
     protected $neighbors = [
         [0, -1],
@@ -52,7 +52,8 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
         [-1, 1]
     ];
 
-    public function __construct(Level $level, int $startY, array $blockCache, Entity $entity){
+    public function __construct(Level $level, int
+$startY, \stdClass $blockCache, Entity $entity){
         $this->level = $level;
         $this->startY = $startY;
         $this->blockCache = $blockCache;
@@ -60,11 +61,11 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
     }
 
     public function getNeighbors(Tile $tile) : array{
-        if(!isset($this->blockCache[$tile->__toString()])){
+        if(!isset($this->blockCache->{$tile->getHashCode()})){
             $block = $this->level->getBlock(new Vector3($tile->x, $this->startY, $tile->y));
-            $this->blockCache[$tile->__toString()] = $block;
+            $this->blockCache->{$tile->getHashCode()} = $block;
         }else{
-            $block = $this->blockCache[$tile->__toString()];
+            $block = $this->blockCache->{$tile->getHashCode()};
         }
 
         $list = [];
@@ -72,6 +73,7 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
             $item = new Tile($tile->x + $this->neighbors[$index][0], $tile->y + $this->neighbors[$index][1]);
 
             // Check for too high steps
+           
             $coord = new Vector3((int)$item->x, $block->y, (int)$item->y);
             if($this->level->getBlock($coord)->isSolid()){
                 if($this->entity->canClimb()){
@@ -91,7 +93,7 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 
                     if($this->isObstructed($blockUp)) continue;
 
-                    $this->blockCache[$item->__toString()] = $blockUp;
+                    $this->blockCache->{$item->getHashCode()} = $blockUp;
                 }else{
                     $blockUp = $this->level->getBlock($coord->getSide(Vector3::SIDE_UP));
                     if($blockUp->isSolid()){
@@ -101,7 +103,7 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 
                     if($this->isObstructed($blockUp)) continue;
 
-                    $this->blockCache[$item->__toString()] = $blockUp;
+                    $this->blockCache->{$item->getHashCode()} = $blockUp;
                 }
             }else{
                 $blockDown = $this->level->getBlock($coord->add(0, -1, 0));
@@ -125,7 +127,7 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 
                         if($this->isObstructed($blockDown)) continue;
 
-                        $this->blockCache[$item->__toString()] = $blockDown;
+                        $this->blockCache->{$item->getHashCode()} = $blockDown;
                     }else{
                         if(!$this->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()){
                             // Will fall
@@ -134,12 +136,12 @@ class BlockDiagonalNeighborProvider implements NeighborProvider{
 
                         if($this->isObstructed($blockDown)) continue;
 
-                        $this->blockCache[$item->__toString()] = $blockDown;
+                        $this->blockCache->{$item->getHashCode()} = $blockDown;
                     }
                 }else{
                     if($this->isObstructed($coord)) continue;
 
-                    $this->blockCache[$item->__toString()] = $this->level->getBlock($coord);
+                    $this->blockCache->{$item->getHashCode()} = $this->level->getBlock($coord);
                 }
             }
 

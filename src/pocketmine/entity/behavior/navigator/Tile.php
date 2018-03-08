@@ -43,11 +43,11 @@ class Tile{
 	}
 	
 	public function equals(Tile $other) : bool{
-		return $this->x == $other->x && $this->y == $other->y;
+		return floor($this->x) == floor($other->x) && floor($this->y) == floor($other->y);
 	}
 	
 	public function getHashCode() : int{
-		return ($this->x * 397) ^ $this->y;
+		return (int) ($this->x * 397) ^ $this->y;
 	}
 	
 	public function __toString(){

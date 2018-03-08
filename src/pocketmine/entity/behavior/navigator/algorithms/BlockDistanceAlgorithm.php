@@ -28,11 +28,11 @@ use pocketmine\entity\behavior\navigator\Tile;
 class BlockDistanceAlgorithm implements DistanceAlgorithm{
 
     /** @var Block[] */
-    private $blockCache = [];
+    private $blockCache;
     /** @var bool */
     private $canClimb;
 
-    public function __construct(array $cache, bool $canClimb = false){
+    public function __construct(\stdClass $cache, bool $canClimb = false){
         $this->blockCache = $cache;
         $this->canClimb = $canClimb;
     }
@@ -50,6 +50,6 @@ class BlockDistanceAlgorithm implements DistanceAlgorithm{
     }
 
     public function getBlock(Tile $tile) : ?Block{
-        return isset($this->blockCache[$tile->__toString()]) ? $this->blockCache[$tile->__toString()] : null;
+        return $this->blockCache->{$tile->getHashCode()} ?? null;
     }
 }

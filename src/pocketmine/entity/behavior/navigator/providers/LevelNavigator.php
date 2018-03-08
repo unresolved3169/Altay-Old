@@ -22,9 +22,8 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity\behavior\navigator\algorithms;
+namespace pocketmine\entity\behavior\navigator\providers;
 
-use pocketmine\entity\behavior\navigator\providers\BlockedProvider;
 use pocketmine\entity\behavior\navigator\Tile;
 use pocketmine\level\Level;
 use pocketmine\block\Block;
@@ -43,11 +42,11 @@ class LevelNavigator implements BlockedProvider{
     /** @var float */
     private $distance;
     /** @var Block[] */
-    private $blockCache = [];
+    private $blockCache;
     /** @var Vector3[] */
     private $entityCoords = [];
 
-    public function __construct(Entity $entity, Level $level, float $distance, array $blockCache, array $entityCoords){
+    public function __construct(Entity $entity, Level $level, float $distance, \stdClass $blockCache, array $entityCoords){
         $this->entity = $entity;
         $this->entityPos = $entity->asVector3();
         $this->level = $level;
@@ -57,17 +56,18 @@ class LevelNavigator implements BlockedProvider{
     }
 
     public function isBlocked(Tile $coord): bool{
-        if (!isset($this->blockCache[$coord->__toString()])) {
+        if (!isset($this->blockCache->{$coord->getHashCode()})) {
             return true;
         }
 
-        $block = $this->blockCache[$coord->__toString()];
+        $block = $this->blockCache->{$coord->getHashCode()} ?? null;
+        if($block === null) return false;
 
         if ($block->isSolid()) return true;
         if (in_array($block->asVector3(), $this->entityCoords)) return true;
 
-        $entityPos = new Vector2($this->entityPos->x, $this->entityPos->z);
-        $tilePos = new Vector2((float)$coord->x, (float)$coord->y);
+        $entityPos = new Vector2((int) $this->entityPos->x, (int) $this->entityPos->z);
+        $tilePos = new Vector2((int) $coord->x, (int) $coord->y);
 
         if ($entityPos->distance($tilePos) > $this->distance) return true;
 
