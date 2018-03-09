@@ -42,19 +42,19 @@ class WanderBehavior extends Behavior{
 	protected $currentPath = null;
 	
 	public function __construct(Mob $mob, float $speedMultiplier = 1.0, int $chance = 120){
-		parent::__construct($mob);
+		parent::__construct($mob, true);
 		
 		$this->speedMultiplier = $speedMultiplier;
 		$this->chance = $chance;
 	}
 	
 	public function canStart() : bool{
-		if(rand(0,$this->chance) === 0){
+		if($this->random->nextBoundedInt($this->chance) === 0){
 			$pos = $this->findRandomTargetBlock($this->mob, 10, 7);
 			
 			if($pos === null) return false;
 			
-			$path = Path::findPath($this->mob, $pos, $this->mob->distance($pos));
+			$path = Path::findPath($this->mob, $pos, $this->mob->distance($pos) + 2);
 			
 			$this->currentPath = $path;
 			
@@ -88,9 +88,9 @@ class WanderBehavior extends Behavior{
 		$currentWeight = 0;
 		$currentBlock = null;
 		for($i = 0; $i < 10; $i++){
-			$x = $random->nextRange(0, 2 * $dxz + 1) - $dxz;
-			$y = $random->nextRange(0, 2 * $dy + 1) - $dy;
-			$z = $random->nextRange(0, 2 * $dxz + 1) - $dxz;
+			$x = $random->nextBoundedInt(2 * $dxz + 1) - $dxz;
+			$y = $random->nextBoundedInt(2 * $dy + 1) - $dy;
+			$z = $random->nextBoundedInt(2 * $dxz + 1) - $dxz;
 			
 			$blockCoords = new Vector3($x,$y,$z);
 			$block = $entity->level->getBlock($this->mob->asVector3()->add($blockCoords));

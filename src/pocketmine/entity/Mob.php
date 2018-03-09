@@ -26,17 +26,17 @@ namespace pocketmine\entity;
 
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\entity\behavior\Behavior;
+use pocketmine\entity\behavior\{Behavior, TargetBehavior};
 use pocketmine\utils\Random;
 
 abstract class Mob extends Living{
 
     /** @var array */
-    protected $behaviors = [];
+    protected $behaviors = [], $targetBehaviors = [];
     /** @var bool */
     protected $behaviorsEnabled = true; // test
     /** @var Behavior|null */
-    protected $currentBehavior = null;
+    protected $currentBehavior = null, $currentTargetBehavior = null;
     /** @var int */
     protected $jumpCooldown = 0;
 
@@ -44,21 +44,22 @@ abstract class Mob extends Living{
         parent::initEntity();
 
         $this->behaviors = $this->getNormalBehaviors();
+        $this->targetBehaviors = $this->getTargetBehaviors();
     }
 
-    public function getReadyBehavior(): ?Behavior{
-        foreach($this->behaviors as $index => $behavior){
+    public function getReadyBehavior(array $behaviors, ?Behavior $currentBehavior = null): ?Behavior{
+        foreach($behaviors as $index => $behavior){
             if($behavior == $this->currentBehavior){
                 if($behavior->canContinue()){
                     return $behavior;
                 }
                 $behavior->onEnd();
-                $this->currentBehavior = null;
+                $currentBehavior = null;
             }
             if($behavior->canStart()){
-                if($this->currentBehavior == null or (array_search($this->currentBehavior, $this->behaviors)) > $index){
-                    if($this->currentBehavior != null){
-                        $this->currentBehavior->onEnd();
+                if($currentBehavior == null or (array_search($currentBehavior, $behaviors)) > $index){
+                    if($currentBehavior != null){
+                        $currentBehavior->onEnd();
                     }
                     $behavior->onStart();
                     return $behavior;
@@ -70,9 +71,13 @@ abstract class Mob extends Living{
 
     public function onUpdate(int $tick): bool{
         if($this->isAlive() and $this->behaviorsEnabled){
-            $this->currentBehavior = $this->getReadyBehavior();
+            $this->currentBehavior = $this->getReadyBehavior($this->behaviors, $this->currentBehavior);
             if($this->currentBehavior instanceof Behavior){
                 $this->currentBehavior->onTick($tick);
+            }
+            $this->currentTargetBehavior = $this->getReadyBehavior($this->targetBehaviors, $this->currentTargetBehavior);
+            if($this->currentTargetBehavior instanceof TargetBehavior){
+                $this->currentTargetBehavior->onTick($tick);
             }
         }
 
@@ -115,6 +120,10 @@ abstract class Mob extends Living{
      * @return Behavior[]
      */
     protected function getNormalBehaviors() : array{
+        return [];
+    }
+    
+    protected function getTargetBehaviors() : array{
         return [];
     }
 

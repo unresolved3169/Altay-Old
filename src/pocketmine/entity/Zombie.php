@@ -69,13 +69,17 @@ class Zombie extends Monster{
 
 	protected function getNormalBehaviors(): array{
         return [
-            new HurtByTargetBehavior($this),
-            new FindAttackableTargetBehavior($this, 35),
-
             new MeleeAttackBehavior($this, 1.0, 35),
             new WanderBehavior($this),
             new LookAtPlayerBehavior($this, 8.0),
             new RandomLookAroundBehavior($this)
+        ];
+    }
+    
+   protected function getTargetBehaviors(): array{
+        return [
+            new HurtByTargetBehavior($this),
+            new FindAttackableTargetBehavior($this, 35)
         ];
     }
 }

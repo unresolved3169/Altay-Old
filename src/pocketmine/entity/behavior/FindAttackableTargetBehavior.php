@@ -27,7 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Mob;
 use pocketmine\Player;
 
-class FindAttackableTargetBehavior extends Behavior{
+class FindAttackableTargetBehavior extends TargetBehavior{
 
     /** @var float */
 	protected $targetDistance = 16.0;

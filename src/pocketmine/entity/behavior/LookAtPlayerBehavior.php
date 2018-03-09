@@ -43,12 +43,12 @@ class LookAtPlayerBehavior extends Behavior{
     }
 	
 	public function canStart() : bool{
-        if(rand(0, 50) === 0){
+        if($this->random->nextFloat() < 0.2){
             $player = $this->mob->level->getNearestEntity($this->mob->asVector3(), $this->lookDistance, Player::class);
 
             if($player instanceof Player){
                 $this->player = $player;
-                $this->duration = 40 + rand(0, 40);
+                $this->duration = 40 + $this->random->nextBoundedInt(40);
 
                 return true;
             }
