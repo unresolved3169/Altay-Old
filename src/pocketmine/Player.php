@@ -327,8 +327,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 */
 	protected $lastPingMeasure = 1;
 
-    /** @var int[] ID => ticks map */
-    protected $usedItemsCooldown = [];
+	/** @var int[] ID => ticks map */
+	protected $usedItemsCooldown = [];
 
 	/** @var int */
 	protected $formIdCounter = 0;
@@ -885,48 +885,48 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->startAction === -1 ? -1 : ($this->server->getTick() - $this->startAction);
 	}
 
-    /**
-     * Returns whether the player has a cooldown period left before it can use the given item again.
-     *
-     * @param Item $item
-     *
-     * @return bool
-     */
-    public function hasItemCooldown(Item $item) : bool{
-        $this->checkItemCooldowns();
-        return isset($this->usedItemsCooldown[$item->getId()]);
-    }
+	/**
+	 * Returns whether the player has a cooldown period left before it can use the given item again.
+	 *
+	 * @param Item $item
+	 *
+	 * @return bool
+	 */
+	public function hasItemCooldown(Item $item) : bool{
+		$this->checkItemCooldowns();
+		return isset($this->usedItemsCooldown[$item->getId()]);
+	}
 
-    /**
-     * Resets the player's cooldown time for the given item back to the maximum.
-     *
-     * @param Item $item
-     */
-    public function resetItemCooldown(Item $item) : void{
-        $ticks = $item->getCooldownTicks();
-        if($ticks > 0){
-            $this->usedItemsCooldown[$item->getId()] = $this->server->getTick() + $ticks;
-        }
-    }
+	/**
+	 * Resets the player's cooldown time for the given item back to the maximum.
+	 *
+	 * @param Item $item
+	 */
+	public function resetItemCooldown(Item $item) : void{
+		$ticks = $item->getCooldownTicks();
+		if($ticks > 0){
+			$this->usedItemsCooldown[$item->getId()] = $this->server->getTick() + $ticks;
+		}
+	}
 
-    protected function checkItemCooldowns() : void{
-        $serverTick = $this->server->getTick();
-        foreach($this->usedItemsCooldown as $itemId => $cooldownUntil){
-            if($cooldownUntil <= $serverTick){
-                unset($this->usedItemsCooldown[$itemId]);
-            }
-        }
-    }
+	protected function checkItemCooldowns() : void{
+		$serverTick = $this->server->getTick();
+		foreach($this->usedItemsCooldown as $itemId => $cooldownUntil){
+			if($cooldownUntil <= $serverTick){
+				unset($this->usedItemsCooldown[$itemId]);
+			}
+		}
+	}
 
-    public function getCommandPermission() : int{
-        return $this->commandPermission;
-    }
+	public function getCommandPermission() : int{
+		return $this->commandPermission;
+	}
 
-    public function setCommandPermission(int $commandPermission) : void{
-        $this->commandPermission = $commandPermission;
-    }
+	public function setCommandPermission(int $commandPermission) : void{
+		$this->commandPermission = $commandPermission;
+	}
 
-    protected function switchLevel(Level $targetLevel) : bool{
+	protected function switchLevel(Level $targetLevel) : bool{
 		$oldLevel = $this->level;
 		if(parent::switchLevel($targetLevel)){
 			foreach($this->usedChunks as $index => $d){
@@ -1536,18 +1536,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$revert = false;
 
-        if($this->chunk === null or !$this->chunk->isGenerated()){
-            $chunk = $this->level->getChunk($newPos->getFloorX() >> 4, $newPos->getFloorZ() >> 4, false);
-            if($chunk === null or !$chunk->isGenerated()){
-                $revert = true;
-                $this->nextChunkOrderRun = 0;
-            }else{
-                if($this->chunk !== null){
-                    $this->chunk->removeEntity($this);
-                }
-                $this->chunk = $chunk;
-            }
-        }
+		if($this->chunk === null or !$this->chunk->isGenerated()){
+			$chunk = $this->level->getChunk($newPos->getFloorX() >> 4, $newPos->getFloorZ() >> 4, false);
+			if($chunk === null or !$chunk->isGenerated()){
+				$revert = true;
+				$this->nextChunkOrderRun = 0;
+			}else{
+				if($this->chunk !== null){
+					$this->chunk->removeEntity($this);
+				}
+				$this->chunk = $chunk;
+			}
+		}
 
 		if(!$revert and $distanceSquared != 0){
 			$dx = $newPos->x - $this->x;
@@ -1775,26 +1775,26 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->isCreative() or parent::canBreathe();
 	}
 
-    protected function sendEffectAdd(EffectInstance $effect, bool $replacesOldEffect) : void{
-        $pk = new MobEffectPacket();
-        $pk->entityRuntimeId = $this->getId();
-        $pk->eventId = $replacesOldEffect ? MobEffectPacket::EVENT_MODIFY : MobEffectPacket::EVENT_ADD;
-        $pk->effectId = $effect->getId();
-        $pk->amplifier = $effect->getAmplifier();
-        $pk->particles = $effect->isVisible();
-        $pk->duration = $effect->getDuration();
+	protected function sendEffectAdd(EffectInstance $effect, bool $replacesOldEffect) : void{
+		$pk = new MobEffectPacket();
+		$pk->entityRuntimeId = $this->getId();
+		$pk->eventId = $replacesOldEffect ? MobEffectPacket::EVENT_MODIFY : MobEffectPacket::EVENT_ADD;
+		$pk->effectId = $effect->getId();
+		$pk->amplifier = $effect->getAmplifier();
+		$pk->particles = $effect->isVisible();
+		$pk->duration = $effect->getDuration();
 
-        $this->dataPacket($pk);
-    }
+		$this->dataPacket($pk);
+	}
 
-    protected function sendEffectRemove(EffectInstance $effect) : void{
-        $pk = new MobEffectPacket();
-        $pk->entityRuntimeId = $this->getId();
-        $pk->eventId = MobEffectPacket::EVENT_REMOVE;
-        $pk->effectId = $effect->getId();
+	protected function sendEffectRemove(EffectInstance $effect) : void{
+		$pk = new MobEffectPacket();
+		$pk->entityRuntimeId = $this->getId();
+		$pk->eventId = MobEffectPacket::EVENT_REMOVE;
+		$pk->effectId = $effect->getId();
 
-        $this->dataPacket($pk);
-    }
+		$this->dataPacket($pk);
+	}
 
 	public function checkNetwork(){
 		if(!$this->isOnline()){
@@ -1919,9 +1919,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		if(
-		    ($this->isBanned() or $this->server->getIPBans()->isBanned($this->getAddress())) and
-            $this->kick("You are banned", false)
-        ){
+			($this->isBanned() or $this->server->getIPBans()->isBanned($this->getAddress())) and
+			$this->kick("You are banned", false)
+		){
 			return true;
 		}
 
@@ -2276,9 +2276,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->dataPacket($packet);
 				$this->server->broadcastPacket($this->getViewers(), $packet);
 				break;
-            case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
-                $this->addXpLevels($packet->data);
-                break;
+			case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
+				$this->addXpLevels($packet->data);
+				break;
 			default:
 				return false;
 		}
@@ -2317,34 +2317,34 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}
 		}
 
-		switch($packet->inventoryType) {
-            case "Crafting":
-                if($this->craftingTransaction === null){
-                    $this->craftingTransaction = new CraftingTransaction($this, $actions);
-                }else{
-                    foreach($actions as $action){
-                        $this->craftingTransaction->addAction($action);
-                    }
-                }
+		switch($packet->inventoryType){
+			case "Crafting":
+				if($this->craftingTransaction === null){
+					$this->craftingTransaction = new CraftingTransaction($this, $actions);
+				}else{
+					foreach($actions as $action){
+						$this->craftingTransaction->addAction($action);
+					}
+				}
 
-                if($this->craftingTransaction->getPrimaryOutput() !== null){
-                    //we get the actions for this in several packets, so we can't execute it until we get the result
+				if($this->craftingTransaction->getPrimaryOutput() !== null){
+					//we get the actions for this in several packets, so we can't execute it until we get the result
 
-                    $this->craftingTransaction->execute();
-                    $this->craftingTransaction = null;
-                }
-                return true;
-            case "Enchant":
-                $enchantTransaction = new EnchantTransaction($this, $actions);
-                $enchantTransaction->execute();
-                break;
-            default:
-                if($this->craftingTransaction !== null){
-                    $this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
-                    $this->craftingTransaction = null;
-                }
-                break;
-        }
+					$this->craftingTransaction->execute();
+					$this->craftingTransaction = null;
+				}
+				return true;
+			case "Enchant":
+				$enchantTransaction = new EnchantTransaction($this, $actions);
+				$enchantTransaction->execute();
+				break;
+			default:
+				if($this->craftingTransaction !== null){
+					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
+					$this->craftingTransaction = null;
+				}
+				break;
+		}
 
 		switch($packet->transactionType){
 			case InventoryTransactionPacket::TYPE_NORMAL:
@@ -2462,9 +2462,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						$ev = new PlayerInteractEvent($this, $item, null, $directionVector, $face, PlayerInteractEvent::RIGHT_CLICK_AIR);
-                        if($this->hasItemCooldown($item)){
-                            $ev->setCancelled();
-                        }
+						if($this->hasItemCooldown($item)){
+							$ev->setCancelled();
+						}
 
 						$this->server->getPluginManager()->callEvent($ev);
 
@@ -3911,7 +3911,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->isTeleporting = true;
 
 			//TODO: workaround for player last pos not getting updated
-            //Entity::updateMovement() normally handles this, but it's overridden with an empty function in Player
+			//Entity::updateMovement() normally handles this, but it's overridden with an empty function in Player
 			$this->resetLastMovements();
 
 			return true;
