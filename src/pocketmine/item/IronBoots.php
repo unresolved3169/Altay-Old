@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-
 class IronBoots extends Armor{
 	public function __construct(int $meta = 0){
 		parent::__construct(self::IRON_BOOTS, $meta, "Iron Boots");
@@ -35,5 +34,9 @@ class IronBoots extends Armor{
 
     public function getArmorSlot() : int{
         return Armor::SLOT_BOOTS;
+    }
+
+    public function getMaxDurability() : int{
+        return 196;
     }
 }

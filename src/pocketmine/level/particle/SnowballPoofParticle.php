@@ -22,16 +22,12 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\level\particle;
 
-// TODO
-class Elytra extends Item{
+use pocketmine\math\Vector3;
 
-    public function __construct(int $meta = 0){
-        parent::__construct(Item::ELYTRA, $meta, "Elytra Wings");
-    }
-
-    public function getArmorSlot() : int{
-        return Armor::SLOT_CHESTPLATE;
+class SnowballPoofParticle extends GenericParticle{
+    public function __construct(Vector3 $pos){
+        parent::__construct($pos, self::TYPE_SNOWBALL_POOF, 0);
     }
 }

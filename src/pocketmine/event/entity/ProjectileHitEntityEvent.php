@@ -22,16 +22,28 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\event\entity;
 
-// TODO
-class Elytra extends Item{
+use pocketmine\entity\Entity;
+use pocketmine\entity\projectile\Projectile;
+use pocketmine\math\RayTraceResult;
 
-    public function __construct(int $meta = 0){
-        parent::__construct(Item::ELYTRA, $meta, "Elytra Wings");
+class ProjectileHitEntityEvent extends ProjectileHitEvent{
+
+    /** @var Entity */
+    private $entityHit;
+
+    public function __construct(Projectile $entity, RayTraceResult $rayTraceResult, Entity $entityHit){
+        parent::__construct($entity, $rayTraceResult);
+        $this->entityHit = $entityHit;
     }
 
-    public function getArmorSlot() : int{
-        return Armor::SLOT_CHESTPLATE;
+    /**
+     * Returns the Entity struck by the projectile.
+     *
+     * @return Entity
+     */
+    public function getEntityHit() : Entity{
+        return $this->entityHit;
     }
 }
