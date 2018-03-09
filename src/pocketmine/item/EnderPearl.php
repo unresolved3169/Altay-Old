@@ -45,11 +45,7 @@ class EnderPearl extends ProjectileItem{
         return 16;
     }
 
-    public function onClickAir(Player $player, Vector3 $directionVector) : bool{
-        if(!$player->canUseEnderPearl()){
-            return false;
-        }
-        $player->onUseEnderPearl();
-        return parent::onClickAir($player, $directionVector);
+    public function getCooldownTicks(): int{
+        return 20;
     }
 }

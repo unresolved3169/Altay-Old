@@ -40,13 +40,10 @@ abstract class Throwable extends Projectile{
 		$hasUpdate = parent::entityBaseTick($tickDiff);
 
 		if($this->age > 1200 or $this->isCollided){
-		    $this->throwOver();
 		    $this->flagForDespawn();
 		    $hasUpdate = true;
 		}
 
 		return $hasUpdate;
 	}
-
-	public function throwOver() : void{}
 }

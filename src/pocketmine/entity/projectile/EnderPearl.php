@@ -24,7 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\projectile;
 
-use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ProjectileHitEvent;
@@ -42,23 +41,13 @@ class EnderPearl extends Throwable{
     protected $gravity = 0.03;
     protected $drag = 0.01;
 
-    public function throwOver() : void{
+    protected function onHit(ProjectileHitEvent $event) : void{
         if(($player = $this->getOwningEntity()) instanceof Player && $player->isAlive() && $this->y > 0){
-            // TODO : %5 spawn endemites (when added endermites on Altay)
+            // TODO : %5 spawn endermites (when added endermites on Altay)
             $player->attack(new EntityDamageEvent($player, EntityDamageEvent::CAUSE_FALL, 5));
             $player->getLevel()->broadcastLevelEvent(new Vector3($this->x + (mt_rand()/mt_getrandmax()) * 2 - 0.5, $this->y + + (mt_rand()/mt_getrandmax()) * 0.5 + 0.5, $this->z + (mt_rand()/mt_getrandmax()) * 2 - 0.5), LevelEventPacket::EVENT_PARTICLE_PORTAL);
             $player->getLevel()->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ENDERMAN_TELEPORT);
             $player->teleport($this);
         }
-    }
-
-    public function onCollideWithEntity(Entity $entity){
-        $this->server->getPluginManager()->callEvent(new ProjectileHitEvent($this));
-
-        if($entity instanceof Player and $entity->isSpectator()){
-            return;
-        }
-
-        $this->isCollided = true;
     }
 }
