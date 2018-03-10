@@ -30,11 +30,14 @@ Example servers running Altay
  - [x] Elytra
  - [x] EnchantmentTable
  - [ ] Entity Behaviors (MobAI)
+ - [x] Events
+    - [x] InventoryClickEvent
  - [x] Fireworks
  - [x] Forms
  - [x] Hopper
  - [ ] Level Dimensions
  - [ ] Redstone
  - [ ] Shulker Boxes
+ - [x] Virtual Inventory
  
 ***more...***
