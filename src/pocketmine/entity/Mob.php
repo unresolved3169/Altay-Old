@@ -136,7 +136,7 @@ abstract class Mob extends Living{
 		$dir = $this->getDirectionVector()->normalize();
 		$dir->y = 0;
 		
-		$entityCollide = $level->getCollidingEntities($this->getBoundingBox()->grow(0.15,0.15,0.15), $this);
+		$entityCollide = false;//$level->getCollidingEntities($this->getBoundingBox()->grow(0.15,0.15,0.15), $this);
 		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
 		
 		$block = $level->getBlock($coord);
