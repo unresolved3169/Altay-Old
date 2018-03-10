@@ -31,7 +31,7 @@ class CreeperSwellBehavior extends Behavior{
 
     // TODO : Mob Change to Creeper
     public function __construct(Mob $mob){
-        parent::__construct($mob, false);
+        parent::__construct($mob);
     }
 
     public  function canStart() : bool{

@@ -261,9 +261,10 @@ class Level implements ChunkManager, Metadatable{
 	/** @var bool */
 	private $closed = false;
 
+	/** @var Random */
+    private $random;
 
-
-	public static function chunkHash(int $x, int $z){
+    public static function chunkHash(int $x, int $z){
 		return (($x & 0xFFFFFFFF) << 32) | ($z & 0xFFFFFFFF);
 	}
 
@@ -405,7 +406,8 @@ class Level implements ChunkManager, Metadatable{
 	public function initLevel(){
 		$generator = $this->generator;
 		$this->generatorInstance = new $generator($this->provider->getGeneratorOptions());
-		$this->generatorInstance->init($this, new Random($this->getSeed()));
+		$this->random = new Random($this->getSeed());
+		$this->generatorInstance->init($this, $this->random);
 
 		$this->registerGenerator();
 	}
@@ -3153,4 +3155,8 @@ class Level implements ChunkManager, Metadatable{
 	public function removeMetadata(string $metadataKey, Plugin $owningPlugin){
 		$this->server->getLevelMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
 	}
+
+    public function getRandom() : Random{
+        return $this->random;
+    }
 }

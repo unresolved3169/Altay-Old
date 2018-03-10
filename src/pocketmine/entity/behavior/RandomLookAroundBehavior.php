@@ -34,7 +34,7 @@ class RandomLookAroundBehavior extends Behavior{
 	protected $duration = 0;
 
 	public function __construct(Mob $mob){
-        parent::__construct($mob, true);
+        parent::__construct($mob);
     }
 
     public function canStart() : bool{

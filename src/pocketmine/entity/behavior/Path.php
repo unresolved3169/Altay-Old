@@ -53,7 +53,7 @@ class Path{
 			foreach($source->level->getEntities() as $entry)
 			{
 				$position = $entry->asVector3();
-				if($position == $target) continue;
+				if($position === $target) continue;
 
 				$entityCoords[] = $position;
 			}

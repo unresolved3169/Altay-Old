@@ -33,7 +33,7 @@ class JumpAttackBehavior extends Behavior{
 
     // TODO : MOB -> WOLF
     public function __construct(Mob $mob, float $leapHeight){
-        parent::__construct($mob, true);
+        parent::__construct($mob);
 
         $this->leapHeight = $leapHeight;
     }

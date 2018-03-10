@@ -32,16 +32,15 @@ abstract class Behavior{
     /** @var Mob */
 	protected $mob;
 	/** @var Random */
-	protected $random = null;
+	protected $random;
 	
 	public function getName() : string{
 		return (new \ReflectionClass($this))->getShortName();
 	}
 	
-	public function __construct(Mob $mob, bool $random = false){
+	public function __construct(Mob $mob){
 		$this->mob = $mob;
-
-		if($random) $this->random = new Random();
+		$this->random = $mob->level->getRandom();
 	}
 	
 	public abstract function canStart() : bool;

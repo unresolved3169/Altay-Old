@@ -39,7 +39,7 @@ class EatBlockBehavior extends Behavior{
     protected $duration;
 
     public function __construct(Mob $mob){
-        parent::__construct($mob, true);
+        parent::__construct($mob);
     }
 
     public function canStart(): bool{

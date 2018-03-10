@@ -47,7 +47,7 @@ class MeleeAttackBehavior extends Behavior{
     protected $lastPlayerPos;
 
     public function __construct(Mob $mob, float $speedMultiplier, float $followRange){
-        parent::__construct($mob, true);
+        parent::__construct($mob);
 
         $this->speedMultiplier = $speedMultiplier;
         $this->followRange = $followRange;

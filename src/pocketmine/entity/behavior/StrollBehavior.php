@@ -43,7 +43,7 @@ class StrollBehavior extends Behavior{
     protected $timeLeft;
 
     public function __construct(Mob $mob, int $duration, float $speed, float $speedMultiplier){
-        parent::__construct($mob, true);
+        parent::__construct($mob);
 
         $this->duration = $this->timeLeft = $duration;
         $this->speed = $speed;

@@ -35,7 +35,7 @@ class FindAttackableTargetBehavior extends TargetBehavior{
 	protected $targetUnseenTicks = 0;
 	
 	public function __construct(Mob $mob, float $targetDistance = 16.0){
-		parent::__construct($mob, true);
+		parent::__construct($mob);
 		
 		$this->targetDistance = $targetDistance;
 	}

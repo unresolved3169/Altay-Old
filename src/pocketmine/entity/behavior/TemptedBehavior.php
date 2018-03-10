@@ -46,8 +46,6 @@ class TemptedBehavior extends Behavior{
     protected $originalPos;
     /** @var Path */
     protected $currentPath = null;
-    /** @var Path */
-    protected $pathfinder;
 
     public function __construct(Mob $mob, string $temptingItem, float $lookDistance, float $speedMultiplier){
         parent::__construct($mob);
@@ -100,8 +98,7 @@ class TemptedBehavior extends Behavior{
         $haveNoPath = ($this->currentPath == null || !$this->currentPath->havePath());
         $deltaDistance = $this->lastPlayerPos->distance($this->temptingPlayer);
         if($haveNoPath || $deltaDistance > 1){
-            $this->pathfinder = new Path();
-            $this->currentPath = $this->pathfinder->findPath($this->mob, $this->temptingPlayer, $this->lookDistance);
+            $this->currentPath = Path::findPath($this->mob, $this->temptingPlayer, $this->lookDistance);
             $this->lastPlayerPos = $this->temptingPlayer->asVector3();
         }
 
