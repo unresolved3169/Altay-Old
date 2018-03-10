@@ -31,6 +31,9 @@ use pocketmine\utils\Random;
 
 abstract class Mob extends Living{
 
+    public $height = 0.6;
+    public $width = 1.8;
+
     /** @var array */
     protected $behaviors = [], $targetBehaviors = [];
     /** @var bool */
@@ -134,7 +137,7 @@ abstract class Mob extends Living{
 		$dir->y = 0;
 		
 		$entityCollide = $level->getCollidingEntities($this->getBoundingBox()->grow(0.15,0.15,0.15), $this);
-		$coord = $this->add($dir->multiply($sf)->add($dir->multiply(1 * 0.5)));
+		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
 		
 		$block = $level->getBlock($coord);
 		$blockUp = $level->getBlock($coord->add(0,1,0));

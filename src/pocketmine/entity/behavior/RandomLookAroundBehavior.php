@@ -24,14 +24,20 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
+use pocketmine\entity\Mob;
+
 class RandomLookAroundBehavior extends Behavior{
 
     /** @var int */
 	protected $rotation = 0;
 	/** @var int */
 	protected $duration = 0;
-	
-	public function canStart() : bool{
+
+	public function __construct(Mob $mob){
+        parent::__construct($mob, true);
+    }
+
+    public function canStart() : bool{
 		if($this->random->nextFloat() < 0.2){
 			$this->rotation = $this->random->nextRange(-180, 180);
 			$this->duration = 20 + $this->random->nextBoundedInt(20);

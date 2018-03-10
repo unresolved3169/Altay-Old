@@ -71,7 +71,7 @@ class StrollBehavior extends Behavior{
         }
 
         // todo : check it
-        $offset = $direction->multiply($speedFactor)->add($direction->multiply((float) $this->mob->getY() + $this->mob->getEyeHeight() / 2));
+        $offset = $direction->multiply($speedFactor)->add($direction->multiply($this->mob->width / 2));
         $coord = $coordinates->add($offset);
 
         $players = $level->getPlayers();
