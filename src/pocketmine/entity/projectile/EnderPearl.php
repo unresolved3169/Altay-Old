@@ -28,11 +28,11 @@ use pocketmine\block\Block;
 use pocketmine\entity\EntityIds;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ProjectileHitEvent;
+use pocketmine\level\sound\EndermanTeleportSound;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\RayTraceResult;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
-use pocketmine\Player;
 
 class EnderPearl extends Throwable{
 
