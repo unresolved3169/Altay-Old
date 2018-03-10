@@ -145,10 +145,8 @@ abstract class Mob extends Living{
 		
 		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
 		
-		if(!$collide and !$entityCollide){
-			$blockDown = $level->getBlock($coord->add(0,-1,0));
-			
-			if($this->isOnGround() and $blockDown->isSolid()){
+		if(!$collide and !$entityCollide){		
+			if($this->isOnGround()){
 				$velocity = $dir->multiply($sf);
 				$entityVelocity = $this->getMotion();
 				$entityVelocity->y = 0;
