@@ -37,7 +37,7 @@ class LookAtPlayerBehavior extends Behavior{
 	protected $duration = 0;
 	
 	public function __construct(Mob $mob, float $lookDistance = 6.0){
-        parent::__construct($mob);
+        parent::__construct($mob, true);
 
         $this->lookDistance = $lookDistance;
     }

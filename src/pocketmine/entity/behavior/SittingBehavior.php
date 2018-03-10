@@ -35,14 +35,14 @@ class SittingBehavior extends Behavior{
         parent::__construct($mob);
     }
 
-    public  function canStart() : bool{
-        if (!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
-        if (!$this->mob->getGenericFlag(Entity::DATA_FLAG_BREATHING)) return false;
+    public function canStart(): bool{
+        if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
+        if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_BREATHING)) return false;
 
         $owner = $this->mob->getOwningEntity();
 
         $shouldStart = $owner == null || ((!($this->mob->distance($owner) < 144.0) || $this->getLastAttackSource() == null) && $this->mob->getGenericFlag(Entity::DATA_FLAG_SITTING));
-        if (!$shouldStart) return false;
+        if(!$shouldStart) return false;
 
         $this->mob->motionX = $this->mob->motionZ = 0;
 
