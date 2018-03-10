@@ -111,7 +111,7 @@ class MeleeAttackBehavior extends Behavior{
                 $this->mob->moveForward($this->speedMultiplier);
             } // else something is really wrong
         }else{
-            $this->mob->resetMotion();
+            //$this->mob->resetMotion();
         }
 
         $this->mob->lookAt($target);
