@@ -65,7 +65,7 @@ class WanderBehavior extends Behavior{
 	}
 	
 	public function canContinue() : bool{
-		return $this->currentPath->havePath();
+		return $this->currentPath !== null and $this->currentPath->havePath();
 	}
 	
 	public function onTick(int $tick) : void{
