@@ -30,7 +30,7 @@ namespace pocketmine\level;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Item as DroppedItem;
+use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
@@ -970,6 +970,10 @@ class Level implements ChunkManager, Metadatable{
 		unset($this->chunkCache[Level::chunkHash($chunkX, $chunkZ)]);
 	}
 
+	public function getRandomTickBlocks(): \SplFixedArray{
+	    return $this->randomTickBlocks;
+	}
+
 	public function addRandomTickedBlock(int $id){
 		$this->randomTickBlocks[$id] = BlockFactory::get($id);
 	}
@@ -1622,9 +1626,9 @@ class Level implements ChunkManager, Metadatable{
 	 * @param Vector3 $motion
 	 * @param int     $delay
 	 *
-	 * @return DroppedItem|null
+	 * @return ItemEntity|null
 	 */
-	public function dropItem(Vector3 $source, Item $item, Vector3 $motion = null, int $delay = 10) :?DroppedItem{
+	public function dropItem(Vector3 $source, Item $item, Vector3 $motion = null, int $delay = 10) : ?ItemEntity{
 		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
 
 		if(!$item->isNull()){
@@ -1636,7 +1640,7 @@ class Level implements ChunkManager, Metadatable{
 			$nbt->setTag($itemTag);
 			$itemEntity = Entity::createEntity("Item", $this, $nbt);
 
-			if($itemEntity instanceof DroppedItem){
+			if($itemEntity instanceof ItemEntity){
 				$itemEntity->spawnToAll();
 
 				return $itemEntity;
@@ -1650,7 +1654,7 @@ class Level implements ChunkManager, Metadatable{
 	 * @param Item[] $items
 	 * @param Vector3|null $motion
 	 * @param int $delay
-	 * @return DroppedItem[]
+	 * @return ItemEntity[]
 	 */
 	public function dropItems(Vector3 $source, array $items, Vector3 $motion = null, int $delay = 10) : array{
 		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
@@ -1668,7 +1672,7 @@ class Level implements ChunkManager, Metadatable{
 				$tag->setTag($itemTag);
 				$itemEntity = Entity::createEntity("Item", $this, $tag);
 
-				if($itemEntity instanceof DroppedItem){
+				if($itemEntity instanceof ItemEntity){
 					$itemEntity->spawnToAll();
 
 					$droppedItems[] = $itemEntity;

@@ -32,10 +32,14 @@ use pocketmine\block\BlockFactory;
 use pocketmine\block\Water;
 use pocketmine\entity\object\ArmorStand;
 use pocketmine\entity\object\ExperienceOrb;
+use pocketmine\entity\object\FallingBlock;
 use pocketmine\entity\object\Painting;
+use pocketmine\entity\object\PrimedTNT;
+use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\EnderPearl;
+use pocketmine\entity\projectile\ExperienceBottle;
 use pocketmine\entity\projectile\FireworksRocket;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\entity\projectile\SplashPotion;
@@ -51,7 +55,7 @@ use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
-use pocketmine\item\Item as ItemItem;
+use pocketmine\item\Item;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
@@ -241,10 +245,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(Boat::class, false, ['Boat', 'minecraft:boat']);
 		Entity::registerEntity(Egg::class, false, ['Egg', 'minecraft:egg']);
 		Entity::registerEntity(EnderPearl::class, false, ['EnderPearl', 'ThrownEnderpearl', 'minecraft:ender_pearl']);
+		Entity::registerEntity(ExperienceBottle::class, false, ['ThrownExpBottle', 'minecraft:xp_bottle']);
 		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);
-		Entity::registerEntity(FallingSand::class, false, ['FallingSand', 'minecraft:falling_block']);
+		Entity::registerEntity(FallingBlock::class, false, ['FallingSand', 'minecraft:falling_block']);
 		Entity::registerEntity(FireworksRocket::class, false, ['FireworkRocket', 'FireworksRocket', 'minecraft:fireworks_rocket']);
-		Entity::registerEntity(Item::class, false, ['Item', 'minecraft:item']);
+		Entity::registerEntity(ItemEntity::class, false, ['Item', 'minecraft:item']);
 		Entity::registerEntity(Painting::class, false, ['Painting', 'minecraft:painting']);
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
 		Entity::registerEntity(SplashPotion::class, false, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
@@ -2148,10 +2153,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, ItemItem $item, Vector3 $clickVector, array $actions = []){}
+	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){}
 
 	/**
-	 * @return ItemItem[]
+	 * @return Item[]
 	 */
 	public function getDrops() : array{
 		return [];

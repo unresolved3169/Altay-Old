@@ -25,7 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\tile;
 
 use pocketmine\entity\Entity;
-use pocketmine\entity\Item as DroppedItem;
+use pocketmine\entity\object\ItemEntity;
 use pocketmine\inventory\HopperInventory;
 use pocketmine\inventory\InventoryHolder;
 use pocketmine\item\Item;
@@ -98,10 +98,10 @@ class Hopper extends Spawnable implements Container, Nameable, InventoryHolder{
 
         $chunkEntities = array_filter($this->getLevel()->getChunkEntities($this->x >> 4, $this->z >> 4),
             function(Entity $entity):bool{
-                return $entity instanceof DroppedItem and !$entity->isFlaggedForDespawn();
+                return $entity instanceof ItemEntity and !$entity->isFlaggedForDespawn();
             });
 
-        /** @var DroppedItem $entity */
+        /** @var ItemEntity $entity */
         foreach($chunkEntities as $entity){
             if(!$entity->boundingBox->intersectsWith($area)){
                 continue;

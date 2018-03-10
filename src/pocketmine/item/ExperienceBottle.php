@@ -22,21 +22,18 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity\projectile;
+namespace pocketmine\item;
 
-use pocketmine\event\entity\ProjectileHitEvent;
-use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
-use pocketmine\level\particle\ItemBreakParticle;
+class ExperienceBottle extends ProjectileItem{
+    public function __construct(int $meta = 0){
+        parent::__construct(self::EXPERIENCE_BOTTLE, $meta, "Bottle o' Enchanting");
+    }
 
-class Egg extends Throwable{
-	public const NETWORK_ID = self::EGG;
+    public function getProjectileEntityType() : string{
+        return "ThrownExpBottle";
+    }
 
-	//TODO: spawn chickens on collision
-
-	protected function onHit(ProjectileHitEvent $event) : void{
-		for($i = 0; $i < 6; ++$i){
-			$this->level->addParticle(new ItemBreakParticle($this, ItemFactory::get(Item::EGG)));
-		}
-	}
+    public function getThrowForce() : float{
+        return 0.7;
+    }
 }
