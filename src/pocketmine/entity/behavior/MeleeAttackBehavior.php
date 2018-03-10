@@ -84,7 +84,7 @@ class MeleeAttackBehavior extends Behavior{
 
         $deltaDistance = $this->lastPlayerPos->distance($target);
 
-        $canSee = $this->mob->canSeeEntity($target);
+        $canSee = true;
 
         if($canSee || $this->delay <= 0 || $deltaDistance > 1 || $this->random->nextFloat() < 0.05){
             $this->currentPath = Path::findPath($this->mob, $target, $this->followRange);
