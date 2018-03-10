@@ -126,13 +126,8 @@ class TimeCommand extends VanillaCommand{
 				return true;
 			}
 
-			if($args[1] === "day"){
-				$value = 0;
-			}elseif($args[1] === "night"){
-				$value = Level::TIME_NIGHT;
-			}else{
-				$value = $this->getInteger($sender, $args[1], 0);
-			}
+			$const = Level::class . "::TIME_" . strtoupper($args[1]);
+			$value = defined($const) ? constant($const) : $this->getInteger($sender, $args[1], 0);
 
 			foreach($sender->getServer()->getLevels() as $level){
 				$level->checkTime();

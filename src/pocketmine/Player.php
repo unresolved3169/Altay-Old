@@ -31,10 +31,11 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\entity\Attribute;
 use pocketmine\entity\Effect;
+use pocketmine\entity\EffectInstance;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
+use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\Vehicle;
-use pocketmine\entity\Item as DroppedItem;
 use pocketmine\entity\Living;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\Skin;
@@ -117,6 +118,7 @@ use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\MobEffectPacket;
 use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
 use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
@@ -325,11 +327,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 */
 	protected $lastPingMeasure = 1;
 
-	/**
-	 * @var int
-	 * Last time when player used ender pearl
-	 */
-	protected $lastEnderPearlUse = 0;
+	/** @var int[] ID => ticks map */
+	protected $usedItemsCooldown = [];
 
 	/** @var int */
 	protected $formIdCounter = 0;
@@ -886,15 +885,48 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->startAction === -1 ? -1 : ($this->server->getTick() - $this->startAction);
 	}
 
-    public function getCommandPermission() : int{
-        return $this->commandPermission;
-    }
+	/**
+	 * Returns whether the player has a cooldown period left before it can use the given item again.
+	 *
+	 * @param Item $item
+	 *
+	 * @return bool
+	 */
+	public function hasItemCooldown(Item $item) : bool{
+		$this->checkItemCooldowns();
+		return isset($this->usedItemsCooldown[$item->getId()]);
+	}
 
-    public function setCommandPermission(int $commandPermission) : void{
-        $this->commandPermission = $commandPermission;
-    }
+	/**
+	 * Resets the player's cooldown time for the given item back to the maximum.
+	 *
+	 * @param Item $item
+	 */
+	public function resetItemCooldown(Item $item) : void{
+		$ticks = $item->getCooldownTicks();
+		if($ticks > 0){
+			$this->usedItemsCooldown[$item->getId()] = $this->server->getTick() + $ticks;
+		}
+	}
 
-    protected function switchLevel(Level $targetLevel) : bool{
+	protected function checkItemCooldowns() : void{
+		$serverTick = $this->server->getTick();
+		foreach($this->usedItemsCooldown as $itemId => $cooldownUntil){
+			if($cooldownUntil <= $serverTick){
+				unset($this->usedItemsCooldown[$itemId]);
+			}
+		}
+	}
+
+	public function getCommandPermission() : int{
+		return $this->commandPermission;
+	}
+
+	public function setCommandPermission(int $commandPermission) : void{
+		$this->commandPermission = $commandPermission;
+	}
+
+	protected function switchLevel(Level $targetLevel) : bool{
 		$oldLevel = $this->level;
 		if(parent::switchLevel($targetLevel)){
 			foreach($this->usedChunks as $index => $d){
@@ -1504,18 +1536,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$revert = false;
 
-        if($this->chunk === null or !$this->chunk->isGenerated()){
-            $chunk = $this->level->getChunk($newPos->getFloorX() >> 4, $newPos->getFloorZ() >> 4, false);
-            if($chunk === null or !$chunk->isGenerated()){
-                $revert = true;
-                $this->nextChunkOrderRun = 0;
-            }else{
-                if($this->chunk !== null){
-                    $this->chunk->removeEntity($this);
-                }
-                $this->chunk = $chunk;
-            }
-        }
+		if($this->chunk === null or !$this->chunk->isGenerated()){
+			$chunk = $this->level->getChunk($newPos->getFloorX() >> 4, $newPos->getFloorZ() >> 4, false);
+			if($chunk === null or !$chunk->isGenerated()){
+				$revert = true;
+				$this->nextChunkOrderRun = 0;
+			}else{
+				if($this->chunk !== null){
+					$this->chunk->removeEntity($this);
+				}
+				$this->chunk = $chunk;
+			}
+		}
 
 		if(!$revert and $distanceSquared != 0){
 			$dx = $newPos->x - $this->x;
@@ -1741,6 +1773,27 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function canBreathe() : bool{
 		return $this->isCreative() or parent::canBreathe();
+	}
+
+	protected function sendEffectAdd(EffectInstance $effect, bool $replacesOldEffect) : void{
+		$pk = new MobEffectPacket();
+		$pk->entityRuntimeId = $this->getId();
+		$pk->eventId = $replacesOldEffect ? MobEffectPacket::EVENT_MODIFY : MobEffectPacket::EVENT_ADD;
+		$pk->effectId = $effect->getId();
+		$pk->amplifier = $effect->getAmplifier();
+		$pk->particles = $effect->isVisible();
+		$pk->duration = $effect->getDuration();
+
+		$this->dataPacket($pk);
+	}
+
+	protected function sendEffectRemove(EffectInstance $effect) : void{
+		$pk = new MobEffectPacket();
+		$pk->entityRuntimeId = $this->getId();
+		$pk->eventId = MobEffectPacket::EVENT_REMOVE;
+		$pk->effectId = $effect->getId();
+
+		$this->dataPacket($pk);
 	}
 
 	public function checkNetwork(){
@@ -1987,8 +2040,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool{
 		switch($packet->status){
 			case ResourcePackClientResponsePacket::STATUS_REFUSED:
-				//TODO: add lang strings for this
-				$this->close("", "You must accept resource packs to join this server.", true);
+                $this->close("", $this->server->getLanguage()->translateString("pocketmine.disconnect.mustAcceptResourcePack"), true);
 				break;
 			case ResourcePackClientResponsePacket::STATUS_SEND_PACKS:
 				$manager = $this->server->getResourcePackManager();
@@ -2226,9 +2278,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->dataPacket($packet);
 				$this->server->broadcastPacket($this->getViewers(), $packet);
 				break;
-            case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
-                $this->addXpLevels($packet->data);
-                break;
+			case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
+				$this->addXpLevels($packet->data);
+				break;
 			default:
 				return false;
 		}
@@ -2267,34 +2319,34 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}
 		}
 
-		switch($packet->inventoryType) {
-            case "Crafting":
-                if($this->craftingTransaction === null){
-                    $this->craftingTransaction = new CraftingTransaction($this, $actions);
-                }else{
-                    foreach($actions as $action){
-                        $this->craftingTransaction->addAction($action);
-                    }
-                }
+		switch($packet->inventoryType){
+			case "Crafting":
+				if($this->craftingTransaction === null){
+					$this->craftingTransaction = new CraftingTransaction($this, $actions);
+				}else{
+					foreach($actions as $action){
+						$this->craftingTransaction->addAction($action);
+					}
+				}
 
-                if($this->craftingTransaction->getPrimaryOutput() !== null){
-                    //we get the actions for this in several packets, so we can't execute it until we get the result
+				if($this->craftingTransaction->getPrimaryOutput() !== null){
+					//we get the actions for this in several packets, so we can't execute it until we get the result
 
-                    $this->craftingTransaction->execute();
-                    $this->craftingTransaction = null;
-                }
-                return true;
-            case "Enchant":
-                $enchantTransaction = new EnchantTransaction($this, $actions);
-                $enchantTransaction->execute();
-                break;
-            default:
-                if($this->craftingTransaction !== null){
-                    $this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
-                    $this->craftingTransaction = null;
-                }
-                break;
-        }
+					$this->craftingTransaction->execute();
+					$this->craftingTransaction = null;
+				}
+				return true;
+			case "Enchant":
+				$enchantTransaction = new EnchantTransaction($this, $actions);
+				$enchantTransaction->execute();
+				break;
+			default:
+				if($this->craftingTransaction !== null){
+					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
+					$this->craftingTransaction = null;
+				}
+				break;
+		}
 
 		switch($packet->transactionType){
 			case InventoryTransactionPacket::TYPE_NORMAL:
@@ -2412,6 +2464,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						$ev = new PlayerInteractEvent($this, $item, null, $directionVector, $face, PlayerInteractEvent::RIGHT_CLICK_AIR);
+						if($this->hasItemCooldown($item)){
+							$ev->setCancelled();
+						}
 
 						$this->server->getPluginManager()->callEvent($ev);
 
@@ -2420,9 +2475,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							return true;
 						}
 
-						if($item->onClickAir($this, $directionVector) and $this->isSurvival()){
-							$this->inventory->setItemInHand($item);
-						}
+                        if($item->onClickAir($this, $directionVector)){
+                            $this->resetItemCooldown($item);
+                            if($this->isSurvival()){
+                                $this->inventory->setItemInHand($item);
+                            }
+                        }
 
 						$this->setUsingItem(true);
 
@@ -2455,7 +2513,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						if(!$target->isAlive()){
 							return true;
 						}
-						if($target instanceof DroppedItem or $target instanceof Arrow){
+						if($target instanceof ItemEntity or $target instanceof Arrow){
 							$this->kick("Attempting to attack an invalid entity");
 							$this->server->getLogger()->warning($this->getServer()->getLanguage()->translateString("pocketmine.player.invalidEntity", [$this->getName()]));
 							return false;
@@ -2522,9 +2580,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						case InventoryTransactionPacket::RELEASE_ITEM_ACTION_RELEASE:
 							if($this->isUsingItem()){
 								$item = $this->inventory->getItemInHand();
-								if($item->onReleaseUsing($this)){
-									$this->inventory->setItemInHand($item);
-								}
+                                if($this->hasItemCooldown($item)){
+                                    $this->inventory->sendContents($this);
+                                    return false;
+                                }
+                                if($item->onReleaseUsing($this)){
+                                    $this->resetItemCooldown($item);
+                                    $this->inventory->setItemInHand($item);
+                                }
 							}else{
 								break;
 							}
@@ -2535,12 +2598,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 							if($slot instanceof Consumable){
 								$ev = new PlayerItemConsumeEvent($this, $slot);
+                                if($this->hasItemCooldown($slot)){
+                                    $ev->setCancelled();
+                                }
 								$this->server->getPluginManager()->callEvent($ev);
 
 								if($ev->isCancelled() or !$this->consumeObject($slot)){
 									$this->inventory->sendContents($this);
 									return true;
 								}
+
+                                $this->resetItemCooldown($slot);
 
 								if($this->isSurvival()){
 									$slot->pop();
@@ -3844,6 +3912,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 			$this->isTeleporting = true;
 
+			//TODO: workaround for player last pos not getting updated
+			//Entity::updateMovement() normally handles this, but it's overridden with an empty function in Player
+			$this->resetLastMovements();
+
 			return true;
 		}
 
@@ -4064,18 +4136,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function getDeviceOS() : int{
 		return $this->deviceOS;
-	}
-
-	public function canUseEnderPearl() : bool{
-		return time() - $this->lastEnderPearlUse >= 1;
-	}
-
-	public function onUseEnderPearl() : void{
-		$this->lastEnderPearlUse = time();
-	}
-
-	public function resetLastEnderPearlUse() : void{
-		$this->lastEnderPearlUse = 0;
 	}
 
 	public function linkToVehicle(Vehicle $vehicle, int $type = EntityLink::TYPE_RIDE){

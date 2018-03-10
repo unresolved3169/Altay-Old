@@ -39,3 +39,4 @@ test_data/*
 
 # Doxygen
 Documentation/*
+*.php___jb_tmp___

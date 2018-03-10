@@ -8,19 +8,22 @@
 #                        |___/
 
 player:
+  # Choose if to keep a player's inventory after they die
   keep-inventory: false
+  # Choose if to keep a player's experience after they die
   keep-experience: false
 
 developer:
+  # This setting allows the server to load plugins through the source directory over a .phar file
   folder-plugin-loader: true
-  # If true, it will not register the commands like (extractplugin, makeserver... etc)
-  command: true
+  # This setting allows developer commands (extractplugin, makeserver... etc)
+  commands: true
+  # This setting allows the server to load plugins with Incompatible API
+  load-incompatible-api: true
 
 terminal:
-   read-line: true
-
-developer:
-  load-incompatible-api: true
+  # If console colors are disabled, set it to "false".
+  read-line: true
 
 server:
   allow-server-settings-form: true

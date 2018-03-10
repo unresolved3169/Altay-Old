@@ -67,8 +67,8 @@ class MakePluginCommand extends VanillaCommand{
 
         $pharPath  = Server::getInstance()->getPluginPath() . "Altay" . DIRECTORY_SEPARATOR . $description->getFullName() . ".phar";
         if(file_exists($pharPath)){
-            $sender->sendMessage("Phar plugin already exists, deleting...");
-            unlink($pharPath);
+            $sender->sendMessage("Phar plugin already exists, overwriting...");
+            \Phar::unlinkArchive($pharPath);
         }
 
         $phar = new \Phar($pharPath);
@@ -90,23 +90,30 @@ class MakePluginCommand extends VanillaCommand{
         $reflection = new \ReflectionClass("pocketmine\\plugin\\PluginBase");
         $file = $reflection->getProperty("file");
         $file->setAccessible(true);
-        $folderPath = str_replace("\\", "/", rtrim($file->getValue($plugin), "\\/").DIRECTORY_SEPARATOR);
+        $basePath = rtrim(str_replace("\\", "/", $file->getValue($plugin)), "/") . "/";
 
         $phar->startBuffering();
 
-        /** @var \SplFileInfo $file */
-        foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($folderPath)) as $file){
-            $path = ltrim(str_replace(["\\", $pharPath], ["/", ""], $file), "/");
-            if($path{0} === "." or strpos($path, "/.") !== false){
-                continue;
-            }
-            $phar->addFile($file->getPathName(), $path);
-            $sender->sendMessage("[".\pocketmine\NAME."] Added ".str_replace($folderPath, "", $path));
-        }
+        //If paths contain any of these, they will be excluded
+        $excludedSubstrings = [
+            "/.", //"Hidden" files, git information etc
+            realpath($pharPath) //don't add the phar to itself
+        ];
 
+        $regex = sprintf('/^(?!.*(%s))^%s(%s).*/i',
+            implode('|', $this->preg_quote_array($excludedSubstrings, '/')), //String may not contain any of these substrings
+            preg_quote($basePath, '/'), //String must start with this path...
+            implode('|', $this->preg_quote_array([], '/')) //... and must be followed by one of these relative paths, if any were specified. If none, this will produce a null capturing group which will allow anything.
+        );
+
+        $count = count($phar->buildFromDirectory($basePath, $regex));
+        $sender->sendMessage("[Altay] Added $count files");
+
+        $sender->sendMessage("[Altay] Checking for compressible files...");
         foreach($phar as $file => $finfo){
             /** @var \PharFileInfo $finfo */
             if($finfo->getSize() > (1024 * 512)){
+                $sender->sendMessage("[Altay] Compressing " . $finfo->getFilename());
                 $finfo->compress(\Phar::GZ);
             }
         }
@@ -115,5 +122,9 @@ class MakePluginCommand extends VanillaCommand{
         $sender->sendMessage("Phar plugin " . $description->getFullName() . " has been created on " . $pharPath);
 
         return true;
+    }
+
+    private function preg_quote_array(array $strings, string $delim = null) : array{
+        return array_map(function(string $str) use ($delim) : string{ return preg_quote($str, $delim); }, $strings);
     }
 }

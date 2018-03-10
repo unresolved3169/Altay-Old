@@ -28,7 +28,6 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class EnderPearl extends ProjectileItem{
-
     public function __construct(int $meta = 0){
         parent::__construct(self::ENDER_PEARL, $meta, "Ender Pearl");
     }
@@ -45,11 +44,7 @@ class EnderPearl extends ProjectileItem{
         return 16;
     }
 
-    public function onClickAir(Player $player, Vector3 $directionVector) : bool{
-        if(!$player->canUseEnderPearl()){
-            return false;
-        }
-        $player->onUseEnderPearl();
-        return parent::onClickAir($player, $directionVector);
+    public function getCooldownTicks(): int{
+        return 20;
     }
 }

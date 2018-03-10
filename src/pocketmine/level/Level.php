@@ -30,9 +30,8 @@ namespace pocketmine\level;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\entity\Entity;
-use pocketmine\entity\Item as DroppedItem;
+use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\object\ExperienceOrb;
-use pocketmine\entity\projectile\Arrow;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
@@ -105,9 +104,11 @@ class Level implements ChunkManager, Metadatable{
 	public const BLOCK_UPDATE_WEAK = 4;
 	public const BLOCK_UPDATE_TOUCH = 5;
 
-	public const TIME_DAY = 0;
+	public const TIME_DAY = 1000;
+	public const TIME_NOON = 6000;
 	public const TIME_SUNSET = 12000;
-	public const TIME_NIGHT = 14000;
+	public const TIME_NIGHT = 13000;
+	public const TIME_MIDNIGHT = 18000;
 	public const TIME_SUNRISE = 23000;
 
 	public const TIME_FULL = 24000;
@@ -454,12 +455,12 @@ class Level implements ChunkManager, Metadatable{
 			throw new \InvalidStateException("Tried to close a level which is already closed");
 		}
 
-		if($this->getAutoSave()){
-			$this->save();
-		}
-
 		foreach($this->chunks as $chunk){
 			$this->unloadChunk($chunk->getX(), $chunk->getZ(), false);
+		}
+
+		if($this->getAutoSave()){
+		    $this->save();
 		}
 
 		$this->unregisterGenerator();
@@ -969,6 +970,10 @@ class Level implements ChunkManager, Metadatable{
 
 	public function clearChunkCache(int $chunkX, int $chunkZ){
 		unset($this->chunkCache[Level::chunkHash($chunkX, $chunkZ)]);
+	}
+
+	public function getRandomTickBlocks(): \SplFixedArray{
+	    return $this->randomTickBlocks;
 	}
 
 	public function addRandomTickedBlock(int $id){
@@ -1623,9 +1628,9 @@ class Level implements ChunkManager, Metadatable{
 	 * @param Vector3 $motion
 	 * @param int     $delay
 	 *
-	 * @return DroppedItem|null
+	 * @return ItemEntity|null
 	 */
-	public function dropItem(Vector3 $source, Item $item, Vector3 $motion = null, int $delay = 10) :?DroppedItem{
+	public function dropItem(Vector3 $source, Item $item, Vector3 $motion = null, int $delay = 10) : ?ItemEntity{
 		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
 
 		if(!$item->isNull()){
@@ -1637,7 +1642,7 @@ class Level implements ChunkManager, Metadatable{
 			$nbt->setTag($itemTag);
 			$itemEntity = Entity::createEntity("Item", $this, $nbt);
 
-			if($itemEntity instanceof DroppedItem){
+			if($itemEntity instanceof ItemEntity){
 				$itemEntity->spawnToAll();
 
 				return $itemEntity;
@@ -1651,7 +1656,7 @@ class Level implements ChunkManager, Metadatable{
 	 * @param Item[] $items
 	 * @param Vector3|null $motion
 	 * @param int $delay
-	 * @return DroppedItem[]
+	 * @return ItemEntity[]
 	 */
 	public function dropItems(Vector3 $source, array $items, Vector3 $motion = null, int $delay = 10) : array{
 		$motion = $motion ?? new Vector3(lcg_value() * 0.2 - 0.1, 0.2, lcg_value() * 0.2 - 0.1);
@@ -1669,7 +1674,7 @@ class Level implements ChunkManager, Metadatable{
 				$tag->setTag($itemTag);
 				$itemEntity = Entity::createEntity("Item", $this, $tag);
 
-				if($itemEntity instanceof DroppedItem){
+				if($itemEntity instanceof ItemEntity){
 					$itemEntity->spawnToAll();
 
 					$droppedItems[] = $itemEntity;
@@ -1916,13 +1921,8 @@ class Level implements ChunkManager, Metadatable{
 
 		if($hand->isSolid()){
 			foreach($hand->getCollisionBoxes() as $collisionBox){
-				$entities = $this->getCollidingEntities($collisionBox);
-				foreach($entities as $e){
-					if($e instanceof Arrow or $e instanceof DroppedItem or ($e instanceof Player and $e->isSpectator())){
-						continue;
-					}
-
-					return false; //Entity in block
+				if(!empty($this->getCollidingEntities($collisionBox))){
+					return false; // Entity in block
 				}
 
 				if($player !== null){

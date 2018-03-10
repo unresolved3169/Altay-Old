@@ -24,8 +24,8 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-class Elytra extends Armor{
-
+// TODO
+class Elytra extends Item{
     public function __construct(int $meta = 0){
         parent::__construct(Item::ELYTRA, $meta, "Elytra Wings");
     }

@@ -124,21 +124,20 @@ class PluginManager{
 	 * @return bool
 	 */
 	public function registerInterface(string $loaderName) : bool{
-	    if($loaderName === FolderPluginLoader::class){
-	        if(!$this->server->folderPluginLoader){
-	            return false;
-            }
+        if($loaderName === FolderPluginLoader::class and !$this->server->folderPluginLoader){
+            return false;
         }
-		if(is_subclass_of($loaderName, PluginLoader::class)){
-			$loader = new $loaderName($this->server);
-		}else{
-			return false;
-		}
 
-		$this->fileAssociations[$loaderName] = $loader;
+        if(is_subclass_of($loaderName, PluginLoader::class)){
+            $loader = new $loaderName($this->server);
+        }else{
+            return false;
+        }
 
-		return true;
-	}
+        $this->fileAssociations[$loaderName] = $loader;
+
+        return true;
+    }
 
 	/**
 	 * @return Plugin[]

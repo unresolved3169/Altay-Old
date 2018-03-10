@@ -25,21 +25,20 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\ConsoleCommandSender;
 use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-// TODO : Add Language and postfixes
+// TODO : postfixes
 class XpCommand extends VanillaCommand{
 
     public function __construct(string $name){
         parent::__construct(
             $name,
-            "Oyuncu deneyimi ekler veya kaldırır",
-            '/xp <değer> [oyuncu]',
+            "%altay.command.xp.description",
+            'altay.command.xp.usage',
             [],
             [
                 CommandParameterUtils::getIntParameter("amount", false),
@@ -47,7 +46,7 @@ class XpCommand extends VanillaCommand{
             ]
         );
 
-        $this->setPermission("pocketmine.command.xp");
+        $this->setPermission("altay.command.xp");
     }
 
     public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -58,9 +57,8 @@ class XpCommand extends VanillaCommand{
         }
 
         if(count($args) < 2){
-            if($sender instanceof ConsoleCommandSender){
-                $sender->sendMessage(TextFormat::RED . "Bu komut sadece oyun içi çalışır.");
-                return true;
+            if(!($sender instanceof Player)){
+                throw new InvalidCommandSyntaxException();
             }
             $player = $sender;
         }else{
@@ -75,22 +73,22 @@ class XpCommand extends VanillaCommand{
                 $xp = (int) rtrim($xp, "Ll");
                 if($xp > 0){
                     $player->addXpLevels($xp);
-                    $sender->sendMessage(new TranslationContainer("%commands.xp.success.levels", [$xp, $isim]));
+                    $sender->sendMessage(new TranslationContainer("commands.xp.success.levels", [$xp, $isim]));
                     return true;
                 }elseif($xp < 0){
                     $xp = abs($xp);
                     $player->subtractXpLevels($xp);
-                    $sender->sendMessage(new TranslationContainer("%commands.xp.success.negative.levels", [$xp, $isim]));
+                    $sender->sendMessage(new TranslationContainer("commands.xp.success.negative.levels", [$xp, $isim]));
                     return true;
                 }
             }else{
                 $xp = (int) $xp;
                 if($xp > 0){
                     $player->addXp($xp);
-                    $sender->sendMessage(new TranslationContainer("%commands.xp.success", [$xp, $isim]));
+                    $sender->sendMessage(new TranslationContainer("commands.xp.success", [$xp, $isim]));
                     return true;
                 }elseif($xp < 0){
-                    $sender->sendMessage(new TranslationContainer("%commands.xp.failure.withdrawXp"));
+                    $sender->sendMessage(new TranslationContainer("commands.xp.failure.withdrawXp"));
                     return true;
                 }
             }

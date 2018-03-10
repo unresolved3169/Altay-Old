@@ -1213,16 +1213,11 @@ class Server{
 	}
 
 	public function getAltayProperty(string $variable, $defaultValue = null){
-		if(!array_key_exists($variable, $this->altayPropertyCache)){
-			$v = getopt("", ["$variable::"]);
-			if(isset($v[$variable])){
-				$this->altayPropertyCache[$variable] = $v[$variable];
-			}else{
-				$this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
-			}
-		}
+	    if(!array_key_exists($variable, $this->altayPropertyCache)){
+	        $this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
+	    }
 
-		return $this->altayPropertyCache[$variable] ?? $defaultValue;
+	    return $this->altayPropertyCache[$variable] ?? $defaultValue;
 	}
 
 	/**
@@ -1669,8 +1664,6 @@ class Server{
 			ItemFactory::init();
 			Item::initCreativeItems();
 			Biome::init();
-			Effect::init();
-			Attribute::init();
 			$this->craftingManager = new CraftingManager();
 
 			$this->resourceManager = new ResourcePackManager($this->getDataPath() . "resource_packs" . DIRECTORY_SEPARATOR);

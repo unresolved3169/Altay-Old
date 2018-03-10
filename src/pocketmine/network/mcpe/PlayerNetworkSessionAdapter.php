@@ -24,7 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe;
 
-
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\Timings;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
