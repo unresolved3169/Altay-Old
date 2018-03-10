@@ -42,7 +42,7 @@ class WanderBehavior extends Behavior{
 	protected $currentPath = null;
 	
 	public function __construct(Mob $mob, float $speedMultiplier = 1.0, int $chance = 120){
-		parent::__construct($mob, true);
+		parent::__construct($mob);
 		
 		$this->speedMultiplier = $speedMultiplier;
 		$this->chance = $chance;
