@@ -24,27 +24,16 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-use pocketmine\math\Vector3;
-use pocketmine\Player;
-
-class EnderPearl extends ProjectileItem{
+class CookedSalmon extends Food{
     public function __construct(int $meta = 0){
-        parent::__construct(self::ENDER_PEARL, $meta, "Ender Pearl");
+        parent::__construct(self::COOKED_SALMON, $meta, "Cooked Salmon");
     }
 
-    public function getProjectileEntityType(): string{
-        return "EnderPearl";
+    public function getFoodRestore() : int{
+        return 6;
     }
 
-    public function getThrowForce(): float{
-        return 1.5;
-    }
-
-    public function getMaxStackSize(): int{
-        return 16;
-    }
-
-    public function getCooldownTicks(): int{
-        return 20;
+    public function getSaturationRestore() : float{
+        return 9.6;
     }
 }

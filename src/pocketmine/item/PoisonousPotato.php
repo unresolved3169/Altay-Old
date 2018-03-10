@@ -24,27 +24,28 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-use pocketmine\math\Vector3;
-use pocketmine\Player;
+use pocketmine\entity\Effect;
+use pocketmine\entity\EffectInstance;
 
-class EnderPearl extends ProjectileItem{
+class PoisonousPotato extends Food{
     public function __construct(int $meta = 0){
-        parent::__construct(self::ENDER_PEARL, $meta, "Ender Pearl");
+        parent::__construct(self::POISONOUS_POTATO, $meta, "Poisonous Potato");
     }
 
-    public function getProjectileEntityType(): string{
-        return "EnderPearl";
+    public function getFoodRestore() : int{
+        return 2;
     }
 
-    public function getThrowForce(): float{
-        return 1.5;
+    public function getSaturationRestore() : float{
+        return 1.2;
     }
 
-    public function getMaxStackSize(): int{
-        return 16;
-    }
-
-    public function getCooldownTicks(): int{
-        return 20;
+    public function getAdditionalEffects() : array{
+        if(mt_rand(0, 100) > 40){
+            return [
+                new EffectInstance(Effect::getEffect(Effect::POISON), 100)
+            ];
+        }
+        return [];
     }
 }

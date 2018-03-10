@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -132,7 +133,7 @@ class ItemFactory{
         self::registerItem(new FishingRod());
         self::registerItem(new Clock());
         self::registerItem(new Item(Item::GLOWSTONE_DUST, 0, "Glowstone Dust"));
-        self::registerItem(new Fish());
+        self::registerItem(new RawFish());
         self::registerItem(new CookedFish());
         self::registerItem(new Dye());
         self::registerItem(new Item(Item::BONE, 0, "Bone"));
@@ -177,7 +178,7 @@ class ItemFactory{
         self::registerItem(new Carrot());
         self::registerItem(new Potato());
         self::registerItem(new BakedPotato());
-        //TODO: POISONOUS_POTATO
+        self::registerItem(new PoisonousPotato());
         //TODO: EMPTYMAP
         self::registerItem(new GoldenCarrot());
         self::registerItem(new ItemBlock(Block::SKULL_BLOCK, 0, Item::SKULL));
@@ -194,9 +195,9 @@ class ItemFactory{
         //TODO: HOPPER_MINECART
         self::registerItem(new Item(Item::PRISMARINE_SHARD, 0, "Prismarine Shard"));
         self::registerItem(new ItemBlock(Block::HOPPER_BLOCK, 0, Item::HOPPER));
-        //TODO: RABBIT
+        self::registerItem(new RawRabbit());
         self::registerItem(new CookedRabbit());
-        //TODO: RABBIT_STEW
+        self::registerItem(new RabbitStew());
         self::registerItem(new Item(Item::RABBIT_FOOT, 0, "Rabbit's Foot"));
         self::registerItem(new Item(Item::RABBIT_HIDE, 0, "Rabbit Hide"));
         //TODO: HORSEARMORLEATHER
@@ -206,8 +207,8 @@ class ItemFactory{
         //TODO: LEAD
         //TODO: NAMETAG
         self::registerItem(new Item(Item::PRISMARINE_CRYSTALS, 0, "Prismarine Crystals"));
-        //TODO: MUTTONRAW
-        //TODO: COOKED_MUTTON
+        self::registerItem(new RawMutton());
+        self::registerItem(new CookedMutton());
         self::registerItem(new ArmorStand());
         //TODO: END_CRYSTAL
         self::registerItem(new ItemBlock(Block::SPRUCE_DOOR_BLOCK, 0, Item::SPRUCE_DOOR));
@@ -218,7 +219,7 @@ class ItemFactory{
         self::registerItem(new ChorusFruit());
         self::registerItem(new Item(Item::CHORUS_FRUIT_POPPED, 0, "Popped Chorus Fruit"));
 
-        //TODO: DRAGON_BREATH
+        self::registerItem(new Item(Item::DRAGON_BREATH, 0, "Dragon's Breath"));
         self::registerItem(new SplashPotion());
 
         //TODO: LINGERING_POTION
@@ -235,10 +236,10 @@ class ItemFactory{
         self::registerItem(new Beetroot());
         self::registerItem(new BeetrootSeeds());
         self::registerItem(new BeetrootSoup());
-        //TODO: RAW_SALMON
-        //TODO: CLOWNFISH
-        //TODO: PUFFERFISH
-        //TODO: COOKED_SALMON
+        self::registerItem(new RawSalmon());
+        self::registerItem(new Clownfish());
+        self::registerItem(new Pufferfish());
+        self::registerItem(new CookedSalmon());
 
         self::registerItem(new GoldenAppleEnchanted());
 
