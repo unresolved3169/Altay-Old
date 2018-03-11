@@ -24,11 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\event\inventory;
 
+use pocketmine\event\Cancellable;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 use pocketmine\Player;
 
-class InventoryClickEvent extends InventoryEvent{
+class InventoryClickEvent extends InventoryEvent implements Cancellable{
     public static $handlerList = null;
 
     /** @var Player */
