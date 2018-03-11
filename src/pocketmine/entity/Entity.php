@@ -37,6 +37,7 @@ use pocketmine\entity\object\FallingBlock;
 use pocketmine\entity\object\Painting;
 use pocketmine\entity\object\PrimedTNT;
 use pocketmine\entity\object\ItemEntity;
+use pocketmine\entity\passive\Rabbit;
 use pocketmine\entity\passive\Squid;
 use pocketmine\entity\passive\Villager;
 use pocketmine\entity\projectile\Arrow;
@@ -255,6 +256,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(ItemEntity::class, false, ['Item', 'minecraft:item']);
 		Entity::registerEntity(Painting::class, false, ['Painting', 'minecraft:painting']);
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
+		Entity::registerEntity(Rabbit::class, false, ['Rabbit', 'minecraft:rabbit']);
 		Entity::registerEntity(SplashPotion::class, false, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
 		Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:snowball']);
 		Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);

@@ -65,6 +65,7 @@ class TemptedBehavior extends Behavior{
 
         /** @var Player|null $player */
         $player = $this->mob->level->getNearestEntity($this->mob, $this->lookDistance, Player::class);
+        if($player === null) return false;
         $player = $player->getInventory()->getItemInHand()->equals($this->temptingItem) ? $player : null;
 
         if($player === null) return false;
