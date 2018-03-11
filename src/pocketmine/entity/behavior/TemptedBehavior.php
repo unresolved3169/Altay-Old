@@ -25,6 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
+use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -34,7 +35,7 @@ class TemptedBehavior extends Behavior{
     protected $lookDistance;
     /** @var float */
     protected $speedMultiplier;
-    /** @var string */
+    /** @var Item */
     protected $temptingItem;
     /** @var int */
     protected $coolDown;
@@ -47,9 +48,10 @@ class TemptedBehavior extends Behavior{
     /** @var Path */
     protected $currentPath = null;
 
-    public function __construct(Mob $mob, string $temptingItem, float $lookDistance, float $speedMultiplier){
+    public function __construct(Mob $mob, Item $temptingItem, float $lookDistance, float $speedMultiplier){
         parent::__construct($mob);
 
+        $this->temptingItem = $temptingItem;
         $this->speedMultiplier = $speedMultiplier;
         $this->lookDistance = $lookDistance;
         $this->speedMultiplier = $speedMultiplier;
@@ -61,8 +63,9 @@ class TemptedBehavior extends Behavior{
             return false;
         }
 
-        /** @var Player $player */
-        $player = null; // TODO : Emrenin verdiğini koy
+        /** @var Player|null $player */
+        $player = $this->mob->level->getNearestEntity($this->mob, $this->lookDistance, Player::class);
+        $player = $player->getInventory()->getItemInHand()->equals($this->temptingItem) ? $player : null;
 
         if($player === null) return false;
 

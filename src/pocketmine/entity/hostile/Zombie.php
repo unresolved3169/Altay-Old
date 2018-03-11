@@ -22,8 +22,10 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\hostile;
 
+use pocketmine\entity\Ageable;
+use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\entity\behavior\{

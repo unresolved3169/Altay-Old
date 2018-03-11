@@ -21,7 +21,11 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\passive;
+
+use pocketmine\entity\Ageable;
+use pocketmine\entity\Creature;
+use pocketmine\entity\NPC;
 
 class Villager extends Creature implements NPC, Ageable{
 	public const PROFESSION_FARMER = 0;
