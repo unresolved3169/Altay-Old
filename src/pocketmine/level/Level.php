@@ -52,7 +52,6 @@ use pocketmine\level\format\EmptySubChunk;
 use pocketmine\level\format\io\BaseLevelProvider;
 use pocketmine\level\format\io\ChunkRequestTask;
 use pocketmine\level\format\io\LevelProvider;
-use pocketmine\level\generator\GenerationTask;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\generator\GeneratorRegisterTask;
 use pocketmine\level\generator\GeneratorUnregisterTask;
@@ -209,10 +208,6 @@ class Level implements ChunkManager, Metadatable{
 	private $chunkPopulationQueue = [];
 	/** @var bool[] */
 	private $chunkPopulationLock = [];
-	/** @var bool[] */
-	private $chunkGenerationQueue = [];
-	/** @var int */
-	private $chunkGenerationQueueSize = 8;
 	/** @var int */
 	private $chunkPopulationQueueSize = 2;
 
@@ -262,31 +257,29 @@ class Level implements ChunkManager, Metadatable{
 	/** @var bool */
 	private $closed = false;
 
-
-
-	public static function chunkHash(int $x, int $z){
+	public static function chunkHash(int $x, int $z) : int{
 		return (($x & 0xFFFFFFFF) << 32) | ($z & 0xFFFFFFFF);
 	}
 
-	public static function blockHash(int $x, int $y, int $z){
+	public static function blockHash(int $x, int $y, int $z) : int{
 		if($y < 0 or $y >= Level::Y_MAX){
 			throw new \InvalidArgumentException("Y coordinate $y is out of range!");
 		}
 		return (($x & 0xFFFFFFF) << 36) | (($y & Level::Y_MASK) << 28) | ($z & 0xFFFFFFF);
 	}
 
-	public static function getBlockXYZ($hash, &$x, &$y, &$z){
+	public static function getBlockXYZ(int $hash, ?int &$x, ?int &$y, ?int &$z) : void{
 		$x = $hash >> 36;
 		$y = ($hash >> 28) & Level::Y_MASK; //it's always positive
 		$z = ($hash & 0xFFFFFFF) << 36 >> 36;
 	}
 
-	/**
-	 * @param string|int $hash
-	 * @param int|null   $x
-	 * @param int|null   $z
-	 */
-	public static function getXZ($hash, &$x, &$z){
+    /**
+     * @param int      $hash
+     * @param int|null $x
+     * @param int|null $z
+     */
+    public static function getXZ(int $hash, ?int &$x, ?int &$z) : void{
 		$x = $hash >> 32;
 		$z = ($hash & 0xFFFFFFFF) << 32 >> 32;
 	}
@@ -371,7 +364,6 @@ class Level implements ChunkManager, Metadatable{
 
 		$this->chunkTickRadius = min($this->server->getViewDistance(), max(1, (int) $this->server->getProperty("chunk-ticking.tick-radius", 4)));
 		$this->chunksPerTick = (int) $this->server->getProperty("chunk-ticking.per-tick", 40);
-		$this->chunkGenerationQueueSize = (int) $this->server->getProperty("chunk-generation.queue-size", 8);
 		$this->chunkPopulationQueueSize = (int) $this->server->getProperty("chunk-generation.population-queue-size", 2);
 		$this->clearChunksOnTick = (bool) $this->server->getProperty("chunk-ticking.clear-tick-list", true);
 
@@ -2444,8 +2436,7 @@ class Level implements ChunkManager, Metadatable{
 					$loader->onChunkPopulated($chunk);
 				}
 			}
-		}elseif(isset($this->chunkGenerationQueue[$index]) or isset($this->chunkPopulationLock[$index])){
-			unset($this->chunkGenerationQueue[$index]);
+		}elseif(isset($this->chunkPopulationLock[$index])){
 			unset($this->chunkPopulationLock[$index]);
 			$this->setChunk($x, $z, $chunk, false);
 		}else{
@@ -3072,29 +3063,6 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		return true;
-	}
-
-	public function generateChunk(int $x, int $z, bool $force = false){
-		if(count($this->chunkGenerationQueue) >= $this->chunkGenerationQueueSize and !$force){
-			return;
-		}
-
-		if(!isset($this->chunkGenerationQueue[$index = Level::chunkHash($x, $z)])){
-			Timings::$generationTimer->startTiming();
-			$this->chunkGenerationQueue[$index] = true;
-			$task = new GenerationTask($this, $this->getChunk($x, $z, true));
-			$this->server->getScheduler()->scheduleAsyncTask($task);
-			Timings::$generationTimer->stopTiming();
-		}
-	}
-
-	public function regenerateChunk(int $x, int $z){
-		$this->unloadChunk($x, $z, false);
-
-		$this->cancelUnloadChunkRequest($x, $z);
-
-		$this->generateChunk($x, $z);
-		//TODO: generate & refresh chunk from the generator object
 	}
 
 	public function doChunkGarbageCollection(){

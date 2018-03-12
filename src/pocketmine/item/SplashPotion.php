@@ -43,4 +43,8 @@ class SplashPotion extends ProjectileItem{
     protected function addExtraTags(CompoundTag $tag) : void{
         $tag->setShort("PotionId", $this->meta);
     }
+
+    public function getMaxStackSize(): int{
+        return 1;
+    }
 }
