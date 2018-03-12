@@ -35,8 +35,8 @@ class TemptedBehavior extends Behavior{
     protected $lookDistance;
     /** @var float */
     protected $speedMultiplier;
-    /** @var Item */
-    protected $temptingItem;
+    /** @var Item[] */
+    protected $temptItems;
     /** @var int */
     protected $coolDown;
     /** @var Player */
@@ -48,10 +48,17 @@ class TemptedBehavior extends Behavior{
     /** @var Path */
     protected $currentPath = null;
 
-    public function __construct(Mob $mob, Item $temptingItem, float $lookDistance, float $speedMultiplier){
+    /**
+     * TemptedBehavior constructor.
+     * @param Mob    $mob
+     * @param Item[] $temptItems
+     * @param float  $lookDistance
+     * @param float  $speedMultiplier
+     */
+    public function __construct(Mob $mob, array $temptItems, float $lookDistance, float $speedMultiplier){
         parent::__construct($mob);
 
-        $this->temptingItem = $temptingItem;
+        $this->temptItems = $temptItems;
         $this->speedMultiplier = $speedMultiplier;
         $this->lookDistance = $lookDistance;
         $this->speedMultiplier = $speedMultiplier;
@@ -66,7 +73,7 @@ class TemptedBehavior extends Behavior{
         /** @var Player|null $player */
         $player = $this->mob->level->getNearestEntity($this->mob, $this->lookDistance, Player::class);
         if($player === null) return false;
-        $player = $player->getInventory()->getItemInHand()->equals($this->temptingItem) ? $player : null;
+        $player = $this->containTempItems($player) ? $player : null;
 
         if($player === null) return false;
 
@@ -77,6 +84,17 @@ class TemptedBehavior extends Behavior{
         }
 
         return true;
+    }
+
+    public function containTempItems(Player $player) : bool{
+        $handItem = $player->getInventory()->getItemInHand();
+        foreach($this->temptItems as $temptItem){
+            if($handItem->equals($temptItem)){
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function canContinue() : bool{

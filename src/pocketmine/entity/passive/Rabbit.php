@@ -36,41 +36,30 @@ use pocketmine\item\ItemFactory;
 class Rabbit extends Animal{
     public const NETWORK_ID = self::RABBIT;
 
-    public $width = 0.4;
-    public $height = 0.5;
+    public $width = 0.67;
+    public $height = 0.67;
+    protected $jumpVelocity = 0.50;
 
-    public const TYPE_BROWN = 0;
-    public const TYPE_WHITE = 1;
-    public const TYPE_BLACK = 2;
-    public const TYPE_BLACK_WHITE = 3;
-    public const TYPE_GOLD = 4;
-    public const TYPE_SALT_PEPPER = 5;
-    public const TYPE_KILLER_BUNNY = 99;
+    public const COAT_BROWN = 0;
+    public const COAT_WHITE = 1;
+    public const COAT_BLACK = 2;
+    public const COAT_SPLOTCHED = 3;
+    public const COAT_DESERT = 4;
+    public const COAT_SALT = 5;
 
     protected function initEntity(){
-        if($this->isBaby()){
-            $this->height /= 2;
-            $this->width /= 2;
-        }
-
         $this->setHealth(3);
-        $this->setMovementSpeed(0.3);
 
         parent::initEntity();
 
-        /** @var int $rabbitType */
-        $rabbitType = $this->namedtag->getInt("Variant", $this->getRandomRabbitType());
+        /** @var int $coat */
+        $coat = $this->namedtag->getInt("Variant", mt_rand(0, 5));
 
-        if(($rabbitType !== self::TYPE_KILLER_BUNNY) and ($rabbitType > 5 or $rabbitType < 0)){
-            $rabbitType = $this->getRandomRabbitType();
+        if($coat > 5 or $coat < 0){
+            $coat = mt_rand(0, 5);
         }
 
-        $this->setRabbitType($rabbitType);
-    }
-
-    public function getRandomRabbitType() : int{
-        // TODO : Biyoma göre değişiklik gösteriyor
-        return mt_rand(0, 5);
+        $this->setCoat($coat);
     }
 
     public function getName(): string{
@@ -80,17 +69,21 @@ class Rabbit extends Animal{
     protected function getNormalBehaviors(): array{
         return [
             new PanicBehavior($this, 60, $this->getMovementSpeed(), 2.2),
-            new TemptedBehavior($this, ItemFactory::get(Item::CARROT), 8.0, 1.0),
+            new TemptedBehavior($this, [
+                ItemFactory::get(Item::CARROT),
+                ItemFactory::get(Item::GOLDEN_CARROT),
+                ItemFactory::get(Item::YELLOW_FLOWER)
+            ], 8.0, 1.0),
             new WanderBehavior($this, 0.6),
             new LookAtPlayerBehavior($this)
         ];
     }
 
-    public function setRabbitType(int $type){
-        $this->propertyManager->setInt(self::DATA_VARIANT, $type);
+    public function setCoat(int $coat){
+        $this->propertyManager->setInt(self::DATA_VARIANT, $coat);
     }
 
-    public function getRabbitType() : int{
+    public function getCoat() : int{
         return $this->propertyManager->getInt(self::DATA_VARIANT);
     }
 
