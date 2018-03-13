@@ -1045,7 +1045,7 @@ class Server{
 		$provider = LevelProviderManager::getProvider($path);
 
 		if($provider === null){
-			$this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, "Unknown provider"]));
+            $this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, "Cannot identify format of world"]));
 
 			return false;
 		}
@@ -1154,19 +1154,18 @@ class Server{
 	 * @return bool
 	 */
 	public function isLevelGenerated(string $name) : bool{
-		if(trim($name) === ""){
-			return false;
-		}
-		$path = $this->getDataPath() . "worlds/" . $name . "/";
-		if(!($this->getLevelByName($name) instanceof Level)){
+	    if(trim($name) === ""){
+	        return false;
+	    }
+        $path = $this->getDataPath() . "worlds/" . $name . "/";
+        if(!($this->getLevelByName($name) instanceof Level)){
+            return is_dir($path) and !empty(array_filter(scandir($path, SCANDIR_SORT_NONE), function ($v){
+                    return $v !== ".." and $v !== ".";
+                }));
+        }
 
-			if(LevelProviderManager::getProvider($path) === null){
-				return false;
-			}
-		}
-
-		return true;
-	}
+        return true;
+    }
 
 	/**
 	 * Searches all levels for the entity with the specified ID.
