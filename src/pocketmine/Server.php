@@ -35,8 +35,6 @@ use pocketmine\command\ConsoleCommandSender;
 use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
-use pocketmine\entity\Attribute;
-use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Skin;
 use pocketmine\event\HandlerList;
