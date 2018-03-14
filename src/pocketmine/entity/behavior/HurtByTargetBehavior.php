@@ -31,7 +31,8 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 
     public function canStart() : bool{
-        return $this->getLastAttackSource() instanceof Player;
+        $player = $this->getLastAttackSource();
+        return $player instanceof Player and $player->isSurvival();
     }
 
     public function onStart(): void{

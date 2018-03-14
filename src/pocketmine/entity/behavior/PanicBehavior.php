@@ -29,4 +29,13 @@ class PanicBehavior extends StrollBehavior{
 	public function canStart() : bool{
 		return $this->mob->getLastDamageCause() !== null;
 	}
+	
+	public function canContinue() : bool{
+		return parent::canContinue() and $this->mob->getLastDamageCause() !== null;
+	}
+	
+	public function onEnd() : void{
+		$this->mob->setLastDamageCause(null);
+		parent::onEnd();
+	}
 }
