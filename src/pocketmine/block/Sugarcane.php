@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -25,7 +26,6 @@ namespace pocketmine\block;
 
 use pocketmine\event\block\BlockGrowEvent;
 use pocketmine\item\Item;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -42,10 +42,6 @@ class Sugarcane extends Flowable{
 
 	public function getName() : string{
 		return "Sugarcane";
-	}
-
-	public function ticksRandomly() : bool{
-		return true;
 	}
 
 	public function onActivate(Item $item, Player $player = null) : bool{
@@ -73,36 +69,34 @@ class Sugarcane extends Flowable{
 		return false;
 	}
 
-	public function onUpdate(int $type){
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			$down = $this->getSide(Vector3::SIDE_DOWN);
-			if($down->isTransparent() === true and $down->getId() !== self::SUGARCANE_BLOCK){
-				$this->getLevel()->useBreakOn($this);
+	public function onNearbyBlockChange() : void{
+		$down = $this->getSide(Vector3::SIDE_DOWN);
+		if($down->isTransparent() and $down->getId() !== self::SUGARCANE_BLOCK){
+			$this->getLevel()->useBreakOn($this);
+		}
+	}
 
-				return Level::BLOCK_UPDATE_NORMAL;
-			}
-		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
-			if($this->getSide(Vector3::SIDE_DOWN)->getId() !== self::SUGARCANE_BLOCK){
-				if($this->meta === 0x0F){
-					for($y = 1; $y < 3; ++$y){
-						$b = $this->getLevel()->getBlockAt($this->x, $this->y + $y, $this->z);
-						if($b->getId() === self::AIR){
-							$this->getLevel()->setBlock($b, BlockFactory::get(Block::SUGARCANE_BLOCK), true);
-							break;
-						}
+	public function ticksRandomly() : bool{
+		return true;
+	}
+
+	public function onRandomTick() : void{
+		if($this->getSide(Vector3::SIDE_DOWN)->getId() !== self::SUGARCANE_BLOCK){
+			if($this->meta === 0x0F){
+				for($y = 1; $y < 3; ++$y){
+					$b = $this->getLevel()->getBlockAt($this->x, $this->y + $y, $this->z);
+					if($b->getId() === self::AIR){
+						$this->getLevel()->setBlock($b, BlockFactory::get(Block::SUGARCANE_BLOCK), true);
+						break;
 					}
-					$this->meta = 0;
-					$this->getLevel()->setBlock($this, $this, true);
-				}else{
-					++$this->meta;
-					$this->getLevel()->setBlock($this, $this, true);
 				}
-
-				return Level::BLOCK_UPDATE_RANDOM;
+				$this->meta = 0;
+				$this->getLevel()->setBlock($this, $this, true);
+			}else{
+				++$this->meta;
+				$this->getLevel()->setBlock($this, $this, true);
 			}
 		}
-
-		return false;
 	}
 
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{

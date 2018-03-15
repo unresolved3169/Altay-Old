@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -25,7 +26,6 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
-use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -59,10 +59,6 @@ class Vine extends Flowable{
 	}
 
 	public function canClimb() : bool{
-		return true;
-	}
-
-	public function ticksRandomly() : bool{
 		return true;
 	}
 
@@ -157,42 +153,42 @@ class Vine extends Flowable{
 		return true;
 	}
 
-	public function onUpdate(int $type){
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			$sides = [
-				self::FLAG_SOUTH => Vector3::SIDE_SOUTH,
-				self::FLAG_WEST => Vector3::SIDE_WEST,
-				self::FLAG_NORTH => Vector3::SIDE_NORTH,
-				self::FLAG_EAST => Vector3::SIDE_EAST
-			];
+	public function onNearbyBlockChange() : void{
+		$sides = [
+			self::FLAG_SOUTH => Vector3::SIDE_SOUTH,
+			self::FLAG_WEST => Vector3::SIDE_WEST,
+			self::FLAG_NORTH => Vector3::SIDE_NORTH,
+			self::FLAG_EAST => Vector3::SIDE_EAST
+		];
 
-			$meta = $this->meta;
+		$meta = $this->meta;
 
-			foreach($sides as $flag => $side){
-				if(($meta & $flag) === 0){
-					continue;
-				}
-
-				if(!$this->getSide($side)->isSolid()){
-					$meta &= ~$flag;
-				}
+		foreach($sides as $flag => $side){
+			if(($meta & $flag) === 0){
+				continue;
 			}
 
-			if($meta !== $this->meta){
-				if($meta === 0){
-					$this->level->useBreakOn($this);
-				}else{
-					$this->meta = $meta;
-					$this->level->setBlock($this, $this);
-				}
-
-				return Level::BLOCK_UPDATE_NORMAL;
+			if(!$this->getSide($side)->isSolid()){
+				$meta &= ~$flag;
 			}
-		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
-			//TODO: vine growth
 		}
 
-		return false;
+		if($meta !== $this->meta){
+			if($meta === 0){
+				$this->level->useBreakOn($this);
+			}else{
+				$this->meta = $meta;
+				$this->level->setBlock($this, $this);
+			}
+		}
+	}
+
+	public function ticksRandomly() : bool{
+		return true;
+	}
+
+	public function onRandomTick() : void{
+		//TODO: vine growth
 	}
 
 	public function getVariantBitmask() : int{
