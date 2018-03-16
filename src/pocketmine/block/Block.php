@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -278,6 +279,12 @@ class Block extends Position implements BlockIds, Metadatable{
 		return $base;
 	}
 
+	/**
+	 * Called when this block or a block immediately adjacent to it changes state.
+	 */
+	public function onNearbyBlockChange() : void{
+
+	}
 
 	/**
 	 * Returns whether random block updates will be done on this block.
@@ -289,14 +296,18 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
-	 * Fires a block update on the Block
-	 *
-	 * @param int $type
-	 *
-	 * @return bool|int
+	 * Called when this block is randomly updated due to chunk ticking.
+	 * WARNING: This will not be called if ticksRandomly() does not return true!
 	 */
-	public function onUpdate(int $type){
-		return false;
+	public function onRandomTick() : void{
+
+	}
+
+	/**
+	 * Called when this block is updated by the delayed blockupdate scheduler in the level.
+	 */
+	public function onScheduledUpdate() : void{
+
 	}
 
 	/**
@@ -558,9 +569,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	 * @return bool
 	 */
 	public function collidesWithBB(AxisAlignedBB $bb) : bool{
-		$bbs = $this->getCollisionBoxes();
-
-		foreach($bbs as $bb2){
+		foreach($this->getCollisionBoxes() as $bb2){
 			if($bb->intersectsWith($bb2)){
 				return true;
 			}

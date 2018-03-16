@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -46,15 +47,18 @@ use pocketmine\tile\Container;
 use pocketmine\tile\Tile;
 
 class Explosion{
-
-	private $rays = 16; //Rays
+	/** @var int */
+	private $rays = 16;
+	/** @var Level */
 	public $level;
+	/** @var Position */
 	public $source;
+	/** @var float */
 	public $size;
-	/**
-	 * @var Block[]
-	 */
+
+	/** @var Block[] */
 	public $affectedBlocks = [];
+	/** @var float */
 	public $stepLen = 0.3;
 	/** @var Entity|Block */
 	private $what;
@@ -62,12 +66,24 @@ class Explosion{
 	/** @var SubChunkIteratorManager */
 	private $subChunkHandler;
 
-	public function __construct(Position $center, $size, $what = null){
-		$this->level = $center->getLevel();
+	/**
+	 * @param Position     $center
+	 * @param float        $size
+	 * @param Entity|Block $what
+	 */
+	public function __construct(Position $center, float $size, $what = null){
 		$this->source = $center;
-		$this->size = max($size, 0);
-		$this->what = $what;
+		$this->level = $center->getLevel();
+		if($this->level === null){
+			throw new \InvalidArgumentException("Position does not have a valid level");
+		}
 
+		if($size <= 0){
+			throw new \InvalidArgumentException("Explosion radius must be greater than 0, got $size");
+		}
+		$this->size = $size;
+
+		$this->what = $what;
 		$this->subChunkHandler = new SubChunkIteratorManager($this->level, false);
 	}
 
@@ -221,7 +237,7 @@ class Explosion{
 				if(!isset($this->affectedBlocks[$index = Level::blockHash($sideBlock->x, $sideBlock->y, $sideBlock->z)]) and !isset($updateBlocks[$index])){
 					$this->level->getServer()->getPluginManager()->callEvent($ev = new BlockUpdateEvent($this->level->getBlockAt($sideBlock->x, $sideBlock->y, $sideBlock->z)));
 					if(!$ev->isCancelled()){
-						$ev->getBlock()->onUpdate(Level::BLOCK_UPDATE_NORMAL);
+						$ev->getBlock()->onNearbyBlockChange();
 					}
 					$updateBlocks[$index] = true;
 				}

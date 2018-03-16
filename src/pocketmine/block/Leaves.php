@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -26,7 +27,6 @@ namespace pocketmine\block;
 use pocketmine\event\block\LeavesDecayEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -67,9 +67,6 @@ class Leaves extends Transparent{
 		return true;
 	}
 
-	public function ticksRandomly() : bool{
-		return true;
-	}
 
 	protected function findLog(Block $pos, array $visited, $distance, &$check, $fromSide = null){
 		++$check;
@@ -136,31 +133,31 @@ class Leaves extends Transparent{
 		return false;
 	}
 
-	public function onUpdate(int $type){
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if(($this->meta & 0b00001100) === 0){
-				$this->meta |= 0x08;
-				$this->getLevel()->setBlock($this, $this, true, false);
-			}
-		}elseif($type === Level::BLOCK_UPDATE_RANDOM){
-			if(($this->meta & 0b00001100) === 0x08){
-				$this->meta &= 0x03;
-				$visited = [];
-				$check = 0;
+	public function onNearbyBlockChange() : void{
+		if(($this->meta & 0b00001100) === 0){
+			$this->meta |= 0x08;
+			$this->getLevel()->setBlock($this, $this, true, false);
+		}
+	}
 
-				$this->getLevel()->getServer()->getPluginManager()->callEvent($ev = new LeavesDecayEvent($this));
+	public function ticksRandomly() : bool{
+		return true;
+	}
 
-				if($ev->isCancelled() or $this->findLog($this, $visited, 0, $check) === true){
-					$this->getLevel()->setBlock($this, $this, false, false);
-				}else{
-					$this->getLevel()->useBreakOn($this);
+	public function onRandomTick() : void{
+		if(($this->meta & 0b00001100) === 0x08){
+			$this->meta &= 0x03;
+			$visited = [];
+			$check = 0;
 
-					return Level::BLOCK_UPDATE_NORMAL;
-				}
+			$this->getLevel()->getServer()->getPluginManager()->callEvent($ev = new LeavesDecayEvent($this));
+
+			if($ev->isCancelled() or $this->findLog($this, $visited, 0, $check) === true){
+				$this->getLevel()->setBlock($this, $this, false, false);
+			}else{
+				$this->getLevel()->useBreakOn($this);
 			}
 		}
-
-		return false;
 	}
 
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{

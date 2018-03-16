@@ -1655,9 +1655,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function setMotion(Vector3 $mot){
 		if(parent::setMotion($mot)){
-			if($this->chunk !== null){
-				$this->broadcastMotion();
-			}
+		    $this->broadcastMotion();
 
 			if($this->motionY > 0){
 				$this->startAirTicks = (-log($this->gravity / ($this->gravity + $this->drag * $this->motionY)) / $this->drag) * 2 + 5;
@@ -1771,7 +1769,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return 0.0;
 	}
 
-	public function canBreathe() : bool{
+	public function isHungry() : bool{
+        return $this->isSurvival() and parent::isHungry();
+    }
+
+    public function canBreathe() : bool{
 		return $this->isCreative() or parent::canBreathe();
 	}
 
@@ -2948,7 +2950,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->resetCraftingGridType();
 
 		$pos = new Vector3($packet->x, $packet->y, $packet->z);
-		if($pos->distanceSquared($this) > 10000){
+		if($pos->distanceSquared($this) > 10000 or $this->level->checkSpawnProtection($this, $pos)){
 			return true;
 		}
 

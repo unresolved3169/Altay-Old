@@ -1549,12 +1549,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return true;
 	}
 
-	public function move(float $dx, float $dy, float $dz) : bool{
+	public function move(float $dx, float $dy, float $dz) : void{
 		$this->blocksAround = null;
-
-		if($dx == 0 and $dz == 0 and $dy == 0){
-			return true;
-		}
 
 		Timings::$entityMoveTimer->startTiming();
 
@@ -1699,8 +1695,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		//TODO: vehicle collision events (first we need to spawn them!)
 
 		Timings::$entityMoveTimer->stopTiming();
-
-		return true;
 	}
 
 	protected function checkGroundState(float $movX, float $movY, float $movZ, float $dx, float $dy, float $dz){

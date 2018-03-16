@@ -154,7 +154,7 @@ abstract class Projectile extends Entity{
 		return $parent;
 	}
 
-	public function move(float $dx, float $dy, float $dz) : bool{
+	public function move(float $dx, float $dy, float $dz) : void{
 		$this->blocksAround = null;
 
 		Timings::$entityMoveTimer->startTiming();
@@ -247,8 +247,6 @@ abstract class Projectile extends Entity{
 
 
 		Timings::$entityMoveTimer->stopTiming();
-
-		return true;
 	}
 
 	/**
