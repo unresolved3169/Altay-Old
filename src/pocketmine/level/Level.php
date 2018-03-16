@@ -3094,4 +3094,8 @@ class Level implements ChunkManager, Metadatable{
 	public function removeMetadata(string $metadataKey, Plugin $owningPlugin){
 		$this->server->getLevelMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
 	}
+
+	public function getRandom() : Random{
+	    return $this->random;
+	}
 }
