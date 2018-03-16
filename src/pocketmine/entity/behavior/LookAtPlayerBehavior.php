@@ -35,7 +35,8 @@ class LookAtPlayerBehavior extends Behavior{
 	protected $player;
 	/** @var int */
 	protected $duration = 0;
-	
+
+	// TODO : probability (olasılık)
 	public function __construct(Mob $mob, float $lookDistance = 6.0){
         parent::__construct($mob);
 

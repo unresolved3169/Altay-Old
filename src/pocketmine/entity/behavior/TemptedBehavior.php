@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
-use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
@@ -35,7 +34,7 @@ class TemptedBehavior extends Behavior{
     protected $lookDistance;
     /** @var float */
     protected $speedMultiplier;
-    /** @var Item[] */
+    /** @var int[] */
     protected $temptItems;
     /** @var int */
     protected $coolDown;
@@ -51,14 +50,14 @@ class TemptedBehavior extends Behavior{
     /**
      * TemptedBehavior constructor.
      * @param Mob    $mob
-     * @param Item[] $temptItems
+     * @param int[]  $temptItemIds
      * @param float  $lookDistance
      * @param float  $speedMultiplier
      */
-    public function __construct(Mob $mob, array $temptItems, float $lookDistance, float $speedMultiplier){
+    public function __construct(Mob $mob, array $temptItemIds, float $lookDistance, float $speedMultiplier){
         parent::__construct($mob);
 
-        $this->temptItems = $temptItems;
+        $this->temptItems = $temptItemIds;
         $this->speedMultiplier = $speedMultiplier;
         $this->lookDistance = $lookDistance;
         $this->speedMultiplier = $speedMultiplier;
@@ -89,7 +88,7 @@ class TemptedBehavior extends Behavior{
     public function containTempItems(Player $player) : bool{
         $handItem = $player->getInventory()->getItemInHand();
         foreach($this->temptItems as $temptItem){
-            if($handItem->equals($temptItem)){
+            if($temptItem == $handItem->getId()){
                 return true;
             }
         }

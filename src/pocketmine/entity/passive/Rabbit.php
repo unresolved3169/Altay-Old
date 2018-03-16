@@ -70,9 +70,9 @@ class Rabbit extends Animal{
         return [
             new PanicBehavior($this, 60, $this->getMovementSpeed(), 2.2),
             new TemptedBehavior($this, [
-                ItemFactory::get(Item::CARROT),
-                ItemFactory::get(Item::GOLDEN_CARROT),
-                ItemFactory::get(Item::YELLOW_FLOWER)
+                Item::CARROT,
+                Item::GOLDEN_CARROT,
+                Item::YELLOW_FLOWER
             ], 8.0, 1.0),
             new WanderBehavior($this, 0.6),
             new LookAtPlayerBehavior($this)
