@@ -37,13 +37,14 @@ use pocketmine\item\ItemFactory;
 
 // TODO : Saddle
 class Pig extends Animal implements Rideable{
-    const NETWORK_ID = self::PIG;
+    public const NETWORK_ID = self::PIG;
 
     public $width = 0.9;
     public $height = 0.9;
 
     protected function initEntity(){
         $this->setMaxHealth(10);
+        $this->setImmobile();
         parent::initEntity();
     }
 

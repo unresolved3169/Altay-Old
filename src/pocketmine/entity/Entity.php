@@ -30,6 +30,7 @@ namespace pocketmine\entity;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\Water;
+use pocketmine\entity\hostile\Skeleton;
 use pocketmine\entity\hostile\Zombie;
 use pocketmine\entity\object\ArmorStand;
 use pocketmine\entity\object\ExperienceOrb;
@@ -259,9 +260,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
 		Entity::registerEntity(Pig::class, false, ['Pig', 'minecraft:pig']);
 		Entity::registerEntity(Rabbit::class, false, ['Rabbit', 'minecraft:rabbit']);
-		Entity::registerEntity(SplashPotion::class, false, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
-		Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:snowball']);
-		Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);
+        Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:skeleton']);
+        Entity::registerEntity(Skeleton::class, false, ['Skeleton', 'minecraft:snowball']);
+        Entity::registerEntity(SplashPotion::class, false, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
+        Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);
 		Entity::registerEntity(Villager::class, false, ['Villager',	'minecraft:villager']);
 		Entity::registerEntity(Zombie::class, false, ['Zombie',	'minecraft:zombie']);
 
