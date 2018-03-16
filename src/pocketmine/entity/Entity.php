@@ -30,6 +30,7 @@ namespace pocketmine\entity;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\Water;
+use pocketmine\entity\behaviors\EntityProperties;
 use pocketmine\entity\hostile\Zombie;
 use pocketmine\entity\object\ArmorStand;
 use pocketmine\entity\object\ExperienceOrb;
@@ -266,6 +267,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
         Effect::init();
         Attribute::init();
         PaintingMotive::init();
+        EntityProperties::init();
 	}
 
 
