@@ -24,8 +24,9 @@ declare(strict_types=1);
 namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\math\Vector3;
 
-abstract class WaterAnimal extends Creature implements Ageable{
+abstract class WaterAnimal extends Mob implements Ageable{
 
 	public function isBaby() : bool{
 		return $this->getGenericFlag(self::DATA_FLAG_BABY);
@@ -39,4 +40,8 @@ abstract class WaterAnimal extends Creature implements Ageable{
 		$ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_SUFFOCATION, 2);
 		$this->attack($ev);
 	}
+
+    protected function generateRandomDirection() : Vector3{
+        return new Vector3(mt_rand(-1000, 1000) / 1000, mt_rand(-500, 500) / 1000, mt_rand(-1000, 1000) / 1000);
+    }
 }

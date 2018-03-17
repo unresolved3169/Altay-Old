@@ -69,11 +69,6 @@ class Squid extends WaterAnimal{
 		}
 	}
 
-	private function generateRandomDirection() : Vector3{
-		return new Vector3(mt_rand(-1000, 1000) / 1000, mt_rand(-500, 500) / 1000, mt_rand(-1000, 1000) / 1000);
-	}
-
-
 	public function entityBaseTick(int $tickDiff = 1) : bool{
 		if($this->closed !== false){
 			return false;
