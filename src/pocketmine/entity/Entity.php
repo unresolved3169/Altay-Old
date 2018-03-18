@@ -29,8 +29,9 @@ namespace pocketmine\entity;
 
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\block\Lava;
+use pocketmine\block\Liquid;
 use pocketmine\block\Water;
-use pocketmine\entity\behaviors\EntityProperties;
 use pocketmine\entity\hostile\Guardian;
 use pocketmine\entity\hostile\Zombie;
 use pocketmine\entity\object\ArmorStand;
@@ -271,7 +272,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
         Effect::init();
         Attribute::init();
         PaintingMotive::init();
-        EntityProperties::init();
 	}
 
 
@@ -1506,6 +1506,28 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return false;
 	}
 
+    public function isInsideOfLava() : bool{
+        $block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
+
+        if($block instanceof Lava){
+            $f = ($block->y + 1) - ($block->getFluidHeightPercent() - 0.1111111);
+            return $y < $f;
+        }
+
+        return false;
+    }
+
+    public function isInsideOfLiquid() : bool{
+        $block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
+
+        if($block instanceof Liquid){
+            $f = ($block->y + 1) - ($block->getFluidHeightPercent() - 0.1111111);
+            return $y < $f;
+        }
+
+        return false;
+    }
+
 	public function isInsideOfSolid() : bool{
 		$block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
 
@@ -2181,6 +2203,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
      */
     public function getMovementSpeed() : float{
         return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
+    }
+
+    public function getFollowRange() : float{
+        return $this->getAttributeMap()->getAttribute(Attribute::FOLLOW_RANGE)->getValue();
     }
 
 }
