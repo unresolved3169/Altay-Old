@@ -46,18 +46,15 @@ abstract class PathNavigate{
     /** @var null|Attribute */
     private $pathSearchRange;
 
-    /** Time, in number of ticks, following the current path */
+    /** @var int Time, in number of ticks, following the current path */
     private $totalTicks;
 
-    /**
-     * The time when the last position check was done (to detect successful movement)
-     */
+    /** @var int The time when the last position check was done (to detect successful movement) */
     private $ticksAtLastPos;
 
-    /**
-     * Coordinates of the entity's position last time a check was done (part of monitoring getting 'stuck')
-     */
+    /** @var Vector3 Coordinates of the entity's position last time a check was done (part of monitoring getting 'stuck') */
     private $lastPosCheck;
+    /** @var float */
     private $heightRequirement = 1.0;
     /** @var PathFinder */
     private $pathFinder;
@@ -90,10 +87,24 @@ abstract class PathNavigate{
         return $this->pathSearchRange->getValue();
     }
 
+    /**
+     * Returns the path to the given coordinates. Args : x, y, z
+     *
+     * @param float $x
+     * @param float $y
+     * @param float $z
+     * @return PathEntity
+     */
     public final function getPathToXYZ(float $x, float $y, float $z) : PathEntity{
         return $this->getPathToPos(new Vector3(Math::floorFloat($x), (int) $y, Math::floorFloat($z)));
     }
 
+    /**
+     * Returns path to given BlockPos
+     *
+     * @param Vector3 $v
+     * @return null|PathEntity
+     */
     public function getPathToPos(Vector3 $v){
         if(!$this->canNavigate()){
             return null;
@@ -103,15 +114,35 @@ abstract class PathNavigate{
         }
     }
 
+    /**
+     * Try to find and set a path to XYZ. Returns true if successful. Args : x, y, z, speed
+     *
+     * @param float $x
+     * @param float $y
+     * @param float $z
+     * @param float $speed
+     * @return bool
+     */
     public function tryMoveToXYZ(float $x, float $y, float $z, float $speed): bool{
         $pathEntity = $this->getPathToXYZ(Math::floorFloat($x), (int)$y, Math::floorFloat($z));
         return $this->setPath($pathEntity, $speed);
     }
 
+    /**
+     * Sets vertical space requirement for path
+     *
+     * @param float $jumpHeight
+     */
     public function setHeightRequirement(float $jumpHeight): void{
         $this->heightRequirement = $jumpHeight;
     }
 
+    /**
+     * Returns the path to the given EntityLiving. Args : entity
+     *
+     * @param Entity $entity
+     * @return PathEntity
+     */
     public function getPathToEntityLiving(Entity $entity): PathEntity{
         if(!$this->canNavigate()){
             return null;
@@ -121,11 +152,26 @@ abstract class PathNavigate{
         }
     }
 
+    /**
+     * Try to find and set a path to EntityLiving. Returns true if successful. Args : entity, speed
+     *
+     * @param Entity $entity
+     * @param float $speed
+     * @return bool
+     */
     public function tryMoveToEntityLiving(Entity $entity, float $speed) : bool{
         $pathentity = $this->getPathToEntityLiving($entity);
         return $pathentity != null ? $this->setPath($pathentity, $speed) : false;
     }
 
+    /**
+     * Sets a new path. If it's diferent from the old path. Checks to adjust path for sun avoiding, and stores start
+     * coords. Args : path, speed
+     *
+     * @param PathEntity $pathEntity
+     * @param float $speed
+     * @return bool
+     */
     public function setPath(PathEntity $pathEntity, float $speed) : bool{
         if($pathEntity == null){
             $this->currentPath = null;
@@ -148,6 +194,11 @@ abstract class PathNavigate{
         }
     }
 
+    /**
+     * Gets the actively used PathEntity
+     *
+     * @return PathEntity
+     */
     public function getPath() : PathEntity{
         return $this->currentPath;
     }
@@ -218,6 +269,11 @@ abstract class PathNavigate{
         $this->checkForStuck($v);
     }
 
+    /**
+     * Checks if entity haven't been moved when last checked and if so, clears current {@link PathEntity}
+     *
+     * @param Vector3 $pos
+     */
     protected function checkForStuck(Vector3 $pos) : void{
         if($this->totalTicks - $this->ticksAtLastPos > 100){
             if($pos->distanceSquared($this->lastPosCheck) < 2.25)
@@ -228,20 +284,47 @@ abstract class PathNavigate{
         }
     }
 
+    /**
+     * If null path or reached the end
+     *
+     * @return bool
+     */
     public function noPath() : bool{
         return $this->currentPath == null || $this->currentPath->isFinished();
     }
 
+    /**
+     * Sets active PathEntity to null
+     */
     public function clearPathEntity() : void{
         $this->currentPath = null;
     }
 
     protected abstract function getEntityPosition() : Vector3;
 
+    /**
+     * If on ground or swimming and can swim
+     *
+     * @return bool
+     */
     protected abstract function canNavigate() : bool;
 
+    /**
+     * Trims path data from the end to the first sun covered block
+     */
     protected function removeSunnyPath() : void{}
 
+    /**
+     * Returns true when an entity of specified size could safely walk in a straight line between the two points. Args:
+     * pos1, pos2, entityXSize, entityYSize, entityZSize
+     *
+     * @param Vector3 $pos
+     * @param Vector3 $pos2
+     * @param int $sizeX
+     * @param int $sizeY
+     * @param int $sizeZ
+     * @return bool
+     */
     protected abstract function isDirectPathBetweenPoints(Vector3 $pos, Vector3 $pos2, int $sizeX, int $sizeY, int $sizeZ) : bool;
 
 }

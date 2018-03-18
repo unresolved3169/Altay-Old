@@ -44,10 +44,30 @@ class PathFinder{
         $this->path = new Path();
     }
 
+    /**
+     * Creates a path from one entity to another within a minimum distance
+     *
+     * @param Level $level
+     * @param Entity $entity
+     * @param Vector3 $v
+     * @param float $distance
+     * @return PathEntity
+     */
     public function createEntityPathTo(Level $level, Entity $entity, Vector3 $v, float $distance) : PathEntity{
         return $v instanceof Entity ? $this->createEntityPathToOriginal($level, $entity, $v->z, $v->getBoundingBox()->minY, $v->z, $distance) : $this->createEntityPathToOriginal($level, $entity, $v->getX() + 0.5, $v->getY() + 0.5, $v->getZ() + 0.5, $distance);
     }
 
+    /**
+     * Internal implementation of creating a path from an entity to a point
+     *
+     * @param Level $level
+     * @param Entity $entity
+     * @param float $x
+     * @param float $y
+     * @param float $z
+     * @param float $distance
+     * @return PathEntity
+     */
     public function createEntityPathToOriginal(Level $level, Entity $entity, float $x, float $y, float $z, float $distance) : PathEntity{
         $this->path->clearPath();
         $this->nodeProcessor->initProcessor($level, $entity);
@@ -59,6 +79,15 @@ class PathFinder{
         return $pathentity;
     }
 
+    /**
+     * Adds a path from start to end and returns the whole path
+     *
+     * @param Entity $entity
+     * @param PathPoint $ppStart
+     * @param PathPoint $ppEnd
+     * @param float $maxDistance
+     * @return PathEntity
+     */
     public function addToPath(Entity $entity, PathPoint $ppStart, PathPoint $ppEnd, float $maxDistance) : PathEntity{
         $ppStart->totalPathDistance = 0.0;
         $ppStart->distanceToNext = $ppStart->distanceToSquared($ppEnd);
@@ -102,6 +131,13 @@ class PathFinder{
         return $pathpoint->equals($ppStart) ? null : $this->createEntityPath($ppStart, $pathpoint);
     }
 
+    /**
+     * Returns a new PathEntity for a given start and end point
+     *
+     * @param PathPoint $ppStart
+     * @param PathPoint $ppEnd
+     * @return PathEntity
+     */
     private function createEntityPath(PathPoint $ppStart, PathPoint $ppEnd) : PathEntity{
         $i = 1;
 

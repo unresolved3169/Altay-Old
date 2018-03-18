@@ -34,6 +34,12 @@ class Path{
     /** @var int The number of points in this path */
     private $count;
 
+    /**
+     * Adds a point to the path
+     *
+     * @param PathPoint $point
+     * @return PathPoint
+     */
     public function addPoint(PathPoint $point) : PathPoint{
         if($point->index >= 0){
             throw new \InvalidArgumentException();
@@ -52,10 +58,18 @@ class Path{
         }
     }
 
+    /**
+     * Clears the path
+     */
     public function clearPath() : void{
         $this->count = 0;
     }
 
+    /**
+     * Returns and removes the first point in the path
+     *
+     * @return PathPoint
+     */
     public function dequeue() : PathPoint{
         $pathpoint = $this->pathPoints[0];
         $this->pathPoints[0] = $this->pathPoints[--$this->count];
@@ -68,6 +82,12 @@ class Path{
         return $pathpoint;
     }
 
+    /**
+     * Changes the provided point's distance to target
+     *
+     * @param PathPoint $pp
+     * @param float $distance
+     */
     public function changeDistance(PathPoint $pp, float $distance) : void{
         $f = $pp->distanceToTarget;
         $pp->distanceToTarget = $distance;
@@ -78,6 +98,11 @@ class Path{
             $this->sortForward($pp->index);
     }
 
+    /**
+     * Sorts a point to the left
+     *
+     * @param int $index
+     */
     private function sortBack(int $index): void{
         $pathpoint = $this->pathPoints[$index];
 
@@ -96,6 +121,11 @@ class Path{
         $pathpoint->index = $index;
     }
 
+    /**
+     * Sorts a point to the right
+     *
+     * @param int $index
+     */
     private function sortForward(int $index) : void{
         $pathpoint = $this->pathPoints[$index];
         $f = $pathpoint->distanceToTarget;
@@ -139,6 +169,11 @@ class Path{
         $pathpoint->index = $index;
     }
 
+    /**
+     * Returns true if this path contains no points
+     *
+     * @return bool
+     */
     public function isPathEmpty() : bool{
         return $this->count == 0;
     }

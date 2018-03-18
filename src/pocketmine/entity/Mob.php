@@ -38,11 +38,17 @@ abstract class Mob extends Living{
     protected $moveForward;
     /** @var float */
     protected $landMovementFactor;
+    /** @var bool */
+    protected $isJumping;
 
     protected function initEntity(){
         $this->moveHelper = new EntityMoveHelper($this);
         $this->jumpHelper = new EntityJumpHelper($this);
         parent::initEntity();
+    }
+
+    public function setJumping(bool $jump = true) : void{
+        $this->isJumping = $jump;
     }
 
     public function setMoveForward(float $moveForward) : void{
