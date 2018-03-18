@@ -60,7 +60,7 @@ class WalkNodeProcessor extends NodeProcessor{
 
     public function getPathPointTo(Entity $entity) : PathPoint{
         if($this->canSwim && $entity->isInsideOfWater()){
-            $i = (int)$entity->getBoundingBox()->minY;
+            $i = $entity->getBoundingBox()->minY;
             $mb = new Vector3(Math::floorFloat($entity->x), $i, Math::floorFloat($entity->z));
 
             for($blockId = $this->level->getBlock($mb)->getId(); $blockId == Block::FLOWING_WATER || $blockId == Block::WATER; $blockId = $this->level->getBlock($mb)->getId())
@@ -137,7 +137,7 @@ class WalkNodeProcessor extends NodeProcessor{
                     if($k != 1)
                         break;
 
-                    if($j++ >= 3 or --$y <= 0)
+                    if($j++ >= $entity->getMaxFallHeight() or --$y <= 0)
                         return null;
                 }
 

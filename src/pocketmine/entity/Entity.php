@@ -2209,4 +2209,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
         return $this->getAttributeMap()->getAttribute(Attribute::FOLLOW_RANGE)->getValue();
     }
 
+    public function getMaxFallHeight() : int{
+        return 3;
+    }
+
 }

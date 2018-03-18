@@ -62,6 +62,10 @@ abstract class Mob extends Living{
         return $this->moveHelper;
     }
 
+    public function getMaxFallHeight() : int{
+        return 3;
+    }
+
     public function setDefaultMovementSpeed(float $speed){
         $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setDefaultValue($speed);
     }
