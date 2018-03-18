@@ -24,7 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behaviors\pathfinding;
 
-use pocketmine\entity\Attribute;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
 use pocketmine\math\AxisAlignedBB;
@@ -43,7 +42,7 @@ abstract class PathNavigate{
     /** @var float */
     protected $speed;
 
-    /** @var null|Attribute */
+    /** @var float */
     private $pathSearchRange;
 
     /** @var int Time, in number of ticks, following the current path */
@@ -62,7 +61,7 @@ abstract class PathNavigate{
     public function __construct(Mob $entity){
         $this->entity = $entity;
         $this->level = $entity->level;
-        $this->pathSearchRange = $entity->getAttributeMap()->getAttribute(Attribute::FOLLOW_RANGE);
+        $this->pathSearchRange = $entity->getFollowRange();
         $this->pathFinder = $this->getPathFinder();
         $this->lastPosCheck = new Vector3();
     }
@@ -84,7 +83,7 @@ abstract class PathNavigate{
      * @return float
      */
     public function getPathSearchRange() : float{
-        return $this->pathSearchRange->getValue();
+        return $this->pathSearchRange;
     }
 
     /**
