@@ -43,7 +43,6 @@ abstract class Generator{
 		self::addGenerator(Normal::class, "default");
 		self::addGenerator(Nether::class, "hell");
 		self::addGenerator(Nether::class, "nether");
-		self::addGenerator(VoidGenerator::class, "void");
 	}
 
 	public static function addGenerator($object, $name) : bool{
