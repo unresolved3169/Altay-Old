@@ -68,6 +68,10 @@ abstract class Mob extends Living{
         return $this->moveHelper;
     }
 
+    public function getJumpHelper() : EntityJumpHelper{
+        return $this->jumpHelper;
+    }
+
     public function getMaxFallHeight() : int{
         return 3;
     }
