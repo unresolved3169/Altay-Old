@@ -44,6 +44,7 @@ abstract class Mob extends Living{
     protected function initEntity(){
         $this->moveHelper = new EntityMoveHelper($this);
         $this->jumpHelper = new EntityJumpHelper($this);
+        $this->setMovementSpeed($this->getSpeed());
         parent::initEntity();
     }
 
@@ -82,5 +83,9 @@ abstract class Mob extends Living{
 
     public function setDefaultAttackDamage(float $attackDamage){
         $this->getAttributeMap()->getAttribute(Attribute::ATTACK_DAMAGE)->setDefaultValue($attackDamage);
+    }
+
+    public function getSpeed() : float{
+        return 0.1;
     }
 }
