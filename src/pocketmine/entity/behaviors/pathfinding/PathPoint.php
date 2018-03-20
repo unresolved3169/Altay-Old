@@ -24,6 +24,8 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behaviors\pathfinding;
 
+use pocketmine\math\Vector3;
+
 class PathPoint{
 
     /** @var int */
@@ -109,6 +111,10 @@ class PathPoint{
 
     public function __toString(){
         return "PathPoint(x=" . $this->xCoord . ",y=" . $this->yCoord . ",z=" . $this->zCoord . ")";
+    }
+
+    public function toVector3(){
+    	return new Vector3($this->xCoord, $this->yCoord, $this->zCoord);
     }
 
 }

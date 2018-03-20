@@ -213,8 +213,36 @@ class WalkNodeProcessor extends NodeProcessor{
         return $this->canEnterDoors;
     }
 
-    public function canSwim(): bool{
+    public function canSwim() : bool{
         return $this->canSwim;
     }
+
+	public function setEnterDoors(bool $value = true) : void{
+		$this->canEnterDoors = $value;
+	}
+
+	public function setAvoidsWater(bool $avoidsWater = true) : void{
+		$this->avoidsWater = $avoidsWater;
+	}
+
+	public function setBreakDoors(bool $value = true) : void{
+		$this->canBreakDoors = $value;
+	}
+
+	public function getEnterDoors() : bool{
+		return $this->canEnterDoors;
+	}
+
+	public function setCanSwim(bool $canSwim) : void{
+		$this->canSwim = $canSwim;
+	}
+
+	public function getCanSwim() : bool{
+		return $this->canSwim;
+	}
+
+	public function getAvoidsWater() : bool{
+		return $this->avoidsWater;
+	}
 
 }

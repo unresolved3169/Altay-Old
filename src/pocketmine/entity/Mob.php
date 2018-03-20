@@ -24,8 +24,11 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\entity\behaviors\EntityAITask;
 use pocketmine\entity\behaviors\EntityJumpHelper;
 use pocketmine\entity\behaviors\EntityMoveHelper;
+use pocketmine\entity\behaviors\pathfinding\PathNavigate;
+use pocketmine\entity\behaviors\pathfinding\PathNavigateGround;
 
 abstract class Mob extends Living{
 
@@ -38,17 +41,45 @@ abstract class Mob extends Living{
     protected $moveForward;
     /** @var float */
     protected $landMovementFactor;
+    /** @var PathNavigate */
+    private $navigator;
     /** @var bool */
     protected $isJumping;
 
-    protected function initEntity(){
+	/** @var EntityAITask */
+	protected $behaviors;
+	/** @var EntityAITask */
+	protected $targetBehaviors;
+
+	protected function initEntity(){
         $this->moveHelper = new EntityMoveHelper($this);
         $this->jumpHelper = new EntityJumpHelper($this);
+        $this->navigator = new PathNavigateGround($this);
         $this->setMovementSpeed($this->getSpeed());
         parent::initEntity();
     }
 
-    public function setJumping(bool $jump = true) : void{
+    public function entityBaseTick(int $tickDiff = 1) : bool{
+		$hasUpdate = parent::entityBaseTick($tickDiff);
+
+		$this->updateEntityBehaviors();
+
+		return $hasUpdate;
+	}
+
+	private function updateEntityBehaviors() : void{
+		$this->targetBehaviors->onUpdateTasks();
+		$this->behaviors->onUpdateTasks();
+		$this->navigator->onUpdateNavigation();
+		$this->updateBehaviors();
+		$this->moveHelper->onUpdateMoveHelper();
+		$this->jumpHelper->doJump();
+		$this->updateMovement();
+	}
+
+	protected function updateBehaviors(){}
+
+	public function setJumping(bool $jump = true) : void{
         $this->isJumping = $jump;
     }
 
@@ -84,6 +115,13 @@ abstract class Mob extends Living{
     public function setDefaultAttackDamage(float $attackDamage){
         $this->getAttributeMap()->getAttribute(Attribute::ATTACK_DAMAGE)->setDefaultValue($attackDamage);
     }
+
+	/**
+	 * @return PathNavigate|PathNavigateGround
+	 */
+	public function getNavigator() : PathNavigate{
+		return $this->navigator;
+	}
 
     public function getSpeed() : float{
         return 0.1;
