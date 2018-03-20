@@ -36,8 +36,6 @@ class FleeSunBehavior extends Behavior{
 
     /** @var float */
 	protected $speedMultiplier = 1.0;
-	/** @var int */
-	protected $chance = 120;
 	/** @var Path */
 	protected $currentPath = null;
 	

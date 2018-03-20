@@ -38,7 +38,7 @@ class RandomLookAroundBehavior extends Behavior{
     }
 
     public function canStart() : bool{
-		if($this->random->nextFloat() < 0.2){
+		if($this->random->nextFloat() < 0.02){
 			$this->rotation = $this->random->nextRange(-180, 180);
 			$this->duration = 20 + $this->random->nextBoundedInt(20);
 				
