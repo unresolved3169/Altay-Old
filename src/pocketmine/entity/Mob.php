@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\entity\behaviors\Behavior;
 use pocketmine\entity\behaviors\EntityAITask;
 use pocketmine\entity\behaviors\EntityJumpHelper;
 use pocketmine\entity\behaviors\EntityMoveHelper;
@@ -56,25 +57,42 @@ abstract class Mob extends Living{
         $this->jumpHelper = new EntityJumpHelper($this);
         $this->navigator = new PathNavigateGround($this);
         $this->setMovementSpeed($this->getSpeed());
+
+        foreach($this->getBehaviors() as $priority => $behavior)
+        	$this->behaviors->addTask($priority, $behavior);
+
+		foreach($this->getTargetBehaviors() as $priority => $behavior)
+			$this->targetBehaviors->addTask($priority, $behavior);
+
         parent::initEntity();
     }
+
+	/**
+	 * @return Behavior[]
+	 */
+	public function getBehaviors() : array{
+		return [];
+	}
+
+	/**
+	 * @return Behavior[]
+	 */
+	public function getTargetBehaviors() : array{
+		return  [];
+	}
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
 		$hasUpdate = parent::entityBaseTick($tickDiff);
 
-		$this->updateEntityBehaviors();
-
-		return $hasUpdate;
-	}
-
-	private function updateEntityBehaviors() : void{
 		$this->targetBehaviors->onUpdateTasks();
 		$this->behaviors->onUpdateTasks();
 		$this->navigator->onUpdateNavigation();
 		$this->updateBehaviors();
 		$this->moveHelper->onUpdateMoveHelper();
 		$this->jumpHelper->doJump();
-		$this->updateMovement();
+		//$this->updateMovement();
+
+		return $hasUpdate;
 	}
 
 	protected function updateBehaviors(){}

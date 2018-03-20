@@ -260,6 +260,21 @@ abstract class Door extends Transparent{
 		return true;
 	}
 
+	public function isOpen() : bool{
+		if(($this->getDamage() & 0x08) === 0x08) { //Top
+			/** @var Door $down */
+			$down = $this->getSide(Vector3::SIDE_DOWN);
+			if($down->getId() === $this->getId()){
+				return $down->isOpen();
+			}
+		}else{
+			$meta = $this->meta ^ 0x04;
+			return $meta < $this->meta;
+		}
+
+		return false;
+	}
+
 	public function getVariantBitmask() : int{
 		return 0;
 	}

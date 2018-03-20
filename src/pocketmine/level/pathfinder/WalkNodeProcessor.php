@@ -26,8 +26,8 @@ namespace pocketmine\level\pathfinder;
 
 use pocketmine\block\Air;
 use pocketmine\block\Block;
-use pocketmine\block\Door;
 use pocketmine\block\Rail;
+use pocketmine\block\WoodenDoor;
 use pocketmine\block\IronDoor;
 use pocketmine\entity\behaviors\pathfinding\PathPoint;
 use pocketmine\entity\Entity;
@@ -164,23 +164,25 @@ class WalkNodeProcessor extends NodeProcessor{
                     if(!($block instanceof Air)){
                         $id = $block->getId();
                         if($id != Block::TRAPDOOR && $id != Block::IRON_TRAPDOOR){
-                            if($id != Block::FLOWING_WATER && $id != Block::WATER)
-                                if(!$this->canEnterDoors && ($block instanceof Door and !($block instanceof IronDoor)))
-                                    return 0;
-                            else{
+							if($id != Block::FLOWING_WATER && $id != Block::WATER){
+								if(!$this->canEnterDoors && $block instanceof WoodenDoor){
+									return 0;
+								}
+							}else{
                                 if($this->avoidsWater)
                                     return -1;
 
                                 $flag = true;
                             }
-                        }else
-                            $flag = true;
+                        }else{
+							$flag = true;
+						}
 
                         if($entity->level->getBlock($mb) instanceof Rail){
                             $posBlock = $entity->level->getBlock($pos);
                             if(!($posBlock instanceof Rail) && !($posBlock->getSide(Vector3::SIDE_DOWN) instanceof Rail))
                                 return -3;
-                        }elseif((!$this->canBreakDoors || !($block instanceof IronDoor))){
+                        }elseif(!$this->canBreakDoors || $block instanceof IronDoor){
                             switch($id){
                                 case Block::FENCE:
                                 case Block::FENCE_GATE:

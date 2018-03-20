@@ -25,6 +25,8 @@ declare(strict_types=1);
 namespace pocketmine\entity\hostile;
 
 use pocketmine\entity\Ageable;
+use pocketmine\entity\behaviors\BreakDoorBehavior;
+use pocketmine\entity\behaviors\FloatBehavior;
 use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -35,7 +37,23 @@ class Zombie extends Monster implements Ageable{
     public $width = 0.6;
     public $height = 1.8;
 
-    public function getName() : string{
+    protected function initEntity(){
+		parent::initEntity();
+		$this->getNavigator()->setBreakDoors(true);
+	}
+
+	public function getBehaviors() : array{
+		return [
+			0 => new FloatBehavior($this),
+			1 => new BreakDoorBehavior($this)
+		];
+	}
+
+	public function getTargetBehaviors() : array{
+		return parent::getTargetBehaviors();
+	}
+
+	public function getName() : string{
         return "Zombie";
     }
 
