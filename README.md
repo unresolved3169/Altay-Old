@@ -10,7 +10,6 @@ Example servers running Altay
 --------------------
 - **entengames.de:703**
 - **oyna.minecraftpetr.net:19132**
-- **play.minefever.net:19132**
 ------------     
     
 ## Finished & Planned Features
