@@ -26,9 +26,6 @@ namespace pocketmine\inventory\transaction\action;
 
 use pocketmine\Player;
 
-class EnchantAction extends SlotChangeAction{
+class AnvilInputAction extends SlotChangeAction{
 
-	public function isValid(Player $source): bool{
-		return $this->getSlot() == -1 or parent::isValid($source);
-	}
 }

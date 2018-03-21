@@ -81,12 +81,15 @@ use pocketmine\inventory\AnvilInventory;
 use pocketmine\inventory\BigCraftingGrid;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\EnchantInventory;
-use pocketmine\inventory\transaction\EnchantTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\inventory\PlayerCursorInventory;
+use pocketmine\inventory\TradingInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
+use pocketmine\inventory\transaction\AnvilTransaction;
 use pocketmine\inventory\transaction\CraftingTransaction;
+use pocketmine\inventory\transaction\EnchantTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
+use pocketmine\inventory\transaction\TradingTransaction;
 use pocketmine\item\Consumable;
 use pocketmine\item\Item;
 use pocketmine\item\WritableBook;
@@ -2340,6 +2343,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$enchantTransaction = new EnchantTransaction($this, $actions);
 				$enchantTransaction->execute();
 				break;
+			case "Anvil":
+				$anvilTransaction = new AnvilTransaction($this, $actions);
+				$anvilTransaction->execute();
+				break;
+			case "Trading":
+				$tradingTransaction = new TradingTransaction($this, $actions);
+				$tradingTransaction->execute();
+				return true;
 			default:
 				if($this->craftingTransaction !== null){
 					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
@@ -4125,6 +4136,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function getEnchantInventory() : ?EnchantInventory{
 	    foreach($this->windowIndex as $inventory)
 	        if($inventory instanceof EnchantInventory)
+	            return $inventory;
+
+	    return null;
+	}
+
+	public function getTradingInventory() : ?TradingInventory{
+	    foreach($this->windowIndex as $inventory)
+	        if($inventory instanceof TradingInventory)
 	            return $inventory;
 
 	    return null;

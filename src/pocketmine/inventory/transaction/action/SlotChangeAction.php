@@ -93,13 +93,13 @@ class SlotChangeAction extends InventoryAction{
 	}
 
 	public function onPreExecute(Player $source) : bool{
-        $source->getServer()->getPluginManager()->callEvent($ev = new InventoryClickEvent($this->inventory, $source, $this->inventorySlot));
-        if ($ev->isCancelled()) {
-            return false;
-        }
+		$source->getServer()->getPluginManager()->callEvent($ev = new InventoryClickEvent($this->inventory, $source, $this->inventorySlot));
+		if($ev->isCancelled()){
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
 	/**
 	 * Sets the item into the target inventory.

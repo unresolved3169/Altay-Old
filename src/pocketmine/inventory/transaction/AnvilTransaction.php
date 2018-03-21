@@ -22,13 +22,25 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\inventory\transaction\action;
+namespace pocketmine\inventory\transaction;
 
-use pocketmine\Player;
+use pocketmine\inventory\transaction\action\AnvilInputAction;
 
-class EnchantAction extends SlotChangeAction{
+class AnvilTransaction extends InventoryTransaction{
 
-	public function isValid(Player $source): bool{
-		return $this->getSlot() == -1 or parent::isValid($source);
-	}
+    public function canExecute(): bool{
+        $rm = 0;
+        foreach($this->getActions() as $index => $action){
+            if($action instanceof AnvilInputAction){
+                unset($this->actions[$index]);
+                $rm++;
+            }
+        }
+
+        if($rm > 0){
+            $this->squashDuplicateSlotChanges();
+            return true;
+        }
+        return parent::canExecute();
+    }
 }
