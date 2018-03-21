@@ -24,10 +24,9 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
-use pocketmine\math\AxisAlignedBB;
+use pocketmine\entity\behavior\EntityNavigator;
 use pocketmine\math\Vector3;
 use pocketmine\entity\behavior\{Behavior, TargetBehavior};
-use pocketmine\utils\Random;
 
 abstract class Mob extends Living{
 
@@ -40,19 +39,25 @@ abstract class Mob extends Living{
     protected $behaviorsEnabled = true; // test
     /** @var Behavior|null */
     protected $currentBehavior = null, $currentTargetBehavior = null;
-    /** @var int */
-    protected $jumpCooldown = 0;
+    /** @var EntityNavigator */
+    protected $navigator;
 
     protected function initEntity(){
         parent::initEntity();
 
         $this->behaviors = $this->getNormalBehaviors();
         $this->targetBehaviors = $this->getTargetBehaviors();
+        $this->navigator = new EntityNavigator($this);
     }
 
-    public function getReadyBehavior(array $behaviors, ?Behavior $currentBehavior = null): ?Behavior{
+	/**
+	 * @param array $behaviors
+	 * @param null|Behavior $currentBehavior
+	 * @return null|Behavior
+	 */
+	public function getReadyBehavior(array $behaviors, ?Behavior $currentBehavior = null): ?Behavior{
         foreach($behaviors as $index => $behavior){
-            if($behavior == $this->currentBehavior){
+            if($behavior == $currentBehavior){
                 if($behavior->canContinue()){
                     return $behavior;
                 }
@@ -72,7 +77,11 @@ abstract class Mob extends Living{
         return null;
     }
 
-    public function onUpdate(int $tick): bool{
+	/**
+	 * @param int $tick
+	 * @return bool
+	 */
+	public function onUpdate(int $tick): bool{
         if($this->isAlive() and $this->behaviorsEnabled){
             $this->currentBehavior = $this->getReadyBehavior($this->behaviors, $this->currentBehavior);
             if($this->currentBehavior instanceof Behavior){
@@ -87,36 +96,44 @@ abstract class Mob extends Living{
         return parent::onUpdate($tick);
     }
 
-    public function getCurrentBehavior() : ?Behavior{
-        return $this->currentBehavior;
+	/**
+	 * @param int $index
+	 * @param Behavior $b
+	 */
+	public function setBehavior(int $index, Behavior $b) : void{
+    	if($b instanceof TargetBehavior){
+			$this->targetBehaviors[$index] = $b;
+		}else {
+			$this->behaviors[$index] = $b;
+		}
     }
 
-    public function setCurrentBehavior(Behavior $behavior = null) : void{
-        $this->currentBehavior = $behavior;
+	/**
+	 * @param int $key
+	 */
+	public function removeBehavior(int $key) : void{
+		unset($this->behaviors[$key]);
     }
 
-    public function addBehavior(Behavior $behavior) : void{
-        $this->behaviors[] = $behavior;
-    }
+	/**
+	 * @param int $key
+	 */
+	public function removeTargetBehavior(int $key) : void{
+		unset($this->targetBehaviors[$key]);
+	}
 
-    public function setBehavior(int $index, Behavior $b) : void{
-        $this->behaviors[$index] = $b;
-    }
-
-    public function removeBehavior(int $key) : void{
-        unset($this->behaviors[$key]);
-    }
-
-    public function isBehaviorsEnabled() : bool{
+	/**
+	 * @return bool
+	 */
+	public function isBehaviorsEnabled() : bool{
         return $this->behaviorsEnabled;
     }
 
-    public function setBehaviorsEnabled(bool $value = true) : void{
+	/**
+	 * @param bool $value
+	 */
+	public function setBehaviorsEnabled(bool $value = true) : void{
         $this->behaviorsEnabled = $value;
-    }
-
-    public function getBehaviors() : array{
-        return $this->behaviors;
     }
 
     /**
@@ -125,18 +142,23 @@ abstract class Mob extends Living{
     protected function getNormalBehaviors() : array{
         return [];
     }
-    
-    protected function getTargetBehaviors() : array{
+
+	/**
+	 * @return array
+	 */
+	protected function getTargetBehaviors() : array{
         return [];
     }
 
-    public function moveForward(float $spm) : void{
+	/**
+	 * @param float $spm
+	 */
+	public function moveForward(float $spm) : void{
 		$sf = $this->getMovementSpeed() * $spm * 0.7;
 		$level = $this->level;
 		$dir = $this->getDirectionVector()->normalize();
 		$dir->y = 0;
-		
-		$entityCollide = false;//$level->getCollidingEntities($this->getBoundingBox()->grow(0.15,0.15,0.15), $this);
+
 		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
 		
 		$block = $level->getBlock($coord);
@@ -145,7 +167,7 @@ abstract class Mob extends Living{
 		
 		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
 		
-		if(!$collide and !$entityCollide){		
+		if(!$collide){
 			if($this->isOnGround()){
 				$velocity = $dir->multiply($sf);
 				$entityVelocity = $this->getMotion();
@@ -157,9 +179,9 @@ abstract class Mob extends Living{
 				}
 			}
 		}else{
-			if($this->canClimb() and !$entityCollide){
+			if($this->canClimb()){
 				$this->setMotion(new Vector3(0,0.2,0));
-			}elseif(!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
+			}elseif(!$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
 				if($this->isOnGround() and $this->motionY === 0){
 					$this->jump();
 				}
@@ -169,17 +191,11 @@ abstract class Mob extends Living{
 			}
 		}
 	}
-    public function isColliding(AxisAlignedBB $aabb, Entity $entity){
-        if (!$this->compare((int) $this->x, (int) $entity->x, 4)) return false;
-        if (!$this->compare((int) $this->z, (int) $entity->z, 4)) return false;
-        if (!$aabb->intersectsWith($entity->getBoundingBox())) return false;
 
-        return true;
-    }
-
-    public function compare(int $a, int $b, int $m) : bool{
-        $a = $a >> $m;
-        $b = $b >> $m;
-        return $a == $b || $a == ($b - 1) || $a == ($b + 1);
-    }
+	/**
+	 * @return EntityNavigator
+	 */
+	public function getNavigator() : EntityNavigator{
+    	return $this->navigator;
+	}
 }

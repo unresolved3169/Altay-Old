@@ -125,6 +125,10 @@ class Vector2{
 		return $this->x * $v->x + $this->y * $v->y;
 	}
 
+	public function equals(Vector2 $v) : bool{
+		return $this->x == $v->x and $this->y == $v->y;
+	}
+
 	public function __toString(){
 		return "Vector2(x=" . $this->x . ",y=" . $this->y . ")";
 	}
