@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -30,6 +31,7 @@ use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 use pocketmine\village\MerchantRecipe;
 use pocketmine\village\MerchantRecipeList;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 
 class Villager extends Creature implements NPC, Ageable{
@@ -49,6 +51,10 @@ class Villager extends Creature implements NPC, Ageable{
 	public $careerLevel;
 
 	public $buyingList = null;
+	public $buyingPlayer = null;
+	public $lastBuyingPlayer = null;
+
+	public $rand;
 
 	public function getName() : string{
 		return "Villager";
@@ -81,7 +87,7 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->namedtag->setInt("Career", $this->careerId);
 		$this->namedtag->setInt("CareerLevel", $this->careerLevel);
 		if($this->buyingList !== null){
-			$this->namedtag->setTag("Offers", $this->buyingList->writeToTags());
+			$this->namedtag->setTag(new CompoundTag("Offers", [$this->buyingList->writeToTags()]));
 		}
 	}
 
@@ -139,6 +145,39 @@ class Villager extends Creature implements NPC, Ageable{
 
 	public function getInventory() : Inventory{
 		return new TradingInventory($this);
+	}
+
+	public function setCustomer(Player $player) : void{
+		$this->buyingPlayer = $player;
+	}
+
+	public function getCustomer(Player $player) : Player{
+		return $this->buyingPlayer;
+	}
+
+	public function isTrading() : bool{
+		return $this->buyingPlayer !== null;
+	}
+
+	public function useRecipe(MerchantRecipe $recipe) : void{
+		$recipe->imcrementToolUses();
+		//playSound
+		$i = 3 + $this->rand->nextRange(0, 4);
+
+		if($recipe->getToolUses() === 1 || $this->rand->nextRange(0, 5) === 0){
+			//$this->isWillingToMate = true;
+			if($this->buyingPlayer !== null){
+				$this->lastBuyingPlayer = $this->buyingPlayer->getName();
+			}else{
+				$this->lastBuyingPlayer = null;
+			}
+
+			$i += 5;
+		}
+
+		if($recipe->getRewardsExp()){
+			$this->level->dropExperience($this->add(0, 0.5, 0), $i);
+		}
 	}
 
 	public function getDisplayName() : string{

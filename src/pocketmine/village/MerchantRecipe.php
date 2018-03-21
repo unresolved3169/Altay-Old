@@ -1,5 +1,25 @@
 <?php
 
+/*
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
+ *
+ */
+
 declare(strict_types=1);
 
 namespace pocketmine\village;
@@ -22,7 +42,7 @@ class MerchantRecipe{
 	private $itemToSell;
 	private $toolUses;
 	private $maxTradeUses;
-	private $rewardExp;
+	private $rewardsExp;
 
 	public function __construct(Item $buy1, Item $buy2, Item $sell, int $toolUsesIn = 0, int $maxTradeUsesIn = 7){
 		$this->itemToBuy = $buy1;
@@ -30,7 +50,7 @@ class MerchantRecipe{
 		$this->itemToSell = $sell;
 		$this->toolUses = $toolUsesIn;
 		$this->maxTradeUses = $maxTradeUsesIn;
-		$this->rewardExp = true;
+		$this->rewardsExp = true;
 	}
 
 	public function getItemToBuy() : Item{
@@ -69,8 +89,8 @@ class MerchantRecipe{
 		return $this->toolUses >= $this->maxToolUses;
 	}
 
-	public function getRewardExp() : bool{
-		return $this->rewardExp;
+	public function getRewardsExp() : bool{
+		return $this->rewardsExp;
 	}
 
 	public function writeToTags() : CompoundTag{
