@@ -397,11 +397,7 @@ class PluginManager{
 	 * @return null|Permission
 	 */
 	public function getPermission(string $name){
-		if(isset($this->permissions[$name])){
-			return $this->permissions[$name];
-		}
-
-		return null;
+		return $this->permissions[$name] ?? null;
 	}
 
 	/**
@@ -437,11 +433,7 @@ class PluginManager{
 	 * @return Permission[]
 	 */
 	public function getDefaultPermissions(bool $op) : array{
-		if($op){
-			return $this->defaultPermsOp;
-		}else{
-			return $this->defaultPerms;
-		}
+		return $op ? $this->defaultPermsOp : $this->defaultPerms;
 	}
 
 	/**
@@ -544,11 +536,7 @@ class PluginManager{
 	 * @return Permissible[]
 	 */
 	public function getDefaultPermSubscriptions(bool $op) : array{
-		if($op){
-			return $this->defSubsOp;
-		}
-
-		return $this->defSubs;
+		return $op ? $this->defSubsOp : $this->defSubs;
 	}
 
 	/**
@@ -564,11 +552,7 @@ class PluginManager{
 	 * @return bool
 	 */
 	public function isPluginEnabled(Plugin $plugin) : bool{
-		if($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])){
-			return $plugin->isEnabled();
-		}else{
-			return false;
-		}
+		return ($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])) ? $plugin->isEnabled() : false;
 	}
 
 	/**
