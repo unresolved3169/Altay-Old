@@ -48,12 +48,10 @@ class EntityNavigator{
 		while(!$current->equals($to) and ++$attempt < $maxAttempt)
 		{
 			$last = null;
-			foreach($this->getNeighbors($current) as $tile)
-			{
-				if($last === null or $last->distance($to) > $tile->distance($to))
-				{
-					$last = $tile;
-				}
+			foreach($this->getNeighbors($current) as $tile){
+       if($last === null or $last->distance($to) >= $tile->distance($to)){
+        $last = $tile;
+       }
 			}
 
 			if($last !== null)

@@ -25,20 +25,20 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Entity;
+use pocketmine\block\Block;
+use pocketmine\block\Grass;
 use pocketmine\entity\Mob;
+use pocketmine\math\Vector3;
+use pocketmine\utils\Random;
+use pocketmine\entity\Animal;
 
-class FloatBehavior extends Behavior{
+class RestrictSunBehavior extends Behavior{
 	
 	public function canStart() : bool{
-		if($this->mob->isInsideOfWater()){
-			$this->mob->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_SWIMMER, true);
-			if($this->random->nextFloat() < 0.8){
-				$this->mob->jump();
-			}
-		}else{
-			$this->mob->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_SWIMMER, false);
+		if(!$this->mob->isOnFire() and $this->mob->level->getHighestBlockAt((int) $this->mob->x, (int) $this->mob->z) < $this->mob->y and $this->mob->level->getTime() <= 16000){
+			$this->mob->setOnFire(3);
 		}
-		
+
 		return false;
 	}
 	

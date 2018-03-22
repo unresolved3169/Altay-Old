@@ -29,15 +29,14 @@ use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\entity\behavior\{
-    HurtByTargetBehavior, MeleeAttackBehavior, WanderBehavior, RandomLookAroundBehavior, LookAtPlayerBehavior, FindAttackableTargetBehavior
-};
+    HurtByTargetBehavior, MeleeAttackBehavior, WanderBehavior, RandomLookAroundBehavior, LookAtPlayerBehavior, FindAttackableTargetBehavior, FloatBehavior, FleeSunBehavior, RestrictSunBehavior};
 
 class Zombie extends Monster implements Ageable{
     public const NETWORK_ID = self::ZOMBIE;
 
     public $width = 0.6;
     public $height = 1.8;
-    protected $jumpVelocity = 0.7;
+    protected $jumpVelocity = 0.5;
 
     protected function initEntity(){
         parent::initEntity();
@@ -81,7 +80,10 @@ class Zombie extends Monster implements Ageable{
 
     protected function getNormalBehaviors() : array{
         return [
+            new RestrictSunBehavior($this),
+            new FloatBehavior($this),
             new MeleeAttackBehavior($this, 1.0, 35),
+            new FleeSunBehavior($this),
             new WanderBehavior($this),
             new LookAtPlayerBehavior($this, 8.0),
             new RandomLookAroundBehavior($this)

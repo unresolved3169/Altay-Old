@@ -46,8 +46,7 @@ class FleeSunBehavior extends Behavior{
 	}
 	
 	public function canStart() : bool{
-		$chunk = $this->mob->chunk;
-		if($this->mob->isOnFire() and $chunk->getHighestBlockAt($this->mob->x, $this->mob->z) < $this->mob->y){
+		if($this->mob->isOnFire() and $this->mob->level->getHighestBlockAt((int) $this->mob->x, (int) $this->mob->z) < $this->mob->y){
 			$pos = $this->findPossibleShelter($this->mob);
 			if($pos === null) return false;
 			
@@ -86,10 +85,9 @@ class FleeSunBehavior extends Behavior{
 	 * @return null|Block
 	 */
 	public function findPossibleShelter(Entity $entity) : ?Block{
-		$chunk = $entity->chunk;
 		for($i = 0; $i < 10; $i++){
 			$block = $this->mob->level->getBlock($this->mob->add($this->random->nextBoundedInt(20) - 10, $this->random->nextBoundedInt(6) - 3, $this->random->nextBoundedInt(20) - 10));
-			$canSeeSky = $chunk->getHighestBlockAt($block->x, $block->z) < $block->y;
+			$canSeeSky = $entity->level->getHighestBlockAt($block->x, $block->z) < $block->y;
 			if(!$canSeeSky and $this->calculateBlockWeight($entity, $block, $block->getSide(0)) < 0){
 				return $block;
 			}

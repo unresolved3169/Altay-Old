@@ -27,6 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Entity;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\entity\Mob;
 
 class Path{
 	
@@ -40,6 +41,7 @@ class Path{
 	public static function findPath(Mob $mob, Vector3 $targetPos) : Path{
 		$from = new Vector2((int) $mob->x, (int) $mob->z);
 		$to = new Vector2((int) $targetPos->x, (int) $targetPos->z);
+		
 		return new Path($mob->getNavigator()->navigate($from, $to, 200));
 	}
 	
