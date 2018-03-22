@@ -4123,28 +4123,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->isConnected();
 	}
 
-	public function getAnvilInventory() : ?AnvilInventory{
-	    foreach($this->windowIndex as $inventory)
-	        if($inventory instanceof AnvilInventory)
-                return $inventory;
+	public function getWindowFromClass(string $class) : ?Inventory{
+		foreach ($this->windowIndex as $inventory)
+			if (get_class($inventory) === $class)
+				return $inventory;
 
-	    return null;
-	}
-
-	public function getEnchantInventory() : ?EnchantInventory{
-	    foreach($this->windowIndex as $inventory)
-	        if($inventory instanceof EnchantInventory)
-	            return $inventory;
-
-	    return null;
-	}
-
-	public function getTradingInventory() : ?TradingInventory{
-	    foreach($this->windowIndex as $inventory)
-	        if($inventory instanceof TradingInventory)
-	            return $inventory;
-
-	    return null;
+		return null;
 	}
 
 	/**
