@@ -33,15 +33,11 @@ use pocketmine\Player;
 class TradingInventory extends BaseInventory{
 
 	/** @var Villager */
-	protected $villager;
+	protected $holder;
 
 	public function __construct(Villager $villager){
-		$this->villager = $villager;
+		$this->holder = $villager;
 		parent::__construct();
-	}
-
-	public function getNetworkType() : int{
-		return WindowTypes::TRADING;
 	}
 
 	public function getName() : string{
@@ -53,43 +49,27 @@ class TradingInventory extends BaseInventory{
 	}
 
 	public function onOpen(Player $who) : void{
-		$tag = $this->villager->getRecipes($who)->writeToTags();
+		$tag = $this->holder->getOffers();
 		if($tag !== null){
 			parent::onOpen($who);
 
 			$pk = new UpdateTradePacket();
 			$pk->windowId = $who->getWindowId($this);
-			$pk->windowType = $this->getNetworkType();
 			$pk->varint1 = 0;
 			$pk->varint2 = 0;
 			$pk->isWilling = false;
-			$pk->traderEid = $this->villager->getId();
+			$pk->traderEid = $this->holder->getId();
 			$pk->playerEid = $who->getId();
-			$pk->displayName = $this->villager->getDisplayName();
+			$pk->displayName = $this->holder->getDisplayName();
+
 			try{
 				$nbtWriter = new NetworkLittleEndianNBTStream();
 				$pk->offers = $nbtWriter->write($tag);
-			}catch(IOException $exception){
-			}
+			}catch(\Exception $exception){}
+
 			$who->dataPacket($pk);
 		}else{
 			parent::onClose($who);
 		}
 	}
-
-	/*public function onClose(Player $who) : void{
-		parent::onClose($who);
-
-        $inv = $who->getInventory();
-        for($i = 0, $size = $this->getSize(); $i < $size; ++$i){
-            $item = $this->getItem($i);
-            if(!$item->isNull()){
-                if($inv->canAddItem($item)){
-                    $inv->addItem($item);
-                }else{
-                    $who->dropItem($item);
-                }
-            }
-        }
-	}*/
 }

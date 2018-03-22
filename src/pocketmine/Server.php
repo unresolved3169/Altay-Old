@@ -43,6 +43,7 @@ use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
+use pocketmine\inventory\TradeItems;
 use pocketmine\item\Item;
 use pocketmine\lang\TextContainer;
 use pocketmine\event\Timings;

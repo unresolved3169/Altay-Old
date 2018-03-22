@@ -36,6 +36,10 @@ class Bow extends Tool{
 		parent::__construct(self::BOW, $meta, "Bow");
 	}
 
+	public function getEnchantability() : int{
+		return 1;
+	}
+
 	public function getFuelTime() : int{
 		return 200;
 	}

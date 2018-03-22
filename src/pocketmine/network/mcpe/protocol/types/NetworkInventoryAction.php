@@ -126,10 +126,6 @@ class NetworkInventoryAction{
 					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
 						$packet->inventoryType = "Enchant";
 						break;
-					case self::SOURCE_TYPE_ANVIL_RESULT:
-					case self::SOURCE_TYPE_ANVIL_OUTPUT:
-						$packet->inventoryType = "Anvil";
-						break;
 					case self::SOURCE_TYPE_TRADING_USE_INPUTS:
 					case self::SOURCE_TYPE_TRADING_OUTPUT:
 						$packet->inventoryType = "Trading";
@@ -218,7 +214,7 @@ class NetworkInventoryAction{
 
 					case self::SOURCE_TYPE_ANVIL_INPUT:
 						$window = $player->getAnvilInventory();
-						return new AnvilInputAction($window, 0, $this->oldItem, $this->newItem);
+						return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ANVIL_MATERIAL:
 						$window = $player->getAnvilInventory();
 						$this->inventorySlot = 1;

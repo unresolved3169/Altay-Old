@@ -39,4 +39,8 @@ class DiamondChestplate extends Armor{
     public function getMaxDurability() : int{
         return 529;
     }
+
+	public function getEnchantability() : int{
+		return 10;
+	}
 }

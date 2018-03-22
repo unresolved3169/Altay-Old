@@ -270,6 +270,15 @@ class Item implements ItemIds, \JsonSerializable{
 	}
 
 	/**
+	 * Return the enchantability factor of the item
+	 *
+	 * @return int
+	 */
+	public function getEnchantability() : int{
+		return 0;
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function hasEnchantments() : bool{

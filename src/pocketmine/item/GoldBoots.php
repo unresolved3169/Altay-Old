@@ -39,4 +39,8 @@ class GoldBoots extends Armor{
     public function getMaxDurability() : int{
         return 92;
     }
+
+    public function getEnchantability() : int{
+		return 25;
+	}
 }

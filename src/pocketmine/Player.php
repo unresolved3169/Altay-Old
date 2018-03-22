@@ -85,7 +85,6 @@ use pocketmine\inventory\Inventory;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\TradingInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
-use pocketmine\inventory\transaction\AnvilTransaction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
@@ -2284,6 +2283,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
 				$this->addXpLevels($packet->data);
 				break;
+			case EntityEventPacket::COMPLETE_TRADE:
+				// TODO : İncele
+				break;
 			default:
 				return false;
 		}
@@ -2342,10 +2344,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			case "Enchant":
 				$enchantTransaction = new EnchantTransaction($this, $actions);
 				$enchantTransaction->execute();
-				break;
-			case "Anvil":
-				$anvilTransaction = new AnvilTransaction($this, $actions);
-				$anvilTransaction->execute();
 				break;
 			case "Trading":
 				$tradingTransaction = new TradingTransaction($this, $actions);
