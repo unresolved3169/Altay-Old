@@ -38,4 +38,8 @@ class PlayerEntityInteractEvent extends PlayerEvent implements Cancellable{
         $this->player = $player;
         $this->entity = $entity;
     }
+
+	public function getEntity() : Entity{
+		return $this->entity;
+	}
 }

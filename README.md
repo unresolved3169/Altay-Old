@@ -16,27 +16,31 @@ Example servers running Altay
  - [x] Altay Configuration File
  - [x] Anvil
  - [x] Armor Stand
- - [ ] Beacons
  - [x] Boats
  - [x] BossbarAPI
  - [x] Command Parameters
- - [ ] Commands
-   - [x] ClearCommand
-   - [ ] PlaySound
-   - [ ] StopSound
-   - [ ] SetBlock
- - [ ] Config Auto Updater
  - [x] Elytra
  - [x] EnchantmentTable
- - [ ] Entity Behaviors (MobAI)
  - [x] Events
     - [x] InventoryClickEvent
  - [x] Fireworks
  - [x] Forms
  - [x] Hopper
+ - [x] Virtual Inventory
+ - [ ] Trading
+   - [x] Trade
+   - [ ] Level Upgrade
+   - [ ] Use++
+ - [ ] Commands
+   - [x] ClearCommand
+   - [ ] PlaySound
+   - [ ] StopSound
+   - [ ] SetBlock
+ - [ ] Beacons
+ - [ ] Config Auto Updater
+ - [ ] Entity Behaviors (MobAI)
  - [ ] Level Dimensions
  - [ ] Redstone
  - [ ] Shulker Boxes
- - [x] Virtual Inventory
  
 ***more...***
