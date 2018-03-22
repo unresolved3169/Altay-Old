@@ -313,7 +313,7 @@ class Server{
 	 * @return bool
 	 */
 	public function isRunning() : bool{
-		return $this->isRunning === true;
+		return $this->isRunning;
 	}
 
 	/**
@@ -1577,7 +1577,7 @@ class Server{
 
 			$this->scheduler = new ServerScheduler();
 
-			if($this->getConfigBool("enable-rcon", false) === true){
+			if($this->getConfigBool("enable-rcon", false)){
 				try{
 					$this->rcon = new RCON(
 						$this,
@@ -1621,7 +1621,7 @@ class Server{
 				$this->logger->warning($this->getLanguage()->translateString("pocketmine.server.authProperty.disabled"));
 			}
 
-			if($this->getConfigBool("hardcore", false) === true and $this->getDifficulty() < Level::DIFFICULTY_HARD){
+			if($this->getConfigBool("hardcore", false) and $this->getDifficulty() < Level::DIFFICULTY_HARD){
 				$this->setConfigInt("difficulty", Level::DIFFICULTY_HARD);
 			}
 
@@ -1698,7 +1698,7 @@ class Server{
 				if(!is_array($options)){
 					continue;
 				}
-				if($this->loadLevel($name) === false){
+				if(!$this->loadLevel($name)){
 					$seed = $options["seed"] ?? time();
 					if(is_string($seed) and !is_numeric($seed)){
 						$seed = Utils::javaStringHash($seed);
@@ -1727,7 +1727,7 @@ class Server{
 					$default = "world";
 					$this->setConfigString("level-name", "world");
 				}
-				if($this->loadLevel($default) === false){
+				if(!$this->loadLevel($default)){
 					$seed = getopt("", ["level-seed::"])["level-seed"] ?? $this->properties->get("level-seed", time());
 					if(!is_numeric($seed) or bccomp($seed, "9223372036854775807") > 0){
 						$seed = Utils::javaStringHash($seed);
@@ -2027,7 +2027,7 @@ class Server{
 		$this->properties->reload();
 		$this->maxPlayers = $this->getConfigInt("max-players", 20);
 
-		if($this->getConfigBool("hardcore", false) === true and $this->getDifficulty() < Level::DIFFICULTY_HARD){
+		if($this->getConfigBool("hardcore", false) and $this->getDifficulty() < Level::DIFFICULTY_HARD){
 			$this->setConfigInt("difficulty", Level::DIFFICULTY_HARD);
 		}
 
@@ -2073,7 +2073,7 @@ class Server{
 				$this->rcon->stop();
 			}
 
-			if($this->getProperty("network.upnp-forwarding", false) === true){
+			if($this->getProperty("network.upnp-forwarding", false)){
 				$this->logger->info("[UPnP] Removing port forward...");
 				UPnP::RemovePortForward($this->getPort());
 			}
@@ -2138,7 +2138,7 @@ class Server{
 	 * Starts the PocketMine-MP server and starts processing ticks and packets
 	 */
 	private function start(){
-		if($this->getConfigBool("enable-query", true) === true){
+		if($this->getConfigBool("enable-query", true)){
 			$this->queryHandler = new QueryHandler();
 		}
 
@@ -2220,7 +2220,7 @@ class Server{
 	}
 
 	public function crashDump(){
-		if($this->isRunning === false){
+		if(!$this->isRunning){
 			return;
 		}
 		if($this->sendUsageTicker > 0){
