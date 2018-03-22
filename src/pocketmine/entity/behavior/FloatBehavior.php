@@ -40,7 +40,7 @@ class FloatBehavior extends Behavior{
 	}
 	
 	public function canContinue() : bool{
-		return false; // ???
+		return $this->mob->isInsideOfWater();
 	}
 	
 	public function onTick(int $tick) : void{
