@@ -256,7 +256,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/** @var string */
 	protected $xuid = "";
 
-    /** @var int */
+    /** @var string */
 	protected $deviceModel;
     /** @var int */
 	protected $deviceOS;
