@@ -171,12 +171,31 @@ abstract class Mob extends Living{
 		$block = $level->getBlock($coord);
 		$blockUp = $level->getBlock($coord->add(0,1,0));
 		$blockUpUp = $level->getBlock($coord->add(0,2,0));
-    $onGround = $block->getSide(0) !== 0 or $block->getSide(0,2) !== 0;
 		
 		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
-		
-		if(!$collide){
-			if($onGround){
+		$xxx = $dir->multiply($sf);
+		$boundingBox = $this->getBoundingBox()->offset($xxx->x, $xxx->y, $xxx->z);
+		$entityCollide = count($this->level->getCollidingEntities($boundingBox, $this)) > 0;
+
+		if(!$entityCollide){
+			$bbox = $boundingBox->addCoord(0.3,0.3, 0.3);
+
+			foreach($this->level->getEntities() as $entry){
+				if($entry == $this) continue;
+
+				if($entry->getId() < $this->getId() and $bbox->isVectorInside($entry->asVector3())){
+					if($this->motionX === 0 and $this->motionY === 0 and $this->motionZ === 0 and $this->level->getRandom()->nextBoundedInt(1000) === 0){
+						break;
+					}
+
+					$entityCollide = true;
+					break;
+				}
+			}
+		}
+		if(!$collide and !$entityCollide){
+			$blockDown = $block->getSide(0);
+			if($this->onGround and $blockDown->isSolid()){
 				$velocity = $dir->multiply($sf);
 				$entityVelocity = $this->getMotion();
 				$entityVelocity->y = 0;
@@ -187,12 +206,11 @@ abstract class Mob extends Living{
 				}
 			}
 		}else{
-			if($this->canClimb()){
+			if($this->canClimb() and !$entityCollide){
 				$this->setMotion(new Vector3(0,0.2,0));
-			}elseif(!$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
-				if($onGround){
+			}elseif(!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
+				if($this->onGround and $this->motionY === 0){
 					$this->jump();
-        // $this->moveForward($spm);
 				}
 			}else{
 				$this->motionX = 0;
