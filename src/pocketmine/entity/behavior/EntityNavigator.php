@@ -42,16 +42,16 @@ class EntityNavigator{
 	public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 200) : array
 	{
 		$attempt = 0;
-		$current = $from;
+		$current = $to;
 		$level = $this->entity->level;
 		$path = [];
-		while(!$current->equals($to) and ++$attempt < $maxAttempt)
+		while(!$current->equals($from) and ++$attempt < $maxAttempt)
 		{
 			$last = null;
 			foreach($this->getNeighbors($current) as $tile){
-       if($last === null or $last->distance($to) >= $tile->distance($to)){
-        $last = $tile;
-       }
+				if($last === null or $last->distance($from) >= $tile->distance($from)){
+					$last = $tile;
+                }
 			}
 
 			if($last !== null)
