@@ -29,7 +29,7 @@ Example servers running Altay
  - [ ] Config Auto Updater
  - [x] Elytra
  - [x] EnchantmentTable
- - [ ] Entity Behaviors (MobAI)
+ - [x] Entity Behaviors (MobAI)
  - [x] Events
     - [x] InventoryClickEvent
  - [x] Fireworks
