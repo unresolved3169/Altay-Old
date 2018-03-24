@@ -30,6 +30,7 @@ use pocketmine\entity\behaviors\EntityJumpHelper;
 use pocketmine\entity\behaviors\EntityMoveHelper;
 use pocketmine\entity\behaviors\pathfinding\PathNavigate;
 use pocketmine\entity\behaviors\pathfinding\PathNavigateGround;
+use pocketmine\math\Vector3;
 
 abstract class Mob extends Living{
 
@@ -51,6 +52,11 @@ abstract class Mob extends Living{
 	protected $behaviors;
 	/** @var EntityAITask */
 	protected $targetBehaviors;
+
+	/** @var float */
+	protected $maximumHomeDistance = -1.0;
+	/** @var Vector3 */
+	protected $homePosition;
 
 	protected function initEntity(){
         $this->moveHelper = new EntityMoveHelper($this);
@@ -139,6 +145,35 @@ abstract class Mob extends Living{
 	 */
 	public function getNavigator() : PathNavigate{
 		return $this->navigator;
+	}
+
+	public function isWithinHomeDistanceCurrentPosition() : bool{
+		return $this->isWithinHomeDistanceFromPosition($this);
+	}
+
+	public function isWithinHomeDistanceFromPosition(Vector3 $pos) : bool{
+		return $this->maximumHomeDistance == -1.0 ? true : $this->homePosition->distanceSquared($pos) < (double)($this->maximumHomeDistance * $this->maximumHomeDistance);
+	}
+
+	public function setHomePosAndDistance(Vector3 $pos, int $distance) : void{
+		$this->homePosition = $pos;
+		$this->maximumHomeDistance = $distance;
+	}
+
+	public function getHomePosition() : Vector3{
+		return $this->homePosition;
+	}
+
+	public function getMaximumHomeDistance() : float{
+		return $this->maximumHomeDistance;
+	}
+
+	public function hasHome() : bool{
+		return $this->maximumHomeDistance != -1.0;
+	}
+
+	public function getBlockPathWeight(Vector3 $pos) : float{
+		return 0;
 	}
 
     public function getSpeed() : float{
