@@ -78,7 +78,7 @@ class FindAttackableTargetBehavior extends TargetBehavior{
 	public function canContinue() : bool{
 		$target = $this->mob->getTargetEntity();
 		
-		if($target === null or !$target->isAlive()) return false;
+		if($target === null or !$target->isAlive() or !$target->isSurvival(true)) return false;
 		
 		if($target instanceof Player){
 			if($this->mob->distance($target) > $this->getTargetDistance($target)) return false;
