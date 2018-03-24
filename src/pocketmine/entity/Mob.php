@@ -48,6 +48,7 @@ abstract class Mob extends Living{
         $this->behaviors = $this->getNormalBehaviors();
         $this->targetBehaviors = $this->getTargetBehaviors();
         $this->navigator = new EntityNavigator($this);
+        $this->setImmobile(true);
     }
 
 	/**
