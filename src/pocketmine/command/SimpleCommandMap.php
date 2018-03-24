@@ -44,7 +44,7 @@ use pocketmine\command\defaults\ListCommand;
 use pocketmine\command\defaults\MakePluginCommand;
 use pocketmine\command\defaults\MakeServerCommand;
 use pocketmine\command\defaults\MeCommand;
-use pocketmine\command\defaults\OpCommand;
+use pocketmine\command\defaults\PlaySoundCommand;
 use pocketmine\command\defaults\PardonCommand;
 use pocketmine\command\defaults\PardonIpCommand;
 use pocketmine\command\defaults\ParticleCommand;
@@ -108,7 +108,7 @@ class SimpleCommandMap implements CommandMap{
             new KillCommand("kill"),
             new ListCommand("list"),
             new MeCommand("me"),
-            new OpCommand("op"),
+            new PlaySoundCommand("op"),
             new PardonCommand("pardon"),
             new PardonIpCommand("pardon-ip"),
             new ParticleCommand("particle"),
