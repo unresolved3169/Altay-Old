@@ -131,7 +131,8 @@ class SimpleCommandMap implements CommandMap{
             new TransferServerCommand("transferserver"),
             new VersionCommand("version"),
             new WhitelistCommand("whitelist"),
-            new XpCommand("xp")
+            new XpCommand("xp"),
+			new PlaySoundCommand("playsound")
 		]);
 
 		if($this->server->getAltayProperty("developer.commands", true)){
