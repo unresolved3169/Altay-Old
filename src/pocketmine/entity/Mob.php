@@ -174,7 +174,7 @@ abstract class Mob extends Living{
 		$blockUpUp = $level->getBlock($coord->add(0,2,0));
 		
 		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
-		$xxx = $dir->multiply($sf);
+		/*$xxx = $dir->multiply($sf);
 		$boundingBox = $this->getBoundingBox()->offset($xxx->x, $xxx->y, $xxx->z);
 		$entityCollide = count($this->level->getCollidingEntities($boundingBox, $this)) > 0;
 
@@ -193,7 +193,9 @@ abstract class Mob extends Living{
 					break;
 				}
 			}
-		}
+		}*/
+		$entityCollide = false;
+
 		if(!$collide and !$entityCollide){
 			$blockDown = $block->getSide(0);
 			if($this->onGround and $blockDown->isSolid()){
