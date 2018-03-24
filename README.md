@@ -33,7 +33,7 @@ Example servers running Altay
    - [ ] Use++
  - [ ] Commands
    - [x] ClearCommand
-   - [ ] PlaySound
+   - [x] PlaySound
    - [ ] StopSound
    - [ ] SetBlock
  - [ ] Beacons
