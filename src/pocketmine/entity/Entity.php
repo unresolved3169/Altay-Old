@@ -505,7 +505,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->temporalVector = new Vector3();
 
 		if($this->eyeHeight === null){
-			$this->eyeHeight = $this->height / 2 + 0.1;
+			$this->eyeHeight = $this->height / 10 + 0.1;
 		}
 
 		$this->id = Entity::$entityCount++;

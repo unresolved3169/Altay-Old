@@ -34,7 +34,7 @@ abstract class Mob extends Living{
     public $width = 1.8;
 
     /** @var array */
-    protected $behaviors = [], $targetBehaviors = [];
+    protected $behaviors = [], $targetBehaviors = [], $behaviorTasks = [];
     /** @var bool */
     protected $behaviorsEnabled = true; // test
     /** @var Behavior|null */
@@ -91,6 +91,9 @@ abstract class Mob extends Living{
             if($this->currentTargetBehavior instanceof TargetBehavior){
                 $this->currentTargetBehavior->onTick($tick);
             }
+            foreach($this->getBehaviorTasks() as $task){
+                $task->onExecute();
+            }
         }
 
         return parent::onUpdate($tick);
@@ -143,6 +146,10 @@ abstract class Mob extends Living{
         return [];
     }
 
+   protected function getBehaviorTasks() : array{
+       return [];
+   }
+
 	/**
 	 * @return array
 	 */
@@ -164,11 +171,12 @@ abstract class Mob extends Living{
 		$block = $level->getBlock($coord);
 		$blockUp = $level->getBlock($coord->add(0,1,0));
 		$blockUpUp = $level->getBlock($coord->add(0,2,0));
+    $onGround = $block->getSide(0) !== 0 or $block->getSide(0,2) !== 0;
 		
 		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
 		
 		if(!$collide){
-			if($this->isOnGround()){
+			if($onGround){
 				$velocity = $dir->multiply($sf);
 				$entityVelocity = $this->getMotion();
 				$entityVelocity->y = 0;
@@ -182,8 +190,9 @@ abstract class Mob extends Living{
 			if($this->canClimb()){
 				$this->setMotion(new Vector3(0,0.2,0));
 			}elseif(!$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
-				if($this->isOnGround() and $this->motionY === 0){
+				if($onGround){
 					$this->jump();
+        // $this->moveForward($spm);
 				}
 			}else{
 				$this->motionX = 0;

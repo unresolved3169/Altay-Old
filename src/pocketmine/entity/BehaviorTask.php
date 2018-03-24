@@ -24,20 +24,25 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Entity;
-use pocketmine\block\Block;
-use pocketmine\block\Grass;
 use pocketmine\entity\Mob;
-use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
-use pocketmine\entity\Animal;
-use pocketmine\level\Level;
 
-class RestrictSunBehavior extends BehaviorTask{
+abstract class BehaviorTask{
+
+    /** @var Mob */
+	protected $mob;
+	/** @var Random */
+	protected $random;
 	
-	public function onExecute() : void{
-		if($this->mob->level->getTime() < Level::TIME_NIGHT and !$this->mob->isOnFire() and $this->mob->level->getHighestBlockAt((int) $this->mob->x, (int) $this->mob->z) < $this->mob->y){
-			$this->mob->setOnFire(3);
-		}
+	public function getName() : string{
+		return (new \ReflectionClass($this))->getShortName();
 	}
+	
+	public function __construct(Mob $mob){
+		$this->mob = $mob;
+		$this->random = $mob->level->getRandom();
+	}
+	
+	public abstract function onExecute() : void;
+	
 }

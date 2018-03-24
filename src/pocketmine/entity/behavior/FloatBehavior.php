@@ -27,9 +27,9 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
 
-class FloatBehavior extends Behavior{
+class FloatBehavior extends BehaviorTask{
 	
-	public function canStart() : bool{
+	public function onExecute() : void{
 		if($this->mob->isInsideOfWater()){
 			$this->mob->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_SWIMMER, true);
 			if($this->random->nextFloat() < 0.8){
@@ -38,11 +38,5 @@ class FloatBehavior extends Behavior{
 		}else{
 			$this->mob->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_SWIMMER, false);
 		}
-		
-		return false;
-	}
-	
-	public function canContinue() : bool{
-		return false;
 	}
 }

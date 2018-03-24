@@ -36,7 +36,6 @@ class Zombie extends Monster implements Ageable{
 
     public $width = 0.6;
     public $height = 1.8;
-    protected $jumpVelocity = 0.5;
 
     protected function initEntity(){
         parent::initEntity();
@@ -80,8 +79,6 @@ class Zombie extends Monster implements Ageable{
 
     protected function getNormalBehaviors() : array{
         return [
-            new RestrictSunBehavior($this),
-            new FloatBehavior($this),
             new MeleeAttackBehavior($this, 1.0, 35),
             new FleeSunBehavior($this),
             new WanderBehavior($this),
@@ -94,6 +91,13 @@ class Zombie extends Monster implements Ageable{
         return [
             new HurtByTargetBehavior($this),
             new FindAttackableTargetBehavior($this, 35)
+        ];
+    }
+
+    protected function getBehaviorTasks() : array{
+        return [
+            new FloatBehavior($this),
+            new RestrictSunBehavior($this)
         ];
     }
 

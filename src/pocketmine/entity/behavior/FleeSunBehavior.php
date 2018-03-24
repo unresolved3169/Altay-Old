@@ -87,8 +87,8 @@ class FleeSunBehavior extends Behavior{
 	public function findPossibleShelter(Entity $entity) : ?Block{
 		for($i = 0; $i < 10; $i++){
 			$block = $this->mob->level->getBlock($this->mob->add($this->random->nextBoundedInt(20) - 10, $this->random->nextBoundedInt(6) - 3, $this->random->nextBoundedInt(20) - 10));
-			$canSeeSky = $entity->level->getHighestBlockAt($block->x, $block->z) < $block->y;
-			if(!$canSeeSky and $this->calculateBlockWeight($entity, $block, $block->getSide(0)) < 0){
+			$canSeeSky = $entity->level->getHighestBlockAt($block->x, $block->z) <= $block->y;
+			if(($block->canBeFlowedInto() or (!$canSeeSky and $block->isSolid())) and $this->calculateBlockWeight($entity, $block, $block->getSide(0)) < 0){
 				return $block;
 			}
 		}

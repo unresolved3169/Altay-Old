@@ -44,6 +44,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\MobEffectPacket;
+use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\Player;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Color;
@@ -539,6 +540,11 @@ abstract class Living extends Entity implements Damageable{
 				$deltaX = $this->x - $e->x;
 				$deltaZ = $this->z - $e->z;
 				$this->knockBack($e, $source->getDamage(), $deltaX, $deltaZ, $source->getKnockBack());
+
+       $pk = new AnimatePacket;
+       $pk->action = 1;
+       $pk->entityRuntimeId = $e->getId();
+       $this->server->broadcastPacket($this->level->getPlayers(), $pk);
 			}
 		}
 
