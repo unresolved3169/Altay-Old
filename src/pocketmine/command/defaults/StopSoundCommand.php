@@ -25,14 +25,12 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnum;
-use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\network\mcpe\protocol\StopSoundPacket;
-use pocketmine\Player;
 use pocketmine\utils\TextFormat;
-use pocketmine\utils\Config;
 
 class StopSoundCommand extends VanillaCommand{
 
@@ -41,18 +39,13 @@ class StopSoundCommand extends VanillaCommand{
 			$name,
 			"Stops a sound or all sounds",
 			"/stopsound <player: target> [sound: string]",
-            []
+            [], [
+            	CommandParameterUtils::getPlayerParameter(false),
+				new CommandParameter("sound", CommandParameter::ARG_TYPE_STRING)
+			]
 		);
-		$this->setPermission("pocketmine.command.stopsound");
 
-		$sounds = new Config(\pocketmine\RESOURCE_PATH . "sound_definitions.json", Config::JSON, []);
-		$soundName = CommandParameterUtils::getStringEnumParameter("soundName", new CommandEnum("sounds", array_keys($sounds->getAll())), true);
-		$target = CommandParameterUtils::getPlayerParameter(false);
-
-		$this->setOverloads([
-			new CommandOverload("0", [$target]),
-			new CommandOverload("1", [$target, $soundName])
-		]);
+		$this->setPermission("altay.command.stopsound");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -60,32 +53,31 @@ class StopSoundCommand extends VanillaCommand{
 			return true;
 		}
 
-		if(count($args) < 1){
+		if(empty($args)){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$target = $sender->getServer()->getOfflinePlayer(array_shift($args));
+		$player = $sender->getServer()->getPlayer($args[0]);
 
-		if(!($target instanceof Player)){
-			throw new InvalidCommandSyntaxException();
+		if($player === null){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
+			return true;
 		}
 
-		$soundName = $args[0] ?? "";
+		$soundName = $args[1] ?? "";
 		$stopAll = strlen($soundName) === 0;
-
-		if($target instanceof Player){
-			if(!$stopAll) {
-				$target->sendMessage(TextFormat::GRAY . "Stopping Sound: " . $soundName);
-			}else{
-				$target->sendMessage(TextFormat::GRAY . "Stopping All Sounds");
-			}
-		}
 
 		$pk = new StopSoundPacket();
 		$pk->soundName = $soundName;
 		$pk->stopAll = $stopAll;
 
-		$target->dataPacket($pk);
+		$player->dataPacket($pk);
+
+		if($stopAll){
+			$player->sendMessage(new TranslationContainer("commands.stopsound.success.all", [$player->getName()]));
+		}else{
+			$player->sendMessage(new TranslationContainer("commands.stopsound.success", [$soundName, $player->getName()]));
+		}
 
 		return true;
 	}

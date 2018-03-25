@@ -25,15 +25,14 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnum;
-use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
-use pocketmine\utils\Config;
 
 class PlaySoundCommand extends VanillaCommand{
 
@@ -41,22 +40,17 @@ class PlaySoundCommand extends VanillaCommand{
 		parent::__construct(
 			$name,
 			"Plays a sound",
-			"/playsound <sound: string> <player: target> [position: x y z] [volume: float] [pitch: float]",
-            []
+			"/playsound <sound: string> [player: target] [position: x y z] [volume: float] [pitch: float]",
+            [], [
+            	new CommandParameter("sound", CommandParameter::ARG_TYPE_STRING, false),
+				CommandParameterUtils::getPlayerParameter(),
+				CommandParameterUtils::getPositionParameter("pos"),
+				new CommandParameter("volume", CommandParameter::ARG_TYPE_FLOAT),
+				new CommandParameter("pitch", CommandParameter::ARG_TYPE_FLOAT),
+			]
 		);
-		$this->setPermission("pocketmine.command.playsound");
 
-		$sounds = new Config(\pocketmine\RESOURCE_PATH . "sound_definitions.json", Config::JSON, []);
-		$soundName = CommandParameterUtils::getStringEnumParameter("soundName", new CommandEnum("sounds", array_keys($sounds->getAll())), false);
-		$target = CommandParameterUtils::getPlayerParameter(false);
-		$position = CommandParameterUtils::getPositionParameter("pos", true);
-		$volume = CommandParameterUtils::getValueParameter("volume", true);
-		$pitch = CommandParameterUtils::getValueParameter("pitch", true);
-
-		$this->setOverloads([
-			new CommandOverload("0", [$soundName, $target]),
-			new CommandOverload("1", [$soundName, $target, $position, $volume, $pitch])
-		]);
+		$this->setPermission("altay.command.playsound");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -64,33 +58,34 @@ class PlaySoundCommand extends VanillaCommand{
 			return true;
 		}
 
-		if(count($args) < 2){
+		if(empty($args)){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$soundName = array_shift($args);
-		$target = $sender->getServer()->getOfflinePlayer(array_shift($args));
+		$soundName = $args[0];
 
-		if(!($target instanceof Player)){
-			throw new InvalidCommandSyntaxException();
-		}
+		if(isset($args[1])){
+			$player = $sender->getServer()->getPlayer($args[1]);
 
-		if(isset($args[0]) and count($args) >= 3){
-			try {
-				$x = array_shift($args);
-				$y = array_shift($args);
-				$z = array_shift($args);
-
-				$pos = new Vector3($x, $y, $z);
-			}catch (\Exception $e){
-				throw new InvalidCommandSyntaxException();
+			if($player === null){
+				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
+				return true;
 			}
 		}else{
-			$pos = $target->asVector3();
+			if($sender instanceof Player){
+				$player = $sender;
+			}else{
+				throw new InvalidCommandSyntaxException();
+			}
 		}
 
-		if($target instanceof Player){
-			$target->sendMessage(TextFormat::GRAY . "Playing Sound: " . $soundName);
+		if(count($args) >= 5){
+			$pos = [$args[2], $args[3], $args[4]];
+			$pos = array_map("intval", $pos);
+
+			$pos = new Vector3(...$pos);
+		}else{
+			$pos = $player->asVector3();
 		}
 
 		$pk = new PlaySoundPacket();
@@ -98,10 +93,11 @@ class PlaySoundCommand extends VanillaCommand{
 		$pk->x = $pos->x;
 		$pk->y = $pos->y;
 		$pk->z = $pos->z;
-		$pk->volume = $args[0] ?? 1.0;
-		$pk->pitch = $args[1] ?? 1.0;
+		$pk->volume = $args[5] ?? 1.0;
+		$pk->pitch = $args[6] ?? 1.0;
+		$player->dataPacket($pk);
 
-		$target->dataPacket($pk);
+		$player->sendMessage(new TranslationContainer("commands.playsound.success", [$soundName, $player->getName()]));
 
 		return true;
 	}
