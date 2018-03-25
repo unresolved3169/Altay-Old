@@ -34,7 +34,7 @@ Example servers running Altay
  - [ ] Commands
    - [x] ClearCommand
    - [x] PlaySound
-   - [ ] StopSound
+   - [x] StopSound
    - [ ] SetBlock
  - [ ] Beacons
  - [ ] Config Auto Updater
