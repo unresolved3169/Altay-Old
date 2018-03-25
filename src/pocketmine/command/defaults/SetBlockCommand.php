@@ -26,10 +26,11 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnum;
-use pocketmine\command\overload\CommandOverload;
+use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\item\ItemBlock;
+use pocketmine\item\ItemFactory;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
@@ -44,12 +45,12 @@ class SetBlockCommand extends VanillaCommand{
             [],
 			[
 				CommandParameterUtils::getPositionParameter("position", false),
-		        CommandParameterUtils::getStringEnumParameter("tileName", new CommandEnum("tileNames", []), false),
-		        CommandParameterUtils::getIntParameter("tileData", true),
-		        CommandParameterUtils::getStringEnumParameter("oldBlockHandling", new CommandEnum("handling", ["destroy", "keep", "replace"]), true)
+		        CommandParameterUtils::getStringEnumParameter("tileName", CommandEnumValues::getBlock(), false),
+		        CommandParameterUtils::getIntParameter("tileData"),
+		        CommandParameterUtils::getStringEnumParameter("oldBlockHandling", new CommandEnum("handling", ["destroy", "keep", "replace"]))
 			]
 		);
-		$this->setPermission("pocketmine.command.setblock");
+		$this->setPermission("altay.command.setblock");
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -61,45 +62,39 @@ class SetBlockCommand extends VanillaCommand{
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$pos = null;
-		try{
-			$x = array_shift($args);
-			$y = array_shift($args);
-			$z = array_shift($args);
-
-			$pos = new Vector3($x,$y,$z);
-		}catch(\Exception $e){
-			throw new InvalidCommandSyntaxException();
-		}
-
-		$block = ItemBlock::fromString(array_shift($args));
-
-		if($block === null){
-			throw new InvalidCommandSyntaxException();
-		}
-
-		$block->setDamage($args[0] ?? 0);
-		$handling = $args[1] ?? "replace";
 		$level = $sender->level;
+		$pos = [(int) $args[0], (int) $args[1], (int) $args[2]];
+		if(!$level->isInWorld(...$pos)){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.setblock.outOfWorld"));
+			return true;
+		}
+
+		$pos = new Vector3(...$pos);
+
+		$block = ItemFactory::fromString($args[3]);
+		$block->setDamage($args[4] ?? 0);
+
+		$handling = $args[5] ?? "replace";
 		$block = $block->getBlock();
 
-		switch ($handling){
+		$place = true;
+		switch($handling){
 			case "destroy":
 				$level->useBreakOn($pos);
-				$level->setBlock($pos, $block);
 				break;
 			case "keep":
-				if($level->getBlock($pos)->getId() === 0){
-					$level->setBlock($pos, $block);
-				}
+				$place = $level->getBlockAt($pos->x, $pos->y, $pos->z)->getId() === 0;
 				break;
 			case "replace":
-			default:
-				$level->setBlock($pos, $block);
 				break;
+			default:
+				throw new InvalidCommandSyntaxException();
 		}
 
-		$sender->sendMessage(TextFormat::GREEN . "Block placed successfully.");
+		if($place){
+			$level->setBlock($pos, $block);
+			$sender->sendMessage(new TranslationContainer(TextFormat::GREEN . "%commands.setblock.success"));
+		}
 
 		return true;
 	}
