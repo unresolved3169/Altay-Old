@@ -49,10 +49,6 @@ class Zombie extends Monster implements Ageable{
 		];
 	}
 
-	public function getTargetBehaviors() : array{
-		return parent::getTargetBehaviors();
-	}
-
 	public function getName() : string{
         return "Zombie";
     }

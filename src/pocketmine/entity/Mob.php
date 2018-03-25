@@ -59,19 +59,35 @@ abstract class Mob extends Living{
 	protected $homePosition;
 
 	protected function initEntity(){
+		$this->behaviors = $this->targetBehaviors = new EntityAITask();
+
         $this->moveHelper = new EntityMoveHelper($this);
         $this->jumpHelper = new EntityJumpHelper($this);
         $this->navigator = new PathNavigateGround($this);
         $this->setMovementSpeed($this->getSpeed());
 
-        foreach($this->getBehaviors() as $priority => $behavior)
-        	$this->behaviors->addTask($priority, $behavior);
-
-		foreach($this->getTargetBehaviors() as $priority => $behavior)
-			$this->targetBehaviors->addTask($priority, $behavior);
+        $this->behaviors2EntityTask($this->getBehaviors(), $this->behaviors);
+        $this->behaviors2EntityTask($this->getTargetBehaviors(), $this->targetBehaviors);
 
         parent::initEntity();
     }
+
+	/**
+	 * @param Behavior[] $a
+	 * @param EntityAITask $task
+	 */
+	private function behaviors2EntityTask(array $a, EntityAITask $task){
+		foreach($a as $priority => $behavior){
+			if(is_array($behavior)){
+				foreach($behavior as $b)
+					$this->behaviors->addTask($priority, $b);
+
+				continue;
+			}
+
+			$this->behaviors->addTask($priority, $behavior);
+		}
+	}
 
 	/**
 	 * @return Behavior[]
