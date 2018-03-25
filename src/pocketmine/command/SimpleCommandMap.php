@@ -45,6 +45,7 @@ use pocketmine\command\defaults\MakePluginCommand;
 use pocketmine\command\defaults\MakeServerCommand;
 use pocketmine\command\defaults\MeCommand;
 use pocketmine\command\defaults\OpCommand;
+use pocketmine\command\defaults\SetBlockCommand;
 use pocketmine\command\defaults\StopSoundCommand;
 use pocketmine\command\defaults\PlaySoundCommand;
 use pocketmine\command\defaults\PardonCommand;
@@ -124,6 +125,7 @@ class SimpleCommandMap implements CommandMap{
             new SaveOnCommand("save-on"),
             new SayCommand("say"),
             new SeedCommand("seed"),
+            new SetBlockCommand("setblock"),
             new SetWorldSpawnCommand("setworldspawn"),
             new SpawnpointCommand("spawnpoint"),
             new StopCommand("stop"),
@@ -135,8 +137,7 @@ class SimpleCommandMap implements CommandMap{
             new TransferServerCommand("transferserver"),
             new VersionCommand("version"),
             new WhitelistCommand("whitelist"),
-            new XpCommand("xp"),
-
+            new XpCommand("xp")
 		]);
 
 		if($this->server->getAltayProperty("developer.commands", true)){
