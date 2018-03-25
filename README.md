@@ -27,15 +27,15 @@ Example servers running Altay
  - [x] Forms
  - [x] Hopper
  - [x] Virtual Inventory
+ - [x] Commands
+   - [x] /clear
+   - [x] /playsound
+   - [x] /stopsound
+   - [x] /setblock
  - [ ] Trading
    - [x] Trade
    - [ ] Level Upgrade
    - [ ] Use++
- - [x] Commands
-   - [x] ClearCommand
-   - [x] PlaySound
-   - [x] StopSound
-   - [x] SetBlock
  - [ ] Beacons
  - [ ] Config Auto Updater
  - [ ] Entity Behaviors (MobAI)
