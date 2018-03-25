@@ -29,33 +29,29 @@ use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\PlaySoundPacket;
+use pocketmine\network\mcpe\protocol\StopSoundPacket;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\Config;
 
-class PlaySoundCommand extends VanillaCommand{
+class StopSoundCommand extends VanillaCommand{
 
 	public function __construct(string $name){
 		parent::__construct(
 			$name,
-			"Plays a sound",
-			"/playsound <sound: string> <player: target> [position: x y z] [volume: float] [pitch: float]",
+			"Stops a sound or all sounds",
+			"/stopsound <player: target> [sound: string]",
             []
 		);
-		$this->setPermission("pocketmine.command.playsound");
+		$this->setPermission("pocketmine.command.stopsound");
 
 		$sounds = new Config(\pocketmine\RESOURCE_PATH . "sound_definitions.json", Config::JSON, []);
-		$soundName = CommandParameterUtils::getStringEnumParameter("soundName", new CommandEnum("sounds", array_keys($sounds->getAll())), false);
+		$soundName = CommandParameterUtils::getStringEnumParameter("soundName", new CommandEnum("sounds", array_keys($sounds->getAll())), true);
 		$target = CommandParameterUtils::getPlayerParameter(false);
-		$position = CommandParameterUtils::getPositionParameter("pos", true);
-		$volume = CommandParameterUtils::getValueParameter("volume", true);
-		$pitch = CommandParameterUtils::getValueParameter("pitch", true);
 
 		$this->setOverloads([
-			new CommandOverload("0", [$soundName, $target]),
-			new CommandOverload("1", [$soundName, $target, $position, $volume, $pitch])
+			new CommandOverload("0", [$target]),
+			new CommandOverload("1", [$target, $soundName])
 		]);
 	}
 
@@ -64,42 +60,30 @@ class PlaySoundCommand extends VanillaCommand{
 			return true;
 		}
 
-		if(count($args) < 2){
+		if(count($args) < 1){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		$soundName = array_shift($args);
 		$target = $sender->getServer()->getOfflinePlayer(array_shift($args));
 
 		if(!($target instanceof Player)){
 			throw new InvalidCommandSyntaxException();
 		}
 
-		if(isset($args[0]) and count($args) >= 3){
-			try {
-				$x = array_shift($args);
-				$y = array_shift($args);
-				$z = array_shift($args);
-
-				$pos = new Vector3($x, $y, $z);
-			}catch (\Exception $e){
-				throw new InvalidCommandSyntaxException();
-			}
-		}else{
-			$pos = $target->asVector3();
-		}
+		$soundName = $args[0] ?? "";
+		$stopAll = strlen($soundName) === 0;
 
 		if($target instanceof Player){
-			$target->sendMessage(TextFormat::GRAY . "Playing Sound: " . $soundName);
+			if(!$stopAll) {
+				$target->sendMessage(TextFormat::GRAY . "Stopping Sound: " . $soundName);
+			}else{
+				$target->sendMessage(TextFormat::GRAY . "Stopping All Sounds");
+			}
 		}
 
-		$pk = new PlaySoundPacket();
+		$pk = new StopSoundPacket();
 		$pk->soundName = $soundName;
-		$pk->x = $pos->x;
-		$pk->y = $pos->y;
-		$pk->z = $pos->z;
-		$pk->volume = $args[0] ?? 1.0;
-		$pk->pitch = $args[1] ?? 1.0;
+		$pk->stopAll = $stopAll;
 
 		$target->dataPacket($pk);
 
