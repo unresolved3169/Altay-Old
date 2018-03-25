@@ -109,7 +109,24 @@ class Enchantment{
 		], 2));
 
 		self::registerEnchantment(new Enchantment(self::RESPIRATION, "%enchantment.oxygen", self::RARITY_RARE, self::SLOT_HEAD, 3, 4));
-
+        
+		self::registerEnchantment(new Enchantment(self::THORNS, "%enchantment.thorns", self::RARITY_UNCOMMON, self::SLOT_ARMOR, 3));
+			self::registerEnchantment(new Enchantment(self::DEPTH_STRIDER, "%enchantment.depth Strider", self::RARITY_UNCOMMON, self::SLOT_FEET, 3));
+			self::registerEnchantment(new Enchantment(self::AQUA_AFFINITY, "%enchantment.aqua.affinity", self::RARITY_UNCOMMON, self::SLOT_HEAD, 1));
+			self::registerEnchantment(new Enchantment(self::SHARPNESS, "%enchantment.sharpness", self::RARITY_UNCOMMON, Enchantment::SLOT_SWORD, 5));
+			self::registerEnchantment(new Enchantment(self::SMITE, "%enchantment.smite", self::RARITY_UNCOMMON, self::SLOT_SWORD, 5));
+			self::registerEnchantment(new Enchantment(self::BANE_OF_ARTHROPODS, "%enchantment.bane.of.arthropods", self::RARITY_UNCOMMON, self::SLOT_SWORD, 5));
+			self::registerEnchantment(new Enchantment(self::KNOCKBACK, "%enchantment.knockback", self::RARITY_UNCOMMON, self::SLOT_SWORD, 2));
+			self::registerEnchantment(new Enchantment(self::FIRE_ASPECT, "%enchantment.fire.aspect", self::RARITY_UNCOMMON, self::SLOT_SWORD, 2));
+			self::registerEnchantment(new Enchantment(self::LOOTING, "%enchantment.looting", self::RARITY_UNCOMMON, self::SLOT_PICKAXE, 3));
+			self::registerEnchantment(new Enchantment(self::FORTUNE, "%enchantment.fortune", self::RARITY_UNCOMMON, self::SLOT_PICKAXE, 3));
+			self::registerEnchantment(new Enchantment(self::POWER, "%enchantment.power", self::RARITY_UNCOMMON, self::SLOT_BOW, 5));
+			self::registerEnchantment(new Enchantment(self::PUNCH, "%enchantment.punch", self::RARITY_UNCOMMON, self::SLOT_BOW, 2));
+			self::registerEnchantment(new Enchantment(self::FLAME, "%enchantment.flame", self::RARITY_UNCOMMON, self::SLOT_BOW, 2));
+			self::registerEnchantment(new Enchantment(self::INFINITY, "%enchantment.infinity", self::RARITY_UNCOMMON, self::SLOT_BOW, 1));
+		
+		
+		
 		self::registerEnchantment(new Enchantment(self::EFFICIENCY, "%enchantment.digging", self::RARITY_COMMON, self::SLOT_DIG | self::SLOT_SHEARS, 5, 1));
 		self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.untouching", self::RARITY_MYTHIC, self::SLOT_DIG | self::SLOT_SHEARS, 1, 8));
 		self::registerEnchantment(new Enchantment(self::UNBREAKING, "%enchantment.durability", self::RARITY_UNCOMMON, self::SLOT_ALL, 3, 2)); //TODO: item type flags need to be split up
