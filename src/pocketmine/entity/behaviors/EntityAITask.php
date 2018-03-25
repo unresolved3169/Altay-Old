@@ -84,7 +84,7 @@ class EntityAITask{
 			$entry->action->updateTask();
 	}
 
-	private function startExecute(int $index) : void{
+	private function startExecute(string $index) : void{
 		$taskEntry = $this->taskEntries[$index];
 		if($this->canUse($taskEntry) && $taskEntry->action->shouldExecute()){
 			$taskEntry->action->startExecuting();
