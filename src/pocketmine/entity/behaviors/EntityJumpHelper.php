@@ -31,7 +31,7 @@ class EntityJumpHelper{
     /** @var Mob */
     protected $entity;
     /** @var bool */
-    protected $isJumping;
+    protected $isJumping = false;
 
     public function __construct(Mob $mob){
         $this->entity = $mob;
