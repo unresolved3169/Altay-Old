@@ -31,11 +31,11 @@ Example servers running Altay
    - [x] Trade
    - [ ] Level Upgrade
    - [ ] Use++
- - [ ] Commands
+ - [x] Commands
    - [x] ClearCommand
    - [x] PlaySound
    - [x] StopSound
-   - [ ] SetBlock
+   - [x] SetBlock
  - [ ] Beacons
  - [ ] Config Auto Updater
  - [ ] Entity Behaviors (MobAI)
