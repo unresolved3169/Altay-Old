@@ -40,4 +40,8 @@ class LeatherCap extends Armor{
     public function getMaxDurability() : int{
         return 56;
     }
+
+	public function getEnchantability() : int{
+		return 15;
+	}
 }

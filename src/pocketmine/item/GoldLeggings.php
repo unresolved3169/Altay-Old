@@ -39,4 +39,8 @@ class GoldLeggings extends Armor{
     public function getMaxDurability() : int{
         return 106;
     }
+
+    public function getEnchantability() : int{
+		return 25;
+	}
 }

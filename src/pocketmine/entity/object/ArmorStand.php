@@ -42,7 +42,9 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 
+// TODO : Change to Living
 class ArmorStand extends Entity{
+    public const NETWORK_ID = EntityIds::ARMOR_STAND;
 
     public const TAG_ARMOR = "Armor";
     public const TAG_MAINHAND = "Mainhand";
@@ -53,75 +55,68 @@ class ArmorStand extends Entity{
 
     /** @var AltayEntityEquipment */
     protected $equipment;
-    /** @var int */
-    protected $pose = 0; // have 13
+
+    public $width = 0.5;
+    public $height = 1.975;
 
     protected $gravity = 0.04;
-
-    public const NETWORK_ID = EntityIds::ARMOR_STAND;
 
     protected function initEntity(){
         $this->setMaxHealth(6);
 
         parent::initEntity();
 
-        $airNBT = ItemFactory::get(Item::AIR)->nbtSerialize();
-        if(!$this->namedtag->hasTag(self::TAG_ARMOR, ListTag::class)){
-            $this->namedtag->setTag(new ListTag(self::TAG_ARMOR, [
-                $airNBT,
-                $airNBT,
-                $airNBT,
-                $airNBT
-            ], NBT::TAG_Compound));
-        }
-
-        if(!$this->namedtag->hasTag(self::TAG_MAINHAND, ListTag::class)){
-            $this->namedtag->setTag(new ListTag(self::TAG_MAINHAND, [
-                $airNBT
-            ], NBT::TAG_Compound));
-        }
-
-        if(!$this->namedtag->hasTag(self::TAG_OFFHAND, ListTag::class)){
-            $this->namedtag->setTag(new ListTag(self::TAG_OFFHAND, [
-                $airNBT
-            ], NBT::TAG_Compound));
-        }
-
-        if(!$this->namedtag->hasTag(self::TAG_POSE, CompoundTag::class)){
-            $this->namedtag->setTag(new CompoundTag(self::TAG_POSE, [
-                new IntTag(self::TAG_LAST_SIGNAL, 0),
-                new IntTag(self::TAG_POSE_INDEX, 0)
-            ]));
-        }
-
-        /** @var ListTag $armor */
-        $armor = $this->namedtag->getTag(self::TAG_ARMOR);
-        /** @var ListTag $mainhand */
-        $mainhand = $this->namedtag->getTag(self::TAG_MAINHAND);
-        /** @var ListTag $offhand */
-        $offhand = $this->namedtag->getTag(self::TAG_OFFHAND);
-
-        $contents = array_merge(array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues()), [Item::nbtDeserialize($offhand->offsetGet(0))], [Item::nbtDeserialize($mainhand->offsetGet(0))]);
         $this->equipment = new AltayEntityEquipment($this);
-        $this->equipment->setContents($contents);
 
-        /** @var CompoundTag $poseTag */
-        $poseTag = $this->namedtag->getTag(self::TAG_POSE);
-        $this->pose = $poseTag->getInt(self::TAG_POSE_INDEX, 0);
+        $items = [];
+        if($this->namedtag->hasTag(self::TAG_MAINHAND, ListTag::class)){
+            /** @var ListTag $mainhand */
+            $mainhand = $this->namedtag->getTag(self::TAG_MAINHAND);
+            $items[0] = Item::nbtDeserialize($mainhand->offsetGet(0));
+        }
+
+        if($this->namedtag->hasTag(self::TAG_OFFHAND, ListTag::class)){
+            /** @var ListTag $offhand */
+            $offhand = $this->namedtag->getTag(self::TAG_OFFHAND);
+            $items[1] = Item::nbtDeserialize($offhand->offsetGet(0));
+        }
+
+        if($this->namedtag->hasTag(self::TAG_ARMOR, ListTag::class)){
+            /** @var ListTag $armor */
+            $armor = $this->namedtag->getTag(self::TAG_ARMOR);
+            $armors = array_map(function(CompoundTag $tag) : Item{ return Item::nbtDeserialize($tag); }, $armor->getAllValues());
+            foreach($armors as $index => $item){
+                $items[$index + 2] = $item; // HACK
+            }
+        }
+
+        if($this->namedtag->hasTag(self::TAG_POSE, CompoundTag::class)){
+            /** @var CompoundTag $pose */
+            $pose = $this->namedtag->getTag(self::TAG_POSE);
+            $pose = $pose->getInt(self::TAG_POSE_INDEX, 0);
+        }else{
+            $pose = 0;
+        }
+
+        $this->equipment->setContents($items);
+
+        $this->setPose($pose);
     }
 
     public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){
         if($player->isSneaking()){
-            // I couldn't find a way to set a pose, but MCPE is doing it himself here.
-            $this->pose++;
-            if($this->pose >= 13)
-                $this->pose = 0;
+            $pose = $this->getPose();
+            if(++$pose >= 13){
+                $pose = 0;
+            }
+
+            $this->setPose($pose);
 
             return true;
         }
         foreach($actions as $action){
             if($action instanceof SlotChangeAction){
-                if($action->execute($player)){
+                if($action->execute($player)){ // TODO : Özel action oluştur ve $actions kaldır
                     $action->onExecuteSuccess($player);
 
                     $targetItem = $action->getTargetItem();
@@ -164,6 +159,14 @@ class ArmorStand extends Entity{
         return true;
     }
 
+    public function setPose(int $pose) : void{
+        $this->propertyManager->setInt(self::DATA_ARMOR_STAND_POSE, $pose);
+    }
+
+    public function getPose() : int{
+        return $this->propertyManager->getInt(self::DATA_ARMOR_STAND_POSE);
+    }
+
     public function onUpdate(int $currentTick): bool{
         if(($hasUpdated = parent::onUpdate($currentTick))){
             if($this->isAffectedByGravity()){
@@ -187,11 +190,12 @@ class ArmorStand extends Entity{
         $armorNBT = array_map(function(Item $item) : CompoundTag{ return $item->nbtSerialize(); }, $this->equipment->getArmorContents());
         $this->namedtag->setTag(new ListTag(self::TAG_ARMOR, $armorNBT, NBT::TAG_Compound));
 
-        /** @var CompoundTag $poseTag */
-        $poseTag = $this->namedtag->getTag(self::TAG_POSE);
+        /** @var CompoundTag $lastSignal */
+        $lastSignal = $this->namedtag->hasTag(self::TAG_POSE, CompoundTag::class) ? $this->namedtag->getTag(self::TAG_POSE) : null;
+        $lastSignal = $lastSignal !== null ? $lastSignal->getInt(self::TAG_LAST_SIGNAL, 0) : 0;
         $this->namedtag->setTag(new CompoundTag(self::TAG_POSE, [
-            $poseTag->getTag(self::TAG_LAST_SIGNAL),
-            new IntTag(self::TAG_POSE_INDEX, $this->pose)
+            new IntTag(self::TAG_LAST_SIGNAL, $lastSignal),
+            new IntTag(self::TAG_POSE_INDEX, $this->getPose())
         ]));
     }
 

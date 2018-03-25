@@ -317,7 +317,7 @@ class PluginManager{
 					}
 				}
 
-				if($missingDependency === true){
+				if($missingDependency){
 					foreach($plugins as $name => $file){
 						if(!isset($dependencies[$name])){
 							unset($softDependencies[$name]);
@@ -332,7 +332,7 @@ class PluginManager{
 					}
 
 					//No plugins loaded :(
-					if($missingDependency === true){
+					if($missingDependency){
 						foreach($plugins as $name => $file){
 							$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.plugin.loadError", [$name, "%pocketmine.plugin.circularDependency"]));
 						}
@@ -397,11 +397,7 @@ class PluginManager{
 	 * @return null|Permission
 	 */
 	public function getPermission(string $name){
-		if(isset($this->permissions[$name])){
-			return $this->permissions[$name];
-		}
-
-		return null;
+		return $this->permissions[$name] ?? null;
 	}
 
 	/**
@@ -437,11 +433,7 @@ class PluginManager{
 	 * @return Permission[]
 	 */
 	public function getDefaultPermissions(bool $op) : array{
-		if($op === true){
-			return $this->defaultPermsOp;
-		}else{
-			return $this->defaultPerms;
-		}
+		return $op ? $this->defaultPermsOp : $this->defaultPerms;
 	}
 
 	/**
@@ -519,7 +511,7 @@ class PluginManager{
 	 * @param Permissible $permissible
 	 */
 	public function subscribeToDefaultPerms(bool $op, Permissible $permissible){
-		if($op === true){
+		if($op){
 			$this->defSubsOp[spl_object_hash($permissible)] = $permissible;
 		}else{
 			$this->defSubs[spl_object_hash($permissible)] = $permissible;
@@ -531,7 +523,7 @@ class PluginManager{
 	 * @param Permissible $permissible
 	 */
 	public function unsubscribeFromDefaultPerms(bool $op, Permissible $permissible){
-		if($op === true){
+		if($op){
 			unset($this->defSubsOp[spl_object_hash($permissible)]);
 		}else{
 			unset($this->defSubs[spl_object_hash($permissible)]);
@@ -544,11 +536,7 @@ class PluginManager{
 	 * @return Permissible[]
 	 */
 	public function getDefaultPermSubscriptions(bool $op) : array{
-		if($op === true){
-			return $this->defSubsOp;
-		}
-
-		return $this->defSubs;
+		return $op ? $this->defSubsOp : $this->defSubs;
 	}
 
 	/**
@@ -564,11 +552,7 @@ class PluginManager{
 	 * @return bool
 	 */
 	public function isPluginEnabled(Plugin $plugin) : bool{
-		if($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])){
-			return $plugin->isEnabled();
-		}else{
-			return false;
-		}
+		return ($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])) ? $plugin->isEnabled() : false;
 	}
 
 	/**

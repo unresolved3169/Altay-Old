@@ -80,7 +80,7 @@ class WeakPosition extends Position{
 	 *
 	 * @throws LevelException
 	 */
-	public function getSide($side, $step = 1){
+	public function getSide(int $side, int $step = 1){
 		assert($this->isValid());
 
 		return WeakPosition::fromObject(parent::getSide($side, $step), $this->level);

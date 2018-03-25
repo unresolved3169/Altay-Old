@@ -39,4 +39,8 @@ class DiamondLeggings extends Armor{
     public function getMaxDurability() : int{
         return 496;
     }
+
+    public function getEnchantability() : int{
+		return 10;
+	}
 }

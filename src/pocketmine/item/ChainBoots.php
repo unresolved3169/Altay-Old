@@ -39,4 +39,8 @@ class ChainBoots extends Armor{
     public function getMaxDurability() : int{
         return 196;
     }
+
+	public function getEnchantability() : int{
+		return 12;
+	}
 }

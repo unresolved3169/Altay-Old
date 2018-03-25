@@ -70,7 +70,7 @@ class Squid extends WaterAnimal{
 	}
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
-		if($this->closed !== false){
+		if($this->closed){
 			return false;
 		}
 

@@ -45,6 +45,7 @@ use pocketmine\command\defaults\MakePluginCommand;
 use pocketmine\command\defaults\MakeServerCommand;
 use pocketmine\command\defaults\MeCommand;
 use pocketmine\command\defaults\OpCommand;
+use pocketmine\command\defaults\PlaySoundCommand;
 use pocketmine\command\defaults\PardonCommand;
 use pocketmine\command\defaults\PardonIpCommand;
 use pocketmine\command\defaults\ParticleCommand;
@@ -109,6 +110,7 @@ class SimpleCommandMap implements CommandMap{
             new ListCommand("list"),
             new MeCommand("me"),
             new OpCommand("op"),
+            new PlaySoundCommand("playsound"),
             new PardonCommand("pardon"),
             new PardonIpCommand("pardon-ip"),
             new ParticleCommand("particle"),
@@ -131,7 +133,8 @@ class SimpleCommandMap implements CommandMap{
             new TransferServerCommand("transferserver"),
             new VersionCommand("version"),
             new WhitelistCommand("whitelist"),
-            new XpCommand("xp")
+            new XpCommand("xp"),
+
 		]);
 
 		if($this->server->getAltayProperty("developer.commands", true)){
