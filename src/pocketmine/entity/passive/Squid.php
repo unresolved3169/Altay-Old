@@ -21,8 +21,9 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\passive;
 
+use pocketmine\entity\WaterAnimal;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
@@ -67,11 +68,6 @@ class Squid extends WaterAnimal{
 			$this->broadcastEntityEvent(EntityEventPacket::SQUID_INK_CLOUD);
 		}
 	}
-
-	private function generateRandomDirection() : Vector3{
-		return new Vector3(mt_rand(-1000, 1000) / 1000, mt_rand(-500, 500) / 1000, mt_rand(-1000, 1000) / 1000);
-	}
-
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
 		if($this->closed){

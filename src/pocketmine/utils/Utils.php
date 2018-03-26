@@ -632,4 +632,12 @@ class Utils{
         }
         return true;
     }
+
+    public static function arrayCopy(array $src, int $srcPos, array &$des, int $desPos, int $length){
+        while(count($des) != $length){
+            $des[$desPos] = $src[$srcPos];
+            $desPos++;
+            $srcPos++;
+        }
+    }
 }

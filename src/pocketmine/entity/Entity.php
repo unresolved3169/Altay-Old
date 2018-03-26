@@ -29,13 +29,20 @@ namespace pocketmine\entity;
 
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
+use pocketmine\block\Lava;
+use pocketmine\block\Liquid;
 use pocketmine\block\Water;
+use pocketmine\entity\hostile\Guardian;
+use pocketmine\entity\hostile\Zombie;
 use pocketmine\entity\object\ArmorStand;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\object\FallingBlock;
 use pocketmine\entity\object\Painting;
 use pocketmine\entity\object\PrimedTNT;
 use pocketmine\entity\object\ItemEntity;
+use pocketmine\entity\passive\Squid;
+use pocketmine\entity\passive\Villager;
+use pocketmine\entity\passive\Wolf;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\EnderPearl;
@@ -250,12 +257,14 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);
 		Entity::registerEntity(FallingBlock::class, false, ['FallingSand', 'minecraft:falling_block']);
 		Entity::registerEntity(FireworksRocket::class, false, ['FireworkRocket', 'FireworksRocket', 'minecraft:fireworks_rocket']);
+		Entity::registerEntity(Guardian::class, false, ['Guardian', 'minecraft:guardian']);
 		Entity::registerEntity(ItemEntity::class, false, ['Item', 'minecraft:item']);
 		Entity::registerEntity(Painting::class, false, ['Painting', 'minecraft:painting']);
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
 		Entity::registerEntity(SplashPotion::class, false, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
 		Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:snowball']);
 		Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);
+		Entity::registerEntity(Wolf::class, false, ['Wolf',	'minecraft:wolf']);
 		Entity::registerEntity(Villager::class, false, ['Villager',	'minecraft:villager']);
 		Entity::registerEntity(Zombie::class, false, ['Zombie',	'minecraft:zombie']);
 
@@ -1493,6 +1502,28 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return false;
 	}
 
+    public function isInsideOfLava() : bool{
+        $block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
+
+        if($block instanceof Lava){
+            $f = ($block->y + 1) - ($block->getFluidHeightPercent() - 0.1111111);
+            return $y < $f;
+        }
+
+        return false;
+    }
+
+    public function isInsideOfLiquid() : bool{
+        $block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
+
+        if($block instanceof Liquid){
+            $f = ($block->y + 1) - ($block->getFluidHeightPercent() - 0.1111111);
+            return $y < $f;
+        }
+
+        return false;
+    }
+
 	public function isInsideOfSolid() : bool{
 		$block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
 
@@ -2151,5 +2182,31 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function getDrops() : array{
 		return [];
 	}
+
+    /**
+     * Sets the movement speed of player
+     *
+     * @param float $speed
+     */
+    public function setMovementSpeed(float $speed) : void{
+        $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed);
+    }
+
+    /**
+     * Returns the movement speed of player
+     *
+     * @return float
+     */
+    public function getMovementSpeed() : float{
+        return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
+    }
+
+    public function getFollowRange() : float{
+        return $this->getAttributeMap()->getAttribute(Attribute::FOLLOW_RANGE)->getValue();
+    }
+
+    public function getMaxFallHeight() : int{
+        return 3;
+    }
 
 }

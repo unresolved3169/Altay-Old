@@ -64,4 +64,18 @@ abstract class Math{
 			return [];
 		}
 	}
+
+	public static function wrapAngleTo180(float $value) : float{
+        $value = fmod($value, 360);
+
+        if($value >= 180.0){
+            $value -= 360.0;
+        }
+
+        if($value < -180.0){
+            $value += 360.0;
+        }
+
+        return $value;
+    }
 }
