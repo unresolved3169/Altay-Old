@@ -100,6 +100,10 @@ class EffectCommand extends VanillaCommand{
 
 		if(count($args) >= 3){
 			$duration = ((int) $args[2]) * 20; //ticks
+			if($duration < 0 or $duration > INT32_MAX){
+				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.num.invalid", [$args[2]]));
+				return true;
+			}
 		}else{
 			$duration = null;
 		}
@@ -137,7 +141,7 @@ class EffectCommand extends VanillaCommand{
 			$sender->sendMessage(new TranslationContainer("commands.effect.success.removed", [$effect->getName(), $player->getDisplayName()]));
 		}else{
             $instance = new EffectInstance($effect, $duration, $amplification, $visible);
-            $player->addEffect($effect);
+            $player->addEffect($instance);
             self::broadcastCommandMessage($sender, new TranslationContainer("%commands.effect.success", [$effect->getName(), $instance->getAmplifier(), $player->getDisplayName(), $instance->getDuration() / 20, $effect->getId()]));
         }
 
