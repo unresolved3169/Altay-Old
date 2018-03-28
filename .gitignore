@@ -10,7 +10,7 @@ crashdumps/*
 server.properties
 /pocketmine.yml
 /altay.yml
-memoryDump_*/*
+memory_dumps/*
 resource_packs/
 
 # Common IDEs

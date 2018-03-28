@@ -28,9 +28,9 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\types\ContainerIds;
 use pocketmine\network\mcpe\protocol\InventoryContentPacket;
 use pocketmine\network\mcpe\protocol\InventorySlotPacket;
-use pocketmine\network\mcpe\protocol\types\ContainerIds;
 use pocketmine\Player;
 
 abstract class BaseInventory implements Inventory{
@@ -41,7 +41,7 @@ abstract class BaseInventory implements Inventory{
 	protected $name;
 	/** @var string */
 	protected $title;
-	/** @var \SplFixedArray<Item> */
+	/** @var \SplFixedArray|Item[] */
 	protected $slots = [];
 	/** @var Player[] */
 	protected $viewers = [];
@@ -99,10 +99,13 @@ abstract class BaseInventory implements Inventory{
 	 */
 	public function getContents(bool $includeEmpty = false) : array{
 		$contents = [];
-		for($i = 0, $size = $this->getSize(); $i < $size; ++$i){
-			$item = $this->getItem($i);
-			if($includeEmpty or !$item->isNull()){
-				$contents[$i] = $item;
+		$air = null;
+
+		foreach($this->slots as $i => $slot){
+			if($slot !== null){
+				$contents[$i] = clone $slot;
+			}elseif($includeEmpty){
+				$contents[$i] = $air ?? ($air = ItemFactory::get(Item::AIR, 0, 0));
 			}
 		}
 
@@ -235,6 +238,10 @@ abstract class BaseInventory implements Inventory{
 		}
 
 		return -1;
+	}
+
+	public function isSlotEmpty(int $index) : bool{
+		return $this->slots[$index] === null or $this->slots[$index]->isNull();
 	}
 
 	public function canAddItem(Item $item) : bool{

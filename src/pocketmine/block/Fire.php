@@ -80,11 +80,21 @@ class Fire extends Flowable{
 	}
 
 	public function onNearbyBlockChange() : void{
-		for($s = 0; $s <= 5; ++$s){
-			$side = $this->getSide($s);
-			if($side->getId() !== self::AIR and !($side instanceof Liquid)){
-				return;
+		$down = $this->getSide(Vector3::SIDE_DOWN);
+		if($down->getId() !== self::AIR and !($down instanceof Liquid)){
+			$replace = false;
+			for($s = 1; $s <= 5; ++$s){
+				$side = $this->getSide($s);
+				if($side instanceof Liquid){
+					$replace = true;
+					break;
+				}elseif($side->getId() !== self::AIR){
+					$replace = true;
+				}else{
+					$replace = false;
+				}
 			}
+			if(!$replace) return;
 		}
 
 		$this->getLevel()->setBlock($this, BlockFactory::get(Block::AIR), true);

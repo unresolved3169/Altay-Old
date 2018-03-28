@@ -39,4 +39,8 @@ class IronHelmet extends Armor{
     public function getMaxDurability() : int{
         return 166;
     }
+
+	public function getEnchantability() : int{
+		return 9;
+	}
 }

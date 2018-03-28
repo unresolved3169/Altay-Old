@@ -119,9 +119,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public const DATA_PADDLE_TIME_LEFT = 13; //float
 	public const DATA_PADDLE_TIME_RIGHT = 14; //float
 	public const DATA_EXPERIENCE_VALUE = 15; //int (xp orb)
-	public const DATA_MINECART_DISPLAY_BLOCK = 16; //int (id | (data << 16))
-	public const DATA_MINECART_DISPLAY_OFFSET = 17; //int
-	public const DATA_MINECART_HAS_DISPLAY = 18; //byte (must be 1 for minecart to show block inside)
+	public const DATA_DISPLAY_ITEM = 16; //int (id | (data << 16))
+	public const DATA_DISPLAY_OFFSET = 17; //int
+	public const DATA_HAS_DISPLAY = 18; //byte (must be 1 for minecart to show block inside)
 
 	//TODO: add more properties
 
@@ -181,6 +181,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public const DATA_MAX_STRENGTH = 76; //int
 	/* 77 (int)
 	 * 78 (int) */
+	public const DATA_ARMOR_STAND_POSE = 79; //int
 
 
 	public const DATA_FLAG_ONFIRE = 0;
@@ -269,9 +270,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		Entity::registerEntity(Human::class, true);
 
-        Effect::init();
-        Attribute::init();
-        PaintingMotive::init();
+		Effect::init();
+		Attribute::init();
+		PaintingMotive::init();
 	}
 
 
@@ -392,11 +393,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public $lastZ = null;
 
 	/** @var float */
-	public $motionX;
+	public $motionX = 0.0;
 	/** @var float */
-	public $motionY;
+	public $motionY = 0.0;
 	/** @var float */
-	public $motionZ;
+	public $motionZ = 0.0;
 	/** @var Vector3 */
 	public $temporalVector;
 	/** @var float */
@@ -510,36 +511,31 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->id = Entity::$entityCount++;
 		$this->namedtag = $nbt;
+		$this->server = $level->getServer();
 
 		/** @var float[] $pos */
 		$pos = $this->namedtag->getListTag("Pos")->getAllValues();
+		/** @var float[] $rotation */
+		$rotation = $this->namedtag->getListTag("Rotation")->getAllValues();
 
-		$this->chunk = $level->getChunk(((int) floor($pos[0])) >> 4, ((int) floor($pos[2])) >> 4, true);
+		parent::__construct($pos[0], $pos[1], $pos[2], $rotation[0], $rotation[1], $level);
+		assert(!is_nan($this->x) and !is_infinite($this->x) and !is_nan($this->y) and !is_infinite($this->y) and !is_nan($this->z) and !is_infinite($this->z));
+
+		$this->boundingBox = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
+		$this->recalculateBoundingBox();
+
+		$this->chunk = $this->level->getChunk($this->getFloorX() >> 4, $this->getFloorZ() >> 4, false);
 		if($this->chunk === null){
 			throw new \InvalidStateException("Cannot create entities in unloaded chunks");
 		}
 
-		$this->setLevel($level);
-		$this->server = $level->getServer();
-
-		$this->boundingBox = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
-
-		/** @var float[] $rotation */
-		$rotation = $this->namedtag->getListTag("Rotation")->getAllValues();
-
-		$this->setPositionAndRotation($this->temporalVector->setComponents(...$pos), ...$rotation);
-
-		/** @var float[] $motion */
-		$motion = [0, 0, 0];
 		if($this->namedtag->hasTag("Motion", ListTag::class)){
+			/** @var float[] $motion */
 			$motion = $this->namedtag->getListTag("Motion")->getAllValues();
+			$this->setMotion($this->temporalVector->setComponents(...$motion));
 		}
 
-		$this->setMotion($this->temporalVector->setComponents(...$motion));
-
 		$this->resetLastMovements();
-
-		assert(!is_nan($this->x) and !is_infinite($this->x) and !is_nan($this->y) and !is_infinite($this->y) and !is_nan($this->z) and !is_infinite($this->z));
 
 		$this->fallDistance = $this->namedtag->getFloat("FallDistance", 0.0);
 
@@ -667,7 +663,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function isAffectedByGravity() : bool{
-	    return $this->getGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY);
+		return $this->getGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY);
 	}
 
 	public function setAffectedByGravity(bool $value = true){
@@ -711,7 +707,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function isGliding() : bool{
-	    return $this->getGenericFlag(self::DATA_FLAG_GLIDING);
+		return $this->getGenericFlag(self::DATA_FLAG_GLIDING);
 	}
 
 	public function setGliding(bool $value = true) : void{
@@ -989,7 +985,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		if($amount <= 0){
 			if($this->isAlive()){
-                $this->health = 0;
+				$this->health = 0;
 				$this->kill();
 			}
 		}elseif($amount <= $this->getMaxHealth() or $amount < $this->health){
@@ -1428,6 +1424,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->level->updateEntities[$this->id] = $this;
 	}
 
+	public function onNearbyBlockChange() : void{
+		$this->setForceMovementUpdate();
+		$this->scheduleUpdate();
+	}
+
 	/**
 	 * Flags the entity as needing a movement update on the next tick. Setting this forces a movement update even if the
 	 * entity's motion is zero. Used to trigger movement updates when blocks change near entities.
@@ -1467,7 +1468,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * @param bool  $onGround
 	 */
 	protected function updateFallState(float $distanceThisTick, bool $onGround){
-	    if($this instanceof Player) return;
+		if($this instanceof Player) return;
 		if($onGround){
 			if($this->fallDistance > 0){
 				$this->fall($this->fallDistance);
@@ -1772,13 +1773,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return $this->asLocation();
 	}
 
-	public function setPosition(Vector3 $pos){
+	public function setPosition(Vector3 $pos) : bool{
 		if($this->closed){
 			return false;
 		}
 
 		if($pos instanceof Position and $pos->level !== null and $pos->level !== $this->level){
-			if($this->switchLevel($pos->getLevel()) === false){
+			if(!$this->switchLevel($pos->getLevel())){
 				return false;
 			}
 		}
@@ -1803,7 +1804,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function setPositionAndRotation(Vector3 $pos, float $yaw, float $pitch) : bool{
-		if($this->setPosition($pos) === true){
+		if($this->setPosition($pos)){
 			$this->setRotation($yaw, $pitch);
 
 			return true;
@@ -1813,9 +1814,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function checkChunks(){
-	    $chunkX = $this->getFloorX() >> 4;
-	    $chunkZ = $this->getFloorZ() >> 4;
-        if($this->chunk === null or ($this->chunk->getX() !== $chunkX or $this->chunk->getZ() !== $chunkZ)){
+		$chunkX = $this->getFloorX() >> 4;
+		$chunkZ = $this->getFloorZ() >> 4;
+		if($this->chunk === null or ($this->chunk->getX() !== $chunkX or $this->chunk->getZ() !== $chunkZ)){
 			if($this->chunk !== null){
 				$this->chunk->removeEntity($this);
 			}
@@ -1877,7 +1878,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
     }
 
 	public function isOnGround() : bool{
-		return $this->onGround === true;
+		return $this->onGround;
 	}
 
 	/**
@@ -1902,7 +1903,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$pos = $ev->getTo();
 
 		$this->setMotion($this->temporalVector->setComponents(0, 0, 0));
-		if($this->setPositionAndRotation($pos, $yaw ?? $this->yaw, $pitch ?? $this->pitch) !== false){
+		if($this->setPositionAndRotation($pos, $yaw ?? $this->yaw, $pitch ?? $this->pitch)){
 			$this->resetFallDistance();
 			$this->onGround = true;
 
@@ -2168,7 +2169,18 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){}
+	/**
+	 * Called when interacted or tapped by a Player
+	 *
+	 * @param Player $player
+	 * @param Item $item
+	 * @param Vector3 $clickPos
+	 * @param int $slot
+	 * @return void
+	 */
+	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
+
+	}
 
 	/**
 	 * @return Item[]

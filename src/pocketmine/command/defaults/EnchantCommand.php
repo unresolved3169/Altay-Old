@@ -29,9 +29,9 @@ use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\utils\TextFormat;
 
 class EnchantCommand extends VanillaCommand{

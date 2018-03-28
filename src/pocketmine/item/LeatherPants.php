@@ -39,4 +39,8 @@ class LeatherPants extends Armor{
     public function getMaxDurability() : int{
         return 76;
     }
+
+	public function getEnchantability() : int{
+		return 15;
+	}
 }

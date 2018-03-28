@@ -27,9 +27,9 @@ namespace pocketmine\inventory;
 use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityArmorChangeEvent;
 use pocketmine\item\Item;
+use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\network\mcpe\protocol\InventoryContentPacket;
 use pocketmine\network\mcpe\protocol\InventorySlotPacket;
-use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -75,20 +75,20 @@ class ArmorInventory extends BaseInventory{
 		return $this->getItem(self::SLOT_FEET);
 	}
 
-	public function setHelmet(Item $helmet) : bool{
-		return $this->setItem(self::SLOT_HEAD, $helmet);
+	public function setHelmet(Item $helmet, bool $send = true) : bool{
+		return $this->setItem(self::SLOT_HEAD, $helmet, $send);
 	}
 
-	public function setChestplate(Item $chestplate) : bool{
-		return $this->setItem(self::SLOT_CHEST, $chestplate);
+	public function setChestplate(Item $chestplate, bool $send = true) : bool{
+		return $this->setItem(self::SLOT_CHEST, $chestplate, $send);
 	}
 
-	public function setLeggings(Item $leggings) : bool{
-		return $this->setItem(self::SLOT_LEGS, $leggings);
+	public function setLeggings(Item $leggings, bool $send = true) : bool{
+		return $this->setItem(self::SLOT_LEGS, $leggings, $send);
 	}
 
-	public function setBoots(Item $boots) : bool{
-		return $this->setItem(self::SLOT_FEET, $boots);
+	public function setBoots(Item $boots, bool $send = true) : bool{
+		return $this->setItem(self::SLOT_FEET, $boots, $send);
 	}
 
 	protected function doSetItemEvents(int $index, Item $newItem) : ?Item{

@@ -25,8 +25,8 @@ declare(strict_types=1);
 namespace pocketmine\block;
 
 use pocketmine\inventory\EnchantInventory;
-use pocketmine\item\Item;
 use pocketmine\item\TieredTool;
+use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;

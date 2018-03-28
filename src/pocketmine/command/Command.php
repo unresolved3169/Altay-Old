@@ -29,10 +29,10 @@ namespace pocketmine\command;
 
 use pocketmine\command\overload\CommandData;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\lang\TextContainer;
-use pocketmine\event\TimingsHandler;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\command\overload\CommandParameter;
+use pocketmine\event\TimingsHandler;
+use pocketmine\lang\TextContainer;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -328,7 +328,7 @@ abstract class Command{
 			$colored = new TranslationContainer(TextFormat::GRAY . TextFormat::ITALIC . "%chat.type.admin", [$source->getName(), $message]);
 		}
 
-		if($sendToSource === true and !($source instanceof ConsoleCommandSender)){
+		if($sendToSource and !($source instanceof ConsoleCommandSender)){
 			$source->sendMessage($message);
 		}
 

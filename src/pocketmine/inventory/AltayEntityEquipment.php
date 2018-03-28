@@ -25,142 +25,88 @@ declare(strict_types=1);
 namespace pocketmine\inventory;
 
 use pocketmine\entity\Entity;
+use pocketmine\entity\Living;
 use pocketmine\inventory\utils\EquipmentSlot;
 use pocketmine\item\Item;
-use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\Player;
 
 class AltayEntityEquipment extends BaseInventory{
 
-    /** @var Entity */
-    protected $holder;
+	/** @var Living */
+	protected $holder;
+	/** @var ArmorInventory */
+	protected $armorInventory;
 
-    public function __construct(Entity $entity){
-        $this->holder = $entity;
+	public function __construct(Living $entity){
+		$this->holder = $entity;
+		$this->armorInventory = $entity->getArmorInventory();
 
-        parent::__construct();
-    }
+		parent::__construct();
+	}
 
-    public function getName(): string{
-        return "Altay Entity Equipment";
-    }
+	public function getName(): string{
+		return "Altay Entity Equipment";
+	}
 
-    public function getDefaultSize(): int{
-        return 6; // equipment slots (4 armor 2 hand)
-    }
+	public function getDefaultSize() : int{
+		return 2; // equipment slots (1 mainhand 1 offhand) [Armors handle on ArmorInventory]
+	}
 
-    public function getHolder() : Entity{
-        return $this->holder;
-    }
+	public function getHolder() : Entity{
+		return $this->holder;
+	}
 
-    public function sendSlot(int $index, $target): void{
-        if($target instanceof Player){
-            $target = [$target];
-        }
+	public function sendSlot(int $index, $target) : void{
+		if($target instanceof Player){
+			$target = [$target];
+		}
 
-        switch($index){
-            case EquipmentSlot::MAINHAND:
-                $pk = new MobEquipmentPacket();
-                $pk->entityRuntimeId = $this->holder->getId();
-                $pk->inventorySlot = $pk->hotbarSlot = $index;
-                $pk->item = $this->getItem($index);
-                break;
+		$pk = new MobEquipmentPacket();
+		$pk->entityRuntimeId = $this->holder->getId();
+		$pk->inventorySlot = $pk->hotbarSlot = $index;
+		$pk->item = $this->getItem($index);
 
-            case EquipmentSlot::HACK_OFFHAND:
-                return;
+		if($target instanceof Player){
+			$target = [$target];
+		}
 
-            case EquipmentSlot::HACK_HEAD:
-            case EquipmentSlot::HACK_CHEST:
-            case EquipmentSlot::HACK_LEGS:
-            case EquipmentSlot::HACK_FEET:
-                $pk = new MobArmorEquipmentPacket();
-                $pk->entityRuntimeId = $this->holder->getId();
-                $pk->slots = $this->getArmorContents();
-                break;
-            default:
-                throw new \InvalidArgumentException("Unknown equipment slot: $index");
-        }
+		foreach($target as $player){
+			$player->dataPacket($pk);
+		}
+	}
 
-        if($target instanceof Player){
-            $target = [$target];
-        }
+	public function sendContents($target) : void{
+		$this->sendSlot(EquipmentSlot::MAINHAND, $target);
+		$this->sendSlot(EquipmentSlot::OFFHAND, $target);
+		$this->armorInventory->sendContents($target);
+	}
 
-        foreach($target as $player){
-            $player->dataPacket($pk);
-        }
-    }
+	public function setContents(array $items, bool $send = true) : void{
+		$content = [array_shift($items), array_shift($items)];
+		$armor = $items;
+		$this->armorInventory->setContents($armor);
+		parent::setContents($content, $send);
+	}
 
-    public function sendContents($target): void{
-        $this->sendSlot(EquipmentSlot::MAINHAND, $target);
-        $this->sendSlot(EquipmentSlot::HACK_OFFHAND, $target);
-        $this->sendArmorContents($target);
-    }
+	public function getViewers() : array{
+		return $this->holder->getViewers();
+	}
 
-    public function sendArmorContents($target){
-        $this->sendSlot(EquipmentSlot::HACK_HEAD, $target); // HACK !
-    }
+	public function getItemInHand() : Item{
+		return $this->getItem(EquipmentSlot::MAINHAND);
+	}
 
-    public function getArmorContents() : array{
-        $armors = [];
+	public function getOffhandItem() : Item{
+		return $this->getItem(EquipmentSlot::OFFHAND);
+	}
 
-        for($i=0; $i<4; $i++){
-            $armors[] = $this->getItem(2 + $i);
-        }
+	public function setItemInHand(Item $item, bool $send = true) : bool{
+		return $this->setItem(EquipmentSlot::MAINHAND, $item, $send);
+	}
 
-        return $armors;
-    }
-
-    public function getViewers(): array{
-        return $this->holder->getViewers();
-    }
-
-    public function getMainhandItem() : Item{
-        return $this->getItem(EquipmentSlot::MAINHAND);
-    }
-
-    public function getOffhandItem() : Item{
-        return $this->getItem(EquipmentSlot::HACK_OFFHAND);
-    }
-
-    public function setMainhandItem(Item $item, bool $send = true) : bool{
-        return $this->setItem(EquipmentSlot::MAINHAND, $item, $send);
-    }
-
-    public function setOffhandItem(Item $item, bool $send = true) : bool{ // not work
-        return $this->setItem(EquipmentSlot::HACK_OFFHAND, $item, $send);
-    }
-
-    public function setHelmet(Item $item, bool $send = true) : bool{
-        return $this->setItem(EquipmentSlot::HACK_HEAD, $item, $send);
-    }
-
-    public function setChestplate(Item $item, bool $send = true) : bool{
-        return $this->setItem(EquipmentSlot::HACK_CHEST, $item, $send);
-    }
-
-    public function setLeggings(Item $item, bool $send = true) : bool{
-        return $this->setItem(EquipmentSlot::HACK_LEGS, $item, $send);
-    }
-
-    public function setBoots(Item $item, bool $send = true) : bool{
-        return $this->setItem(EquipmentSlot::HACK_FEET, $item, $send);
-    }
-
-    public function getHelmet() : Item{
-        return $this->getItem(EquipmentSlot::HACK_HEAD);
-    }
-
-    public function getChestplate() : Item{
-        return $this->getItem(EquipmentSlot::HACK_CHEST);
-    }
-
-    public function getLeggings() : Item{
-        return $this->getItem(EquipmentSlot::HACK_LEGS);
-    }
-
-    public function getBoots() : Item{
-        return $this->getItem(EquipmentSlot::HACK_FEET);
-    }
+	public function setOffhandItem(Item $item, bool $send = true) : bool{
+		return $this->setItem(EquipmentSlot::OFFHAND, $item, $send);
+	}
 
 }
