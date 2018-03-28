@@ -38,8 +38,8 @@ class WanderBehavior extends Behavior{
 	protected $speedMultiplier = 1.0;
 	/** @var int */
 	protected $chance = 120;
-	/** @var Path */
-	protected $currentPath = null;
+
+	protected $targetPos;
 	
 	public function __construct(Mob $mob, float $speedMultiplier = 1.0, int $chance = 120){
 		parent::__construct($mob);
@@ -54,9 +54,9 @@ class WanderBehavior extends Behavior{
 			
 			if($pos === null) return false;
 			
-			$path = Path::findPath($this->mob, $pos, $this->mob->distance($pos) + 2);
-			
-			$this->currentPath = $path;
+			$path = Path::findPath($this->mob, $pos);
+
+			$this->targetPos = $pos;
 			
 			return $path->havePath();
 		}
@@ -65,21 +65,18 @@ class WanderBehavior extends Behavior{
 	}
 	
 	public function canContinue() : bool{
-		return $this->currentPath !== null and $this->currentPath->havePath();
+		return $this->targetPos !== null;
 	}
 	
 	public function onTick(int $tick) : void{
-		if($this->currentPath->havePath()){
-			if($next = $this->currentPath->getNextTile($this->mob)){
-				$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-				$this->mob->moveForward($this->speedMultiplier);
-			}
+		if(!$this->mob->getNavigator()->tryMoveTo($this->targetPos, $this->speedMultiplier)){
+			$this->targetPos = null;
 		}
 	}
 	
 	public function onEnd() : void{
 		$this->mob->motionX = 0; $this->mob->motionZ = 0;
-		$this->currentPath = null;
+		$this->targetPos = null;
 	}
 	
 	public function findRandomTargetBlock(Entity $entity, int $dxz, int $dy) : ?Block{
@@ -116,5 +113,55 @@ class WanderBehavior extends Behavior{
 		}else{
 			return (int) 0.5 - max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));
 		}
+	}
+
+	/**
+	 * @param mixed $targetPos
+	 * @return WanderBehavior
+	 */
+	public function setTargetPos($targetPos)
+	{
+		$this->targetPos = $targetPos;
+		return $this;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getChance(): int
+	{
+		return $this->chance;
+	}
+
+	/**
+	 * @param int $chance
+	 */
+	public function setChance(int $chance): void
+	{
+		$this->chance = $chance;
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getSpeedMultiplier(): float
+	{
+		return $this->speedMultiplier;
+	}
+
+	/**
+	 * @param float $speedMultiplier
+	 */
+	public function setSpeedMultiplier(float $speedMultiplier): void
+	{
+		$this->speedMultiplier = $speedMultiplier;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getTargetPos()
+	{
+		return $this->targetPos;
 	}
 }

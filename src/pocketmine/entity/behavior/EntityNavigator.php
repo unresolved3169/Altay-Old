@@ -157,4 +157,18 @@ class EntityNavigator{
 		$block = $this->level->getBlock($coord);
 		return $block === null or $block->isSolid();
 	}
+
+	public function tryMoveTo(Vector3 $pos, float $speed) : bool{
+		$path = Path::findPath($this->entity, $pos);
+
+		if($path->havePath() and $next = $path->getNextTile($this->entity)){
+			$this->entity->lookAt(new Vector3($next->x + 0.5, $this->entity->y, $next->y + 0.5));
+			$this->entity->moveForward($speed);
+
+			return true;
+		}
+
+		return false;
+	}
+
 }
