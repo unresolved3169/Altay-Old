@@ -63,6 +63,12 @@ class EntityNavigator{
 			}
 		}
 
+		$path = array_reverse($path);
+
+		unset($path[0]);
+
+		$path[] = $to;
+
 		return $path;
 	}
 
