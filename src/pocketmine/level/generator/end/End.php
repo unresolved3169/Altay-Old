@@ -29,12 +29,12 @@ use pocketmine\level\ChunkManager;
 use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\generator\noise\Simplex;
-use pocketmine\level\generator\populator\EnderPilar;
+use pocketmine\level\generator\populator\EndPillar;
 use pocketmine\level\generator\populator\Populator;
 use pocketmine\math\Vector3 as Vector3;
 use pocketmine\utils\Random;
 
-class TheEnd extends Generator{
+class End extends Generator{
 
 	/** @var Populator[] */
 	private $populators = [];
@@ -96,7 +96,7 @@ class TheEnd extends Generator{
 		$this->random->setSeed($this->level->getSeed());
 		$this->noiseBase = new Simplex($this->random, 4, 1 / 4, 1 / 64);
 		$this->random->setSeed($this->level->getSeed());
-		$pilar = new EnderPilar();
+		$pilar = new EndPillar();
 		$pilar->setBaseAmount(0);
 		$pilar->setRandomAmount(0);
 		$this->populators[] = $pilar;

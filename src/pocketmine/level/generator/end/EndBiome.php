@@ -26,7 +26,7 @@ namespace pocketmine\level\generator\hell;
 
 use pocketmine\level\generator\biome\Biome;
 
-class TheEndBiome extends Biome{
+class EndBiome extends Biome{
 
 	public function getName() : string{
 		return "The End";

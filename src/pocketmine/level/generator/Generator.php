@@ -28,6 +28,7 @@ declare(strict_types=1);
 namespace pocketmine\level\generator;
 
 use pocketmine\level\ChunkManager;
+use pocketmine\level\generator\ender\End;
 use pocketmine\level\generator\hell\Nether;
 use pocketmine\level\generator\noise\Noise;
 use pocketmine\level\generator\normal\Normal;
@@ -43,6 +44,7 @@ abstract class Generator{
 		self::addGenerator(Normal::class, "default");
 		self::addGenerator(Nether::class, "hell");
 		self::addGenerator(Nether::class, "nether");
+		self::addGenerator(End::class, "end");
 		self::addGenerator(VoidGenerator::class, "void");
 	}
 
