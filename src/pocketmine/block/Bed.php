@@ -26,6 +26,8 @@ namespace pocketmine\block;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\level\Explosion;
+use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
@@ -143,6 +145,14 @@ class Bed extends Transparent{
 				return true;
 			}elseif($player->distanceSquared($this) > 4 and $player->distanceSquared($other) > 4){
 				$player->sendMessage(new TranslationContainer(TextFormat::GRAY . "%tile.bed.tooFar"));
+				return true;
+			}
+
+			$biome = $this->level->getBiomeId($this->x, $this->z);
+			if($biome == Biome::HELL or $biome == Biome::END){
+				$explosion = new Explosion($this, 5, true);
+				$explosion->explodeA();
+				$explosion->explodeB();
 				return true;
 			}
 

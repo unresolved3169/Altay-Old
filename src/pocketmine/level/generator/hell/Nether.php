@@ -162,10 +162,6 @@ class Nether extends Generator{
 		$biome->populateChunk($this->level, $chunkX, $chunkZ, $this->random);
 	}
 
-	public function getDimension() : int{
-		return Level::DIMENSION_NETHER;
-	}
-
 	public function getSpawn() : Vector3{
 		return new Vector3(127.5, 128, 127.5);
 	}

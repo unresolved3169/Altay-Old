@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\ender;
+namespace pocketmine\level\generator\end;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
@@ -80,7 +80,7 @@ class End extends Generator{
 	}
 
 	public function getName() : string{
-		return "The End";
+		return "End";
 	}
 
 	public function getWaterHeight() : int{
@@ -155,10 +155,6 @@ class End extends Generator{
 		$chunk = $this->level->getChunk($chunkX, $chunkZ);
 		$biome = Biome::getBiome($chunk->getBiomeId(7, 7));
 		$biome->populateChunk($this->level, $chunkX, $chunkZ, $this->random);
-	}
-
-	public function getDimension() : int{
-		return Level::DIMENSION_END;
 	}
 
 	public function getSpawn() : Vector3{

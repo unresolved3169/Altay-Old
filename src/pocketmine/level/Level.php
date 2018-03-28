@@ -111,10 +111,6 @@ class Level implements ChunkManager, Metadatable{
 	public const DIFFICULTY_NORMAL = 2;
 	public const DIFFICULTY_HARD = 3;
 
-	public const DIMENSION_OVERWORLD = 0;
-	public const DIMENSION_NETHER = 1;
-	public const DIMENSION_END = 2;
-
 	/** @var Tile[] */
 	private $tiles = [];
 
@@ -150,9 +146,6 @@ class Level implements ChunkManager, Metadatable{
 
 	/** @var int */
 	private $worldHeight;
-
-	/** @var int */
-	private $dimension = self::DIMENSION_OVERWORLD;
 
 	/** @var ChunkLoader[] */
 	private $loaders = [];
@@ -353,7 +346,6 @@ class Level implements ChunkManager, Metadatable{
 
 		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.level.preparing", [$this->displayName]));
 		$this->generator = Generator::getGenerator($this->provider->getGenerator());
-		$this->dimension = $this->generator->getDimension();
 
 		$this->folderName = $name;
 
@@ -2971,22 +2963,6 @@ class Level implements ChunkManager, Metadatable{
 
 	public function getWorldHeight() : int{
 		return $this->worldHeight;
-	}
-
-	/**
-	 * Returns the world dimension. This will be one of the Level constants.
-	 * @return int
-	 */
-	public function getDimension() : int{
-		return $this->dimension;
-	}
-
-	/**
-	 * Sets the world dimension.
-	 * @param int $dimension
-	 */
-	public function setDimension(int $dimension) : void{
-		$this->dimension = $dimension;
 	}
 
 	/**

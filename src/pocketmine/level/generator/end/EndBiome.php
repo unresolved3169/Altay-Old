@@ -22,13 +22,13 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\hell;
+namespace pocketmine\level\generator\end;
 
 use pocketmine\level\generator\biome\Biome;
 
 class EndBiome extends Biome{
 
 	public function getName() : string{
-		return "The End";
+		return "End";
 	}
 }

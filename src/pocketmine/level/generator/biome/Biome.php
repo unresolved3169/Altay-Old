@@ -25,6 +25,8 @@ namespace pocketmine\level\generator\biome;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
+use pocketmine\level\generator\end\EndBiome;
+use pocketmine\level\generator\hell\HellBiome;
 use pocketmine\level\generator\normal\biome\DesertBiome;
 use pocketmine\level\generator\normal\biome\ForestBiome;
 use pocketmine\level\generator\normal\biome\IcePlainsBiome;
@@ -49,7 +51,7 @@ abstract class Biome{
 	public const SWAMP = 6;
 	public const RIVER = 7;
 	public const HELL = 8;
-	public const END = 9;
+	public const END = 9, SKY = 9;
 
 	public const ICE_PLAINS = 12;
 
@@ -100,6 +102,8 @@ abstract class Biome{
 		self::register(self::TAIGA, new TaigaBiome());
 		self::register(self::SWAMP, new SwampBiome());
 		self::register(self::RIVER, new RiverBiome());
+		self::register(self::HELL, new HellBiome());
+		self::register(self::END, new EndBiome());
 
 		self::register(self::ICE_PLAINS, new IcePlainsBiome());
 
