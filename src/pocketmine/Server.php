@@ -275,7 +275,7 @@ class Server{
 	/** @var Level */
 	private $netherLevel = null;
 	/** @var Level */
-	private $theEndLevel = null;
+	private $endLevel = null;
 
 	/** @var ServerSettingsForm */
 	protected $serverSettingsForm = null;
@@ -297,7 +297,7 @@ class Server{
 	/** @var bool */
 	public $allowNether = true;
 	/** @var bool */
-	public $allowTheEnd = true;
+	public $allowEnd = true;
 
 	public function loadAltayConfig(){
 		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -306,7 +306,7 @@ class Server{
 		$this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
 		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
 		$this->allowNether = $this->getAltayProperty("dimensions.nether.active", true);
-		$this->allowTheEnd = $this->getAltayProperty("dimensions.the-end.active", true);
+		$this->allowEnd = $this->getAltayProperty("dimensions.end.active", true);
 		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
 	}
 
@@ -958,8 +958,8 @@ class Server{
 		return $this->netherLevel;
 	}
 
-	public function getTheEndLevel() : ?Level{
-		return $this->theEndLevel;
+	public function getEndLevel() : ?Level{
+		return $this->endLevel;
 	}
 
 	/**
@@ -1757,32 +1757,28 @@ class Server{
 			}
 
 			if($this->allowNether and $this->getNetherLevel() === null){
+				/** @var string $netherLevelName */
 				$netherLevelName = $this->getAltayProperty("dimensions.nether.level-name", "nether");
 				if(trim($netherLevelName) == ""){
-					$this->getLogger()->warning("nether level-name cannot be null, using default");
 					$netherLevelName = "nether";
 				}
 				if(!$this->loadLevel($netherLevelName)){
-					$seed = time();
-					$this->generateLevel($netherLevelName, $seed === 0 ? time() : $seed, "nether");
+					$this->generateLevel($netherLevelName, time(), "nether");
 				}
 
 				$this->netherLevel = $this->getLevelByName($netherLevelName);
 			}
 
-			if($this->allowTheEnd and $this->getTheEndLevel() === null){
-				$theEndLevel = $this->getAltayProperty("dimensions.the-end.level-name", "the-end");
+			if($this->allowEnd and $this->endLevel === null){
+				$theEndLevel = $this->getAltayProperty("dimensions.end.level-name", "end");
 				if(trim($theEndLevel) == ""){
-					$this->getLogger()->warning("the end level-name cannot be null, using default");
 					$theEndLevel = "the-end";
 				}
 				if(!$this->loadLevel($theEndLevel)){
-					$seed = time();
-					// TODO : THE END
-					//$this->generateLevel($theEndLevel, $seed === 0 ? time() : $seed, "theEnd");
+					$this->generateLevel($theEndLevel, time(), "end");
 				}
 
-				//$this->theEndLevel = $this->getLevelByName($theEndLevel);
+				$this->endLevel = $this->getLevelByName($theEndLevel);
 			}
 
 			if($this->properties->hasChanged()){

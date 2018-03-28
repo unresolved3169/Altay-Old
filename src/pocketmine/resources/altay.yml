@@ -18,9 +18,9 @@ dimensions:
   nether:
     active: true
     level-name: "nether"
-  the-end:
+  end:
     active: true
-    level-name: "the-end"
+    level-name: "end"
 
 developer:
   # This setting allows the server to load plugins through the source directory over a .phar file
