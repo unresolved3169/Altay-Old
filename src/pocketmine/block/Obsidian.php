@@ -24,8 +24,12 @@ declare(strict_types=1);
 namespace pocketmine\block;
 
 use pocketmine\item\TieredTool;
+use pocketmine\item\Item;
+use pocketmine\Player;
 
 class Obsidian extends Solid{
+
+	public const MAX_PORTAL_SIZE = 23;
 
 	protected $id = self::OBSIDIAN;
 
@@ -51,5 +55,12 @@ class Obsidian extends Solid{
 
 	public function getBlastResistance() : float{
 		return 6000;
+	}
+
+	public function onActivate(Item $item, Player $player = null) : bool{
+		if($item->getId() === Item::FLINT_AND_STEEL){
+			// TODO : Check for portal
+		}
+		return false;
 	}
 }

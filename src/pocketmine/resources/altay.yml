@@ -13,6 +13,15 @@ player:
   # Choose if to keep a player's experience after they die
   keep-experience: false
 
+dimensions:
+  # Choose if the nether is allowed. The level of nether will generate automatically
+  nether:
+    active: true
+    level-name: "nether"
+  the-end:
+    active: true
+    level-name: "the-end"
+
 developer:
   # This setting allows the server to load plugins through the source directory over a .phar file
   folder-plugin-loader: true
