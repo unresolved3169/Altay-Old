@@ -32,6 +32,7 @@ use pocketmine\level\generator\ender\End;
 use pocketmine\level\generator\hell\Nether;
 use pocketmine\level\generator\noise\Noise;
 use pocketmine\level\generator\normal\Normal;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 
@@ -239,6 +240,10 @@ abstract class Generator{
 		}
 
 		return $noiseArray;
+	}
+
+	public function getDimension() : int{
+		return Level::DIMENSION_OVERWORLD;
 	}
 
 	abstract public function __construct(array $settings = []);

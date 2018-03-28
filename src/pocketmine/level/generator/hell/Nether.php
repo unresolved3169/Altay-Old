@@ -30,6 +30,7 @@ use pocketmine\level\generator\biome\BiomeSelector;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\generator\noise\Simplex;
 use pocketmine\level\generator\populator\Populator;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
 
@@ -159,6 +160,10 @@ class Nether extends Generator{
 		$chunk = $this->level->getChunk($chunkX, $chunkZ);
 		$biome = Biome::getBiome($chunk->getBiomeId(7, 7));
 		$biome->populateChunk($this->level, $chunkX, $chunkZ, $this->random);
+	}
+
+	public function getDimension() : int{
+		return Level::DIMENSION_NETHER;
 	}
 
 	public function getSpawn() : Vector3{

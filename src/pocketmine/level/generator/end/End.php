@@ -31,6 +31,7 @@ use pocketmine\level\generator\Generator;
 use pocketmine\level\generator\noise\Simplex;
 use pocketmine\level\generator\populator\EndPillar;
 use pocketmine\level\generator\populator\Populator;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3 as Vector3;
 use pocketmine\utils\Random;
 
@@ -154,6 +155,10 @@ class End extends Generator{
 		$chunk = $this->level->getChunk($chunkX, $chunkZ);
 		$biome = Biome::getBiome($chunk->getBiomeId(7, 7));
 		$biome->populateChunk($this->level, $chunkX, $chunkZ, $this->random);
+	}
+
+	public function getDimension() : int{
+		return Level::DIMENSION_END;
 	}
 
 	public function getSpawn() : Vector3{
