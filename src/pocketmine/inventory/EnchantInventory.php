@@ -45,7 +45,7 @@ class EnchantInventory extends ContainerInventory{
 	}
 
 	public function getDefaultSize() : int{
-		return 2; //1 input, 1 lapis
+		return 2; //0 input, 1 lapis
 	}
 
 	/**
