@@ -69,7 +69,7 @@ class FollowOwnerBehavior extends Behavior{
 
         if($this->currentPath == null || !$this->currentPath->havePath()){
             MainLogger::getLogger()->debug("Search new solution");
-            $this->currentPath = $this->currentPath->findPath($this->mob, $owner, $this->lookDistance);
+            $this->currentPath = $this->currentPath->findPath($this->mob, $owner);
         }
 
         if($this->currentPath->havePath()){

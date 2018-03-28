@@ -24,13 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Entity;
-use pocketmine\block\Block;
-use pocketmine\block\Grass;
-use pocketmine\entity\Mob;
-use pocketmine\math\Vector3;
-use pocketmine\utils\Random;
-use pocketmine\entity\Animal;
 use pocketmine\level\Level;
 
 class RestrictSunBehavior extends BehaviorTask{

@@ -24,9 +24,11 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\entity\behavior\{
+	Behavior, TargetBehavior
+};
 use pocketmine\entity\behavior\EntityNavigator;
 use pocketmine\math\Vector3;
-use pocketmine\entity\behavior\{Behavior, TargetBehavior};
 
 abstract class Mob extends Living{
 

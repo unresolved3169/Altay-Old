@@ -25,11 +25,12 @@ declare(strict_types=1);
 namespace pocketmine\entity\hostile;
 
 use pocketmine\entity\Ageable;
+use pocketmine\entity\behavior\{
+	FindAttackableTargetBehavior, FleeSunBehavior, FloatBehavior, HurtByTargetBehavior, LookAtPlayerBehavior, MeleeAttackBehavior, RandomLookAroundBehavior, RestrictSunBehavior, WanderBehavior
+};
 use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\entity\behavior\{
-    HurtByTargetBehavior, MeleeAttackBehavior, WanderBehavior, RandomLookAroundBehavior, LookAtPlayerBehavior, FindAttackableTargetBehavior, FloatBehavior, FleeSunBehavior, RestrictSunBehavior};
 
 class Zombie extends Monster implements Ageable{
     public const NETWORK_ID = self::ZOMBIE;

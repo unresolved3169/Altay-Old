@@ -24,13 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Entity;
 use pocketmine\block\Block;
 use pocketmine\block\Grass;
+use pocketmine\entity\Animal;
+use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
-use pocketmine\utils\Random;
-use pocketmine\entity\Animal;
 
 class FleeSunBehavior extends Behavior{
 
@@ -50,7 +49,7 @@ class FleeSunBehavior extends Behavior{
 			$pos = $this->findPossibleShelter($this->mob);
 			if($pos === null) return false;
 			
-			$path = Path::findPath($this->mob, $pos, $this->mob->distance($pos) + 2);
+			$path = Path::findPath($this->mob, $pos);
 			
 			$this->currentPath = $path;
 			
@@ -80,8 +79,6 @@ class FleeSunBehavior extends Behavior{
 
 	/**
 	 * @param Entity $entity
-	 * @param int $dxz
-	 * @param int $dy
 	 * @return null|Block
 	 */
 	public function findPossibleShelter(Entity $entity) : ?Block{

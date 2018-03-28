@@ -25,8 +25,8 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Entity;
-use pocketmine\Player;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\Player;
 
 class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 

@@ -119,7 +119,7 @@ class TemptedBehavior extends Behavior{
         $haveNoPath = ($this->currentPath == null || !$this->currentPath->havePath());
         $deltaDistance = $this->lastPlayerPos->distance($this->temptingPlayer);
         if($haveNoPath || $deltaDistance > 1){
-            $this->currentPath = Path::findPath($this->mob, $this->temptingPlayer, $this->lookDistance);
+            $this->currentPath = Path::findPath($this->mob, $this->temptingPlayer);
             $this->lastPlayerPos = $this->temptingPlayer->asVector3();
         }
 
