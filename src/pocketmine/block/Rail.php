@@ -53,16 +53,18 @@ class Rail extends Flowable{
 
 	/**
 	 * @param Rail $block
-	 * @return bool
+	 * @return bool|array
 	 */
 	public function canConnect(Rail $block){
 		if($this->distanceSquared($block) > 2){
 			return false;
 		}
+
 		/** @var Vector3 [] $blocks */
 		if(count($blocks = self::check($this)) == 2){
 			return false;
 		}
+
 		return $blocks;
 	}
 

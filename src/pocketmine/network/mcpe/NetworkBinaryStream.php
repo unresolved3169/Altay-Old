@@ -473,8 +473,8 @@ class NetworkBinaryStream extends BinaryStream{
 	protected function getEntityLink() : EntityLink{
 		$link = new EntityLink();
 
-		$link->fromEntityUniqueId = $this->getEntityUniqueId();
-		$link->toEntityUniqueId = $this->getEntityUniqueId();
+		$link->riddenId = $this->getEntityUniqueId();
+		$link->riderId = $this->getEntityUniqueId();
 		$link->type = $this->getByte();
 		$link->bool1 = $this->getBool();
 
