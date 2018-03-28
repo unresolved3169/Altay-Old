@@ -31,7 +31,6 @@ use pocketmine\level\generator\Generator;
 use pocketmine\level\generator\noise\Simplex;
 use pocketmine\level\generator\populator\EndPillar;
 use pocketmine\level\generator\populator\Populator;
-use pocketmine\level\Level;
 use pocketmine\math\Vector3 as Vector3;
 use pocketmine\utils\Random;
 
@@ -80,7 +79,7 @@ class End extends Generator{
 	}
 
 	public function getName() : string{
-		return "End";
+		return "end";
 	}
 
 	public function getWaterHeight() : int{
