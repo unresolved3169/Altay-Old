@@ -25,8 +25,8 @@ declare(strict_types=1);
 namespace pocketmine\item;
 
 use pocketmine\block\Block;
-use pocketmine\entity\object\ArmorStand as EntityArmorStand;
 use pocketmine\entity\Entity;
+use pocketmine\entity\object\ArmorStand as EntityArmorStand;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;

@@ -27,9 +27,9 @@ namespace pocketmine\inventory;
 use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityArmorChangeEvent;
 use pocketmine\item\Item;
+use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\network\mcpe\protocol\InventoryContentPacket;
 use pocketmine\network\mcpe\protocol\InventorySlotPacket;
-use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 

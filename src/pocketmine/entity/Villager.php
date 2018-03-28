@@ -25,11 +25,11 @@ declare(strict_types=1);
 namespace pocketmine\entity;
 
 use pocketmine\inventory\TradeItems;
-use pocketmine\item\Item;
 use pocketmine\inventory\TradingInventory;
+use pocketmine\item\Item;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
 
 class Villager extends Creature implements NPC, Ageable{

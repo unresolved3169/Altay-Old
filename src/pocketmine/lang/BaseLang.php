@@ -23,8 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\lang;
 
-use pocketmine\lang\TextContainer;
-use pocketmine\lang\TranslationContainer;
 use pocketmine\utils\MainLogger;
 
 class BaseLang{

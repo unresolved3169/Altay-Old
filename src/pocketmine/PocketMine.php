@@ -71,15 +71,15 @@ namespace {
 
 namespace pocketmine {
 
-    use pocketmine\utils\MainLogger;
-    use pocketmine\utils\ServerKiller;
-    use pocketmine\utils\Terminal;
-    use pocketmine\utils\Timezone;
-    use pocketmine\utils\Utils;
-    use pocketmine\wizard\SetupWizard;
-    use raklib\RakLib;
+	use pocketmine\utils\MainLogger;
+	use pocketmine\utils\ServerKiller;
+	use pocketmine\utils\Terminal;
+	use pocketmine\utils\Timezone;
+	use pocketmine\utils\Utils;
+	use pocketmine\wizard\SetupWizard;
+	use raklib\RakLib;
 
-    const NAME = "Altay";
+	const NAME = "Altay";
     const VERSION = "1.2";
     const API_VERSION = "3.0.1";
     const CODENAME = "TuranicPro";
