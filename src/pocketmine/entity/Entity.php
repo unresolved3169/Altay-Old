@@ -261,9 +261,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		Entity::registerEntity(Human::class, true);
 
-        Effect::init();
-        Attribute::init();
-        PaintingMotive::init();
+		Effect::init();
+		Attribute::init();
+		PaintingMotive::init();
 	}
 
 
@@ -646,7 +646,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function isAffectedByGravity() : bool{
-	    return $this->getGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY);
+		return $this->getGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY);
 	}
 
 	public function setAffectedByGravity(bool $value = true){
@@ -690,7 +690,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function isGliding() : bool{
-	    return $this->getGenericFlag(self::DATA_FLAG_GLIDING);
+		return $this->getGenericFlag(self::DATA_FLAG_GLIDING);
 	}
 
 	public function setGliding(bool $value = true) : void{
@@ -968,7 +968,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		if($amount <= 0){
 			if($this->isAlive()){
-                $this->health = 0;
+				$this->health = 0;
 				$this->kill();
 			}
 		}elseif($amount <= $this->getMaxHealth() or $amount < $this->health){
@@ -1451,7 +1451,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * @param bool  $onGround
 	 */
 	protected function updateFallState(float $distanceThisTick, bool $onGround){
-	    if($this instanceof Player) return;
+		if($this instanceof Player) return;
 		if($onGround){
 			if($this->fallDistance > 0){
 				$this->fall($this->fallDistance);
@@ -1797,9 +1797,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function checkChunks(){
-	    $chunkX = $this->getFloorX() >> 4;
-	    $chunkZ = $this->getFloorZ() >> 4;
-        if($this->chunk === null or ($this->chunk->getX() !== $chunkX or $this->chunk->getZ() !== $chunkZ)){
+		$chunkX = $this->getFloorX() >> 4;
+		$chunkZ = $this->getFloorZ() >> 4;
+		if($this->chunk === null or ($this->chunk->getX() !== $chunkX or $this->chunk->getZ() !== $chunkZ)){
 			if($this->chunk !== null){
 				$this->chunk->removeEntity($this);
 			}
@@ -2148,7 +2148,18 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
 	}
 
-	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){}
+	/**
+	 * Called when interacted or tapped by a Player
+	 *
+	 * @param Player $player
+	 * @param Item $item
+	 * @param Vector3 $clickPos
+	 * @param int $slot
+	 * @return void
+	 */
+	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
+
+	}
 
 	/**
 	 * @return Item[]

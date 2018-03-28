@@ -189,7 +189,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public const SPECTATOR = 3;
 	public const VIEW = Player::SPECTATOR;
 
-       /**
+	/**
 	 * Checks a supplied username and checks it is valid.
 	 * @param string $name
 	 *
@@ -255,9 +255,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/** @var string */
 	protected $xuid = "";
 
-    /** @var string */
+	/** @var string */
 	protected $deviceModel;
-    /** @var int */
+	/** @var int */
 	protected $deviceOS;
 
 	protected $windowCnt = 2;
@@ -1653,7 +1653,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function setMotion(Vector3 $mot){
 		if(parent::setMotion($mot)){
-		    $this->broadcastMotion();
+			$this->broadcastMotion();
 
 			if($this->motionY > 0){
 				$this->startAirTicks = (-log($this->gravity / ($this->gravity + $this->drag * $this->motionY)) / $this->drag) * 2 + 5;
@@ -1742,8 +1742,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							}
 						}
 
-                        $this->inAirTicks += $tickDiff;
-                    }
+						$this->inAirTicks += $tickDiff;
+					}
 				}
 			}
 		}
@@ -1768,10 +1768,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function isHungry() : bool{
-        return $this->isSurvival() and parent::isHungry();
-    }
+		return $this->isSurvival() and parent::isHungry();
+	}
 
-    public function canBreathe() : bool{
+	public function canBreathe() : bool{
 		return $this->isCreative() or parent::canBreathe();
 	}
 
@@ -2041,7 +2041,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool{
 		switch($packet->status){
 			case ResourcePackClientResponsePacket::STATUS_REFUSED:
-                $this->close("", $this->server->getLanguage()->translateString("pocketmine.disconnect.mustAcceptResourcePack"), true);
+				$this->close("", $this->server->getLanguage()->translateString("pocketmine.disconnect.mustAcceptResourcePack"), true);
 				break;
 			case ResourcePackClientResponsePacket::STATUS_SEND_PACKS:
 				$manager = $this->server->getResourcePackManager();
@@ -2215,14 +2215,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
-	    $target = $this->level->getEntity($packet->entityRuntimeId);
-	    if($target === null)
-	        return false;
+		$target = $this->level->getEntity($packet->entityRuntimeId);
+		if($target === null)
+			return false;
 
-	    $target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
+		$target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
 
-	    $this->server->broadcastPacket($this->getViewers(), $packet);
-	    return true;
+		$this->server->broadcastPacket($this->getViewers(), $packet);
+		return true;
 	}
 
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
@@ -2486,12 +2486,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							return true;
 						}
 
-                        if($item->onClickAir($this, $directionVector)){
-                            $this->resetItemCooldown($item);
-                            if($this->isSurvival()){
-                                $this->inventory->setItemInHand($item);
-                            }
-                        }
+						if($item->onClickAir($this, $directionVector)){
+							$this->resetItemCooldown($item);
+							if($this->isSurvival()){
+								$this->inventory->setItemInHand($item);
+							}
+						}
 
 						$this->setUsingItem(true);
 
@@ -2511,15 +2511,23 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
-                        $ev = new PlayerEntityInteractEvent($this, $target);
-                        if($this->isSpectator()) $ev->setCancelled();
-                        $this->server->getPluginManager()->callEvent($ev);
+						$item = $packet->trData->itemInHand;
+						$clickPos = $packet->trData->clickPos;
+						$slot = $packet->trData->hotbarSlot;
 
-					    if(!$ev->isCancelled()){
-                            $target->onInteract($this, $packet->trData->itemInHand, $packet->trData->clickPos, $actions);
-                        }
+						$ev = new PlayerEntityInteractEvent($this, $target, $item, $clickPos, $slot);
 
-                        return true;
+						if(!$this->canInteract($target, 8)){
+							$ev->setCancelled();
+						}
+
+						$this->server->getPluginManager()->callEvent($ev);
+
+						if(!$ev->isCancelled()){
+							$target->onInteract($this, $item, $clickPos, $slot);
+						}
+
+						return true;
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_ATTACK:
 						if(!$target->isAlive()){
 							return true;
@@ -2548,7 +2556,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						if(!$this->isSprinting() and !$this->isFlying() and $this->fallDistance > 0 and !$this->hasEffect(Effect::BLINDNESS) and !$this->isInsideOfWater()){
-						    $ev->setDamage($ev->getFinalDamage() / 2, EntityDamageEvent::MODIFIER_CRITICAL);
+							$ev->setDamage($ev->getFinalDamage() / 2, EntityDamageEvent::MODIFIER_CRITICAL);
 						}
 
 						$target->attack($ev);
@@ -2561,13 +2569,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						if($ev->getDamage(EntityDamageEvent::MODIFIER_CRITICAL) > 0){
-						    $pk = new AnimatePacket();
-						    $pk->action = AnimatePacket::ACTION_CRITICAL_HIT;
-						    $pk->entityRuntimeId = $target->getId();
-						    $this->server->broadcastPacket($target->getViewers(), $pk);
-						    if($target instanceof Player){
-						        $target->dataPacket($pk);
-						    }
+							$pk = new AnimatePacket();
+							$pk->action = AnimatePacket::ACTION_CRITICAL_HIT;
+							$pk->entityRuntimeId = $target->getId();
+							$this->server->broadcastPacket($target->getViewers(), $pk);
+							if($target instanceof Player){
+								$target->dataPacket($pk);
+							}
 						}
 
 						if($this->isSurvival()){
@@ -2591,14 +2599,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						case InventoryTransactionPacket::RELEASE_ITEM_ACTION_RELEASE:
 							if($this->isUsingItem()){
 								$item = $this->inventory->getItemInHand();
-                                if($this->hasItemCooldown($item)){
-                                    $this->inventory->sendContents($this);
-                                    return false;
-                                }
-                                if($item->onReleaseUsing($this)){
-                                    $this->resetItemCooldown($item);
-                                    $this->inventory->setItemInHand($item);
-                                }
+								if($this->hasItemCooldown($item)){
+									$this->inventory->sendContents($this);
+									return false;
+								}
+								if($item->onReleaseUsing($this)){
+									$this->resetItemCooldown($item);
+									$this->inventory->setItemInHand($item);
+								}
 							}else{
 								break;
 							}
@@ -2609,9 +2617,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 							if($slot instanceof Consumable){
 								$ev = new PlayerItemConsumeEvent($this, $slot);
-                                if($this->hasItemCooldown($slot)){
-                                    $ev->setCancelled();
-                                }
+								if($this->hasItemCooldown($slot)){
+									$ev->setCancelled();
+								}
 								$this->server->getPluginManager()->callEvent($ev);
 
 								if($ev->isCancelled() or !$this->consumeObject($slot)){
@@ -2619,7 +2627,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 									return true;
 								}
 
-                                $this->resetItemCooldown($slot);
+								$this->resetItemCooldown($slot);
 
 								if($this->isSurvival()){
 									$slot->pop();
@@ -3797,44 +3805,44 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	protected function respawn() : void{
-	    if($this->server->isHardcore()){
-	        $this->setBanned(true);
-	        return;
-	    }
+		if($this->server->isHardcore()){
+			$this->setBanned(true);
+			return;
+		}
 
-	    $this->server->getPluginManager()->callEvent($ev = new PlayerRespawnEvent($this, $this->getSpawn()));
+		$this->server->getPluginManager()->callEvent($ev = new PlayerRespawnEvent($this, $this->getSpawn()));
 
-	    $realSpawn = Position::fromObject($ev->getRespawnPosition()->add(0.5, 0, 0.5), $ev->getRespawnPosition()->getLevel());
-	    $this->teleport($realSpawn);
+		$realSpawn = Position::fromObject($ev->getRespawnPosition()->add(0.5, 0, 0.5), $ev->getRespawnPosition()->getLevel());
+		$this->teleport($realSpawn);
 
-	    $this->setSprinting(false);
-	    $this->setSneaking(false);
+		$this->setSprinting(false);
+		$this->setSneaking(false);
 
-	    $this->extinguish();
-	    $this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
-	    $this->deadTicks = 0;
-	    $this->noDamageTicks = 60;
+		$this->extinguish();
+		$this->setAirSupplyTicks($this->getMaxAirSupplyTicks());
+		$this->deadTicks = 0;
+		$this->noDamageTicks = 60;
 
-	    $this->removeAllEffects();
-	    $this->setHealth($this->getMaxHealth());
+		$this->removeAllEffects();
+		$this->setHealth($this->getMaxHealth());
 
-	    $xp = $this->getCurrentTotalXp();
+		$xp = $this->getCurrentTotalXp();
 
-	    foreach($this->attributeMap->getAll() as $attr){
-	        $attr->resetToDefault();
-	    }
+		foreach($this->attributeMap->getAll() as $attr){
+			$attr->resetToDefault();
+		}
 
-	    if($this->server->keepExperience)
-	        $this->setCurrentTotalXp($xp);
+		if($this->server->keepExperience)
+			$this->setCurrentTotalXp($xp);
 
-	    $this->sendData($this);
+		$this->sendData($this);
 
-	    $this->sendSettings();
-	    $this->inventory->sendContents($this);
-	    $this->armorInventory->sendContents($this);
+		$this->sendSettings();
+		$this->inventory->sendContents($this);
+		$this->armorInventory->sendContents($this);
 
-	    $this->spawnToAll();
-	    $this->scheduleUpdate();
+		$this->spawnToAll();
+		$this->scheduleUpdate();
 	}
 
 	protected function applyPostDamageEffects(EntityDamageEvent $source) : void{

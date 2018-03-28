@@ -26,20 +26,65 @@ namespace pocketmine\event\player;
 
 use pocketmine\entity\Entity;
 use pocketmine\event\Cancellable;
+use pocketmine\item\Item;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
+/**
+ * Called when a player interacts with an entity
+ */
 class PlayerEntityInteractEvent extends PlayerEvent implements Cancellable{
-    public static $handlerList = null;
+	public static $handlerList = null;
 
-    /** @var Entity */
-    protected $entity;
+	/** @var Entity */
+	protected $entity;
+	/** @var Item */
+	protected $item;
+	/** @var Vector3 */
+	protected $clickPos;
+	/** @var int */
+	protected $slot;
 
-    public function __construct(Player $player, Entity $entity){
-        $this->player = $player;
-        $this->entity = $entity;
-    }
+	/**
+	 * @param Player       $player
+	 * @param Entity       $entity
+	 * @param Item         $item
+	 * @param Vector3      $clickPos
+	 * @param int          $slot
+	 */
+	public function __construct(Player $player, Entity $entity, Item $item, Vector3 $clickPos, int $slot){
+		$this->player = $player;
+		$this->entity = $entity;
+		$this->item = $item;
+		$this->clickPos = $clickPos;
+		$this->slot = $slot;
+	}
 
+	/**
+	 * @return Entity
+	 */
 	public function getEntity() : Entity{
 		return $this->entity;
+	}
+
+	/**
+	 * @return Item
+	 */
+	public function getItem() : Item{
+		return $this->item;
+	}
+
+	/**
+	 * @return Vector3
+	 */
+	public function getClickPosition() : Vector3{
+		return $this->clickPos;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function geSlot() : int{
+		return $this->slot;
 	}
 }
