@@ -50,6 +50,12 @@ class MateBehavior extends Behavior
 		}
 	}
 
+	public function onEnd(): void
+	{
+		$this->targetMate = null;
+		$this->spawnBabyDelay = 0;
+	}
+
 	public function getNearbyMate() : ?Animal{
 		$list = $this->mob->level->getNearbyEntities($this->mob->getBoundingBox()->grow(8,8,8), $this->mob);
 		$dist = PHP_INT_MAX;
