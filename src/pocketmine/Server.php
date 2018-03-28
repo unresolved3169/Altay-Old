@@ -1770,15 +1770,15 @@ class Server{
 			}
 
 			if($this->allowEnd and $this->endLevel === null){
-				$theEndLevel = $this->getAltayProperty("dimensions.end.level-name", "end");
-				if(trim($theEndLevel) == ""){
-					$theEndLevel = "the-end";
+				$endLevel = $this->getAltayProperty("dimensions.end.level-name", "end");
+				if(trim($endLevel) == ""){
+					$endLevel = "end";
 				}
-				if(!$this->loadLevel($theEndLevel)){
-					$this->generateLevel($theEndLevel, time(), "end");
+				if(!$this->loadLevel($endLevel)){
+					$this->generateLevel($endLevel, time(), "end");
 				}
 
-				$this->endLevel = $this->getLevelByName($theEndLevel);
+				$this->endLevel = $this->getLevelByName($endLevel);
 			}
 
 			if($this->properties->hasChanged()){
