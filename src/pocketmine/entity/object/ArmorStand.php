@@ -26,6 +26,7 @@ namespace pocketmine\entity\object;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
+use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\inventory\AltayEntityEquipment;
@@ -42,8 +43,7 @@ use pocketmine\nbt\tag\IntTag;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 
-// TODO : Change to Living
-class ArmorStand extends Entity{
+class ArmorStand extends Living{
 	public const NETWORK_ID = EntityIds::ARMOR_STAND;
 
 	public const TAG_ARMOR = "Armor";
@@ -131,53 +131,53 @@ class ArmorStand extends Entity{
 
 			switch(true){ // yes order matter here.
 				case ($diff < 0.5):
-					$clicked = EquipmentSlot::HACK_FEET;
+					$clicked = EquipmentSlot::FEET;
 					break;
 				case ($diff < 1):
-					$clicked = EquipmentSlot::HACK_LEGS;
+					$clicked = EquipmentSlot::LEGS;
 					break;
 				case ($diff < 1.5):
-					$clicked = EquipmentSlot::HACK_CHEST;
+					$clicked = EquipmentSlot::CHEST;
 					break;
 				default: // armor stands are only 2-ish blocks tall :shrug:
-					$clicked = EquipmentSlot::HACK_HEAD;
+					$clicked = EquipmentSlot::HEAD;
 					break;
 			}
 
 			if($item->isNull()){
-				if($clicked == EquipmentSlot::HACK_CHEST){
-					if($this->equipment->getMainhandItem()->isNull()){
-						$ASchestplate = clone $this->equipment->getChestplate();
-						$this->equipment->setChestplate($item);
+				if($clicked == EquipmentSlot::CHEST){
+					if($this->equipment->getItemInHand()->isNull()){
+						$ASchestplate = clone $this->armorInventory->getChestplate();
+						$this->armorInventory->setChestplate($item);
 						$playerInv->setItemInHand(Item::get(Item::AIR));
 						$playerInv->addItem($ASchestplate);
 					}else{
-						$ASiteminhand = clone $this->equipment->getMainhandItem();
-						$this->equipment->setMainhandItem($item);
+						$ASiteminhand = clone $this->equipment->getItemInHand();
+						$this->equipment->setItemInHand($item);
 						$playerInv->setItemInHand(Item::get(Item::AIR));
 						$playerInv->addItem($ASiteminhand);
 					}
 				}else{
-					$old = clone $this->equipment->getItem($clicked);
-					$this->equipment->setItem($clicked, $item);
+					$old = clone $this->armorInventory->getItem($clicked);
+					$this->armorInventory->setItem($clicked, $item);
 					$playerInv->setItemInHand(Item::get(Item::AIR));
 					$playerInv->addItem($old);
 				}
 			}else{
-				if($type == EquipmentSlot::MAINHAND){
-					if($this->equipment->getMainhandItem()->equals($item)){
-						$playerInv->addItem(clone $this->equipment->getMainhandItem());
-						$this->equipment->setMainhandItem(Item::get(Item::AIR));
+				if($type == -1){
+					if($this->equipment->getItemInHand()->equals($item)){
+						$playerInv->addItem(clone $this->equipment->getItemInHand());
+						$this->equipment->setItemInHand(Item::get(Item::AIR));
 					}else{
-						$playerInv->addItem(clone $this->equipment->getMainhandItem());
+						$playerInv->addItem(clone $this->equipment->getItemInHand());
 
 						$ic = clone $item;
 						$playerInv->setItemInHand($ic);
-						$this->equipment->setMainhandItem($ic->pop());
+						$this->equipment->setItemInHand($ic->pop());
 					}
 				}else{
-					$old = clone $this->equipment->getItem($type);
-					$this->equipment->setItem($type, $item);
+					$old = clone $this->armorInventory->getItem($type);
+					$this->armorInventory->setItem($type, $item);
 					$playerInv->setItemInHand(Item::get(Item::AIR));
 					$playerInv->addItem($old);
 				}
@@ -212,10 +212,10 @@ class ArmorStand extends Entity{
 	public function saveNBT(){
 		parent::saveNBT();
 
-		$this->namedtag->setTag(new ListTag(self::TAG_MAINHAND, [$this->equipment->getMainhandItem()->nbtSerialize()], NBT::TAG_Compound));
+		$this->namedtag->setTag(new ListTag(self::TAG_MAINHAND, [$this->equipment->getItemInHand()->nbtSerialize()], NBT::TAG_Compound));
 		$this->namedtag->setTag(new ListTag(self::TAG_OFFHAND, [$this->equipment->getOffhandItem()->nbtSerialize()], NBT::TAG_Compound));
 
-		$armorNBT = array_map(function(Item $item) : CompoundTag{ return $item->nbtSerialize(); }, $this->equipment->getArmorContents());
+		$armorNBT = array_map(function(Item $item) : CompoundTag{ return $item->nbtSerialize(); }, $this->getArmorInventory()->getContents());
 		$this->namedtag->setTag(new ListTag(self::TAG_ARMOR, $armorNBT, NBT::TAG_Compound));
 
 		/** @var CompoundTag $poseTag */
@@ -226,7 +226,7 @@ class ArmorStand extends Entity{
 
 	public function kill(){
 		$dropVector = $this->add(0.5, 0.5, 0.5);
-		$items = array_merge($this->equipment->getContents(false), [ItemFactory::get(Item::ARMOR_STAND)]);
+		$items = array_merge($this->equipment->getContents(), $this->armorInventory->getContents(), [ItemFactory::get(Item::ARMOR_STAND)]);
 		$this->level->dropItems($dropVector, $items);
 
 		return parent::kill();
@@ -246,7 +246,7 @@ class ArmorStand extends Entity{
 			}
 		}
 		if($source->getCause() != EntityDamageEvent::CAUSE_CONTACT){ // cactus
-			parent::attack($source);
+			Entity::attack($source);
 		}
 	}
 
@@ -259,17 +259,22 @@ class ArmorStand extends Entity{
 		return "Armor Stand";
 	}
 
-	public function getEquipmentSlot(Item $item){
+	public function getEquipmentSlot(Item $item) : int{
 		if($item instanceof Armor){
-			return $item->getArmorSlot() + 2; // HACK :D
+			return $item->getArmorSlot();
 		}else{
 			switch($item->getId()){
 				case Item::SKULL:
 				case Item::SKULL_BLOCK:
 				case Item::PUMPKIN:
-					return EquipmentSlot::HACK_HEAD;
+					return EquipmentSlot::HEAD;
 			}
-			return EquipmentSlot::MAINHAND;
+
+			return -1; // mainhand
 		}
+	}
+
+	public function hasMovementUpdate() : bool{
+		return false;
 	}
 }
