@@ -30,39 +30,39 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 
 class SittingBehavior extends Behavior{
 
-    // TODO : Change to Wolf
-    public function __construct(Mob $mob){
-        parent::__construct($mob);
-    }
+	// TODO : Change to Wolf
+	public function __construct(Mob $mob){
+		parent::__construct($mob);
+	}
 
-    public function canStart(): bool{
-        if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
-        if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_BREATHING)) return false;
+	public function canStart(): bool{
+		if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
+		if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_BREATHING)) return false;
 
-        $owner = $this->mob->getOwningEntity();
+		$owner = $this->mob->getOwningEntity();
 
-        $shouldStart = $owner == null || ((!($this->mob->distance($owner) < 144.0) || $this->getLastAttackSource() == null) && $this->mob->getGenericFlag(Entity::DATA_FLAG_SITTING));
-        if(!$shouldStart) return false;
+		$shouldStart = $owner == null || ((!($this->mob->distance($owner) < 144.0) || $this->getLastAttackSource() == null) && $this->mob->getGenericFlag(Entity::DATA_FLAG_SITTING));
+		if(!$shouldStart) return false;
 
-        $this->mob->motionX = $this->mob->motionZ = 0;
+		$this->mob->motionX = $this->mob->motionZ = 0;
 
-        return true;
-    }
+		return true;
+	}
 
-    public function canContinue(): bool{
-        return $this->mob->getGenericFlag(Entity::DATA_FLAG_SITTING);
-    }
+	public function canContinue(): bool{
+		return $this->mob->getGenericFlag(Entity::DATA_FLAG_SITTING);
+	}
 
-    public function onEnd(): void{
-        $this->mob->setGenericFlag(Entity::DATA_FLAG_SITTING, false);
-    }
+	public function onEnd(): void{
+		$this->mob->setGenericFlag(Entity::DATA_FLAG_SITTING, false);
+	}
 
-    public function getLastAttackSource(): ?Entity{
-        $cause = $this->mob->getLastDamageCause();
-        if($cause instanceof EntityDamageByEntityEvent)
-            return $cause->getDamager();
+	public function getLastAttackSource(): ?Entity{
+		$cause = $this->mob->getLastDamageCause();
+		if($cause instanceof EntityDamageByEntityEvent)
+			return $cause->getDamager();
 
-        return null;
-    }
+		return null;
+	}
 
 }

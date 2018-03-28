@@ -34,61 +34,61 @@ use pocketmine\utils\Random;
 
 class WanderBehavior extends Behavior{
 
-    /** @var float */
+	/** @var float */
 	protected $speedMultiplier = 1.0;
 	/** @var int */
 	protected $chance = 120;
 
 	protected $targetPos;
-	
+
 	public function __construct(Mob $mob, float $speedMultiplier = 1.0, int $chance = 120){
 		parent::__construct($mob);
-		
+
 		$this->speedMultiplier = $speedMultiplier;
 		$this->chance = $chance;
 	}
-	
+
 	public function canStart() : bool{
 		if($this->random->nextBoundedInt($this->chance) === 0){
 			$pos = $this->findRandomTargetBlock($this->mob, 10, 7);
-			
+
 			if($pos === null) return false;
-			
+
 			$path = Path::findPath($this->mob, $pos);
 
 			$this->targetPos = $pos;
-			
+
 			return $path->havePath();
 		}
 
 		return false;
 	}
-	
+
 	public function canContinue() : bool{
 		return $this->targetPos !== null;
 	}
-	
+
 	public function onTick(int $tick) : void{
 		if(!$this->mob->getNavigator()->tryMoveTo($this->targetPos, $this->speedMultiplier)){
 			$this->targetPos = null;
 		}
 	}
-	
+
 	public function onEnd() : void{
 		$this->mob->motionX = 0; $this->mob->motionZ = 0;
 		$this->targetPos = null;
 	}
-	
+
 	public function findRandomTargetBlock(Entity $entity, int $dxz, int $dy) : ?Block{
 		$random = new Random();
-		
+
 		$currentWeight = 0;
 		$currentBlock = null;
 		for($i = 0; $i < 10; $i++){
 			$x = $random->nextBoundedInt(2 * $dxz + 1) - $dxz;
 			$y = $random->nextBoundedInt(2 * $dy + 1) - $dy;
 			$z = $random->nextBoundedInt(2 * $dxz + 1) - $dxz;
-			
+
 			$blockCoords = new Vector3($x,$y,$z);
 			$block = $entity->level->getBlock($this->mob->asVector3()->add($blockCoords));
 			$blockDown = $block->getSide(0);
@@ -100,15 +100,15 @@ class WanderBehavior extends Behavior{
 				}
 			}
 		}
-		
+
 		return $currentBlock;
 	}
-	
+
 	public function calculateBlockWeight(Entity $entity, Block $block, Block $blockDown) : int{
 		$vec = [$block->getX(), $block->getY(), $block->getZ()];
 		if($entity instanceof Animal){
 			if($blockDown instanceof Grass) return 20;
-			
+
 			return (int) (max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec)) - 0.5);
 		}else{
 			return (int) 0.5 - max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));

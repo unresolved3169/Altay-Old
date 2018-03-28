@@ -27,7 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Entity;
 
 class FloatBehavior extends BehaviorTask{
-	
+
 	public function onExecute() : void{
 		if($this->mob->isInsideOfWater()){
 			$this->mob->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_SWIMMER, true);

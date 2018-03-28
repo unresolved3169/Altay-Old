@@ -32,107 +32,107 @@ use pocketmine\math\Vector3;
 
 class MeleeAttackBehavior extends Behavior{
 
-    /** @var float */
-    protected $speedMultiplier;
-    /** @var float */
-    protected $followRange;
+	/** @var float */
+	protected $speedMultiplier;
+	/** @var float */
+	protected $followRange;
 
-    /** @var int */
-    protected $attackCooldown;
-    /** @var int */
-    protected $delay;
-    /** @var Path */
-    protected $currentPath;
-    /** @var Vector3 */
-    protected $lastPlayerPos;
+	/** @var int */
+	protected $attackCooldown;
+	/** @var int */
+	protected $delay;
+	/** @var Path */
+	protected $currentPath;
+	/** @var Vector3 */
+	protected $lastPlayerPos;
 
-    public function __construct(Mob $mob, float $speedMultiplier, float $followRange){
-        parent::__construct($mob);
+	public function __construct(Mob $mob, float $speedMultiplier, float $followRange){
+		parent::__construct($mob);
 
-        $this->speedMultiplier = $speedMultiplier;
-        $this->followRange = $followRange;
-    }
+		$this->speedMultiplier = $speedMultiplier;
+		$this->followRange = $followRange;
+	}
 
-    public function canStart(): bool{
-        $target = $this->mob->getTargetEntity();
-        if($target == null) return false;
+	public function canStart(): bool{
+		$target = $this->mob->getTargetEntity();
+		if($target == null) return false;
 
-        $this->currentPath = Path::findPath($this->mob, $target);
+		$this->currentPath = Path::findPath($this->mob, $target);
 
-        if(!$this->currentPath->havePath()) return false;
+		if(!$this->currentPath->havePath()) return false;
 
-        $this->lastPlayerPos = $target->asVector3();
+		$this->lastPlayerPos = $target->asVector3();
 
-        return true;
-    }
+		return true;
+	}
 
-    public function onStart(): void{
-        $this->delay = 0;
-    }
+	public function onStart(): void{
+		$this->delay = 0;
+	}
 
-    public function canContinue(): bool{
-        return $this->mob->getTargetEntityId() != null;
-    }
+	public function canContinue(): bool{
+		return $this->mob->getTargetEntityId() != null;
+	}
 
-    public function onTick(int $tick): void{
-        $target = $this->mob->getTargetEntity();
-        if($target == null) return;
+	public function onTick(int $tick): void{
+		$target = $this->mob->getTargetEntity();
+		if($target == null) return;
 
-        $distanceToPlayer = $this->mob->distance($target);
+		$distanceToPlayer = $this->mob->distance($target);
 
-        --$this->delay;
+		--$this->delay;
 
-        $deltaDistance = $this->lastPlayerPos->distance($target);
+		$deltaDistance = $this->lastPlayerPos->distance($target);
 
-        $canSee = true;
+		$canSee = true;
 
-        if($canSee || $this->delay <= 0 || $deltaDistance > 1 || $this->random->nextFloat() < 0.05){
-            $this->currentPath = Path::findPath($this->mob, $target);
-            $this->lastPlayerPos = $target->asVector3();
+		if($canSee || $this->delay <= 0 || $deltaDistance > 1 || $this->random->nextFloat() < 0.05){
+			$this->currentPath = Path::findPath($this->mob, $target);
+			$this->lastPlayerPos = $target->asVector3();
 
-            $this->delay = 4 + $this->random->nextBoundedInt(7);
+			$this->delay = 4 + $this->random->nextBoundedInt(7);
 
-            if($distanceToPlayer > 32){
-                $this->delay += 10;
-            }elseif($distanceToPlayer > 16){
-                $this->delay += 5;
-            }
+			if($distanceToPlayer > 32){
+				$this->delay += 10;
+			}elseif($distanceToPlayer > 16){
+				$this->delay += 5;
+			}
 
-            if(!$this->currentPath->havePath()){
-                $this->delay += 15;
-            }
-        }
+			if(!$this->currentPath->havePath()){
+				$this->delay += 15;
+			}
+		}
 
-        // Movement
-        if($this->currentPath->havePath()){
-            $next = $this->currentPath->getNextTile($this->mob);
-            if($next !== null){
-                $this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-                $this->mob->moveForward($this->speedMultiplier);
-            } // else something is really wrong
-        }else{
-            $this->mob->resetMotion();
-        }
+		// Movement
+		if($this->currentPath->havePath()){
+			$next = $this->currentPath->getNextTile($this->mob);
+			if($next !== null){
+				$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+				$this->mob->moveForward($this->speedMultiplier);
+			} // else something is really wrong
+		}else{
+			$this->mob->resetMotion();
+		}
 
-        $this->mob->lookAt($target);
+		$this->mob->lookAt($target);
 
-        $this->attackCooldown = max($this->attackCooldown - 1, 0);
-        if($this->attackCooldown <= 0 && $distanceToPlayer < $this->getAttackReach()){
-            $damage = $this->mob->getAttributeMap()->getAttribute(Attribute::ATTACK_DAMAGE)->getValue();
-            $target->attack(new EntityDamageByEntityEvent($this->mob, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage));
-            $this->attackCooldown = 20;
-        }
-    }
+		$this->attackCooldown = max($this->attackCooldown - 1, 0);
+		if($this->attackCooldown <= 0 && $distanceToPlayer < $this->getAttackReach()){
+			$damage = $this->mob->getAttributeMap()->getAttribute(Attribute::ATTACK_DAMAGE)->getValue();
+			$target->attack(new EntityDamageByEntityEvent($this->mob, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage));
+			$this->attackCooldown = 20;
+		}
+	}
 
-    public function getAttackReach() : float{
-        return $this->mob->width * 2.0 + $this->mob->getTargetEntity()->width;
-    }
+	public function getAttackReach() : float{
+		return $this->mob->width * 2.0 + $this->mob->getTargetEntity()->width;
+	}
 
-    public function onEnd() : void{
-        $this->mob->resetMotion();
-        $this->mob->pitch = 0;
-        $this->attackCooldown = $this->delay = 0;
-        $this->currentPath = null;
-    }
+	public function onEnd() : void{
+		$this->mob->resetMotion();
+		$this->mob->pitch = 0;
+		$this->attackCooldown = $this->delay = 0;
+		$this->currentPath = null;
+	}
 
 }

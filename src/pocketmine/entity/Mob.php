@@ -32,26 +32,26 @@ use pocketmine\math\Vector3;
 
 abstract class Mob extends Living{
 
-    public $height = 0.6;
-    public $width = 1.8;
+	public $height = 0.6;
+	public $width = 1.8;
 
-    /** @var array */
-    protected $behaviors = [], $targetBehaviors = [], $behaviorTasks = [];
-    /** @var bool */
-    protected $behaviorsEnabled = true; // test
-    /** @var Behavior|null */
-    protected $currentBehavior = null, $currentTargetBehavior = null;
-    /** @var EntityNavigator */
-    protected $navigator;
+	/** @var array */
+	protected $behaviors = [], $targetBehaviors = [], $behaviorTasks = [];
+	/** @var bool */
+	protected $behaviorsEnabled = true; // test
+	/** @var Behavior|null */
+	protected $currentBehavior = null, $currentTargetBehavior = null;
+	/** @var EntityNavigator */
+	protected $navigator;
 
-    protected function initEntity(){
-        parent::initEntity();
+	protected function initEntity(){
+		parent::initEntity();
 
-        $this->behaviors = $this->getNormalBehaviors();
-        $this->targetBehaviors = $this->getTargetBehaviors();
-        $this->navigator = new EntityNavigator($this);
-        $this->setImmobile(false);
-    }
+		$this->behaviors = $this->getNormalBehaviors();
+		$this->targetBehaviors = $this->getTargetBehaviors();
+		$this->navigator = new EntityNavigator($this);
+		$this->setImmobile(false);
+	}
 
 	/**
 	 * @param array $behaviors
@@ -59,67 +59,67 @@ abstract class Mob extends Living{
 	 * @return null|Behavior
 	 */
 	public function getReadyBehavior(array $behaviors, ?Behavior $currentBehavior = null): ?Behavior{
-        foreach($behaviors as $index => $behavior){
-            if($behavior == $currentBehavior){
-                if($behavior->canContinue()){
-                    return $behavior;
-                }
-                $behavior->onEnd();
-                $currentBehavior = null;
-            }
-            if($behavior->canStart()){
-                if($currentBehavior == null or (array_search($currentBehavior, $behaviors)) > $index){
-                    if($currentBehavior != null){
-                        $currentBehavior->onEnd();
-                    }
-                    $behavior->onStart();
-                    return $behavior;
-                }
-            }
-        }
-        return null;
-    }
+		foreach($behaviors as $index => $behavior){
+			if($behavior == $currentBehavior){
+				if($behavior->canContinue()){
+					return $behavior;
+				}
+				$behavior->onEnd();
+				$currentBehavior = null;
+			}
+			if($behavior->canStart()){
+				if($currentBehavior == null or (array_search($currentBehavior, $behaviors)) > $index){
+					if($currentBehavior != null){
+						$currentBehavior->onEnd();
+					}
+					$behavior->onStart();
+					return $behavior;
+				}
+			}
+		}
+		return null;
+	}
 
 	/**
 	 * @param int $tick
 	 * @return bool
 	 */
 	public function onUpdate(int $tick): bool{
-        if($this->isAlive() and $this->behaviorsEnabled){
-            $this->currentBehavior = $this->getReadyBehavior($this->behaviors, $this->currentBehavior);
-            if($this->currentBehavior instanceof Behavior){
-                $this->currentBehavior->onTick($tick);
-            }
-            $this->currentTargetBehavior = $this->getReadyBehavior($this->targetBehaviors, $this->currentTargetBehavior);
-            if($this->currentTargetBehavior instanceof TargetBehavior){
-                $this->currentTargetBehavior->onTick($tick);
-            }
-            foreach($this->getBehaviorTasks() as $task){
-                $task->onExecute();
-            }
-        }
+		if($this->isAlive() and $this->behaviorsEnabled){
+			$this->currentBehavior = $this->getReadyBehavior($this->behaviors, $this->currentBehavior);
+			if($this->currentBehavior instanceof Behavior){
+				$this->currentBehavior->onTick($tick);
+			}
+			$this->currentTargetBehavior = $this->getReadyBehavior($this->targetBehaviors, $this->currentTargetBehavior);
+			if($this->currentTargetBehavior instanceof TargetBehavior){
+				$this->currentTargetBehavior->onTick($tick);
+			}
+			foreach($this->getBehaviorTasks() as $task){
+				$task->onExecute();
+			}
+		}
 
-        return parent::onUpdate($tick);
-    }
+		return parent::onUpdate($tick);
+	}
 
 	/**
 	 * @param int $index
 	 * @param Behavior $b
 	 */
 	public function setBehavior(int $index, Behavior $b) : void{
-    	if($b instanceof TargetBehavior){
+		if($b instanceof TargetBehavior){
 			$this->targetBehaviors[$index] = $b;
 		}else {
 			$this->behaviors[$index] = $b;
 		}
-    }
+	}
 
 	/**
 	 * @param int $key
 	 */
 	public function removeBehavior(int $key) : void{
 		unset($this->behaviors[$key]);
-    }
+	}
 
 	/**
 	 * @param int $key
@@ -132,33 +132,33 @@ abstract class Mob extends Living{
 	 * @return bool
 	 */
 	public function isBehaviorsEnabled() : bool{
-        return $this->behaviorsEnabled;
-    }
+		return $this->behaviorsEnabled;
+	}
 
 	/**
 	 * @param bool $value
 	 */
 	public function setBehaviorsEnabled(bool $value = true) : void{
-        $this->behaviorsEnabled = $value;
-    }
+		$this->behaviorsEnabled = $value;
+	}
 
-    /**
-     * @return Behavior[]
-     */
-    protected function getNormalBehaviors() : array{
-        return [];
-    }
+	/**
+	 * @return Behavior[]
+	 */
+	protected function getNormalBehaviors() : array{
+		return [];
+	}
 
-   protected function getBehaviorTasks() : array{
-       return [];
-   }
+	protected function getBehaviorTasks() : array{
+		return [];
+	}
 
 	/**
 	 * @return array
 	 */
 	protected function getTargetBehaviors() : array{
-        return [];
-    }
+		return [];
+	}
 
 	/**
 	 * @param float $spm
@@ -170,11 +170,11 @@ abstract class Mob extends Living{
 		$dir->y = 0;
 
 		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
-		
+
 		$block = $level->getBlock($coord);
 		$blockUp = $level->getBlock($coord->add(0,1,0));
 		$blockUpUp = $level->getBlock($coord->add(0,2,0));
-		
+
 		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
 		/*$xxx = $dir->multiply($sf);
 		$boundingBox = $this->getBoundingBox()->offset($xxx->x, $xxx->y, $xxx->z);
@@ -228,6 +228,6 @@ abstract class Mob extends Living{
 	 * @return EntityNavigator
 	 */
 	public function getNavigator() : EntityNavigator{
-    	return $this->navigator;
+		return $this->navigator;
 	}
 }

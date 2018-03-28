@@ -29,7 +29,7 @@ use pocketmine\Player;
 
 class LookAtPlayerBehavior extends Behavior{
 
-    /** @var float */
+	/** @var float */
 	protected $lookDistance = 6.0;
 	/** @var Player */
 	protected $player;
@@ -38,38 +38,38 @@ class LookAtPlayerBehavior extends Behavior{
 
 	// TODO : probability (olasılık)
 	public function __construct(Mob $mob, float $lookDistance = 6.0){
-        parent::__construct($mob);
+		parent::__construct($mob);
 
-        $this->lookDistance = $lookDistance;
-    }
-	
+		$this->lookDistance = $lookDistance;
+	}
+
 	public function canStart() : bool{
-        if($this->random->nextFloat() < 0.02){
-            $player = $this->mob->level->getNearestEntity($this->mob->asVector3(), $this->lookDistance, Player::class);
+		if($this->random->nextFloat() < 0.02){
+			$player = $this->mob->level->getNearestEntity($this->mob->asVector3(), $this->lookDistance, Player::class);
 
-            if($player instanceof Player){
-                $this->player = $player;
-                $this->duration = 40 + $this->random->nextBoundedInt(40);
+			if($player instanceof Player){
+				$this->player = $player;
+				$this->duration = 40 + $this->random->nextBoundedInt(40);
 
-                return true;
-            }
-        }
+				return true;
+			}
+		}
 
-        return false;
-    }
-	
+		return false;
+	}
+
 	public function canContinue() : bool{
-        return $this->duration-- > 0;
-    }
-	
+		return $this->duration-- > 0;
+	}
+
 	public function onTick(int $tick) : void{
-        if($this->player instanceof Player){
-            $this->mob->lookAt($this->player);
-        }
-    }
-	
+		if($this->player instanceof Player){
+			$this->mob->lookAt($this->player);
+		}
+	}
+
 	public function onEnd() : void{
-        $this->mob->pitch = 0;
-        $this->player = null;
-    }
+		$this->mob->pitch = 0;
+		$this->player = null;
+	}
 }

@@ -32,74 +32,74 @@ use pocketmine\utils\MainLogger;
 
 class FollowOwnerBehavior extends Behavior{
 
-    /** @var float */
-    protected $lookDistance;
-    /** @var float */
-    protected $speedMultiplier;
-    /** @var Path */
-    protected $currentPath;
+	/** @var float */
+	protected $lookDistance;
+	/** @var float */
+	protected $speedMultiplier;
+	/** @var Path */
+	protected $currentPath;
 
-    // TODO : Mob change to Wolf
-    public function __construct(Mob $mob, float $lookDistance, float $speedMultiplier){
-        parent::__construct($mob);
+	// TODO : Mob change to Wolf
+	public function __construct(Mob $mob, float $lookDistance, float $speedMultiplier){
+		parent::__construct($mob);
 
-        $this->lookDistance = $lookDistance;
-        $this->speedMultiplier = $speedMultiplier;
-    }
+		$this->lookDistance = $lookDistance;
+		$this->speedMultiplier = $speedMultiplier;
+	}
 
-    public  function canStart(): bool{
-        if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
-        if($this->mob->getOwningEntity() === null) return false;
+	public  function canStart(): bool{
+		if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
+		if($this->mob->getOwningEntity() === null) return false;
 
-        return true;
-    }
+		return true;
+	}
 
-    public function onTick(int $tick) : void{
-        /** @var Player $owner */
-        $owner = $this->mob->getOwningEntity();
-        if ($owner == null) return;
+	public function onTick(int $tick) : void{
+		/** @var Player $owner */
+		$owner = $this->mob->getOwningEntity();
+		if ($owner == null) return;
 
-        $distanceToPlayer = $this->mob->distance($owner);
+		$distanceToPlayer = $this->mob->distance($owner);
 
-        if($distanceToPlayer < 1.75){
-            $this->mob->resetMotion();
-            $this->mob->lookAt($owner);
-            return;
-        }
+		if($distanceToPlayer < 1.75){
+			$this->mob->resetMotion();
+			$this->mob->lookAt($owner);
+			return;
+		}
 
-        if($this->currentPath == null || !$this->currentPath->havePath()){
-            MainLogger::getLogger()->debug("Search new solution");
-            $this->currentPath = $this->currentPath->findPath($this->mob, $owner);
-        }
+		if($this->currentPath == null || !$this->currentPath->havePath()){
+			MainLogger::getLogger()->debug("Search new solution");
+			$this->currentPath = $this->currentPath->findPath($this->mob, $owner);
+		}
 
-        if($this->currentPath->havePath()){
-            $next = $this->currentPath->getNextTile($this->mob);
-            if ($next === null) return;
+		if($this->currentPath->havePath()){
+			$next = $this->currentPath->getNextTile($this->mob);
+			if ($next === null) return;
 
-            $this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+			$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
 
-            if($distanceToPlayer < 1.75){
-                $this->mob->resetMotion();
-                $this->currentPath = null;
-            }else{
+			if($distanceToPlayer < 1.75){
+				$this->mob->resetMotion();
+				$this->currentPath = null;
+			}else{
 
-                $m = 2 - $distanceToPlayer;
-                $m = ($m <= 0) ? 1 : $m / 2.0;
+				$m = 2 - $distanceToPlayer;
+				$m = ($m <= 0) ? 1 : $m / 2.0;
 
-                $this->mob->moveForward($this->speedMultiplier * $m);
-            }
-        }else{
-            MainLogger::getLogger()->debug("Found no path solution");
-            $this->mob->resetMotion();
-            $this->currentPath = null;
-        }
+				$this->mob->moveForward($this->speedMultiplier * $m);
+			}
+		}else{
+			MainLogger::getLogger()->debug("Found no path solution");
+			$this->mob->resetMotion();
+			$this->currentPath = null;
+		}
 
-        $this->mob->lookAt($owner);
-    }
+		$this->mob->lookAt($owner);
+	}
 
-    public function onEnd(): void{
-        $this->mob->resetMotion();
-        $this->mob->pitch = 0;
-        $this->currentPath = null;
-    }
+	public function onEnd(): void{
+		$this->mob->resetMotion();
+		$this->mob->pitch = 0;
+		$this->currentPath = null;
+	}
 }

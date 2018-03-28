@@ -29,20 +29,20 @@ use pocketmine\utils\Random;
 
 abstract class BehaviorTask{
 
-    /** @var Mob */
+	/** @var Mob */
 	protected $mob;
 	/** @var Random */
 	protected $random;
-	
+
 	public function getName() : string{
 		return (new \ReflectionClass($this))->getShortName();
 	}
-	
+
 	public function __construct(Mob $mob){
 		$this->mob = $mob;
 		$this->random = $mob->level->getRandom();
 	}
-	
+
 	public abstract function onExecute() : void;
-	
+
 }

@@ -27,7 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\level\Level;
 
 class RestrictSunBehavior extends BehaviorTask{
-	
+
 	public function onExecute() : void{
 		if($this->mob->level->getTime() < Level::TIME_NIGHT and !$this->mob->isOnFire() and $this->mob->level->getHighestBlockAt((int) $this->mob->x, (int) $this->mob->z) < $this->mob->y){
 			$this->mob->setOnFire(3);

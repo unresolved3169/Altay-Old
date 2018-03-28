@@ -29,32 +29,32 @@ use pocketmine\Player;
 
 class FindAttackableTargetBehavior extends TargetBehavior{
 
-    /** @var float */
+	/** @var float */
 	protected $targetDistance = 16.0;
 	/** @var int */
 	protected $targetUnseenTicks = 0;
-	
+
 	public function __construct(Mob $mob, float $targetDistance = 16.0){
 		parent::__construct($mob);
-		
+
 		$this->targetDistance = $targetDistance;
 	}
-	
+
 	public function canStart() : bool{
 		if($this->random->nextBoundedInt(10) === 0){
-		    /** @var Player $player */
+			/** @var Player $player */
 			$player = null;
 			// TODO : DAHA OPTIMIZE ET
 			foreach($this->mob->level->getPlayers() as $p){
-                if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)) {
-                    if($player === null or $p->distance($this->mob) < $player->distance($this->mob)){
-                        $player = $p;
-                    }
-                }
-            }
-			
+				if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)) {
+					if($player === null or $p->distance($this->mob) < $player->distance($this->mob)){
+						$player = $p;
+					}
+				}
+			}
+
 			$this->mob->setTargetEntity($player);
-			
+
 			if($player instanceof Player){
 				return true;
 			}
@@ -62,7 +62,7 @@ class FindAttackableTargetBehavior extends TargetBehavior{
 
 		return false;
 	}
-	
+
 	public function getTargetDistance(Player $p){
 		$dist = $this->targetDistance;
 		if($p->isSneaking())
@@ -70,16 +70,16 @@ class FindAttackableTargetBehavior extends TargetBehavior{
 
 		return $dist;
 	}
-	
+
 	public function onStart() : void{
 		$this->targetUnseenTicks = 0;
 	}
-	
+
 	public function canContinue() : bool{
 		$target = $this->mob->getTargetEntity();
-		
+
 		if($target === null or !$target->isAlive() or ($target instanceof Player and !$target->isSurvival(true))) return false;
-		
+
 		if($target instanceof Player){
 			if($this->mob->distance($target) > $this->getTargetDistance($target)) return false;
 
@@ -95,10 +95,10 @@ class FindAttackableTargetBehavior extends TargetBehavior{
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
-	
+
 	public function onEnd() : void{
 		$this->mob->setTargetEntity(null);
 	}

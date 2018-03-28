@@ -25,15 +25,15 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 class PanicBehavior extends StrollBehavior{
-	
+
 	public function canStart() : bool{
 		return $this->mob->getLastDamageCause() !== null;
 	}
-	
+
 	public function canContinue() : bool{
 		return parent::canContinue() and $this->mob->getLastDamageCause() !== null;
 	}
-	
+
 	public function onEnd() : void{
 		$this->mob->setLastDamageCause(null);
 		parent::onEnd();

@@ -261,10 +261,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
 		Entity::registerEntity(Pig::class, false, ['Pig', 'minecraft:pig']);
 		Entity::registerEntity(Rabbit::class, false, ['Rabbit', 'minecraft:rabbit']);
-        Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:skeleton']);
-        Entity::registerEntity(Skeleton::class, false, ['Skeleton', 'minecraft:snowball']);
-        Entity::registerEntity(SplashPotion::class, false, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
-        Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);
+		Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:skeleton']);
+		Entity::registerEntity(Skeleton::class, false, ['Skeleton', 'minecraft:snowball']);
+		Entity::registerEntity(SplashPotion::class, false, ['ThrownPotion', 'minecraft:potion', 'thrownpotion']);
+		Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);
 		Entity::registerEntity(Villager::class, false, ['Villager',	'minecraft:villager']);
 		Entity::registerEntity(Zombie::class, false, ['Zombie',	'minecraft:zombie']);
 
@@ -1874,8 +1874,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function resetMotion() : void{
-	    $this->motionX = $this->motionY = $this->motionZ = 0;
-    }
+		$this->motionX = $this->motionY = $this->motionZ = 0;
+	}
 
 	public function isOnGround() : bool{
 		return $this->onGround;
@@ -2188,7 +2188,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function getDrops() : array{
 		return [];
 	}
-	
+
 	public function canSeeEntity(Entity $target) : bool{
 		$entityPos = $this->asVector3()->add(new Vector3(0,($this instanceof Player ? 1.62 : $this->height), 0));
 		$targetPos = $target->asVector3()->add(new Vector3(0,($target instanceof Player ? 1.62 : $target->height), 0));
@@ -2208,7 +2208,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 			$rayPos = $rayPos->add($direction);
 		}while ($distance > $entityPos->distance($rayPos));
-		
+
 		return true;
 	}
 

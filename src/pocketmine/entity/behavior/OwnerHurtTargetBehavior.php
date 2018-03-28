@@ -28,26 +28,26 @@ use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 
 class OwnerHurtTargetBehavior extends Behavior{
-	
+
 	public function canStart() : bool{
 		$owner = $this->mob->getOwningEntity();
-		
+
 		if($owner !== null){
-            $this->mob->setTargetEntity($this->getLastAttackSource());
-            return true;
+			$this->mob->setTargetEntity($this->getLastAttackSource());
+			return true;
 		}
-		
+
 		return false;
 	}
 
-    public function getLastAttackSource(): ?Entity{
-        $cause = $this->mob->getLastDamageCause();
-        if($cause instanceof EntityDamageByEntityEvent)
-            return $cause->getDamager();
+	public function getLastAttackSource(): ?Entity{
+		$cause = $this->mob->getLastDamageCause();
+		if($cause instanceof EntityDamageByEntityEvent)
+			return $cause->getDamager();
 
-        return null;
-    }
-	
+		return null;
+	}
+
 	public function canContinue() : bool{
 		return false;
 	}

@@ -34,55 +34,55 @@ use pocketmine\math\Vector3;
 
 class HorseEatBlockBehavior extends Behavior{
 
-    /** @var int */
-    protected $duration;
-    /** @var int */
-    protected $timeLeft;
+	/** @var int */
+	protected $duration;
+	/** @var int */
+	protected $timeLeft;
 
-    // TODO : MOB CHANGE TO HORSE
-    public function __construct(Mob $mob, int $duration){
-        parent::__construct($mob);
+	// TODO : MOB CHANGE TO HORSE
+	public function __construct(Mob $mob, int $duration){
+		parent::__construct($mob);
 
-        $this->duration = $this->timeLeft = max(40, $duration);
-    }
+		$this->duration = $this->timeLeft = max(40, $duration);
+	}
 
-    public function canStart() : bool{
-        if($this->random->nextBoundedInt(1000) != 0) return false;
+	public function canStart() : bool{
+		if($this->random->nextBoundedInt(1000) != 0) return false;
 
-        $direction = $this->mob->getDirectionVector()->normalize();
+		$direction = $this->mob->getDirectionVector()->normalize();
 
-        $coord = $this->mob->add($direction->x, 0, $direction->z);;
+		$coord = $this->mob->add($direction->x, 0, $direction->z);;
 
-        $canStart = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_DOWN)) instanceof Grass || $this->mob->level->getBlock($coord) instanceof TallGrass;
-        if (!$canStart) return false;
+		$canStart = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_DOWN)) instanceof Grass || $this->mob->level->getBlock($coord) instanceof TallGrass;
+		if (!$canStart) return false;
 
-        $this->duration = 40;
+		$this->duration = 40;
 
-        $this->mob->motionX = $this->mob->motionZ = 0;
-        // TODO : Horse->setEating(true)
+		$this->mob->motionX = $this->mob->motionZ = 0;
+		// TODO : Horse->setEating(true)
 
-        return true;
-    }
+		return true;
+	}
 
-    public function canContinue() : bool{
-        return $this->duration-- > 0;
-    }
+	public function canContinue() : bool{
+		return $this->duration-- > 0;
+	}
 
-    public function onEnd() : void{
-        $direction = $this->mob->getDirectionVector()->normalize();
+	public function onEnd() : void{
+		$direction = $this->mob->getDirectionVector()->normalize();
 
-        $coord = $this->mob->add($direction->x, 0, $direction->z);;
+		$coord = $this->mob->add($direction->x, 0, $direction->z);;
 
-        $broken = $this->mob->level->getBlock($coord);
-        if($broken instanceof TallGrass){
-            $this->mob->level->setBlock($coord, BlockFactory::get(Block::AIR));
-        }else{
-            $coord = $coord->getSide(Vector3::SIDE_DOWN);
-            $this->mob->level->setBlock($coord, BlockFactory::get(Block::DIRT));
-        }
+		$broken = $this->mob->level->getBlock($coord);
+		if($broken instanceof TallGrass){
+			$this->mob->level->setBlock($coord, BlockFactory::get(Block::AIR));
+		}else{
+			$coord = $coord->getSide(Vector3::SIDE_DOWN);
+			$this->mob->level->setBlock($coord, BlockFactory::get(Block::DIRT));
+		}
 
-        $this->mob->level->addParticle(new DestroyBlockParticle($this->mob, $broken));
-        // TODO : Horse->setEating(false)
-    }
+		$this->mob->level->addParticle(new DestroyBlockParticle($this->mob, $broken));
+		// TODO : Horse->setEating(false)
+	}
 
 }

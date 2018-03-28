@@ -33,36 +33,36 @@ use pocketmine\math\Vector3;
 
 class FleeSunBehavior extends Behavior{
 
-    /** @var float */
+	/** @var float */
 	protected $speedMultiplier = 1.0;
 	/** @var Path */
 	protected $currentPath = null;
-	
+
 	public function __construct(Mob $mob, float $speedMultiplier = 1.0){
 		parent::__construct($mob);
-		
+
 		$this->speedMultiplier = $speedMultiplier;
 	}
-	
+
 	public function canStart() : bool{
 		if($this->mob->isOnFire() and $this->mob->level->getHighestBlockAt((int) $this->mob->x, (int) $this->mob->z) < $this->mob->y){
 			$pos = $this->findPossibleShelter($this->mob);
 			if($pos === null) return false;
-			
+
 			$path = Path::findPath($this->mob, $pos);
-			
+
 			$this->currentPath = $path;
-			
+
 			return $path->havePath();
 		}
 
 		return false;
 	}
-	
+
 	public function canContinue() : bool{
 		return $this->currentPath !== null and $this->currentPath->havePath();
 	}
-	
+
 	public function onTick(int $tick) : void{
 		if($this->currentPath->havePath()){
 			if($next = $this->currentPath->getNextTile($this->mob)){
@@ -89,15 +89,15 @@ class FleeSunBehavior extends Behavior{
 				return $block;
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public function calculateBlockWeight(Entity $entity, Block $block, Block $blockDown) : int{
 		$vec = [$block->getX(), $block->getY(), $block->getZ()];
 		if($entity instanceof Animal){
 			if($blockDown instanceof Grass) return 20;
-			
+
 			return (int) (max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec)) - 0.5);
 		}else{
 			return (int) 0.5 - max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));

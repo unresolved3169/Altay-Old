@@ -29,30 +29,30 @@ use pocketmine\utils\Random;
 
 abstract class Behavior{
 
-    /** @var Mob */
+	/** @var Mob */
 	protected $mob;
 	/** @var Random */
 	protected $random;
-	
+
 	public function getName() : string{
 		return (new \ReflectionClass($this))->getShortName();
 	}
-	
+
 	public function __construct(Mob $mob){
 		$this->mob = $mob;
 		$this->random = $mob->level->getRandom();
 	}
-	
+
 	public abstract function canStart() : bool;
-	
+
 	public function onStart() : void{}
-	
+
 	public function canContinue() : bool{
 		return $this->canStart();
 	}
-	
+
 	public function onTick(int $tick) : void{}
-	
+
 	public function onEnd() : void{}
-	
+
 }
