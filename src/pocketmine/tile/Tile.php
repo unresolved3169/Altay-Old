@@ -32,13 +32,12 @@ use pocketmine\block\Block;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
 use pocketmine\item\Item;
-use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\StringTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 use pocketmine\Server;
 

@@ -27,8 +27,9 @@ namespace pocketmine\network\mcpe\protocol;
 
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
-#ifndef COMPILE
 use pocketmine\utils\Binary;
+
+#ifndef COMPILE
 #endif
 
 class PlayerHotbarPacket extends DataPacket{

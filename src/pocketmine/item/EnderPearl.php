@@ -24,9 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-use pocketmine\math\Vector3;
-use pocketmine\Player;
-
 class EnderPearl extends ProjectileItem{
     public function __construct(int $meta = 0){
         parent::__construct(self::ENDER_PEARL, $meta, "Ender Pearl");

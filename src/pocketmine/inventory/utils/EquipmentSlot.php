@@ -28,17 +28,11 @@ class EquipmentSlot{
 
     /* For MobEquipmentPacket */
     public const MAINHAND = 0;
-    // TODO : ADD OFFHAND
+    public const OFFHAND = 1;
 
     /** For MobArmorEquipmentPacket */
     public const HEAD = 0;
     public const CHEST = 1;
     public const LEGS = 2;
     public const FEET = 3;
-
-    public const HACK_OFFHAND = 1;
-    public const HACK_HEAD = 2;
-    public const HACK_CHEST = 3;
-    public const HACK_LEGS = 4;
-    public const HACK_FEET = 5;
 }

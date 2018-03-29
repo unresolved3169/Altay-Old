@@ -25,11 +25,11 @@ declare(strict_types=1);
 namespace pocketmine\entity;
 
 use pocketmine\inventory\TradeItems;
-use pocketmine\item\Item;
 use pocketmine\inventory\TradingInventory;
+use pocketmine\item\Item;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\ListTag;
 use pocketmine\Player;
 
 class Villager extends Creature implements NPC, Ageable{
@@ -151,7 +151,7 @@ class Villager extends Creature implements NPC, Ageable{
 		return $this->getGenericFlag(self::DATA_FLAG_BABY);
 	}
 
-	public function onInteract(Player $player, Item $item, Vector3 $clickVector, array $actions = []){
+	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
 		if(!$this->isBaby() && $this->offers != null){
 			$player->addWindow($this->getInventory());
 			$this->propertyManager->setLong(self::DATA_TRADING_PLAYER_EID, $player->getId());
