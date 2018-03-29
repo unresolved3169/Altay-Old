@@ -34,6 +34,11 @@ class EndPillar extends Populator{
 	private $randomAmount;
 	private $baseAmount;
 
+	public function __construct(int $randomAmount = 0, int $baseAmount = 0){
+		$this->baseAmount = $baseAmount;
+		$this->randomAmount = $randomAmount;
+	}
+
 	public function setRandomAmount($amount){
 		$this->randomAmount = $amount;
 	}

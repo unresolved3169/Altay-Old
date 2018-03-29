@@ -96,10 +96,7 @@ class End extends Generator{
 		$this->random->setSeed($this->level->getSeed());
 		$this->noiseBase = new Simplex($this->random, 4, 1 / 4, 1 / 64);
 		$this->random->setSeed($this->level->getSeed());
-		$pilar = new EndPillar();
-		$pilar->setBaseAmount(0);
-		$pilar->setRandomAmount(0);
-		$this->populators[] = $pilar;
+		$this->populators[] = new EndPillar();
 	}
 
 	public function generateChunk($chunkX, $chunkZ){
