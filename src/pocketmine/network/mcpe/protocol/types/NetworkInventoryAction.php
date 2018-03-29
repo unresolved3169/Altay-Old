@@ -28,8 +28,6 @@ use pocketmine\block\Block;
 use pocketmine\inventory\AnvilInventory;
 use pocketmine\inventory\EnchantInventory;
 use pocketmine\inventory\TradingInventory;
-use pocketmine\inventory\transaction\action\CraftingTakeResultAction;
-use pocketmine\inventory\transaction\action\CraftingTransferMaterialAction;
 use pocketmine\inventory\transaction\action\CreativeInventoryAction;
 use pocketmine\inventory\transaction\action\DropItemAction;
 use pocketmine\inventory\transaction\action\EnchantAction;
@@ -186,7 +184,7 @@ class NetworkInventoryAction{
 					throw new \UnexpectedValueException("Only expecting drop-item world actions from the client!");
 				}
 
-				return new DropItemAction($this->oldItem, $this->newItem);
+				return new DropItemAction($this->newItem);
 			case self::SOURCE_CREATIVE:
 				switch($this->inventorySlot){
 					case self::ACTION_MAGIC_SLOT_CREATIVE_DELETE_ITEM:
@@ -209,9 +207,19 @@ class NetworkInventoryAction{
 						$window = $player->getCraftingGrid();
 						return new SlotChangeAction($window, $this->inventorySlot, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_CRAFTING_RESULT:
-						return new CraftingTakeResultAction($this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_CRAFTING_USE_INGREDIENT:
-						return new CraftingTransferMaterialAction($this->oldItem, $this->newItem, $this->inventorySlot);
+						return null;
+
+					case self::SOURCE_TYPE_CONTAINER_DROP_CONTENTS:
+						//TODO: this type applies to all fake windows, not just crafting
+						$window = $player->getCraftingGrid();
+
+						//DROP_CONTENTS doesn't bother telling us what slot the item is in, so we find it ourselves
+						$inventorySlot = $window->first($this->oldItem, true);
+						if($inventorySlot === -1){
+							throw new \InvalidStateException("Fake container " . get_class($window) . " for " . $player->getName() . " does not contain $this->oldItem");
+						}
+						return new SlotChangeAction($window, $inventorySlot, $this->oldItem, $this->newItem);
 
 					case self::SOURCE_TYPE_ANVIL_INPUT:
 						$window = $player->getWindowFromClass(AnvilInventory::class);
@@ -250,17 +258,6 @@ class NetworkInventoryAction{
 						return new TradingTakeResultAction($this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_TRADING_OUTPUT:
 						return new TradingTransferItemAction($this->oldItem, $this->newItem);
-
-					case self::SOURCE_TYPE_CONTAINER_DROP_CONTENTS:
-						//TODO: this type applies to all fake windows, not just crafting
-						$window = $player->getCraftingGrid();
-
-						//DROP_CONTENTS doesn't bother telling us what slot the item is in, so we find it ourselves
-						$inventorySlot = $window->first($this->oldItem, true);
-						if($inventorySlot === -1){
-							throw new \InvalidStateException("Fake container " . get_class($window) . " for " . $player->getName() . " does not contain $this->oldItem");
-						}
-						return new SlotChangeAction($window, $inventorySlot, $this->oldItem, $this->newItem);
 				}
 
 				//TODO: more stuff

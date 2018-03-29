@@ -75,7 +75,6 @@ use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\Timings;
 use pocketmine\form\Form;
-use pocketmine\inventory\BigCraftingGrid;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
@@ -2336,11 +2335,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					}
 				}
 
-				if($this->craftingTransaction->getPrimaryOutput() !== null){
-					//we get the actions for this in several packets, so we can't execute it until we get the result
+				if($packet->isFinalCraftingPart){
+					//we get the actions for this in several packets, so we need to wait until we have all the pieces before
+					//trying to execute it
 
-					$this->craftingTransaction->execute();
+					$result = $this->craftingTransaction->execute();
+					if(!$result){
+						$this->server->getLogger()->debug("Failed to execute crafting transaction from " . $this->getName());
+					}
+
 					$this->craftingTransaction = null;
+					return $result;
 				}
 				return true;
 			case "Enchant":
@@ -3940,7 +3945,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->cursorInventory = new PlayerCursorInventory($this);
 		$this->addWindow($this->cursorInventory, ContainerIds::CURSOR, true);
 
-		$this->craftingGrid = new CraftingGrid($this);
+		$this->craftingGrid = new CraftingGrid($this, CraftingGrid::SIZE_SMALL);
 
 		//TODO: more windows
 	}
@@ -3971,8 +3976,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->craftingGrid->clearAll();
 		}
 
-		if($this->craftingGrid instanceof BigCraftingGrid){
-			$this->craftingGrid = new CraftingGrid($this);
+		if($this->craftingGrid->getGridWidth() > CraftingGrid::SIZE_SMALL){
+			$this->craftingGrid = new CraftingGrid($this, CraftingGrid::SIZE_SMALL);
 		}
 	}
 
