@@ -2516,7 +2516,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
-						$item = $packet->trData->itemInHand;
+						$item = $this->inventory->getItemInHand();
 						$clickPos = $packet->trData->clickPos;
 						$slot = $packet->trData->hotbarSlot;
 
