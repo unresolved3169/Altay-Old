@@ -195,18 +195,9 @@ class ArmorStand extends Living{
 		return $this->propertyManager->getInt(self::DATA_ARMOR_STAND_POSE);
 	}
 
-	public function onUpdate(int $currentTick): bool{
-		if(($hasUpdated = parent::onUpdate($currentTick))){
-			if($this->isAffectedByGravity()){
-				if($this->level->getBlock($this->getSide(Vector3::SIDE_DOWN)) === Item::AIR){
-					$this->applyGravity();
-					$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
-				}
-			}
-			return true;
-		}
-
-		return $hasUpdated;
+	protected function applyGravity(){
+		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
+		parent::applyGravity();
 	}
 
 	public function saveNBT(){
@@ -272,9 +263,5 @@ class ArmorStand extends Living{
 
 			return -1; // mainhand
 		}
-	}
-
-	public function hasMovementUpdate() : bool{
-		return false;
 	}
 }
