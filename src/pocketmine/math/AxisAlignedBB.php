@@ -152,6 +152,23 @@ class AxisAlignedBB{
 	}
 
 	/**
+	 * Performs the same operation as getOffsetBoundingBox(), but operates on itself instead of returning a new object.
+	 *
+	 * @param Vector3 $v
+	 * @return $this
+	 */
+	public function offsetBy(Vector3 $v){
+		$this->minX += $v->x;
+		$this->minY += $v->y;
+		$this->minZ += $v->z;
+		$this->maxX += $v->x;
+		$this->maxY += $v->y;
+		$this->maxZ += $v->z;
+
+		return $this;
+	}
+
+	/**
 	 * Returns a new AxisAlignedBB with bounds inset by the specified X, Y and Z.
 	 *
 	 * @param float $x

@@ -50,7 +50,7 @@ abstract class Mob extends Living{
 		$this->behaviors = $this->getNormalBehaviors();
 		$this->targetBehaviors = $this->getTargetBehaviors();
 		$this->navigator = new EntityNavigator($this);
-		$this->setImmobile(false);
+		$this->setImmobile(); // for disable client-side mobai
 	}
 
 	/**
@@ -169,25 +169,26 @@ abstract class Mob extends Living{
 		$dir = $this->getDirectionVector()->normalize();
 		$dir->y = 0;
 
-		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
+		$entityCollide = false;
+		$boundingBox = (clone $this->getBoundingBox())->offsetBy($dir->multiply($sf));
 
-		$block = $level->getBlock($coord);
-		$blockUp = $level->getBlock($coord->add(0,1,0));
-		$blockUpUp = $level->getBlock($coord->add(0,2,0));
-
-		$collide = $block->isSolid() or ($this->height >= 1 and $blockUp->isSolid());
-		/*$xxx = $dir->multiply($sf);
-		$boundingBox = $this->getBoundingBox()->offset($xxx->x, $xxx->y, $xxx->z);
-		$entityCollide = count($this->level->getCollidingEntities($boundingBox, $this)) > 0;
+		$players = $this->level->getPlayers();
+		foreach ($players as $player) {
+			$bbox = $boundingBox->addCoord(0.15, 0.15, 0.15);
+			if($player->getBoundingBox()->intersectsWith($bbox)) {
+				$entityCollide = true;
+				break;
+			}
+		}
 
 		if(!$entityCollide){
 			$bbox = $boundingBox->addCoord(0.3,0.3, 0.3);
 
 			foreach($this->level->getEntities() as $entry){
-				if($entry == $this) continue;
+				if($entry === $this) continue;
 
 				if($entry->getId() < $this->getId() and $bbox->isVectorInside($entry->asVector3())){
-					if($this->motionX === 0 and $this->motionY === 0 and $this->motionZ === 0 and $this->level->getRandom()->nextBoundedInt(1000) === 0){
+					if($this->getMotion()->equals(new Vector3()) and $this->level->getRandom()->nextBoundedInt(1000) === 0){
 						break;
 					}
 
@@ -195,29 +196,35 @@ abstract class Mob extends Living{
 					break;
 				}
 			}
-		}*/
-		$entityCollide = false;
+		}
+
+		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
+
+		$block = $level->getBlock($coord);
+		$blockUp = $block->getSide(Vector3::SIDE_UP);
+		$blockUpUp = $block->getSide(Vector3::SIDE_UP, 2);
+
+		$collide = $block->isSolid() || ($this->height >= 1 and $blockUp->isSolid());
 
 		if(!$collide and !$entityCollide){
-			$blockDown = $block->getSide(0);
-			if($this->onGround or $blockDown->isSolid()){
-				$velocity = $dir->multiply($sf);
-				$entityVelocity = $this->getMotion();
-				$entityVelocity->y = 0;
+			$blockDown = $block->getSide(Vector3::SIDE_DOWN);
+			if (!$this->onGround && !$blockDown->isSolid()) return;
 
-				$m = $entityVelocity->length() < $velocity->length() ? $entityVelocity->add($velocity->subtract($entityVelocity)) : $velocity;
-				$this->setMotion($m);
-			}
+			$velocity = $dir->multiply($sf);
+			$entityVelocity = $this->getMotion();
+			$entityVelocity->y = 0;
+
+			$m = $entityVelocity->length() < $velocity->length() ? $this->getMotion()->add($velocity->subtract($this->getMotion())) : $velocity;
+			$this->setMotion($m);
 		}else{
 			if($this->canClimb() and !$entityCollide){
 				$this->setMotion(new Vector3(0,0.2,0));
 			}elseif(!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
 				if($this->onGround and $this->motionY === 0){
-					$this->jump();
+					$this->motionY += $this->getJumpVelocity(); // shortcut jump
 				}
 			}else{
-				$this->motionX = 0;
-				$this->motionZ = 0;
+				$this->motionX = $this->motionZ = 0;
 			}
 		}
 	}
