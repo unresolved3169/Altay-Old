@@ -117,6 +117,8 @@ class ArmorStand extends Living{
 	}
 
 	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
+		$player->getInventory()->sendContents($player);
+
 		if($player->isSneaking()){
 			$pose = $this->getPose();
 			if(++$pose >= 13){
@@ -172,8 +174,8 @@ class ArmorStand extends Living{
 						$playerInv->addItem(clone $this->equipment->getItemInHand());
 
 						$ic = clone $item;
-						$playerInv->setItemInHand($ic);
 						$this->equipment->setItemInHand($ic->pop());
+						$playerInv->setItemInHand($ic);
 					}
 				}else{
 					$old = clone $this->armorInventory->getItem($type);
