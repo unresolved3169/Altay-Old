@@ -2133,6 +2133,26 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->server->broadcastPacket($players ?? $this->getViewers(), $pk);
 	}
 
+	/**
+	 * Called when interacted or tapped by a Player
+	 *
+	 * @param Player $player
+	 * @param Item $item
+	 * @param Vector3 $clickPos
+	 * @param int $slot
+	 * @return void
+	 */
+	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
+
+	}
+
+	/**
+	 * @return Item[]
+	 */
+	public function getDrops() : array{
+		return [];
+	}
+
 	public function __destruct(){
 		$this->close();
 	}
@@ -2155,26 +2175,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function __toString(){
 		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
-	}
-
-	/**
-	 * Called when interacted or tapped by a Player
-	 *
-	 * @param Player $player
-	 * @param Item $item
-	 * @param Vector3 $clickPos
-	 * @param int $slot
-	 * @return void
-	 */
-	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
-
-	}
-
-	/**
-	 * @return Item[]
-	 */
-	public function getDrops() : array{
-		return [];
 	}
 
 }

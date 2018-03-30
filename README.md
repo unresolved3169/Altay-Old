@@ -27,6 +27,7 @@ Example servers running Altay
  - [x] EnchantmentTable
  - [x] Events
     - [x] InventoryClickEvent
+    - [x] PlayerEntityInteractEvent (Credits: @CortexPE)
  - [x] Fireworks
  - [x] Forms
  - [x] Hopper
