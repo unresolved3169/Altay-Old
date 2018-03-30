@@ -39,7 +39,7 @@ class Position extends Vector3{
 	 */
 	public function __construct($x = 0, $y = 0, $z = 0, Level $level = null){
 	    parent::__construct($x, $y, $z);
-		$this->level = $level;
+		$this->setLevel($level);
 	}
 
 	public static function fromObject(Vector3 $pos, Level $level = null){
@@ -107,7 +107,7 @@ class Position extends Vector3{
 	 *
 	 * @throws LevelException
 	 */
-	public function getSide($side, $step = 1){
+	public function getSide(int $side, int $step = 1){
 		assert($this->isValid());
 
 		return Position::fromObject(parent::getSide($side, $step), $this->level);

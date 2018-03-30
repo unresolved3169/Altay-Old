@@ -28,8 +28,8 @@ use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 
 class FlowerPot extends Spawnable{

@@ -71,6 +71,10 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder{
 		return $index < $this->left->getSize() ? $this->left->clear($index, $send) : $this->right->clear($index - $this->right->getSize(), $send);
 	}
 
+	public function getContents(bool $includeEmpty = false) : array{
+		return array_merge($this->left->getContents($includeEmpty), $this->right->getContents($includeEmpty));
+	}
+
 	/**
 	 * @param Item[] $items
 	 * @param bool   $send

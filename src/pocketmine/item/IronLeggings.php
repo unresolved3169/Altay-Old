@@ -40,4 +40,8 @@ class IronLeggings extends Armor{
     public function getMaxDurability() : int{
         return 226;
     }
+
+	public function getEnchantability() : int{
+		return 9;
+	}
 }

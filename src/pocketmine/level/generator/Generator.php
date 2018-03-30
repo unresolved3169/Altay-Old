@@ -43,6 +43,7 @@ abstract class Generator{
 		self::addGenerator(Normal::class, "default");
 		self::addGenerator(Nether::class, "hell");
 		self::addGenerator(Nether::class, "nether");
+		self::addGenerator(VoidGenerator::class, "void");
 	}
 
 	public static function addGenerator($object, $name) : bool{
@@ -65,7 +66,7 @@ abstract class Generator{
 	/**
 	 * @param $name
 	 *
-	 * @return Generator
+	 * @return string
 	 */
 	public static function getGenerator($name){
 		if(isset(Generator::$list[$name = strtolower($name)])){

@@ -43,11 +43,7 @@ class SeedCommand extends VanillaCommand{
 			return true;
 		}
 
-		if($sender instanceof Player){
-			$seed = $sender->getLevel()->getSeed();
-		}else{
-			$seed = $sender->getServer()->getDefaultLevel()->getSeed();
-		}
+		$seed = ($sender instanceof Player) ? $sender->getLevel()->getSeed() : $sender->getServer()->getDefaultLevel()->getSeed();
 		$sender->sendMessage(new TranslationContainer("commands.seed.success", [$seed]));
 
 		return true;

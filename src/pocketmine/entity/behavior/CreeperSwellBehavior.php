@@ -29,26 +29,26 @@ use pocketmine\entity\Mob;
 
 class CreeperSwellBehavior extends Behavior{
 
-    // TODO : Mob Change to Creeper
-    public function __construct(Mob $mob){
-        parent::__construct($mob);
-    }
+	// TODO : Mob Change to Creeper
+	public function __construct(Mob $mob){
+		parent::__construct($mob);
+	}
 
-    public  function canStart() : bool{
-        $target = $this->mob->getTargetEntity();
-        return $target === null ? false : ($this->mob->getGenericFlag(Entity::DATA_FLAG_IGNITED) || $this->mob->distance($target) < 3);
-    }
+	public  function canStart() : bool{
+		$target = $this->mob->getTargetEntity();
+		return $target === null ? false : ($this->mob->getGenericFlag(Entity::DATA_FLAG_IGNITED) || $this->mob->distance($target) < 3);
+	}
 
-    public function onTick(int $tick): void{
-        $target = $this->mob->getTargetEntity();
-        if($target == null or $this->mob->distance($target) > 7 or !$this->mob->canSeeEntity($target)){
-            // TODO $this->mob->prime(false);
-        }else{
-            // TODO $this->mob->prime(true);
-        }
-    }
+	public function onTick(int $tick): void{
+		$target = $this->mob->getTargetEntity();
+		if($target == null or $this->mob->distance($target) > 7 or !$this->mob->canSeeEntity($target)){
+			// TODO $this->mob->prime(false);
+		}else{
+			// TODO $this->mob->prime(true);
+		}
+	}
 
-    public function onEnd() : void{
-        $this->mob->setTargetEntity();
-    }
+	public function onEnd() : void{
+		$this->mob->setTargetEntity();
+	}
 }

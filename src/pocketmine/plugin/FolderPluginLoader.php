@@ -24,9 +24,9 @@ declare(strict_types=1);
 
 namespace pocketmine\plugin;
 
-use pocketmine\Server;
 use pocketmine\event\plugin\PluginDisableEvent;
 use pocketmine\event\plugin\PluginEnableEvent;
+use pocketmine\Server;
 use pocketmine\utils\MainLogger;
 use pocketmine\utils\TextFormat;
 

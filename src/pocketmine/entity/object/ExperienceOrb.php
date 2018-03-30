@@ -26,8 +26,8 @@ namespace pocketmine\entity\object;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 
 class ExperienceOrb extends Entity{

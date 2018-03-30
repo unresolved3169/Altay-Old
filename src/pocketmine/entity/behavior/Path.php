@@ -25,38 +25,38 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Entity;
+use pocketmine\entity\Mob;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
-use pocketmine\entity\Mob;
 
 class Path{
-	
+
 	/* @var Vector2[] */
 	protected $tiles = [];
-	
+
 	public function __construct(array $tiles = []){
 		$this->tiles = $tiles;
 	}
-	
+
 	public static function findPath(Mob $mob, Vector3 $targetPos) : Path{
 		$from = new Vector2((int) $mob->x, (int) $mob->z);
 		$to = new Vector2((int) $targetPos->x, (int) $targetPos->z);
-		
+
 		return new Path($mob->getNavigator()->navigate($from, $to, 200));
 	}
-	
+
 	public function havePath() : bool{
 		return !empty($this->tiles);
 	}
-	
+
 	public function getNextTile(Entity $entity) : ?Vector2{
 		if($this->havePath()){
 			$next = reset($this->tiles);
-			
+
 			if($next->x === (int) $entity->x and $next->y === (int) $entity->z){
 				array_shift($this->tiles);
 			}
-			
+
 			return $next;
 		}
 		return null;

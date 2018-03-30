@@ -27,8 +27,8 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\event\inventory\FurnaceBurnEvent;
 use pocketmine\event\inventory\FurnaceSmeltEvent;
-use pocketmine\inventory\FurnaceInventory;
 use pocketmine\inventory\FurnaceRecipe;
+use pocketmine\inventory\FurnaceInventory;
 use pocketmine\inventory\InventoryHolder;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -91,7 +91,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 	}
 
 	public function close() : void{
-		if($this->closed === false){
+		if(!$this->closed){
 			$this->inventory->removeAllViewers(true);
 			$this->inventory = null;
 
@@ -139,7 +139,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 	}
 
 	public function onUpdate() : bool{
-		if($this->closed === true){
+		if($this->closed){
 			return false;
 		}
 

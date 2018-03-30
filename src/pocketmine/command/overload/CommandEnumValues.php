@@ -771,6 +771,10 @@ class CommandEnumValues{
         return new CommandEnum("Item", array_merge(self::$item, self::$block));
     }
 
+    public static function getBlock() : CommandEnum{
+    	return new CommandEnum("Block", self::$block);
+    }
+
     public static function getTimeSpec() : CommandEnum{
         return new CommandEnum("TimeSpec", self::$timeSpec);
     }

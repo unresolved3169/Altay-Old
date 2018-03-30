@@ -25,27 +25,27 @@ declare(strict_types=1);
 namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Entity;
-use pocketmine\Player;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
+use pocketmine\Player;
 
 class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 
-    public function canStart() : bool{
-        $player = $this->getLastAttackSource();
-        return $player instanceof Player and $player->isSurvival();
-    }
+	public function canStart() : bool{
+		$player = $this->getLastAttackSource();
+		return $player instanceof Player and $player->isSurvival();
+	}
 
-    public function onStart(): void{
-        $this->mob->setTargetEntity($this->getLastAttackSource());
+	public function onStart(): void{
+		$this->mob->setTargetEntity($this->getLastAttackSource());
 
-        parent::onStart();
-    }
+		parent::onStart();
+	}
 
-    public function getLastAttackSource(): ?Entity{
-        $cause = $this->mob->getLastDamageCause();
-        if($cause instanceof EntityDamageByEntityEvent)
-            return $cause->getDamager();
+	public function getLastAttackSource(): ?Entity{
+		$cause = $this->mob->getLastDamageCause();
+		if($cause instanceof EntityDamageByEntityEvent)
+			return $cause->getDamager();
 
-        return null;
-    }
+		return null;
+	}
 }

@@ -1,14 +1,38 @@
 <?php
 
+/*
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
+ *
+ */
+
+declare(strict_types=1);
+
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Entity;
+use pocketmine\entity\Mob;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 
 class EntityNavigator{
 
+	/** @var Mob */
 	protected $entity;
+	/** @var \pocketmine\level\Level */
 	protected $level;
 
 	protected $neighbors = [
@@ -24,10 +48,9 @@ class EntityNavigator{
 
 	/**
 	 * EntityNavigator constructor.
-	 * @param Entity $entity
+	 * @param Mob $entity
 	 */
-	public function __construct(Entity $entity)
-	{
+	public function __construct(Mob $entity){
 		$this->entity = $entity;
 		$this->level = $entity->getLevel();
 	}
@@ -39,23 +62,21 @@ class EntityNavigator{
 	 * @param int $maxAttempt
 	 * @return array
 	 */
-	public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 200) : array
-	{
+	public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 200): array{
 		$attempt = 0;
 		$current = $to;
-		$level = $this->entity->level;
 		$path = [];
-		while(!$current->equals($from) and ++$attempt < $maxAttempt)
-		{
+
+		while(!$current->equals($from) and ++$attempt < $maxAttempt){
+			/** @var Vector2 $last */
 			$last = null;
 			foreach($this->getNeighbors($current) as $tile){
 				if($last === null or $last->distance($from) >= $tile->distance($from)){
 					$last = $tile;
-                }
+				}
 			}
 
-			if($last !== null)
-			{
+			if($last !== null){
 				$path[] = $last;
 				$current = $last;
 			}else{
@@ -72,6 +93,10 @@ class EntityNavigator{
 		return $path;
 	}
 
+	/**
+	 * @param Vector2 $tile
+	 * @return Vector2[]
+	 */
 	public function getNeighbors(Vector2 $tile) : array{
 		$block = $this->level->getBlock(new Vector3($tile->x, $this->entity->y, $tile->y));
 
@@ -96,9 +121,7 @@ class EntityNavigator{
 						break;
 					}
 
-					if(!$canMove) continue;
-
-					if($this->isObstructed($blockUp)) continue;
+					if(!$canMove or $this->isObstructed($blockUp)) continue;
 				}else{
 					$blockUp = $this->level->getBlock($coord->getSide(Vector3::SIDE_UP));
 					if($blockUp->isSolid()){
@@ -130,7 +153,7 @@ class EntityNavigator{
 
 						if($this->isObstructed($blockDown)) continue;
 					}else{
-						if(!$this->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()){
+						if(!$this->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()) {
 							// Will fall
 							continue;
 						}
@@ -146,19 +169,19 @@ class EntityNavigator{
 		return $list;
 	}
 
-	public function isObstructed(Vector3 $coord): bool{
+	public function isObstructed(Vector3 $coord) : bool{
 		for($i = 1; $i < $this->entity->height; $i++)
 			if($this->isBlocked($coord->add(0, $i, 0))) return true;
 
 		return false;
 	}
 
-	public function isBlocked(Vector3 $coord): bool{
+	public function isBlocked(Vector3 $coord) : bool{
 		$block = $this->level->getBlock($coord);
-		return $block === null or $block->isSolid();
+		return $block->isSolid();
 	}
 
-	public function tryMoveTo(Vector3 $pos, float $speed) : bool{
+	public function tryMoveTo(Vector3 $pos, float $speed): bool{
 		$path = Path::findPath($this->entity, $pos);
 
 		if($path->havePath() and $next = $path->getNextTile($this->entity)){

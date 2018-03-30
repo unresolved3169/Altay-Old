@@ -49,6 +49,8 @@ class ConcretePowder extends Fallable{
 	public function onNearbyBlockChange() : void{
 		if(($block = $this->checkAdjacentWater()) !== null){
 			$this->level->setBlock($this, $block);
+		}else{
+		    parent::onNearbyBlockChange();
 		}
 	}
 

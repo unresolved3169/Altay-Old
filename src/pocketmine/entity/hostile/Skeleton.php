@@ -34,47 +34,47 @@ use pocketmine\item\ItemFactory;
 use pocketmine\Player;
 
 class Skeleton extends Monster{
-    public const NETWORK_ID = self::SKELETON;
+	public const NETWORK_ID = self::SKELETON;
 
-    public $width = 0.6;
-    public $height = 1.95;
+	public $width = 0.6;
+	public $height = 1.95;
 
-    /** @var AltayEntityEquipment */
-    protected $equipment;
+	/** @var AltayEntityEquipment */
+	protected $equipment;
 
-    // speed 0.25
-    protected function initEntity(){
-        $this->setMaxHealth(20);
-        $this->equipment = new AltayEntityEquipment($this);
-        $this->equipment->setMainhandItem(ItemFactory::get(Item::BOW));
-        parent::initEntity();
-    }
+	// speed 0.25
+	protected function initEntity(){
+		$this->setMaxHealth(20);
+		$this->equipment = new AltayEntityEquipment($this);
+		$this->equipment->setItemInHand(ItemFactory::get(Item::BOW));
+		parent::initEntity();
+	}
 
-    protected function sendSpawnPacket(Player $player) : void{
-        parent::sendSpawnPacket($player);
-        $this->equipment->sendContents($player);
-    }
+	protected function sendSpawnPacket(Player $player) : void{
+		parent::sendSpawnPacket($player);
+		$this->equipment->sendContents($player);
+	}
 
-    public function getEquipment() : AltayEntityEquipment{
-        return $this->equipment;
-    }
+	public function getEquipment() : AltayEntityEquipment{
+		return $this->equipment;
+	}
 
-    protected function getNormalBehaviors() : array{
-        return [
-            //new MeleeAttackBehavior($this, 1.0, 16),
-            new LookAtPlayerBehavior($this, 8),
-            new RandomLookAroundBehavior($this),
-            new WanderBehavior($this)
-        ];
-    }
+	protected function getNormalBehaviors() : array{
+		return [
+			//new MeleeAttackBehavior($this, 1.0, 16),
+			new LookAtPlayerBehavior($this, 8),
+			new RandomLookAroundBehavior($this),
+			new WanderBehavior($this)
+		];
+	}
 
-    protected function getTargetBehaviors(): array{
-        return [
-            // TODO
-        ];
-    }
+	protected function getTargetBehaviors(): array{
+		return [
+			// TODO
+		];
+	}
 
-    public function getName() : string{
-        return "Skeleton";
-    }
+	public function getName() : string{
+		return "Skeleton";
+	}
 }

@@ -25,14 +25,18 @@ declare(strict_types=1);
 namespace pocketmine\network\mcpe\protocol\types;
 
 use pocketmine\block\Block;
-use pocketmine\inventory\transaction\action\AnvilResultAction;
+use pocketmine\inventory\AnvilInventory;
+use pocketmine\inventory\EnchantInventory;
+use pocketmine\inventory\TradingInventory;
 use pocketmine\inventory\transaction\action\CraftingTakeResultAction;
 use pocketmine\inventory\transaction\action\CraftingTransferMaterialAction;
 use pocketmine\inventory\transaction\action\CreativeInventoryAction;
 use pocketmine\inventory\transaction\action\DropItemAction;
 use pocketmine\inventory\transaction\action\EnchantAction;
-use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
+use pocketmine\inventory\transaction\action\TradingTakeResultAction;
+use pocketmine\inventory\transaction\action\TradingTransferItemAction;
+use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
@@ -120,9 +124,13 @@ class NetworkInventoryAction{
 					case self::SOURCE_TYPE_CRAFTING_RESULT:
 						$packet->inventoryType = "Crafting";
 						break;
-                    case self::SOURCE_TYPE_ENCHANT_OUTPUT:
-                        $packet->inventoryType = "Enchant";
-                        break;
+					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
+						$packet->inventoryType = "Enchant";
+						break;
+					case self::SOURCE_TYPE_TRADING_USE_INPUTS:
+					case self::SOURCE_TYPE_TRADING_OUTPUT:
+						$packet->inventoryType = "Trading";
+						break;
 				}
 				break;
 		}
@@ -205,32 +213,43 @@ class NetworkInventoryAction{
 					case self::SOURCE_TYPE_CRAFTING_USE_INGREDIENT:
 						return new CraftingTransferMaterialAction($this->oldItem, $this->newItem, $this->inventorySlot);
 
-                    case self::SOURCE_TYPE_ANVIL_INPUT:
-                        $window = $player->getAnvilInventory();
-                        return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
-                    case self::SOURCE_TYPE_ANVIL_MATERIAL:
-                        $window = $player->getAnvilInventory();
-                        $this->inventorySlot = 1;
-                        return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
-                    case self::SOURCE_TYPE_ANVIL_RESULT:
-                        $window = $player->getAnvilInventory();
-                        $air = ItemFactory::get(Block::AIR);
-                        $window->setContents([
-                            $air, $air, $this->oldItem
-                        ], false);
-                        return new SlotChangeAction($window, 2, $this->oldItem, $this->newItem);
-                    case self::SOURCE_TYPE_ANVIL_OUTPUT:
-                        throw new \RuntimeException("Anvil inventory source type OUTPUT");
+					case self::SOURCE_TYPE_ANVIL_INPUT:
+						$window = $player->getWindowFromClass(AnvilInventory::class);
+						return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_ANVIL_MATERIAL:
+						$window = $player->getWindowFromClass(AnvilInventory::class);
+						$this->inventorySlot = 1;
+						return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_ANVIL_RESULT:
+						$window = $player->getWindowFromClass(AnvilInventory::class);
+						$air = ItemFactory::get(Block::AIR);
+						$window->setContents([
+							$air, $air, $this->oldItem
+						], false);
+						return new SlotChangeAction($window, 2, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_ANVIL_OUTPUT:
+						throw new \RuntimeException("Anvil inventory source type OUTPUT");
 
-                    case self::SOURCE_TYPE_ENCHANT_INPUT:
-                        $window = $player->getEnchantInventory();
-                        return new EnchantAction($window, 0, $this->oldItem, $this->newItem);
-                    case self::SOURCE_TYPE_ENCHANT_MATERIAL:
-                        $window = $player->getEnchantInventory();
-                        return new EnchantAction($window, 1, $this->oldItem, $this->newItem);
-                    case self::SOURCE_TYPE_ENCHANT_OUTPUT:
-                        $window = $player->getEnchantInventory();
-                        return new EnchantAction($window, -1, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_ENCHANT_INPUT:
+						$window = $player->getWindowFromClass(EnchantInventory::class);
+						return new EnchantAction($window, 0, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_ENCHANT_MATERIAL:
+						$window = $player->getWindowFromClass(EnchantInventory::class);
+						return new EnchantAction($window, 1, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
+						$window = $player->getWindowFromClass(EnchantInventory::class);
+						return new EnchantAction($window, -1, $this->oldItem, $this->newItem);
+
+					case self::SOURCE_TYPE_TRADING_INPUT_1:
+						$window = $player->getWindowFromClass(TradingInventory::class);
+						return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_TRADING_INPUT_2:
+						$window = $player->getWindowFromClass(TradingInventory::class);
+						return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_TRADING_USE_INPUTS:
+						return new TradingTakeResultAction($this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_TRADING_OUTPUT:
+						return new TradingTransferItemAction($this->oldItem, $this->newItem);
 
 					case self::SOURCE_TYPE_CONTAINER_DROP_CONTENTS:
 						//TODO: this type applies to all fake windows, not just crafting

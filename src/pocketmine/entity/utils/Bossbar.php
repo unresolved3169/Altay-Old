@@ -24,12 +24,14 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\utils;
 
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\{AddEntityPacket, UpdateAttributesPacket, BossEventPacket, RemoveEntityPacket, SetEntityDataPacket};
-use pocketmine\Player;
-use pocketmine\entity\EntityIds;
-use pocketmine\entity\Entity;
 use pocketmine\entity\Attribute;
+use pocketmine\entity\Entity;
+use pocketmine\entity\EntityIds;
+use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\{
+	AddEntityPacket, BossEventPacket, RemoveEntityPacket, SetEntityDataPacket, UpdateAttributesPacket
+};
+use pocketmine\Player;
 
 /*
  * This a Helper class for simple Bossbar create

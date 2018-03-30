@@ -84,7 +84,7 @@ class Enchantment{
 	public const SLOT_CARROT_STICK = 0x2000;
 	public const SLOT_ELYTRA = 0x4000;
 
-	/** @var Enchantment[] */
+	/** @var \SplFixedArray|Enchantment[] */
 	protected static $enchantments;
 
 	public static function init(){
@@ -131,6 +131,13 @@ class Enchantment{
 	 */
 	public static function getEnchantment(int $id){
 		return self::$enchantments[$id] ?? null;
+	}
+
+	/**
+	 * @return Enchantment[]
+	 */
+	public static function getEnchantments() : array{
+		return self::$enchantments->toArray();
 	}
 
 	/**
@@ -233,6 +240,14 @@ class Enchantment{
     public function getRepairCost() : int{
 	    return $this->repairCost;
     }
+
+    public function getMinEnchantability(int $enchLevel){
+		return 1 + $enchLevel * 10;
+	}
+
+	public function getMaxEnchantability(int $enchLevel){
+    	return $this->getMinEnchantability($enchLevel) + 5;
+	}
 
 	//TODO: methods for min/max XP cost bounds based on enchantment level (not needed yet - enchanting is client-side)
 }
