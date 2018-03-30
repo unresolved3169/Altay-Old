@@ -204,15 +204,9 @@ abstract class Mob extends Living{
 				$velocity = $dir->multiply($sf);
 				$entityVelocity = $this->getMotion();
 				$entityVelocity->y = 0;
-				if($entityVelocity->length() < $velocity->length()){
-					$m = $this->setMotion($entityVelocity->add($velocity->subtract($entityVelocity->x, $entityVelocity->y, $entityVelocity->z)));
-				}else{
-					$m = $this->setMotion($velocity);
-				}
 
-				$this->motionX = $m->x;
-				$this->motionY = $m->y;
-				$this->motionZ = $m->z;
+				$m = $entityVelocity->length() < $velocity->length() ? $entityVelocity->add($velocity->subtract($entityVelocity)) : $velocity;
+				$this->setMotion($m);
 			}
 		}else{
 			if($this->canClimb() and !$entityCollide){
