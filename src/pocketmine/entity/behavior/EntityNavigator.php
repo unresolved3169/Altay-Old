@@ -27,6 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\block\Block;
 
 class EntityNavigator{
 
@@ -165,8 +166,36 @@ class EntityNavigator{
 
 			$list[] = $item;
 		}
+		
+		$this->checkDiagonals($block, $list);
 
 		return $list;
+	}
+	
+	public function checkDiagonals(Block $block, array &$list){
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)), $list)){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_EAST)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_NORTH)->getSide(Vector3::SIDE_WEST)), $list)]);
+		}
+		
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)), $list)){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_EAST)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_SOUTH)->getSide(Vector3::SIDE_WEST)), $list)]);
+		}
+		
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)), $list)){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_NORTH)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_EAST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
+		}
+		
+		if(!in_array($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)), $list)){
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_NORTH)), $list)]);
+			unset($list[array_search($this->getTileFromBlock($block->getSide(Vector3::SIDE_WEST)->getSide(Vector3::SIDE_SOUTH)), $list)]);
+		}
+	}
+	
+	public function getTileFromBlock(Vector3 $coord) : Vector2{
+		return new Vector2($coord->x, $coord->z);
 	}
 
 	public function isObstructed(Vector3 $coord) : bool{
