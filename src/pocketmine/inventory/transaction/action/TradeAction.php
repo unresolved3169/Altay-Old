@@ -24,11 +24,16 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory\transaction\action;
 
+use pocketmine\event\inventory\InventoryClickEvent;
 use pocketmine\inventory\TradeInventory;
 use pocketmine\item\Item;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 
 class TradeAction extends InventoryAction{
+
+	public const OUTPUT_SLOT = 2;
 
 	/** @var TradeInventory */
 	protected $inventory;
@@ -41,6 +46,10 @@ class TradeAction extends InventoryAction{
 		$this->output = $output;
 	}
 
+	public function getInventory() : TradeInventory{
+		return $this->inventory;
+	}
+
 	public function isValid(Player $source) : bool{
 		return true;
 	}
@@ -51,15 +60,37 @@ class TradeAction extends InventoryAction{
 
 	public function onPreExecute(Player $source) : bool{
 		if($this->output){
-			// TODO : Event
+			$source->getServer()->getPluginManager()->callEvent($ev = new InventoryClickEvent($this->inventory, $source, self::OUTPUT_SLOT));
+			if($ev->isCancelled()){
+				return false;
+			}
 		}
 
 		return true;
 	}
 
 	public function onExecuteSuccess(Player $source) : void{
-		// TODO : USE++
-		// TODO : Willing set ($this->setWilling(mt_rand(1, 3) <= 2);)
+		if($this->output){
+			$holder = $this->inventory->getHolder();
+			$recipes = $holder->getOffers()->getListTag("Recipes");
+			$values = $recipes->getAllValues();
+			/** @var CompoundTag $tag */
+			foreach($values as $index => $tag){
+				/** @var CompoundTag $sell */
+				$sell = $tag->getTag("sell");
+				$sellId = $sell->getShort("id");
+				$sellCount = $sell->getByte("Count");
+				if($sellId == $this->sourceItem->getId() and $sellCount == $this->sourceItem->getCount()){
+					$tag->setInt("uses", $tag->getInt("uses") + 1);
+					$recipes[$index] = $tag;
+					break;
+				}
+			}
+
+			$recipes->setValue($values);
+			$this->inventory->getHolder()->setWilling(mt_rand(1, 3) <= 2);
+			$this->inventory->setBuy(true);
+		}
 	}
 
 	public function onExecuteFail(Player $source) : void{

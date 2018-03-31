@@ -120,7 +120,7 @@ class Villager extends Creature implements NPC, Ageable{
 		$tradeTier = $this->getTradeTier() + 1;
 		try{
 			$this->setTradeTier($tradeTier);
-			// TODO : Add particle
+			$this->addEffect(new EffectInstance(Effect::getEffect(Effect::REGENERATION), mt_rand(2, 5) * 20));
 		}catch(\InvalidArgumentException $exception){}
 	}
 

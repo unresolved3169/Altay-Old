@@ -37,10 +37,10 @@ Example servers running Altay
    - [x] /playsound
    - [x] /stopsound
    - [x] /setblock
- - [ ] Trading
+ - [x] Trading
    - [x] Trade
-   - [ ] Level Upgrade
-   - [ ] Use++
+   - [x] Level Upgrade
+   - [x] Use++
  - [ ] Beacons
  - [ ] Config Auto Updater
  - [ ] Entity Behaviors (MobAI)
