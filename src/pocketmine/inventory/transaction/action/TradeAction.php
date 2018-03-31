@@ -24,21 +24,18 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory\transaction\action;
 
-use pocketmine\inventory\transaction\TradingTransaction;
-use pocketmine\inventory\transaction\InventoryTransaction;
+use pocketmine\inventory\TradeInventory;
+use pocketmine\item\Item;
 use pocketmine\Player;
 
-/**
- * Action used to take the primary result item during crafting.
- */
-class TradingTakeResultAction extends InventoryAction{
+class TradeAction extends InventoryAction{
 
-	public function onAddToTransaction(InventoryTransaction $transaction) : void{
-		if($transaction instanceof TradingTransaction){
-			$transaction->setOutput($this->getSourceItem());
-		}else{
-			throw new \InvalidStateException(get_class($this) . " can only be added to TradingTransactions");
-		}
+	/** @var TradeInventory */
+	protected $inventory;
+
+	public function __construct(Item $sourceItem, Item $targetItem, ?TradeInventory $inventory){
+		parent::__construct($sourceItem, $targetItem);
+		$this->inventory = $inventory;
 	}
 
 	public function isValid(Player $source) : bool{
@@ -49,10 +46,17 @@ class TradingTakeResultAction extends InventoryAction{
 		return true;
 	}
 
+	public function onPreExecute(Player $source) : bool{
+		// TODO : Event
+		return true;
+	}
+
 	public function onExecuteSuccess(Player $source) : void{
+		// TODO : USE++
+		// TODO : Willing set ($this->setWilling(mt_rand(1, 3) <= 2);)
 	}
 
 	public function onExecuteFail(Player $source) : void{
-	}
 
+	}
 }

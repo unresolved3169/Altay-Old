@@ -27,13 +27,12 @@ namespace pocketmine\network\mcpe\protocol\types;
 use pocketmine\block\Block;
 use pocketmine\inventory\AnvilInventory;
 use pocketmine\inventory\EnchantInventory;
-use pocketmine\inventory\TradingInventory;
+use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\transaction\action\CreativeInventoryAction;
 use pocketmine\inventory\transaction\action\DropItemAction;
 use pocketmine\inventory\transaction\action\EnchantAction;
 use pocketmine\inventory\transaction\action\SlotChangeAction;
-use pocketmine\inventory\transaction\action\TradingTakeResultAction;
-use pocketmine\inventory\transaction\action\TradingTransferItemAction;
+use pocketmine\inventory\transaction\action\TradeAction;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -124,10 +123,6 @@ class NetworkInventoryAction{
 						break;
 					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
 						$packet->inventoryType = "Enchant";
-						break;
-					case self::SOURCE_TYPE_TRADING_USE_INPUTS:
-					case self::SOURCE_TYPE_TRADING_OUTPUT:
-						$packet->inventoryType = "Trading";
 						break;
 				}
 				break;
@@ -226,7 +221,6 @@ class NetworkInventoryAction{
 						return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ANVIL_MATERIAL:
 						$window = $player->getWindowFromClass(AnvilInventory::class);
-						$this->inventorySlot = 1;
 						return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ANVIL_RESULT:
 						$window = $player->getWindowFromClass(AnvilInventory::class);
@@ -249,15 +243,14 @@ class NetworkInventoryAction{
 						return new EnchantAction($window, -1, $this->oldItem, $this->newItem);
 
 					case self::SOURCE_TYPE_TRADING_INPUT_1:
-						$window = $player->getWindowFromClass(TradingInventory::class);
-						return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_TRADING_INPUT_2:
-						$window = $player->getWindowFromClass(TradingInventory::class);
-						return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
+						$window = $player->getWindowFromClass(TradeInventory::class);
+						return new SlotChangeAction($window, abs($this->windowId) - 20, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_TRADING_USE_INPUTS:
-						return new TradingTakeResultAction($this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_TRADING_OUTPUT:
-						return new TradingTransferItemAction($this->oldItem, $this->newItem);
+						/** @var TradeInventory $window */
+						$window = $player->getWindowFromClass(TradeInventory::class);
+						return new TradeAction($this->oldItem, $this->newItem, $window);
 				}
 
 				//TODO: more stuff
