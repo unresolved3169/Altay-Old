@@ -54,7 +54,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerEditBookEvent;
-use pocketmine\event\player\PlayerEntityInteractEvent;
+use pocketmine\event\player\PlayerInteractEntityEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -2514,7 +2514,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						$clickPos = $packet->trData->clickPos;
 						$slot = $packet->trData->hotbarSlot;
 
-						$ev = new PlayerEntityInteractEvent($this, $target, $item, $clickPos, $slot);
+						$ev = new PlayerInteractEntityEvent($this, $target, $item, $clickPos, $slot);
 
 						if(!$this->canInteract($target, 8)){
 							$ev->setCancelled();

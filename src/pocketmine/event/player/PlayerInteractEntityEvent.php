@@ -33,7 +33,7 @@ use pocketmine\Player;
 /**
  * Called when a player interacts with an entity
  */
-class PlayerEntityInteractEvent extends PlayerEvent implements Cancellable{
+class PlayerInteractEntityEvent extends PlayerEvent implements Cancellable{
 	public static $handlerList = null;
 
 	/** @var Entity */
