@@ -32,10 +32,13 @@ class TradeAction extends InventoryAction{
 
 	/** @var TradeInventory */
 	protected $inventory;
+	/** @var bool */
+	protected $output;
 
-	public function __construct(Item $sourceItem, Item $targetItem, ?TradeInventory $inventory){
+	public function __construct(Item $sourceItem, Item $targetItem, ?TradeInventory $inventory, bool $output = false){
 		parent::__construct($sourceItem, $targetItem);
 		$this->inventory = $inventory;
+		$this->output = $output;
 	}
 
 	public function isValid(Player $source) : bool{
@@ -47,7 +50,10 @@ class TradeAction extends InventoryAction{
 	}
 
 	public function onPreExecute(Player $source) : bool{
-		// TODO : Event
+		if($this->output){
+			// TODO : Event
+		}
+
 		return true;
 	}
 

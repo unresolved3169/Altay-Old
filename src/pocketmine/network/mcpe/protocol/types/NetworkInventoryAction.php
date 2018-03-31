@@ -250,7 +250,7 @@ class NetworkInventoryAction{
 					case self::SOURCE_TYPE_TRADING_OUTPUT:
 						/** @var TradeInventory $window */
 						$window = $player->getWindowFromClass(TradeInventory::class);
-						return new TradeAction($this->oldItem, $this->newItem, $window);
+						return new TradeAction($this->oldItem, $this->newItem, $window, (abs($this->windowId) - 23) === 0);
 				}
 
 				//TODO: more stuff
