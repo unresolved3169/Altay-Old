@@ -217,12 +217,8 @@ class ArmorStand extends Living{
 		$this->namedtag->setTag($poseTag);
 	}
 
-	public function kill(){
-		$dropVector = $this->add(0.5, 0.5, 0.5);
-		$items = array_merge($this->equipment->getContents(), $this->armorInventory->getContents(), [ItemFactory::get(Item::ARMOR_STAND)]);
-		$this->level->dropItems($dropVector, $items);
-
-		return parent::kill();
+	public function getDrops() : array{
+		return array_merge($this->equipment->getContents(), $this->armorInventory->getContents(), [ItemFactory::get(Item::ARMOR_STAND)]);
 	}
 
 	public function attack(EntityDamageEvent $source){
@@ -243,8 +239,9 @@ class ArmorStand extends Living{
 		}
 	}
 
-	public function spawnTo(Player $player){
-		parent::spawnTo($player);
+	protected function sendSpawnPacket(Player $player): void{
+		parent::sendSpawnPacket($player);
+
 		$this->equipment->sendContents($player);
 	}
 
