@@ -117,8 +117,10 @@ class NetworkInventoryAction{
 			case self::SOURCE_TODO:
 				$this->windowId = $packet->getVarInt();
 				switch($this->windowId){
-					case self::SOURCE_TYPE_CRAFTING_USE_INGREDIENT:
+					/** @noinspection PhpMissingBreakStatementInspection */
 					case self::SOURCE_TYPE_CRAFTING_RESULT:
+						$packet->isFinalCraftingPart = true;
+					case self::SOURCE_TYPE_CRAFTING_USE_INGREDIENT:
 						$packet->inventoryType = "Crafting";
 						break;
 					case self::SOURCE_TYPE_ENCHANT_OUTPUT:

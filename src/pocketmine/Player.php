@@ -79,7 +79,6 @@ use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantTransaction;
-use pocketmine\inventory\transaction\TradingTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
@@ -2021,8 +2020,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->achievements[$achievement->getName()] = $achievement->getValue() !== 0;
 		}
 
-		$this->namedtag->setLong("lastPlayed", (int) floor(microtime(true) * 1000));
-
 		$this->sendPlayStatus(PlayStatusPacket::LOGIN_SUCCESS);
 
 		$this->loggedIn = true;
@@ -2345,6 +2342,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					$this->craftingTransaction = null;
 					return $result;
 				}
+
 				return true;
 			case "Enchant":
 				$enchantTransaction = new EnchantTransaction($this, $actions);
