@@ -27,15 +27,6 @@ declare(strict_types=1);
 namespace pocketmine\event;
 
 abstract class Event{
-
-	/**
-	 * Any callable event must declare the static variable
-	 *
-	 * public static $handlerList = null;
-	 *
-	 * Not doing so will deny the proper event initialization
-	 */
-
 	/** @var string|null */
 	protected $eventName = null;
 	/** @var bool */
@@ -74,17 +65,6 @@ abstract class Event{
 
 		/** @var Event $this */
 		$this->isCancelled = $value;
-	}
-
-	/**
-	 * @return HandlerList
-	 */
-	public function getHandlers() : HandlerList{
-		if(static::$handlerList === null){
-			static::$handlerList = new HandlerList();
-		}
-
-		return static::$handlerList;
 	}
 
 }
