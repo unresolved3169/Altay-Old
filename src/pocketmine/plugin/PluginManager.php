@@ -356,7 +356,7 @@ class PluginManager{
 	 * @return bool
 	 */
 	public function isCompatibleApi(string ...$versions) : bool{
-		if(!$this->server->loadIncompatibleApi) return true;
+		if($this->server->loadIncompatibleApi) return true;
 
 		foreach($versions as $version){
 			//Format: majorVersion.minorVersion.patch (3.0.0)
