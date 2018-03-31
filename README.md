@@ -23,8 +23,13 @@ Example servers running Altay
  - [x] Boats
  - [x] BossbarAPI
  - [x] Command Parameters
+ - [x] Commands
+   - [x] /clear
+   - [x] /playsound
+   - [x] /stopsound
+   - [x] /setblock
  - [x] Elytra
- - [x] EnchantmentTable
+ - [x] Enchantment Table
  - [x] Events
     - [x] InventoryClickEvent
     - [x] PlayerInteractEntityEvent (Credits: @CortexPE)
@@ -32,11 +37,6 @@ Example servers running Altay
  - [x] Forms
  - [x] Hopper
  - [x] Virtual Inventory
- - [x] Commands
-   - [x] /clear
-   - [x] /playsound
-   - [x] /stopsound
-   - [x] /setblock
  - [x] Trading
    - [x] Trade
    - [x] Level Upgrade
