@@ -73,7 +73,6 @@ use pocketmine\event\player\PlayerTransferEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\event\Timings;
 use pocketmine\form\Form;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
@@ -162,6 +161,7 @@ use pocketmine\resourcepacks\ResourcePack;
 use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\tile\ItemFrame;
+use pocketmine\timings\Timings;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
 

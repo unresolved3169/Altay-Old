@@ -1,27 +1,28 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
-namespace pocketmine\event;
+namespace pocketmine\timings;
 
 use pocketmine\entity\Entity;
 use pocketmine\network\mcpe\protocol\DataPacket;
@@ -44,8 +45,6 @@ abstract class Timings{
 	/** @var TimingsHandler */
 	public static $titleTickTimer;
 	/** @var TimingsHandler */
-	public static $playerListTimer;
-	/** @var TimingsHandler */
 	public static $playerNetworkTimer;
 	/** @var TimingsHandler */
 	public static $playerNetworkReceiveTimer;
@@ -56,19 +55,11 @@ abstract class Timings{
 	/** @var TimingsHandler */
 	public static $connectionTimer;
 	/** @var TimingsHandler */
-	public static $tickablesTimer;
-	/** @var TimingsHandler */
 	public static $schedulerTimer;
-	/** @var TimingsHandler */
-	public static $chunkIOTickTimer;
-	/** @var TimingsHandler */
-	public static $timeUpdateTimer;
 	/** @var TimingsHandler */
 	public static $serverCommandTimer;
 	/** @var TimingsHandler */
 	public static $worldSaveTimer;
-	/** @var TimingsHandler */
-	public static $generationTimer;
 	/** @var TimingsHandler */
 	public static $populationTimer;
 	/** @var TimingsHandler */
@@ -83,22 +74,12 @@ abstract class Timings{
 	/** @var TimingsHandler */
 	public static $tickEntityTimer;
 	/** @var TimingsHandler */
-	public static $activatedEntityTimer;
-	/** @var TimingsHandler */
 	public static $tickTileEntityTimer;
 
 	/** @var TimingsHandler */
 	public static $timerEntityBaseTick;
 	/** @var TimingsHandler */
 	public static $timerLivingEntityBaseTick;
-	/** @var TimingsHandler */
-	public static $timerEntityAI;
-	/** @var TimingsHandler */
-	public static $timerEntityAICollision;
-	/** @var TimingsHandler */
-	public static $timerEntityAIMove;
-	/** @var TimingsHandler */
-	public static $timerEntityTickRest;
 
 	/** @var TimingsHandler */
 	public static $schedulerSyncTimer;
@@ -132,19 +113,14 @@ abstract class Timings{
 		self::$memoryManagerTimer = new TimingsHandler("Memory Manager");
 		self::$garbageCollectorTimer = new TimingsHandler("Garbage Collector", self::$memoryManagerTimer);
 		self::$titleTickTimer = new TimingsHandler("Console Title Tick");
-		self::$playerListTimer = new TimingsHandler("Player List");
 		self::$playerNetworkTimer = new TimingsHandler("Player Network Send");
 		self::$playerNetworkReceiveTimer = new TimingsHandler("Player Network Receive");
 		self::$playerChunkOrderTimer = new TimingsHandler("Player Order Chunks");
 		self::$playerChunkSendTimer = new TimingsHandler("Player Send Chunks");
 		self::$connectionTimer = new TimingsHandler("Connection Handler");
-		self::$tickablesTimer = new TimingsHandler("Tickables");
 		self::$schedulerTimer = new TimingsHandler("Scheduler");
-		self::$chunkIOTickTimer = new TimingsHandler("ChunkIOTick");
-		self::$timeUpdateTimer = new TimingsHandler("Time Update");
 		self::$serverCommandTimer = new TimingsHandler("Server Command");
 		self::$worldSaveTimer = new TimingsHandler("World Save");
-		self::$generationTimer = new TimingsHandler("World Generation");
 		self::$populationTimer = new TimingsHandler("World Population");
 		self::$generationCallbackTimer = new TimingsHandler("World Generation Callback");
 		self::$permissibleCalculationTimer = new TimingsHandler("Permissible Calculation");
@@ -152,15 +128,10 @@ abstract class Timings{
 
 		self::$entityMoveTimer = new TimingsHandler("** entityMove");
 		self::$tickEntityTimer = new TimingsHandler("** tickEntity");
-		self::$activatedEntityTimer = new TimingsHandler("** activatedTickEntity");
 		self::$tickTileEntityTimer = new TimingsHandler("** tickTileEntity");
 
 		self::$timerEntityBaseTick = new TimingsHandler("** entityBaseTick");
 		self::$timerLivingEntityBaseTick = new TimingsHandler("** livingEntityBaseTick");
-		self::$timerEntityAI = new TimingsHandler("** livingEntityAI");
-		self::$timerEntityAICollision = new TimingsHandler("** livingEntityAICollision");
-		self::$timerEntityAIMove = new TimingsHandler("** livingEntityAIMove");
-		self::$timerEntityTickRest = new TimingsHandler("** livingEntityTickRest");
 
 		self::$schedulerSyncTimer = new TimingsHandler("** Scheduler - Sync Tasks", PluginManager::$pluginParentTimer);
 		self::$schedulerAsyncTimer = new TimingsHandler("** Scheduler - Async Tasks");

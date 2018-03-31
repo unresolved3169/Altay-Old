@@ -23,7 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\plugin;
 
-use pocketmine\command\defaults\TimingsCommand;
 use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
@@ -33,12 +32,12 @@ use pocketmine\event\Event;
 use pocketmine\event\EventPriority;
 use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
-use pocketmine\event\Timings;
-use pocketmine\event\TimingsHandler;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
 use pocketmine\Server;
+use pocketmine\timings\Timings;
+use pocketmine\timings\TimingsHandler;
 
 /**
  * Manages all the plugins, Permissions and Permissibles
@@ -93,8 +92,6 @@ class PluginManager{
 
 	/** @var TimingsHandler */
 	public static $pluginParentTimer;
-
-	public static $useTimings = false;
 
 	/**
 	 * @param Server           $server
@@ -341,12 +338,8 @@ class PluginManager{
 				}
 			}
 
-			TimingsCommand::$timingStart = microtime(true);
-
 			return $loadedPlugins;
 		}else{
-			TimingsCommand::$timingStart = microtime(true);
-
 			return [];
 		}
 	}
@@ -821,20 +814,6 @@ class PluginManager{
 		}
 
 		return $event::$handlerList;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function useTimings() : bool{
-		return self::$useTimings;
-	}
-
-	/**
-	 * @param bool $use
-	 */
-	public function setUseTimings(bool $use){
-		self::$useTimings = $use;
 	}
 
 }

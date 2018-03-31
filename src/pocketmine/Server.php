@@ -43,8 +43,6 @@ use pocketmine\event\level\LevelInitEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\event\Timings;
-use pocketmine\event\TimingsHandler;
 use pocketmine\form\element\Label;
 use pocketmine\form\FormIcon;
 use pocketmine\form\ServerSettingsForm;
@@ -99,6 +97,8 @@ use pocketmine\scheduler\FileWriteTask;
 use pocketmine\scheduler\SendUsageTask;
 use pocketmine\scheduler\ServerScheduler;
 use pocketmine\tile\Tile;
+use pocketmine\timings\Timings;
+use pocketmine\timings\TimingsHandler;
 use pocketmine\updater\AutoUpdater;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Config;
@@ -1649,6 +1649,7 @@ class Server{
 
 
 			Timings::init();
+			TimingsHandler::setEnabled((bool) $this->getProperty("settings.enable-profiling", false));
 			Enchantment::init();
 
 			$this->consoleSender = new ConsoleCommandSender();
@@ -1667,7 +1668,6 @@ class Server{
 
 			$this->pluginManager = new PluginManager($this, $this->commandMap);
 			$this->pluginManager->subscribeToPermission(Server::BROADCAST_CHANNEL_ADMINISTRATIVE, $this->consoleSender);
-			$this->pluginManager->setUseTimings($this->getProperty("settings.enable-profiling", false));
 			$this->profilingTickRate = (float) $this->getProperty("settings.profile-report-trigger", 20);
 			$this->pluginManager->registerInterface(FolderPluginLoader::class);
 			$this->pluginManager->registerInterface(PharPluginLoader::class);
