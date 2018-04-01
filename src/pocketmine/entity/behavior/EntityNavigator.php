@@ -176,32 +176,32 @@ class EntityNavigator{
 		$pos = $block->asVector3();
 
 		$posNorth = $pos->getSide(Vector3::SIDE_NORTH);
-		if(!in_array($this->getTileFromBlock($posNorth), $list)){
-			unset($list[array_search($this->getTileFromBlock($posNorth->getSide(Vector3::SIDE_EAST)), $list)]);
-			unset($list[array_search($this->getTileFromBlock($posNorth->getSide(Vector3::SIDE_WEST)), $list)]);
+		if(!in_array($this->getTileFromPos($posNorth), $list)){
+			unset($list[array_search($this->getTileFromPos($posNorth->getSide(Vector3::SIDE_EAST)), $list)]);
+			unset($list[array_search($this->getTileFromPos($posNorth->getSide(Vector3::SIDE_WEST)), $list)]);
 		}
 
 		$posSouth = $pos->getSide(Vector3::SIDE_SOUTH);
-		if(!in_array($this->getTileFromBlock($posSouth), $list)){
-			unset($list[array_search($this->getTileFromBlock($posSouth->getSide(Vector3::SIDE_EAST)), $list)]);
-			unset($list[array_search($this->getTileFromBlock($posSouth->getSide(Vector3::SIDE_WEST)), $list)]);
+		if(!in_array($this->getTileFromPos($posSouth), $list)){
+			unset($list[array_search($this->getTileFromPos($posSouth->getSide(Vector3::SIDE_EAST)), $list)]);
+			unset($list[array_search($this->getTileFromPos($posSouth->getSide(Vector3::SIDE_WEST)), $list)]);
 		}
 
 		$posEast = $pos->getSide(Vector3::SIDE_EAST);
-		if(!in_array($this->getTileFromBlock($posEast), $list)){
-			unset($list[array_search($this->getTileFromBlock($posEast->getSide(Vector3::SIDE_NORTH)), $list)]);
-			unset($list[array_search($this->getTileFromBlock($posEast->getSide(Vector3::SIDE_SOUTH)), $list)]);
+		if(!in_array($this->getTileFromPos($posEast), $list)){
+			unset($list[array_search($this->getTileFromPos($posEast->getSide(Vector3::SIDE_NORTH)), $list)]);
+			unset($list[array_search($this->getTileFromPos($posEast->getSide(Vector3::SIDE_SOUTH)), $list)]);
 		}
 
 		$posWest = $pos->getSide(Vector3::SIDE_WEST);
-		if(!in_array($this->getTileFromBlock($posWest), $list)){
+		if(!in_array($this->getTileFromPos($posWest), $list)){
 			$pos1 = $posWest->getSide(Vector3::SIDE_NORTH);
-			unset($list[array_search($this->getTileFromBlock($pos1), $list)]);
-			unset($list[array_search($this->getTileFromBlock($pos1), $list)]);
+			unset($list[array_search($this->getTileFromPos($pos1), $list)]);
+			unset($list[array_search($this->getTileFromPos($pos1), $list)]);
 		}
 	}
 
-	public function getTileFromBlock(Vector3 $coord) : Vector2{
+	public function getTileFromPos(Vector3 $coord) : Vector2{
 		return new Vector2($coord->x, $coord->z);
 	}
 
