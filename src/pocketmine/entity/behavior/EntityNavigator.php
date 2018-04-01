@@ -175,29 +175,20 @@ class EntityNavigator{
 	public function checkDiagonals(Block $block, array &$list){
 		$pos = $block->asVector3();
 
-		$posNorth = $pos->getSide(Vector3::SIDE_NORTH);
-		if(!in_array($this->getTileFromPos($posNorth), $list)){
-			unset($list[array_search($this->getTileFromPos($posNorth->getSide(Vector3::SIDE_EAST)), $list)]);
-			unset($list[array_search($this->getTileFromPos($posNorth->getSide(Vector3::SIDE_WEST)), $list)]);
-		}
+		$checkDiagonals = [
+			Vector3::SIDE_NORTH => [Vector3::SIDE_EAST, Vector3::SIDE_WEST],
+			Vector3::SIDE_SOUTH => [Vector3::SIDE_EAST, Vector3::SIDE_WEST],
+			Vector3::SIDE_EAST => [Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH],
+			Vector3::SIDE_WEST => [Vector3::SIDE_NORTH, Vector3::SIDE_NORTH] // ??
+		];
 
-		$posSouth = $pos->getSide(Vector3::SIDE_SOUTH);
-		if(!in_array($this->getTileFromPos($posSouth), $list)){
-			unset($list[array_search($this->getTileFromPos($posSouth->getSide(Vector3::SIDE_EAST)), $list)]);
-			unset($list[array_search($this->getTileFromPos($posSouth->getSide(Vector3::SIDE_WEST)), $list)]);
-		}
-
-		$posEast = $pos->getSide(Vector3::SIDE_EAST);
-		if(!in_array($this->getTileFromPos($posEast), $list)){
-			unset($list[array_search($this->getTileFromPos($posEast->getSide(Vector3::SIDE_NORTH)), $list)]);
-			unset($list[array_search($this->getTileFromPos($posEast->getSide(Vector3::SIDE_SOUTH)), $list)]);
-		}
-
-		$posWest = $pos->getSide(Vector3::SIDE_WEST);
-		if(!in_array($this->getTileFromPos($posWest), $list)){
-			$pos1 = $posWest->getSide(Vector3::SIDE_NORTH);
-			unset($list[array_search($this->getTileFromPos($pos1), $list)]);
-			unset($list[array_search($this->getTileFromPos($pos1), $list)]);
+		foreach($checkDiagonals as $index => $diagonal){
+			$posNew = $pos->getSide($index);
+			if(!in_array($this->getTileFromPos($posNew), $list)){
+				foreach($diagonal as $dia){
+					unset($list[array_search($this->getTileFromPos($posNew->getSide($dia)), $list)]);
+				}
+			}
 		}
 	}
 
