@@ -48,7 +48,7 @@ class CommandSelector{
 		}
 
 		$this->selected = self::setSelectedFromSelector($selector, $entityType, $sender);
-		if(count($this->selected) === 0){
+		if(empty($this->selected)){
 			throw new NoSelectorMatchException((int) self::isSubClass($entityType, Player::class));
 		}
 	}

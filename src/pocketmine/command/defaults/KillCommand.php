@@ -64,8 +64,7 @@ class KillCommand extends VanillaCommand{
 				return true;
 			}
 
-			$selectors = new CommandSelector($args[0], $sender);
-			$selectors = $selectors->getSelected();
+			$selectors = (new CommandSelector($args[0], $sender))->getSelected();
 			$names = [];
 
 			foreach($selectors as $selector){

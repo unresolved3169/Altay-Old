@@ -59,6 +59,11 @@ abstract class DefaultPermissions{
 
 		$commands = self::registerPermission(new Permission(self::ROOT . ".command", "Allows using all PocketMine commands"), $parent);
 
+		$clear = self::registerPermission(new Permission(self::ALTAY . ".command.clear", "Allows the user to clear inventory players", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ALTAY . ".command.clear.self", "Allows the user to clear inventory", Permission::DEFAULT_TRUE), $clear);
+		self::registerPermission(new Permission(self::ALTAY . ".command.clear.other", "Allows the user to clear inventory other players"), $clear);
+		$clear->recalculatePermissibles();
+
 		$whitelist = self::registerPermission(new Permission(self::ROOT . ".command.whitelist", "Allows the user to modify the server whitelist", Permission::DEFAULT_OP), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.whitelist.add", "Allows the user to add a player to the server whitelist"), $whitelist);
 		self::registerPermission(new Permission(self::ROOT . ".command.whitelist.remove", "Allows the user to remove a player to the server whitelist"), $whitelist);
