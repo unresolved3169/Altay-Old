@@ -28,7 +28,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\CraftingDataPacket;
 use pocketmine\Server;
-use pocketmine\event\Timings;
+use pocketmine\timings\Timings;
 use pocketmine\utils\Config;
 
 class CraftingManager{

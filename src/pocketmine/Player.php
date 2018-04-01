@@ -54,7 +54,7 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerEditBookEvent;
-use pocketmine\event\player\PlayerEntityInteractEvent;
+use pocketmine\event\player\PlayerInteractEntityEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -73,14 +73,12 @@ use pocketmine\event\player\PlayerTransferEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\event\Timings;
 use pocketmine\form\Form;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantTransaction;
-use pocketmine\inventory\transaction\TradingTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
@@ -162,6 +160,7 @@ use pocketmine\resourcepacks\ResourcePack;
 use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\tile\ItemFrame;
+use pocketmine\timings\Timings;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
 
@@ -2021,8 +2020,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->achievements[$achievement->getName()] = $achievement->getValue() !== 0;
 		}
 
-		$this->namedtag->setLong("lastPlayed", (int) floor(microtime(true) * 1000));
-
 		$this->sendPlayStatus(PlayStatusPacket::LOGIN_SUCCESS);
 
 		$this->loggedIn = true;
@@ -2345,15 +2342,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					$this->craftingTransaction = null;
 					return $result;
 				}
+
 				return true;
 			case "Enchant":
 				$enchantTransaction = new EnchantTransaction($this, $actions);
 				$enchantTransaction->execute();
 				break;
-			case "Trading":
-				$tradingTransaction = new TradingTransaction($this, $actions);
-				$tradingTransaction->execute();
-				return true;
 			default:
 				if($this->craftingTransaction !== null){
 					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
@@ -2518,7 +2512,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						$clickPos = $packet->trData->clickPos;
 						$slot = $packet->trData->hotbarSlot;
 
-						$ev = new PlayerEntityInteractEvent($this, $target, $item, $clickPos, $slot);
+						$ev = new PlayerInteractEntityEvent($this, $target, $item, $clickPos, $slot);
 
 						if(!$this->canInteract($target, 8)){
 							$ev->setCancelled();
