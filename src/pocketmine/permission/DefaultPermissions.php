@@ -27,6 +27,7 @@ use pocketmine\Server;
 
 abstract class DefaultPermissions{
 	public const ROOT = "pocketmine";
+	public const ALTAY = "altay";
 
 	/**
 	 * @param Permission $perm
@@ -96,9 +97,9 @@ abstract class DefaultPermissions{
 		self::registerPermission(new Permission(self::ROOT . ".command.time.query", "Allows the user query the time"), $time);
 		$time->recalculatePermissibles();
 
-		$kill = self::registerPermission(new Permission(self::ROOT . ".command.kill", "Allows the user to kill players", Permission::DEFAULT_OP), $commands);
-		self::registerPermission(new Permission(self::ROOT . ".command.kill.self", "Allows the user to commit suicide", Permission::DEFAULT_TRUE), $kill);
-		self::registerPermission(new Permission(self::ROOT . ".command.kill.other", "Allows the user to kill other players"), $kill);
+		$kill = self::registerPermission(new Permission(self::ALTAY . ".command.kill", "Allows the user to kill players", Permission::DEFAULT_OP), $commands);
+		self::registerPermission(new Permission(self::ALTAY . ".command.kill.self", "Allows the user to commit suicide", Permission::DEFAULT_TRUE), $kill);
+		self::registerPermission(new Permission(self::ALTAY . ".command.kill.other", "Allows the user to kill other players"), $kill);
 		$kill->recalculatePermissibles();
 
 		self::registerPermission(new Permission(self::ROOT . ".command.me", "Allows the user to perform a chat action", Permission::DEFAULT_TRUE), $commands);
