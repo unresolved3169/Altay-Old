@@ -26,7 +26,6 @@ namespace pocketmine\command\utils;
 
 use pocketmine\command\CommandSender;
 use pocketmine\entity\Entity;
-use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\Player;
 
@@ -63,11 +62,11 @@ class CommandSelector{
 			case CommandSelector::ALL_PLAYERS:
 				return $sender->getServer()->getOnlinePlayers();
 			case CommandSelector::ALL_ENTITIES:
-				$level = self::getLevelFromSender($sender);
+				$level = self::getPosFromSender($sender)->getLevel();
 				return array_filter($level->getEntities(), function($value) use ($entityType) : bool{ return $value instanceof $entityType; });
 			case CommandSelector::CLOSEST_PLAYER:
 				$pos = self::getPosFromSender($sender);
-				return $sender instanceof $entityType ? [$sender] : [$pos->getLevel()->getNearestEntity($pos, 1000, $entityType)]; // hmm
+				return $sender instanceof $entityType ? [$sender] : [$pos->getLevel()->getNearestEntity($pos, 100, $entityType)]; // hmm
 			case CommandSelector::RANDOM_PLAYER:
 				$players = $sender->getServer()->getOnlinePlayers();
 				return [$players[array_rand($players)]];
@@ -79,13 +78,8 @@ class CommandSelector{
 		}
 	}
 
-	public static function getLevelFromSender(CommandSender $sender) : ?Level{
-		$level = "getLevel";
-		return is_callable([$sender, $level]) ? $sender->{$level}() : $sender->getServer()->getDefaultLevel();
-	}
-
 	public static function getPosFromSender(CommandSender $sender) : Position{
-		return $sender instanceof Position ? $sender : self::getLevelFromSender($sender)->getSafeSpawn();
+		return $sender instanceof Position ? $sender : $sender->getServer()->getDefaultLevel()->getSafeSpawn();
 	}
 
 	/**
