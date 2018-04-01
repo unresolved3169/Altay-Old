@@ -47,6 +47,7 @@ abstract class Mob extends Living{
 	protected function initEntity(){
 		parent::initEntity();
 
+		$this->jumpVelocity = $this->jumpVelocity + ($this->width / 10) + $this->getAdditionalJumpVelocity(); // hmmmmmm
 		$this->behaviors = $this->getNormalBehaviors();
 		$this->targetBehaviors = $this->getTargetBehaviors();
 		$this->navigator = new EntityNavigator($this);
@@ -221,6 +222,7 @@ abstract class Mob extends Living{
 				$this->setMotion(new Vector3(0,0.2,0));
 			}elseif(!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
 				if($this->onGround and $this->motionY === 0){
+					$this->server->getLogger()->debug("Jump Velocity: ".$this->getJumpVelocity());
 					$this->motionY += $this->getJumpVelocity(); // shortcut jump
 				}
 			}else{
@@ -234,5 +236,9 @@ abstract class Mob extends Living{
 	 */
 	public function getNavigator() : EntityNavigator{
 		return $this->navigator;
+	}
+
+	public function getAdditionalJumpVelocity() : float{
+		return 0.01;
 	}
 }
