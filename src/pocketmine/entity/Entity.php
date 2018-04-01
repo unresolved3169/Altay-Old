@@ -490,7 +490,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	protected $constructed = false;
 
 	/** @var float */
-	protected $entityCollisionReduction = 0.001;
+	protected $entityCollisionReduction = 0;
 
 
 	public function __construct(Level $level, CompoundTag $nbt){
@@ -1222,10 +1222,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 					$d1 = $d1 * (1.0 - $this->entityCollisionReduction);
 
 					$this->motionX -= $d0;
-					$this->motionz -= $d1;
+					$this->motionZ -= $d1;
 
 					$entity->motionX += $d0;
-					$entity->motionz += $d1;
+					$entity->motionZ += $d1;
 				}
 			}
 		}
