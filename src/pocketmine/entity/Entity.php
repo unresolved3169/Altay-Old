@@ -489,6 +489,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/** @var bool */
 	protected $constructed = false;
 
+	/** @var float */
+	protected $entityCollisionReduction = 0.001;
+
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->constructed = true;
@@ -626,6 +629,20 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->recalculateBoundingBox();
 
 		$this->propertyManager->setFloat(self::DATA_SCALE, $value);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isRiding() : bool{
+		return $this->getDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING);
+	}
+
+	/**
+	 * @param bool $value
+	 */
+	public function setRiding(bool $value){
+		$this->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING, $value);
 	}
 
 	public function getBoundingBox(){
@@ -1028,6 +1045,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$hasUpdate = false;
 
 		$this->checkBlockCollision();
+		$this->checkEntityCollision();
 
 		if($this->y <= -16 and $this->isAlive()){
 			$ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_VOID, 10);
@@ -1175,6 +1193,41 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$pk->motion = $this->getMotion();
 
 			$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
+		}
+	}
+
+	/**
+	 * @param Entity $entity
+	 */
+	protected function applyEntityCollision(Entity $entity){
+		if(!$this->isRiding() and !$entity->isRiding()){
+			if(!($entity instanceof Player and $entity->isSpectator()) and !($this instanceof Player and $this->isSpectator())){
+				$d0 = $entity->x - $this->x;
+				$d1 = $entity->z - $this->z;
+				$d2 = abs(max($d0, $d1));
+
+				if($d2 >= 0.009999999776482582){
+					$d2 = sqrt($d2);
+					$d0 = $d0 / $d2;
+					$d1 = $d1 / $d2;
+					$d3 = 1 / $d2;
+
+					if($d3 > 1) $d3 = 1;
+
+					$d0 = $d0 * $d3;
+					$d1 = $d1 * $d3;
+					$d0 = $d0 * 0.05000000074505806;
+					$d1 = $d1 * 0.05000000074505806;
+					$d0 = $d0 * (1.0 - $this->entityCollisionReduction);
+					$d1 = $d1 * (1.0 - $this->entityCollisionReduction);
+
+					$this->motionX -= $d0;
+					$this->motionz -= $d1;
+
+					$entity->motionX += $d0;
+					$entity->motionz += $d1;
+				}
+			}
 		}
 	}
 
@@ -1479,8 +1532,27 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return $this->eyeHeight;
 	}
 
-	public function moveFlying(){ //TODO
+	public function moveFlying(float $strafe, float $forward, float $friction) : bool{
+		$f = $strafe * $strafe + $forward * $forward;
+		if($f >=  1.0){
+			$f = sqrt($f);
 
+			if($f < 1) $f = 1;
+
+			$f = $friction / $f;
+			$strafe *= $f;
+			$forward *= $f;
+
+			$f1 = sin($this->yaw * pi() / 180);
+			$f2 = cos($this->yaw * pi() / 180);
+
+			$this->motionX += $strafe * $f2 - $forward * $f1;
+			$this->motionZ += $forward * $f2 + $strafe * $f1;
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public function onCollideWithPlayer(Player $player){
@@ -1673,6 +1745,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->checkChunks();
 		$this->checkBlockCollision();
+		$this->checkEntityCollision();
 		$this->checkGroundState($movX, $movY, $movZ, $dx, $dy, $dz);
 		$this->updateFallState($dy, $this->onGround);
 
@@ -1754,6 +1827,12 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$this->motionX += $vector->x * $d;
 			$this->motionY += $vector->y * $d;
 			$this->motionZ += $vector->z * $d;
+		}
+	}
+
+	protected function checkEntityCollision(){
+		foreach ($this->level->getCollidingEntities($this->getBoundingBox(), $this) as $e){
+			$this->applyEntityCollision($e);
 		}
 	}
 
