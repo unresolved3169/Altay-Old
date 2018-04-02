@@ -30,21 +30,21 @@ use pocketmine\math\RayTraceResult;
 
 class ProjectileHitBlockEvent extends ProjectileHitEvent{
 
-    /** @var Block */
-    private $blockHit;
+	/** @var Block */
+	private $blockHit;
 
-    public function __construct(Projectile $entity, RayTraceResult $rayTraceResult, Block $blockHit){
-        parent::__construct($entity, $rayTraceResult);
-        $this->blockHit = $blockHit;
-    }
+	public function __construct(Projectile $entity, RayTraceResult $rayTraceResult, Block $blockHit){
+		parent::__construct($entity, $rayTraceResult);
+		$this->blockHit = $blockHit;
+	}
 
-    /**
-     * Returns the Block struck by the projectile.
-     * Hint: to get the block face hit, look at the RayTraceResult.
-     *
-     * @return Block
-     */
-    public function getBlockHit() : Block{
-        return $this->blockHit;
-    }
+	/**
+	 * Returns the Block struck by the projectile.
+	 * Hint: to get the block face hit, look at the RayTraceResult.
+	 *
+	 * @return Block
+	 */
+	public function getBlockHit() : Block{
+		return $this->blockHit;
+	}
 }

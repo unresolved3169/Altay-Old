@@ -54,7 +54,6 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerEditBookEvent;
-use pocketmine\event\player\PlayerEntityInteractEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -70,18 +69,16 @@ use pocketmine\event\player\PlayerToggleGlideEvent;
 use pocketmine\event\player\PlayerToggleSneakEvent;
 use pocketmine\event\player\PlayerToggleSprintEvent;
 use pocketmine\event\player\PlayerTransferEvent;
+use pocketmine\event\player\PlayerInteractEntityEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\event\Timings;
 use pocketmine\form\Form;
-use pocketmine\inventory\BigCraftingGrid;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantTransaction;
-use pocketmine\inventory\transaction\TradingTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
@@ -163,6 +160,7 @@ use pocketmine\resourcepacks\ResourcePack;
 use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\tile\ItemFrame;
+use pocketmine\timings\Timings;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
 
@@ -1521,10 +1519,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->isCollided = $this->onGround;
 	}
 
-	protected function checkBlockCollision(){
-		foreach($this->getBlocksAround() as $block){
-			$block->onEntityCollide($this);
-		}
+	public function canBeMovedByCurrents() : bool{
+		return false; //currently has no server-side movement
 	}
 
 	protected function checkNearEntities(int $tickDiff){
@@ -2024,8 +2020,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->achievements[$achievement->getName()] = $achievement->getValue() !== 0;
 		}
 
-		$this->namedtag->setLong("lastPlayed", (int) floor(microtime(true) * 1000));
-
 		$this->sendPlayStatus(PlayStatusPacket::LOGIN_SUCCESS);
 
 		$this->loggedIn = true;
@@ -2338,21 +2332,24 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					}
 				}
 
-				if($this->craftingTransaction->getPrimaryOutput() !== null){
-					//we get the actions for this in several packets, so we can't execute it until we get the result
+				if($packet->isFinalCraftingPart){
+					//we get the actions for this in several packets, so we need to wait until we have all the pieces before
+					//trying to execute it
 
-					$this->craftingTransaction->execute();
+					$result = $this->craftingTransaction->execute();
+					if(!$result){
+						$this->server->getLogger()->debug("Failed to execute crafting transaction from " . $this->getName());
+					}
+
 					$this->craftingTransaction = null;
+					return $result;
 				}
+
 				return true;
 			case "Enchant":
 				$enchantTransaction = new EnchantTransaction($this, $actions);
 				$enchantTransaction->execute();
 				break;
-			case "Trading":
-				$tradingTransaction = new TradingTransaction($this, $actions);
-				$tradingTransaction->execute();
-				return true;
 			default:
 				if($this->craftingTransaction !== null){
 					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
@@ -2513,11 +2510,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
-						$item = $packet->trData->itemInHand;
+						$item = $this->inventory->getItemInHand();
 						$clickPos = $packet->trData->clickPos;
 						$slot = $packet->trData->hotbarSlot;
 
-						$ev = new PlayerEntityInteractEvent($this, $target, $item, $clickPos, $slot);
+						$ev = new PlayerInteractEntityEvent($this, $target, $item, $clickPos, $slot);
 
 						if(!$this->canInteract($target, 8)){
 							$ev->setCancelled();
@@ -3942,7 +3939,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->cursorInventory = new PlayerCursorInventory($this);
 		$this->addWindow($this->cursorInventory, ContainerIds::CURSOR, true);
 
-		$this->craftingGrid = new CraftingGrid($this);
+		$this->craftingGrid = new CraftingGrid($this, CraftingGrid::SIZE_SMALL);
 
 		//TODO: more windows
 	}
@@ -3973,8 +3970,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->craftingGrid->clearAll();
 		}
 
-		if($this->craftingGrid instanceof BigCraftingGrid){
-			$this->craftingGrid = new CraftingGrid($this);
+		if($this->craftingGrid->getGridWidth() > CraftingGrid::SIZE_SMALL){
+			$this->craftingGrid = new CraftingGrid($this, CraftingGrid::SIZE_SMALL);
 		}
 	}
 

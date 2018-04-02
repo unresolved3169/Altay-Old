@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -73,6 +74,7 @@ use pocketmine\command\defaults\VanillaCommand;
 use pocketmine\command\defaults\VersionCommand;
 use pocketmine\command\defaults\WhitelistCommand;
 use pocketmine\command\defaults\XpCommand;
+use pocketmine\command\utils\NoSelectorMatchException;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Server;
@@ -95,58 +97,58 @@ class SimpleCommandMap implements CommandMap{
 
 	private function setDefaultCommands(){
 		$this->registerAll("pocketmine", [
-		    new BanCommand("ban"),
-            new BanIpCommand("ban-ip"),
-            new BanListCommand("banlist"),
-            new ClearCommand("clear"),
-            new DefaultGamemodeCommand("defaultgamemode"),
-            new DeopCommand("deop"),
-            new DifficultyCommand("difficulty"),
-            new EffectCommand("effect"),
-            new EnchantCommand("enchant"),
-            new GamemodeCommand("gamemode"),
-            new GiveCommand("give"),
-            new HelpCommand("help"),
-            new KickCommand("kick"),
-            new KillCommand("kill"),
-            new ListCommand("list"),
-            new MeCommand("me"),
-            new OpCommand("op"),
+			new BanCommand("ban"),
+			new BanIpCommand("ban-ip"),
+			new BanListCommand("banlist"),
+			new ClearCommand("clear"),
+			new DefaultGamemodeCommand("defaultgamemode"),
+			new DeopCommand("deop"),
+			new DifficultyCommand("difficulty"),
+			new EffectCommand("effect"),
+			new EnchantCommand("enchant"),
+			new GamemodeCommand("gamemode"),
+			new GiveCommand("give"),
+			new HelpCommand("help"),
+			new KickCommand("kick"),
+			new KillCommand("kill"),
+			new ListCommand("list"),
+			new MeCommand("me"),
+			new OpCommand("op"),
 			new PlaySoundCommand("playsound"),
-            new StopSoundCommand("stopsound"),
-            new PardonCommand("pardon"),
-            new PardonIpCommand("pardon-ip"),
-            new ParticleCommand("particle"),
-            new PingCommand("ping"),
-            new PluginsCommand("plugins"),
-            new ReloadCommand("reload"),
-            new SaveCommand("save-all"),
-            new SaveOffCommand("save-off"),
-            new SaveOnCommand("save-on"),
-            new SayCommand("say"),
-            new SeedCommand("seed"),
-            new SetBlockCommand("setblock"),
-            new SetWorldSpawnCommand("setworldspawn"),
-            new SpawnpointCommand("spawnpoint"),
-            new StopCommand("stop"),
-            new TeleportCommand("tp"),
-            new TellCommand("tell"),
-            new TimeCommand("time"),
-            new TimingsCommand("timings"),
-            new TitleCommand("title"),
-            new TransferServerCommand("transferserver"),
-            new VersionCommand("version"),
-            new WhitelistCommand("whitelist"),
-            new XpCommand("xp")
+			new StopSoundCommand("stopsound"),
+			new PardonCommand("pardon"),
+			new PardonIpCommand("pardon-ip"),
+			new ParticleCommand("particle"),
+			new PingCommand("ping"),
+			new PluginsCommand("plugins"),
+			new ReloadCommand("reload"),
+			new SaveCommand("save-all"),
+			new SaveOffCommand("save-off"),
+			new SaveOnCommand("save-on"),
+			new SayCommand("say"),
+			new SeedCommand("seed"),
+			new SetBlockCommand("setblock"),
+			new SetWorldSpawnCommand("setworldspawn"),
+			new SpawnpointCommand("spawnpoint"),
+			new StopCommand("stop"),
+			new TeleportCommand("tp"),
+			new TellCommand("tell"),
+			new TimeCommand("time"),
+			new TimingsCommand("timings"),
+			new TitleCommand("title"),
+			new TransferServerCommand("transferserver"),
+			new VersionCommand("version"),
+			new WhitelistCommand("whitelist"),
+			new XpCommand("xp")
 		]);
 
 		if($this->server->getAltayProperty("developer.commands", true)){
-		    $this->registerAll("altay", [
-		        new ExtractPluginCommand("extractplugin"),
-                new MakePluginCommand("makeplugin"),
-                new MakeServerCommand("makeserver")
-            ]);
-        }
+			$this->registerAll("altay", [
+				new ExtractPluginCommand("extractplugin"),
+				new MakePluginCommand("makeplugin"),
+				new MakeServerCommand("makeserver")
+			]);
+		}
 
 		if($this->server->getProperty("debug.commands", false)){
 			$this->registerAll("pocketmine", [
@@ -281,6 +283,8 @@ class SimpleCommandMap implements CommandMap{
 			$target->execute($sender, $sentCommandLabel, $args);
 		}catch(InvalidCommandSyntaxException $e){
 			$sender->sendMessage($this->server->getLanguage()->translateString("commands.generic.usage", [$target->getUsage()]));
+		}catch(NoSelectorMatchException $e){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%".$e->getMessage()));
 		}catch(\Throwable $e){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.exception"));
 			$this->server->getLogger()->critical($this->server->getLanguage()->translateString("pocketmine.command.exception", [$commandLine, (string) $target, $e->getMessage()]));

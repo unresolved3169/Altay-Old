@@ -32,9 +32,6 @@ use pocketmine\Player;
  * Represents an action involving a change that applies in some way to an inventory or other item-source.
  */
 abstract class InventoryAction{
-
-	/** @var float */
-	protected $creationTime;
 	/** @var Item */
 	protected $sourceItem;
 	/** @var Item */
@@ -43,12 +40,6 @@ abstract class InventoryAction{
 	public function __construct(Item $sourceItem, Item $targetItem){
 		$this->sourceItem = $sourceItem;
 		$this->targetItem = $targetItem;
-
-		$this->creationTime = microtime(true);
-	}
-
-	public function getCreationTime() : float{
-		return $this->creationTime;
 	}
 
 	/**

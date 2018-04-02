@@ -33,9 +33,7 @@ use pocketmine\Player;
 /**
  * Called when a player interacts with an entity
  */
-class PlayerEntityInteractEvent extends PlayerEvent implements Cancellable{
-	public static $handlerList = null;
-
+class PlayerInteractEntityEvent extends PlayerEvent implements Cancellable{
 	/** @var Entity */
 	protected $entity;
 	/** @var Item */
@@ -82,6 +80,8 @@ class PlayerEntityInteractEvent extends PlayerEvent implements Cancellable{
 	}
 
 	/**
+	 * Returns the hotbar slot number used to tap/click the entity
+	 *
 	 * @return int
 	 */
 	public function getSlot() : int{

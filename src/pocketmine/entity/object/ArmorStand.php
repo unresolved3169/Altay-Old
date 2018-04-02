@@ -117,6 +117,8 @@ class ArmorStand extends Living{
 	}
 
 	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
+		$player->getInventory()->sendContents($player);
+
 		if($player->isSneaking()){
 			$pose = $this->getPose();
 			if(++$pose >= 13){
@@ -172,8 +174,8 @@ class ArmorStand extends Living{
 						$playerInv->addItem(clone $this->equipment->getItemInHand());
 
 						$ic = clone $item;
-						$playerInv->setItemInHand($ic);
 						$this->equipment->setItemInHand($ic->pop());
+						$playerInv->setItemInHand($ic);
 					}
 				}else{
 					$old = clone $this->armorInventory->getItem($type);
@@ -195,18 +197,9 @@ class ArmorStand extends Living{
 		return $this->propertyManager->getInt(self::DATA_ARMOR_STAND_POSE);
 	}
 
-	public function onUpdate(int $currentTick): bool{
-		if(($hasUpdated = parent::onUpdate($currentTick))){
-			if($this->isAffectedByGravity()){
-				if($this->level->getBlock($this->getSide(Vector3::SIDE_DOWN)) === Item::AIR){
-					$this->applyGravity();
-					$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
-				}
-			}
-			return true;
-		}
-
-		return $hasUpdated;
+	protected function applyGravity(){
+		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
+		parent::applyGravity();
 	}
 
 	public function saveNBT(){
@@ -224,12 +217,8 @@ class ArmorStand extends Living{
 		$this->namedtag->setTag($poseTag);
 	}
 
-	public function kill(){
-		$dropVector = $this->add(0.5, 0.5, 0.5);
-		$items = array_merge($this->equipment->getContents(), $this->armorInventory->getContents(), [ItemFactory::get(Item::ARMOR_STAND)]);
-		$this->level->dropItems($dropVector, $items);
-
-		return parent::kill();
+	public function getDrops() : array{
+		return array_merge($this->equipment->getContents(), $this->armorInventory->getContents(), [ItemFactory::get(Item::ARMOR_STAND)]);
 	}
 
 	public function attack(EntityDamageEvent $source){
@@ -250,8 +239,9 @@ class ArmorStand extends Living{
 		}
 	}
 
-	public function spawnTo(Player $player){
-		parent::spawnTo($player);
+	protected function sendSpawnPacket(Player $player): void{
+		parent::sendSpawnPacket($player);
+
 		$this->equipment->sendContents($player);
 	}
 
@@ -272,9 +262,5 @@ class ArmorStand extends Living{
 
 			return -1; // mainhand
 		}
-	}
-
-	public function hasMovementUpdate() : bool{
-		return false;
 	}
 }

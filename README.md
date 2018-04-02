@@ -1,4 +1,4 @@
-<h1>Altay<img src="https://resmim.net/f/I95Oym.png" height="64" width="64" align="left"></img></h1>
+<h1>Altay<img src="http://fs1.directupload.net/images/180401/urn5z9ic.png" height="64" width="64" align="left"></img></h1>
 <br />
 
 Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10.x. Altay is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).
@@ -23,23 +23,24 @@ Example servers running Altay
  - [x] Boats
  - [x] BossbarAPI
  - [x] Command Parameters
- - [x] Elytra
- - [x] EnchantmentTable
- - [x] Events
-    - [x] InventoryClickEvent
- - [x] Fireworks
- - [x] Forms
- - [x] Hopper
- - [x] Virtual Inventory
  - [x] Commands
    - [x] /clear
    - [x] /playsound
    - [x] /stopsound
    - [x] /setblock
- - [ ] Trading
+ - [x] Elytra
+ - [x] Enchantment Table
+ - [x] Events
+    - [x] InventoryClickEvent
+    - [x] PlayerInteractEntityEvent (Credits: @CortexPE)
+ - [x] Fireworks
+ - [x] Forms
+ - [x] Hopper
+ - [x] Virtual Inventory
+ - [x] Trading
    - [x] Trade
-   - [ ] Level Upgrade
-   - [ ] Use++
+   - [x] Level Upgrade
+   - [x] Use++
  - [ ] Beacons
  - [ ] Config Auto Updater
  - [ ] Entity Behaviors (MobAI)
