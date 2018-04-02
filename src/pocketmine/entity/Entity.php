@@ -1464,6 +1464,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->setForceMovementUpdate();
 		$this->scheduleUpdate();
 	}
+	
+	public function onControlledByPlayer(Player $player, Vector2 $rotation) : void{
+		
+	}
 
 	/**
 	 * Flags the entity as needing a movement update on the next tick. Setting this forces a movement update even if the
@@ -1831,7 +1835,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function checkEntityCollision(){
-		foreach ($this->level->getCollidingEntities($this->getBoundingBox(), $this) as $e){
+		foreach ($this->level->getCollidingEntities($this->getBoundingBox()->grow(0.3,0.3,0.3), $this) as $e){
 			$this->applyEntityCollision($e);
 		}
 	}
