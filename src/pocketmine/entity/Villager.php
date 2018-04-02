@@ -24,8 +24,8 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
-use pocketmine\inventory\TradeItems;
 use pocketmine\inventory\TradeInventory;
+use pocketmine\inventory\TradeItems;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;

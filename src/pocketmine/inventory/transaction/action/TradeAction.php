@@ -28,7 +28,6 @@ use pocketmine\event\inventory\InventoryClickEvent;
 use pocketmine\inventory\TradeInventory;
 use pocketmine\item\Item;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\Player;
 
 class TradeAction extends InventoryAction{
