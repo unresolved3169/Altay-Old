@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\network\mcpe;
 
 use pocketmine\event\server\DataPacketReceiveEvent;
-use pocketmine\event\Timings;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
@@ -67,6 +66,7 @@ use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\timings\Timings;
 
 class PlayerNetworkSessionAdapter extends NetworkSession{
 

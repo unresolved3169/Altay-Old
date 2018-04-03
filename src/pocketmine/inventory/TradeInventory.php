@@ -29,10 +29,12 @@ use pocketmine\nbt\NetworkLittleEndianNBTStream;
 use pocketmine\network\mcpe\protocol\UpdateTradePacket;
 use pocketmine\Player;
 
-class TradingInventory extends BaseInventory{
+class TradeInventory extends BaseInventory{
 
 	/** @var Villager */
 	protected $holder;
+	/** @var bool */
+	protected $isBuy = false;
 
 	public function __construct(Villager $villager){
 		$this->holder = $villager;
@@ -52,11 +54,12 @@ class TradingInventory extends BaseInventory{
 		if($tag !== null){
 			parent::onOpen($who);
 
+			$this->holder->getDataPropertyManager()->setLong(Villager::DATA_TRADING_PLAYER_EID, $who->getId());
 			$pk = new UpdateTradePacket();
 			$pk->windowId = $who->getWindowId($this);
 			$pk->varint1 = 0;
 			$pk->varint2 = 0;
-			$pk->isWilling = false;
+			$pk->isWilling = $this->holder->isWilling();
 			$pk->traderEid = $this->holder->getId();
 			$pk->playerEid = $who->getId();
 			$pk->displayName = $this->holder->getDisplayName();
@@ -70,5 +73,28 @@ class TradingInventory extends BaseInventory{
 		}else{
 			parent::onClose($who);
 		}
+	}
+
+	public function onClose(Player $who) : void{
+		// TODO : THIS IS NOT WORK
+		$this->holder->getDataPropertyManager()->removeProperty(Villager::DATA_TRADING_PLAYER_EID);
+		if($this->isBuy){
+			$this->holder->updateTradeTier();
+			$this->isBuy = false;
+		}
+		parent::onClose($who);
+	}
+
+	public function getHolder() : Villager{
+		return $this->holder;
+	}
+
+	/**
+	 * For update trade tier
+	 *
+	 * @param bool $isBuy
+	 */
+	public function setBuy(bool $isBuy) : void{
+		$this->isBuy = $isBuy;
 	}
 }

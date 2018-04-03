@@ -46,18 +46,18 @@ class EffectCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.effect");
 
 		$this->setOverloads([
-		    new CommandOverload("clear", [
-                CommandParameterUtils::getPlayerParameter(false),
-		        CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("clear", ["clear"]))
-            ]),
-            new CommandOverload("effect", [
-                CommandParameterUtils::getPlayerParameter(false),
-                CommandParameterUtils::getStringEnumParameter("effect", CommandEnumValues::getEffect()),
-                CommandParameterUtils::getIntParameter("seconds"),
-                CommandParameterUtils::getIntParameter("amplifier"),
-                CommandParameterUtils::getBoolEnum()
-            ])
-        ]);
+			new CommandOverload("clear", [
+				CommandParameterUtils::getPlayerParameter(false),
+				CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("clear", ["clear"]))
+			]),
+			new CommandOverload("effect", [
+				CommandParameterUtils::getPlayerParameter(false),
+				CommandParameterUtils::getStringEnumParameter("effect", CommandEnumValues::getEffect()),
+				CommandParameterUtils::getIntParameter("seconds"),
+				CommandParameterUtils::getIntParameter("amplifier"),
+				CommandParameterUtils::getBoolEnum()
+			])
+		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -99,23 +99,18 @@ class EffectCommand extends VanillaCommand{
 		$amplification = 0;
 
 		if(count($args) >= 3){
-			$duration = ((int) $args[2]) * 20; //ticks
-			if($duration < 0 or $duration > INT32_MAX){
-				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.num.invalid", [$args[2]]));
-				return true;
+			if(($d = $this->getBoundedInt($sender, $args[2], 0, INT32_MAX)) === null){
+				return false;
 			}
+			$duration = $d * 20; //ticks
 		}else{
 			$duration = null;
 		}
 
 		if(count($args) >= 4){
-			$amplification = (int) $args[3];
-			if($amplification > 255){
-				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.num.tooBig", [(string) $args[3], "255"]));
-				return true;
-			}elseif($amplification < 0){
-				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.num.tooSmall", [(string) $args[3], "0"]));
-				return true;
+			$amplification = $this->getBoundedInt($sender, $args[3], 0, 255);
+			if($amplification === null){
+				return false;
 			}
 		}
 
@@ -140,10 +135,10 @@ class EffectCommand extends VanillaCommand{
 			$player->removeEffect($effect->getId());
 			$sender->sendMessage(new TranslationContainer("commands.effect.success.removed", [$effect->getName(), $player->getDisplayName()]));
 		}else{
-            $instance = new EffectInstance($effect, $duration, $amplification, $visible);
-            $player->addEffect($instance);
-            self::broadcastCommandMessage($sender, new TranslationContainer("%commands.effect.success", [$effect->getName(), $instance->getAmplifier(), $player->getDisplayName(), $instance->getDuration() / 20, $effect->getId()]));
-        }
+			$instance = new EffectInstance($effect, $duration, $amplification, $visible);
+			$player->addEffect($instance);
+			self::broadcastCommandMessage($sender, new TranslationContainer("%commands.effect.success", [$effect->getName(), $instance->getAmplifier(), $player->getDisplayName(), $instance->getDuration() / 20, $effect->getId()]));
+		}
 
 
 		return true;

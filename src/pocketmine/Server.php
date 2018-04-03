@@ -43,8 +43,6 @@ use pocketmine\event\level\LevelInitEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\event\Timings;
-use pocketmine\event\TimingsHandler;
 use pocketmine\form\element\Label;
 use pocketmine\form\FormIcon;
 use pocketmine\form\ServerSettingsForm;
@@ -99,6 +97,8 @@ use pocketmine\scheduler\FileWriteTask;
 use pocketmine\scheduler\SendUsageTask;
 use pocketmine\scheduler\ServerScheduler;
 use pocketmine\tile\Tile;
+use pocketmine\timings\Timings;
+use pocketmine\timings\TimingsHandler;
 use pocketmine\updater\AutoUpdater;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Config;
@@ -765,14 +765,14 @@ class Server{
 		if($this->shouldSavePlayerData()){
 			if(file_exists($path . "$name.dat")){
 				try{
-                    $nbt = new BigEndianNBTStream();
-                    $compound = $nbt->readCompressed(file_get_contents($path . "$name.dat"));
-                    if(!($compound instanceof CompoundTag)){
-                        throw new \RuntimeException("Invalid data found in \"$name.dat\", expected " . CompoundTag::class . ", got " . (is_object($compound) ? get_class($compound) : gettype($compound)));
-                    }
+					$nbt = new BigEndianNBTStream();
+					$compound = $nbt->readCompressed(file_get_contents($path . "$name.dat"));
+					if(!($compound instanceof CompoundTag)){
+						throw new \RuntimeException("Invalid data found in \"$name.dat\", expected " . CompoundTag::class . ", got " . (is_object($compound) ? get_class($compound) : gettype($compound)));
+					}
 
-                    return $compound;
-                }catch(\Throwable $e){ //zlib decode error / corrupt data
+					return $compound;
+				}catch(\Throwable $e){ //zlib decode error / corrupt data
 					rename($path . "$name.dat", $path . "$name.dat.bak");
 					$this->logger->notice($this->getLanguage()->translateString("pocketmine.data.playerCorrupted", [$name]));
 				}
@@ -837,9 +837,9 @@ class Server{
 			$nbt = new BigEndianNBTStream();
 			try{
 				if($async){
-                    $this->getScheduler()->scheduleAsyncTask(new FileWriteTask($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData())));
+					$this->getScheduler()->scheduleAsyncTask(new FileWriteTask($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData())));
 				}else{
-                    file_put_contents($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData()));
+					file_put_contents($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData()));
 				}
 			}catch(\Throwable $e){
 				$this->logger->critical($this->getLanguage()->translateString("pocketmine.data.saveError", [$name, $e->getMessage()]));
@@ -1043,7 +1043,7 @@ class Server{
 		$provider = LevelProviderManager::getProvider($path);
 
 		if($provider === null){
-            $this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, "Cannot identify format of world"]));
+			$this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, "Cannot identify format of world"]));
 
 			return false;
 		}
@@ -1152,18 +1152,18 @@ class Server{
 	 * @return bool
 	 */
 	public function isLevelGenerated(string $name) : bool{
-	    if(trim($name) === ""){
-	        return false;
-	    }
-        $path = $this->getDataPath() . "worlds/" . $name . "/";
-        if(!($this->getLevelByName($name) instanceof Level)){
-            return is_dir($path) and !empty(array_filter(scandir($path, SCANDIR_SORT_NONE), function ($v){
-                    return $v !== ".." and $v !== ".";
-                }));
-        }
+		if(trim($name) === ""){
+			return false;
+		}
+		$path = $this->getDataPath() . "worlds/" . $name . "/";
+		if(!($this->getLevelByName($name) instanceof Level)){
+			return is_dir($path) and !empty(array_filter(scandir($path, SCANDIR_SORT_NONE), function ($v){
+					return $v !== ".." and $v !== ".";
+				}));
+		}
 
-        return true;
-    }
+		return true;
+	}
 
 	/**
 	 * Searches all levels for the entity with the specified ID.
@@ -1210,11 +1210,11 @@ class Server{
 	}
 
 	public function getAltayProperty(string $variable, $defaultValue = null){
-	    if(!array_key_exists($variable, $this->altayPropertyCache)){
-	        $this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
-	    }
+		if(!array_key_exists($variable, $this->altayPropertyCache)){
+			$this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
+		}
 
-	    return $this->altayPropertyCache[$variable] ?? $defaultValue;
+		return $this->altayPropertyCache[$variable] ?? $defaultValue;
 	}
 
 	/**
@@ -1549,7 +1549,7 @@ class Server{
 					$poolSize = max(1, $processors);
 				}
 			}else{
-			    $poolSize = (int) $poolSize;
+				$poolSize = (int) $poolSize;
 			}
 
 			ServerScheduler::$WORKERS = $poolSize;
@@ -1649,6 +1649,7 @@ class Server{
 
 
 			Timings::init();
+			TimingsHandler::setEnabled((bool) $this->getProperty("settings.enable-profiling", false));
 			Enchantment::init();
 
 			$this->consoleSender = new ConsoleCommandSender();
@@ -1667,7 +1668,6 @@ class Server{
 
 			$this->pluginManager = new PluginManager($this, $this->commandMap);
 			$this->pluginManager->subscribeToPermission(Server::BROADCAST_CHANNEL_ADMINISTRATIVE, $this->consoleSender);
-			$this->pluginManager->setUseTimings($this->getProperty("settings.enable-profiling", false));
 			$this->profilingTickRate = (float) $this->getProperty("settings.profile-report-trigger", 20);
 			$this->pluginManager->registerInterface(FolderPluginLoader::class);
 			$this->pluginManager->registerInterface(PharPluginLoader::class);
@@ -2153,7 +2153,11 @@ class Server{
 
 		if($this->getProperty("network.upnp-forwarding", false)){
 			$this->logger->info("[UPnP] Trying to port forward...");
-			UPnP::PortForward($this->getPort());
+			try{
+				UPnP::PortForward($this->getPort());
+			}catch(\Throwable $e){
+				$this->logger->alert("UPnP portforward failed: " . $e->getMessage());
+			}
 		}
 
 		$this->tickCounter = 0;
@@ -2325,7 +2329,7 @@ class Server{
 	 * @param Player $player
 	 */
 	public function removePlayer(Player $player){
-	    unset($this->players[spl_object_hash($player)]);
+		unset($this->players[spl_object_hash($player)]);
 	}
 
 	public function addOnlinePlayer(Player $player){

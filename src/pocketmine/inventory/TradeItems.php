@@ -277,4 +277,8 @@ class TradeItems{
 		return $new;
 	}
 
+	public static function getItems() : array{
+		return self::$items;
+	}
+
 }

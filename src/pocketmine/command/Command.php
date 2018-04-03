@@ -30,12 +30,12 @@ namespace pocketmine\command;
 use pocketmine\command\overload\CommandData;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
-use pocketmine\event\TimingsHandler;
 use pocketmine\lang\TextContainer;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\timings\TimingsHandler;
 use pocketmine\utils\TextFormat;
 
 abstract class Command{

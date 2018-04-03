@@ -133,13 +133,13 @@ class CraftingDataPacket extends DataPacket{
 			$stream->putSlot($item);
 		}
 
-		$results = $recipe->getAllResults();
+		$results = $recipe->getResults();
 		$stream->putUnsignedVarInt(count($results));
 		foreach($results as $item){
 			$stream->putSlot($item);
 		}
 
-		$stream->putUUID($recipe->getId());
+		$stream->put(str_repeat("\x00", 16)); //Null UUID
 
 		return CraftingDataPacket::ENTRY_SHAPELESS;
 	}
@@ -154,13 +154,13 @@ class CraftingDataPacket extends DataPacket{
 			}
 		}
 
-		$results = $recipe->getAllResults();
+		$results = $recipe->getResults();
 		$stream->putUnsignedVarInt(count($results));
 		foreach($results as $item){
 			$stream->putSlot($item);
 		}
 
-		$stream->putUUID($recipe->getId());
+		$stream->put(str_repeat("\x00", 16)); //Null UUID
 
 		return CraftingDataPacket::ENTRY_SHAPED;
 	}
