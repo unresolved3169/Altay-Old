@@ -226,7 +226,7 @@ abstract class Mob extends Living{
 					$this->motionY += $this->getJumpVelocity(); // shortcut jump
 				}
 			}else{
-				$this->motionX = $this->motionZ = 0;
+				//$this->motionX = $this->motionZ = 0;
 			}
 		}
 	}
