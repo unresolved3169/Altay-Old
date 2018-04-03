@@ -28,9 +28,6 @@ use pocketmine\item\Item;
 use pocketmine\Player;
 
 class Obsidian extends Solid{
-
-	public const MAX_PORTAL_SIZE = 23;
-
 	protected $id = self::OBSIDIAN;
 
 	public function __construct(int $meta = 0){
@@ -61,6 +58,7 @@ class Obsidian extends Solid{
 		if($item->getId() === Item::FLINT_AND_STEEL){
 			// TODO : Check for portal
 		}
+
 		return false;
 	}
 }
