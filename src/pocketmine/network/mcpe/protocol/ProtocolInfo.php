@@ -30,18 +30,10 @@ namespace pocketmine\network\mcpe\protocol;
 interface ProtocolInfo{
 
 	/**
-	 * NOTE TO DEVELOPERS
-	 * Do not waste your time or ours submitting pull requests changing game and/or protocol version numbers.
-	 * Pull requests changing game and/or protocol version numbers will be closed.
-	 *
-	 * This file is generated automatically, do not edit it manually.
-	 */
-
-	/**
 	 * Actual Minecraft: BE protocol version
 	 */
 	public const CURRENT_PROTOCOL = 223;
-	public const ACCEPTED_PROTOCOLS = [200, 201, 223];
+	public const ACCEPTED_PROTOCOLS = [200, 201, 223, 240];
 	/**
 	 * Current Minecraft BE version reported by the server. This is usually the earliest currently supported version.
 	 */
