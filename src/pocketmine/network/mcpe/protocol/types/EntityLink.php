@@ -39,7 +39,7 @@ class EntityLink{
 	/** @var bool */
 	public $bool1;
 
-	public function __construct(int $riddenId = null, int $riderId = null, int $type = null, bool $bool1 = null){
+	public function __construct(int $riddenId = null, int $riderId = null, int $type = null, bool $bool1 = false){
 		$this->riddenId = $riddenId;
 		$this->riderId = $riderId;
 		$this->type = $type;

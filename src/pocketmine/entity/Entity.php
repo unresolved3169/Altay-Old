@@ -495,13 +495,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	protected $entityCollisionReduction = 0;
 
 	/** @var Entity */
-	protected $ridingEntity;
-
+	protected $ridingEntity = null;
 	/** @var Entity */
-	protected $riddenByEntity;
-
-	protected $entityRiderYawDelta = 0;
+	protected $riddenByEntity = null;
+	/** @var float */
 	protected $entityRiderPitchDelta = 0;
+	/** @var float */
+	protected $entityRiderYawDelta = 0;
 
 
 	public function __construct(Level $level, CompoundTag $nbt){
@@ -642,49 +642,27 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->propertyManager->setFloat(self::DATA_SCALE, $value);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isRiding() : bool{
 		return $this->getDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING);
 	}
 
-	/**
-	 * @param bool $value
-	 */
-	public function setRiding(bool $value){
+	public function setRiding(bool $value) : void{
 		$this->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING, $value);
 	}
 
-	/**
-	 * @return null|Entity
-	 */
-	public function getRidingEntity(): ?Entity
-	{
+	public function getRidingEntity(): ?Entity{
 		return $this->ridingEntity;
 	}
 
-	/**
-	 * @param null|Entity $ridingEntity
-	 */
-	public function setRidingEntity(?Entity $ridingEntity = null): void
-	{
+	public function setRidingEntity(?Entity $ridingEntity = null): void{
 		$this->ridingEntity = $ridingEntity;
 	}
 
-	/**
-	 * @return null|Entity
-	 */
-	public function getRiddenByEntity(): ?Entity
-	{
+	public function getRiddenByEntity(): ?Entity{
 		return $this->riddenByEntity;
 	}
 
-	/**
-	 * @param null|Entity $riddenByEntity
-	 */
-	public function setRiddenByEntity(?Entity $riddenByEntity = null): void
-	{
+	public function setRiddenByEntity(?Entity $riddenByEntity = null): void{
 		$this->riddenByEntity = $riddenByEntity;
 	}
 
@@ -1542,10 +1520,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->fallDistance = 0.0;
 	}
 
-	/**
-	 * @param float $distanceThisTick
-	 * @param bool  $onGround
-	 */
 	protected function updateFallState(float $distanceThisTick, bool $onGround){
 		if($this instanceof Player) return;
 		if($onGround){
@@ -1558,51 +1532,31 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 	}
 
-	/**
-	 * @param Entity $entity
-	 * @param bool $send
-	 */
-	public function mountEntity(Entity $entity, bool $send = true) : void{
-		if($this->ridingEntity != null){
-			$this->ridingEntity->setRiddenByEntity(null);
+	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDE, bool $send = true) : void{
+		if($this->ridingEntity == null and $entity !== $this){
+			$this->setRidingEntity($entity);
+			$entity->setRiddenByEntity($this);
 
-			if($entity !== $this){
-				$this->setRidingEntity($entity);
-				$entity->setRiddenByEntity($this);
+			if($send){
+				$this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, $this->getMountedYOffset(), 0));
+				$this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
+				$this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
+				$this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
 
-				if($send){
-					$this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, $this->getMountedYOffset(), 0));
-					$this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
-					$this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
-					$this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
+				$this->setRiding(true);
+				$this->ridingEntity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_WASD_CONTROLLED, true);
 
-					$this->setRiding(true);
-					$this->ridingEntity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_WASD_CONTROLLED, true);
+				$pk = new SetEntityLinkPacket();
+				$pk->link = new EntityLink($this->ridingEntity->getId(), $this->id, $type);
+				$this->server->broadcastPacket($this->getViewers(), $pk);
 
-					$link = new EntityLink($this->ridingEntity->getId(), $this->id, EntityLink::TYPE_RIDE);
-					$pk = new SetEntityLinkPacket();
-					$pk->link = $link;
-
-					$this->server->broadcastPacket($this->getViewers(), $pk);
-
-					if($this instanceof Player){
-						$this->sendDataPacket($pk);
-					}
+				if($this instanceof Player){
+					$this->dataPacket($pk);
 				}
 			}
 		}
 	}
 
-	/**
-	 * @return float
-	 */
-	public function getMountedYOffset() : float{
-		return $this->height * 0.75;
-	}
-
-	/**
-	 * @param bool $send
-	 */
 	public function dismountEntity(bool $send = true) : void{
 		if($this->ridingEntity !== null){
 			$this->ridingEntity->setRiddenByEntity(null);
@@ -1615,10 +1569,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 				$this->propertyManager->removeProperty(self::DATA_RIDER_MAX_ROTATION);
 				$this->propertyManager->removeProperty(self::DATA_RIDER_MIN_ROTATION);
 
-				$link = new EntityLink($this->ridingEntity->getId(), $this->id, EntityLink::TYPE_REMOVE);
 				$pk = new SetEntityLinkPacket();
-				$pk->link = $link;
-
+				$pk->link = new EntityLink($this->ridingEntity->getId(), $this->id, EntityLink::TYPE_REMOVE);
 				$this->server->broadcastPacket($this->getViewers(), $pk);
 
 				if($this instanceof Player){
@@ -1630,9 +1582,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->setRidingEntity(null);
 	}
 
+	public function getMountedYOffset() : float{
+		return $this->height * 0.75;
+	}
+
 	public function updateRiderPosition() : void{
 		if($this->riddenByEntity !== null){
-			$this->riddenByEntity->setPosition(new Vector3($this->x, $this->y + $this->getMountedYOffset(), $this->z));
+			$this->riddenByEntity->setPosition($this->add(0, $this->getMountedYOffset(), 0)); // is it need @EmreTr1 ?
 		}
 	}
 
@@ -1648,50 +1604,30 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$this->entityRiderYawDelta += $this->ridingEntity->yaw -  $this->ridingEntity->lastYaw;
 
 			for($this->entityRiderPitchDelta += $this->ridingEntity->pitch - $this->ridingEntity->lastPitch; $this->entityRiderYawDelta >= 180; $this->entityRiderYawDelta -= 360){
-	          //empty
+				//empty
 			}
 
-            while($this->entityRiderYawDelta < -180)
-			{
+			while($this->entityRiderYawDelta < -180){
 				$this->entityRiderYawDelta += 360;
 			}
 
-			while($this->entityRiderPitchDelta >= 180)
-			{
+			while($this->entityRiderPitchDelta >= 180){
 				$this->entityRiderPitchDelta -= 360;
 			}
 
-			while($this->entityRiderPitchDelta < -180)
-			{
+			while($this->entityRiderPitchDelta < -180){
 				$this->entityRiderPitchDelta += 360;
 			}
 
 			$d0 = $this->entityRiderYawDelta * 0.5;
-            $d1 = $this->entityRiderPitchDelta * 0.5;
-            $f = 10;
+			$d1 = $this->entityRiderPitchDelta * 0.5;
+			$f = 10;
 
-            if($d0 > $f)
-            {
-            	$d0 = $f;
-            }
+			$d0 = ($d0 > $f) ? $f : (($d0 < -$f) ? -$f : $d0);
+			$d1 = ($d1 > $f) ? $f : (($d1 < -$f) ? -$f : $d1);
 
-            if($d0 < -$f)
-            {
-            	$d0 = -$f;
-            }
-
-            if($d1 > $f)
-            {
-            	$d1 = $f;
-            }
-
-            if($d1 < -$f)
-            {
-            	$d1 = -$f;
-            }
-
-            $this->entityRiderYawDelta -= $d0;
-            $this->entityRiderPitchDelta -= $d1;
+			$this->entityRiderYawDelta -= $d0;
+			$this->entityRiderPitchDelta -= $d1;
 		}
 	}
 

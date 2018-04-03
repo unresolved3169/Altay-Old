@@ -38,7 +38,6 @@ use pocketmine\entity\Living;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\Skin;
-use pocketmine\entity\Vehicle;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -134,7 +133,6 @@ use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\ResourcePacksInfoPacket;
 use pocketmine\network\mcpe\protocol\RespawnPacket;
 use pocketmine\network\mcpe\protocol\ServerSettingsResponsePacket;
-use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
 use pocketmine\network\mcpe\protocol\SetSpawnPositionPacket;
 use pocketmine\network\mcpe\protocol\SetTitlePacket;
@@ -143,7 +141,6 @@ use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
-use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAttributesPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
@@ -357,9 +354,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	/** @var int */
 	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
-
-	/** @var int */
-	protected $vehicleEid = 0;
 
 	/**
 	 * @return TranslationContainer|string
@@ -2235,8 +2229,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->isTeleporting = false;
 			}
 
-			$packet->ridingEid = $this->vehicleEid;
-			$packet->mode = ($this->vehicleEid == 0 ? MovePlayerPacket::MODE_NORMAL : MovePlayerPacket::MODE_PITCH);
+			$packet->ridingEid = $this->ridingEntity !== null ? $this->ridingEntity->getId() : 0;
+			$packet->mode = ($packet->ridingEid == 0 ? MovePlayerPacket::MODE_NORMAL : MovePlayerPacket::MODE_PITCH);
 			$packet->onGround = !$this->isGliding() && $this->onGround;
 
 			$packet->yaw = fmod($packet->yaw, 360);
@@ -2688,7 +2682,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
-				$this->unlinkFromVehicle($target);
+				if($this->ridingEntity === $target){
+					$this->dismountEntity();
+				}
 				break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
@@ -4154,27 +4150,5 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function getDeviceOS() : int{
 		return $this->deviceOS;
-	}
-
-	public function linkToVehicle(Vehicle $vehicle, int $type = EntityLink::TYPE_RIDE){
-		$this->setGenericFlag(self::DATA_FLAG_RIDING);
-		$this->vehicleEid = $vehicle->getId();
-
-		$pk = new SetEntityLinkPacket();
-		$pk->link = new EntityLink($vehicle->getId(), $this->getId(), $type, false);
-		$this->dataPacket($pk);
-	}
-
-	public function unlinkFromVehicle(Vehicle $vehicle = null){
-		$vehicle = $vehicle ?? $this->level->getEntity($this->vehicleEid);
-
-		$this->setGenericFlag(self::DATA_FLAG_RIDING, false);
-		$this->vehicleEid = 0;
-
-		$vehicle->onLeave($this);
-
-		$pk = new SetEntityLinkPacket();
-		$pk->link = new EntityLink($vehicle->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
-		$this->server->broadcastPacket($this->getViewers(), $pk);
 	}
 }
