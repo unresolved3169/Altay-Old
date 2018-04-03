@@ -74,7 +74,9 @@ use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
 use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -492,6 +494,15 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/** @var float */
 	protected $entityCollisionReduction = 0;
 
+	/** @var Entity */
+	protected $ridingEntity;
+
+	/** @var Entity */
+	protected $riddenByEntity;
+
+	protected $entityRiderYawDelta = 0;
+	protected $entityRiderPitchDelta = 0;
+
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->constructed = true;
@@ -643,6 +654,38 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 */
 	public function setRiding(bool $value){
 		$this->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING, $value);
+	}
+
+	/**
+	 * @return null|Entity
+	 */
+	public function getRidingEntity(): ?Entity
+	{
+		return $this->ridingEntity;
+	}
+
+	/**
+	 * @param null|Entity $ridingEntity
+	 */
+	public function setRidingEntity(?Entity $ridingEntity = null): void
+	{
+		$this->ridingEntity = $ridingEntity;
+	}
+
+	/**
+	 * @return null|Entity
+	 */
+	public function getRiddenByEntity(): ?Entity
+	{
+		return $this->riddenByEntity;
+	}
+
+	/**
+	 * @param null|Entity $riddenByEntity
+	 */
+	public function setRiddenByEntity(?Entity $riddenByEntity = null): void
+	{
+		$this->riddenByEntity = $riddenByEntity;
 	}
 
 	public function getBoundingBox(){
@@ -1464,10 +1507,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->setForceMovementUpdate();
 		$this->scheduleUpdate();
 	}
-	
-	public function onControlledByPlayer(Player $player, Vector2 $rotation) : void{
-		
-	}
 
 	/**
 	 * Flags the entity as needing a movement update on the next tick. Setting this forces a movement update even if the
@@ -1520,6 +1559,143 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	/**
+	 * @param Entity $entity
+	 * @param bool $send
+	 */
+	public function mountEntity(Entity $entity, bool $send = true) : void{
+		if($this->ridingEntity != null){
+			$this->ridingEntity->setRiddenByEntity(null);
+
+			if($entity !== $this){
+				$this->setRidingEntity($entity);
+				$entity->setRiddenByEntity($this);
+
+				if($send){
+					$this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, $this->getMountedYOffset(), 0));
+					$this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
+					$this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
+					$this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
+
+					$this->setRiding(true);
+					$this->ridingEntity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_WASD_CONTROLLED, true);
+
+					$link = new EntityLink($this->ridingEntity->getId(), $this->id, EntityLink::TYPE_RIDE);
+					$pk = new SetEntityLinkPacket();
+					$pk->link = $link;
+
+					$this->server->broadcastPacket($this->getViewers(), $pk);
+
+					if($this instanceof Player){
+						$this->sendDataPacket($pk);
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @return float
+	 */
+	public function getMountedYOffset() : float{
+		return $this->height * 0.75;
+	}
+
+	/**
+	 * @param bool $send
+	 */
+	public function dismountEntity(bool $send = true) : void{
+		if($this->ridingEntity !== null){
+			$this->ridingEntity->setRiddenByEntity(null);
+
+			if($send){
+				$this->setRiding(false);
+				$this->ridingEntity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_WASD_CONTROLLED, false);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_SEAT_POSITION);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_ROTATION_LOCKED);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_MAX_ROTATION);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_MIN_ROTATION);
+
+				$link = new EntityLink($this->ridingEntity->getId(), $this->id, EntityLink::TYPE_REMOVE);
+				$pk = new SetEntityLinkPacket();
+				$pk->link = $link;
+
+				$this->server->broadcastPacket($this->getViewers(), $pk);
+
+				if($this instanceof Player){
+					$this->sendDataPacket($pk);
+				}
+			}
+		}
+
+		$this->setRidingEntity(null);
+	}
+
+	public function updateRiderPosition() : void{
+		if($this->riddenByEntity !== null){
+			$this->riddenByEntity->setPosition(new Vector3($this->x, $this->y + $this->getMountedYOffset(), $this->z));
+		}
+	}
+
+	public function updateRidden() : void{
+		if($this->ridingEntity === null) return;
+
+		if(!$this->ridingEntity->isAlive()){
+			$this->ridingEntity = null;
+		}else{
+			$this->motionX = $this->motionY = $this->motionZ = 0;
+
+			$this->ridingEntity->updateRiderPosition();
+			$this->entityRiderYawDelta += $this->ridingEntity->yaw -  $this->ridingEntity->lastYaw;
+
+			for($this->entityRiderPitchDelta += $this->ridingEntity->pitch - $this->ridingEntity->lastPitch; $this->entityRiderYawDelta >= 180; $this->entityRiderYawDelta -= 360){
+	          //empty
+			}
+
+            while($this->entityRiderYawDelta < -180)
+			{
+				$this->entityRiderYawDelta += 360;
+			}
+
+			while($this->entityRiderPitchDelta >= 180)
+			{
+				$this->entityRiderPitchDelta -= 360;
+			}
+
+			while($this->entityRiderPitchDelta < -180)
+			{
+				$this->entityRiderPitchDelta += 360;
+			}
+
+			$d0 = $this->entityRiderYawDelta * 0.5;
+            $d1 = $this->entityRiderPitchDelta * 0.5;
+            $f = 10;
+
+            if($d0 > $f)
+            {
+            	$d0 = $f;
+            }
+
+            if($d0 < -$f)
+            {
+            	$d0 = -$f;
+            }
+
+            if($d1 > $f)
+            {
+            	$d1 = $f;
+            }
+
+            if($d1 < -$f)
+            {
+            	$d1 = -$f;
+            }
+
+            $this->entityRiderYawDelta -= $d0;
+            $this->entityRiderPitchDelta -= $d1;
+		}
+	}
+
+	/**
 	 * Called when a falling entity hits the ground.
 	 *
 	 * @param float $fallDistance
@@ -1529,6 +1705,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function handleLavaMovement(){ //TODO
+
+	}
+
+	public function handleWaterMovement(){ //TODO
 
 	}
 
