@@ -109,6 +109,8 @@ class AddPlayerPacket extends DataPacket{
 	protected function encodePayload(){
 		$this->putUUID($this->uuid);
 		$this->putString($this->username);
+		$this->putString($this->thirdPartyName);
+		$this->putVarInt($this->platform);
 		$this->putEntityUniqueId($this->entityUniqueId ?? $this->entityRuntimeId);
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		$this->putString($this->platformChatId);

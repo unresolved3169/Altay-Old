@@ -148,5 +148,10 @@ interface ProtocolInfo{
 	public const SERVER_SETTINGS_RESPONSE_PACKET = 0x67;
 	public const SHOW_PROFILE_PACKET = 0x68;
 	public const SET_DEFAULT_GAME_TYPE_PACKET = 0x69;
+	public const REMOVE_OBJECTIVE_PACKET = 0x6a;
+	public const SET_DISPLAY_OBJECTIVE_PACKET = 0x6b;
+	public const SET_SCORE_PACKET = 0x6c;
+	public const LAB_TABLE_PACKET = 0x6d;
+	public const UPDATE_BLOCK_SYNCED_PACKET = 0x6e;
 
 }
