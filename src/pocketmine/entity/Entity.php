@@ -176,6 +176,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public const DATA_MAX_STRENGTH = 75; //int
 	/* 76 (int)
 	 * 77 (int) */
+	public const DATA_ARMOR_STAND_POSE = 78; //int
 
 
 	public const DATA_FLAG_ONFIRE = 0;
