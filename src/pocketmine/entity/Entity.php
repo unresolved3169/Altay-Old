@@ -1513,6 +1513,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		);
 	}
 
+	public function hasEntityColissionUpdate() : bool{
+		return true;
+	}
+
 	public function canTriggerWalking() : bool{
 		return true;
 	}
@@ -1951,9 +1955,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 	}
 
-	protected function checkEntityCollision(){
-		foreach ($this->level->getCollidingEntities($this->getBoundingBox()->grow(0.3,0.3,0.3), $this) as $e){
-			$this->applyEntityCollision($e);
+	protected function checkEntityCollision() : void{
+		if($this->hasEntityColissionUpdate()){
+			foreach($this->level->getCollidingEntities($this->getBoundingBox()->grow(0.3,0.3,0.3), $this) as $e){
+				$this->applyEntityCollision($e);
+			}
 		}
 	}
 
