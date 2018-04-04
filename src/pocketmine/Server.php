@@ -1437,6 +1437,36 @@ class Server{
 		}, $microseconds);
 	}
 
+	public function about() : void{
+		$about = [
+			date(DATE_RFC822),
+			$this->getPocketMineVersion(),
+			$this->getCodename(),
+			$this->getVersion(),
+			implode(", ", ProtocolInfo::ACCEPTED_PROTOCOLS),
+			$this->getIp(),
+			$this->getPort(),
+			$this->getMotd(),
+			$this->getOnlineMode() ? "true" : "false",
+			extension_loaded("OpenSSL") ? "true" : "false",
+			$this->getApiVersion(),
+			$this->getLanguage()->getName() . " (".$this->getLanguage()->getLang().")",
+			\Phar::running(true) === "" ? "src" : "phar"
+		];
+
+		$yazi = base64_decode("CsKnYuKUjOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUkCAgwqdiLS0gTG9hZGVkOiBQcm9wZXJ0aWVzIGFuZCBDb25maWd1cmF0aW9uIC0tCsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICBfIF8gICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2RGF0ZTogwqdmeyUwfQrCp2LilIJ7fSAgICAgICAgICAgICAgL1wgICB8IHwgfCAgICAgICAgICAgICAgICAgICAgICAgICDCp2LilIIgIMKnNlZlcnNpb246IMKnZnslMX0gwqc2Q29kZW5hbWU6IMKnZnslMn0Kwqdi4pSCe30gICAgICAgICAgICAgLyAgXCAgfCB8IHxfIF9fIF8gXyAgIF8gICAgICAgICAgICAgwqdi4pSCICDCpzZNQ1BFOiDCp2Z7JTN9IMKnNlByb3RvY29sOiDCp2Z7JTR9CsKnYuKUgnt9ICAgICAgICAgICAgLyAvXCBcIHwgfCBfXy8gX2AgfCB8IHwgfCAgICAgICAgICAgIMKnYuKUgiAgwqc2TG9jYWwgSVA6IMKnZnslNX0gwqc2UG9ydDogwqdmeyU2fQrCp2LilIJ7fSAgICAgICAgICAgLyBfX19fIFx8IHwgfHwgKF98IHwgfF98IHwgICAgICAgICAgICDCp2LilIIgIMKnNk1PVEQ6IMKnZnslN30Kwqdi4pSCe30gICAgICAgICAgL18vICAgIFxfXF98XF9fXF9fLF98XF9fLCB8ICAgICAgICAgICAgwqdi4pSCICDCpzZBdXRoZW50aWNhdGlvbjogwqdmeyU4fQrCp2LilIJ7fSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgX18vIHwgICAgICAgICAgICDCp2LilIIgIMKnNlNTTCBFeHRlbnNpb246IMKnZnslOX0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfF9fXy8gICAgICAgICAgICAgwqdi4pSCICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgwqdi4pSCICDCpzZBUEkgVmVyc2lvbjogwqdmeyUxMH0Kwqdi4pSCwqdhICAgICDCpzlTdXBwb3J0OiDCp2ZnaXRodWIuY29tL1R1cmFuaWNUZWFtL0FsdGF5ICAgICAgIMKnYuKUgiAgwqc2TGFuZ3VhZ2U6IMKnZnslMTF9CsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2UGFja2FnZTogwqdmeyUxMn0Kwqdi4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSYICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0=");
+
+		foreach($about as $index => $value){
+			$yazi = str_ireplace("{%$index}", $value, $yazi);
+		}
+
+		$randColor = "0123456789abcdef";
+		$randColor = $randColor{mt_rand(0, 15)};
+		$yazi = str_replace("{}", TextFormat::ESCAPE.$randColor, $yazi);
+
+		$this->logger->info($yazi);
+	}
+
 	/**
 	 * @param \ClassLoader    $autoloader
 	 * @param \ThreadedLogger $logger
@@ -1535,6 +1565,9 @@ class Server{
 
 			$this->forceLanguage = (bool) $this->getProperty("settings.force-language", false);
 			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
+
+			$this->about();
+
 			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
 
 			$this->memoryManager = new MemoryManager($this);
