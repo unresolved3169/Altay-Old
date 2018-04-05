@@ -44,9 +44,9 @@ class SetBlockCommand extends VanillaCommand{
 			[],
 			[
 				new CommandParameter("position", CommandParameter::ARG_TYPE_POSITION, false),
-				new CommandParameter("tileName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getBlock()),
+				new CommandParameter("tileName", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getBlock()),
 				new CommandParameter("tileData", CommandParameter::ARG_TYPE_INT),
-				new CommandParameter("mode", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getSetBlockMode())
+				new CommandParameter("mode", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getSetBlockMode())
 			]
 		);
 		$this->setPermission("altay.command.setblock");

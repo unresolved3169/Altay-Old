@@ -47,7 +47,7 @@ class ClearCommand extends VanillaCommand{
 			[
 				// 3 parameter for Altay (normal 4)
 				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
-				new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, true, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getItem()),
+				new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, true, CommandEnumValues::getItem()),
 				new CommandParameter("maxCount", CommandParameter::ARG_TYPE_INT)
 			]
 		);

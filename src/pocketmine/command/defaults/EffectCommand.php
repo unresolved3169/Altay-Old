@@ -48,14 +48,14 @@ class EffectCommand extends VanillaCommand{
 		$this->setOverloads([
 			new CommandOverload("clear", [
 				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-				new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("clear", ["clear"]))
+				new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("clear", ["clear"]))
 			]),
 			new CommandOverload("effect", [
 				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-				new CommandParameter("effect", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getEffect()),
+				new CommandParameter("effect", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getEffect()),
 				new CommandParameter("seconds", CommandParameter::ARG_TYPE_INT),
 				new CommandParameter("amplifier", CommandParameter::ARG_TYPE_INT),
-				new CommandParameter("bool", CommandParameter::ARG_TYPE_VALUE, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getBoolean())
+				new CommandParameter("bool", CommandParameter::ARG_TYPE_VALUE, false, CommandEnumValues::getBoolean())
 			])
 		]);
 	}

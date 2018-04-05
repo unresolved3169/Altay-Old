@@ -47,7 +47,7 @@ class EnchantCommand extends VanillaCommand{
 		$this->setOverloads([
 			new CommandOverload("enchantmentName", [
 				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
-				new CommandParameter("enchantName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getEnchant()),
+				new CommandParameter("enchantName", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getEnchant()),
 				new CommandParameter("level", CommandParameter::ARG_TYPE_INT)
 			]),
 			// NOT VANILLA

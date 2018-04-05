@@ -47,20 +47,20 @@ class TitleCommand extends VanillaCommand{
 		$this->setOverloads([
 			new CommandOverload("clear", [
 				$playerParameter,
-				new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("clear", ["clear"]))
+				new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("clear", ["clear"]))
 			]),
 			new CommandOverload("reset", [
 				$playerParameter,
-				new CommandParameter("reset", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("reset", ["reset"]))
+				new CommandParameter("reset", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("reset", ["reset"]))
 			]),
 			new CommandOverload("title", [
 				$playerParameter,
-				new CommandParameter("TitleSet", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getTitleSet()),
+				new CommandParameter("TitleSet", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getTitleSet()),
 				new CommandParameter("titleText", CommandParameter::ARG_TYPE_RAWTEXT, false)
 			]),
 			new CommandOverload("times", [
 				$playerParameter,
-				new CommandParameter("times", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("times", ["times"])),
+				new CommandParameter("times", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("times", ["times"])),
 				new CommandParameter("fadeIn", CommandParameter::ARG_TYPE_INT),
 				new CommandParameter("stay", CommandParameter::ARG_TYPE_INT),
 				new CommandParameter("fadeOut", CommandParameter::ARG_TYPE_INT)

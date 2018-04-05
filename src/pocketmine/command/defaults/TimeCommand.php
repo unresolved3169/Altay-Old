@@ -50,20 +50,20 @@ class TimeCommand extends VanillaCommand{
 
 		$this->setOverloads([
 			new CommandOverload("add", [
-				new CommandParameter("add", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("add", ["add"])),
+				new CommandParameter("add", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("add", ["add"])),
 				$amount
 			]),
 			new CommandOverload("set", [
-				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("set", ["set"])),
+				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("set", ["set"])),
 				$amount
 			]),
 			new CommandOverload("set1", [
-				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("set", ["set"])),
-				new CommandParameter("time", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getTimeSpec())
+				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("set", ["set"])),
+				new CommandParameter("time", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getTimeSpec())
 			]),
 			new CommandOverload("query", [
-				new CommandParameter("querySE", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("query", ["query"])),
-				new CommandParameter("query", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getTimeSpec()),
+				new CommandParameter("querySE", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("query", ["query"])),
+				new CommandParameter("query", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getTimeSpec()),
 			])
 		]);
 	}

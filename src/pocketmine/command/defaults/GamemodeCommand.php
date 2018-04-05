@@ -48,7 +48,7 @@ class GamemodeCommand extends VanillaCommand{
 
 		$this->setOverloads([
 			new CommandOverload("GameMode", [
-				new CommandParameter("gameMode", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getGameMode()),
+				new CommandParameter("gameMode", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getGameMode()),
 				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET)
 			]),
 			new CommandOverload("int", [

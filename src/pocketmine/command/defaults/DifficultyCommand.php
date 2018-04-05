@@ -45,7 +45,7 @@ class DifficultyCommand extends VanillaCommand{
 
 		$this->setOverloads([
 			new CommandOverload("string", [
-				new CommandParameter("difficulty", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getDifficulty())
+				new CommandParameter("difficulty", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getDifficulty())
 			]),
 			new CommandOverload("int", [
 				new CommandParameter("difficulty", CommandParameter::ARG_TYPE_INT, false)

@@ -33,7 +33,7 @@ class CommandData{
     /** @var string */
     public $commandDescription;
     /** @var int */
-    public $flags;
+    public $flags; // TODO
     /** @var int */
     public $permission; // TODO : Add permission level
     /** @var array */

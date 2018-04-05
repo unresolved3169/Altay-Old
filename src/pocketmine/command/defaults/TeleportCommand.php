@@ -49,7 +49,7 @@ class TeleportCommand extends VanillaCommand{
 		// TODO : Vanilla ile uyumlu olsun && optimize
 
 		$destination = new CommandParameter("destination", CommandParameter::ARG_TYPE_POSITION, false);
-		$facing = new CommandParameter("facing", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("facing", ["facing"]));
+		$facing = new CommandParameter("facing", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("facing", ["facing"]));
 		$lookAtEntity = new CommandParameter("lookAtEntity", CommandParameter::ARG_TYPE_TARGET, false);
 		$yRot = new CommandParameter("yRot", CommandParameter::ARG_TYPE_VALUE);
 
