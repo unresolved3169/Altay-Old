@@ -25,7 +25,7 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-use pocketmine\command\overload\CommandData;
+use pocketmine\command\Command;
 use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
@@ -38,11 +38,8 @@ class AvailableCommandsPacket extends DataPacket{
 	/** @var int */
 	private $enumValuesCount = 0;
 
-	/**
-	 * @var CommandData[]
-	 * List of command data, including name, description, alias indexes and parameters.
-	 */
-	public $commandData = [];
+	/** @var Command[] */
+	public $commands = [];
 
 	protected function putEnum(CommandEnum $enum, NetworkBinaryStream $stream){
 		$stream->putString($enum->enumName);
@@ -73,33 +70,34 @@ class AvailableCommandsPacket extends DataPacket{
 
 		$this->enumValuesCount = 0;
 
-		foreach($this->commandData as $commandData){
-			if($commandData->commandName == "help") continue; // temp fix for 1.2
+		foreach($this->commands as $command){
+			if($command->getName() == "help") continue; // temp fix for 1.2
 
-			$commandStream->putString($commandData->commandName);
-			$commandStream->putString($commandData->commandDescription);
-			$commandStream->putByte($commandData->flags);
-			$commandStream->putByte($commandData->permission);
+			$commandStream->putString($command->getName());
+			$commandStream->putString($command->getDescription());
+			$commandStream->putByte($command->getFlags());
+			$commandStream->putByte($command->getPermissionLevel());
 
 			$enumIndex = -1;
 
-			if(count($commandData->aliases) > 0){
-				$commandData->aliases[] = $commandData->commandName;
+			if(count($command->getAliases()) > 0){
+				$aliases = $command->getAliases();
+				$aliases[] = $command->getName();
 				// recalculate enum indexs
-				$aliases = [];
-				foreach($commandData->aliases as $alias){
+				$aliasEVC = [];
+				foreach($aliases as $alias){
 					$enumValues[] = $alias;
-					$aliases[] = $this->enumValuesCount;
+					$aliasEVC[] = $this->enumValuesCount;
 					$this->enumValuesCount++;
 				}
-				$enum = new CommandEnum($commandData->commandName . "CommandAliases", $aliases);
+				$enum = new CommandEnum($command->getName() . "CommandAliases", $aliasEVC);
 				$enums[] = $enum;
 				$enumIndex = count($enums) - 1;
 			}
 
 			$commandStream->putLInt($enumIndex);
 
-			$overloads = $commandData->overloads;
+			$overloads = $command->getOverloads();
 
 			$commandStream->putUnsignedVarInt(count($overloads));
 			/** @var CommandOverload $overload */
@@ -150,7 +148,7 @@ class AvailableCommandsPacket extends DataPacket{
 			$this->putEnum($enum, $extraDataStream);
 		}
 
-		$extraDataStream->putUnsignedVarInt(count($this->commandData));
+		$extraDataStream->putUnsignedVarInt(count($this->commands));
 		$extraDataStream->put($commandStream->buffer);
 
 		return $extraDataStream->buffer;
