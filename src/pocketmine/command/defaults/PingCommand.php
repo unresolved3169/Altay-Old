@@ -25,49 +25,49 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
 class PingCommand extends VanillaCommand{
 
-    public function __construct(string $name){
-        parent::__construct(
-            $name,
-            "%pocketmine.command.ping.description",
-            "%commands.ping.usage",
-            [],
-            [CommandParameterUtils::getPlayerParameter()]
-        );
-        $this->setPermission("altay.command.ping");
-    }
+	public function __construct(string $name){
+		parent::__construct(
+			$name,
+			"%pocketmine.command.ping.description",
+			"%commands.ping.usage",
+			[],
+			[new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET)]
+		);
+		$this->setPermission("altay.command.ping");
+	}
 
-    public function execute(CommandSender $sender, string $commandLabel, array $args){
-        if(!$this->testPermission($sender)){
-            return true;
-        }
+	public function execute(CommandSender $sender, string $commandLabel, array $args){
+		if(!$this->testPermission($sender)){
+			return true;
+		}
 
-        if(count($args) >= 2){
-            throw new InvalidCommandSyntaxException();
-        }
+		if(count($args) >= 2){
+			throw new InvalidCommandSyntaxException();
+		}
 
-        $target = null;
+		$target = null;
 
-        if(count($args) === 1){
-            $target = $sender->getServer()->getPlayer($args[0]);
-        }else{
-            if($sender instanceof Player){
-                $target = $sender;
-            }else{
-                throw new InvalidCommandSyntaxException();
-            }
-        }
+		if(count($args) === 1){
+			$target = $sender->getServer()->getPlayer($args[0]);
+		}else{
+			if($sender instanceof Player){
+				$target = $sender;
+			}else{
+				throw new InvalidCommandSyntaxException();
+			}
+		}
 
-        $ping = $target->getPing();
-        $color = ($ping < 150 ? TextFormat::GREEN : ($ping < 250 ? TextFormat::GOLD : TextFormat::RED));
-        $sender->sendMessage($target->getName()."'s Ping: ".$color.$ping."ms");
+		$ping = $target->getPing();
+		$color = ($ping < 150 ? TextFormat::GREEN : ($ping < 250 ? TextFormat::GOLD : TextFormat::RED));
+		$sender->sendMessage($target->getName()."'s Ping: ".$color.$ping."ms");
 
-        return true;
-    }
+		return true;
+	}
 }

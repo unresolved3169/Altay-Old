@@ -25,9 +25,8 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandEnumValues;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\item\ItemFactory;
 use pocketmine\lang\TranslationContainer;
@@ -42,12 +41,12 @@ class SetBlockCommand extends VanillaCommand{
 			$name,
 			"Changes a block to another block.",
 			"/setblock <position: x y z> <tileName: string> [tileData: int] [oldBlockHandling: string]",
-            [],
+			[],
 			[
-				CommandParameterUtils::getPositionParameter("position", false),
-		        CommandParameterUtils::getStringEnumParameter("tileName", CommandEnumValues::getBlock(), false),
-		        CommandParameterUtils::getIntParameter("tileData"),
-		        CommandParameterUtils::getStringEnumParameter("oldBlockHandling", new CommandEnum("handling", ["destroy", "keep", "replace"]))
+				new CommandParameter("position", CommandParameter::ARG_TYPE_POSITION, false),
+				new CommandParameter("tileName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getBlock()),
+				new CommandParameter("tileData", CommandParameter::ARG_TYPE_INT),
+				new CommandParameter("mode", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getSetBlockMode())
 			]
 		);
 		$this->setPermission("altay.command.setblock");

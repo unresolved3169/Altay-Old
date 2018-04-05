@@ -27,7 +27,7 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\enchantment\EnchantmentInstance;
@@ -45,18 +45,18 @@ class EnchantCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.enchant");
 
 		$this->setOverloads([
-            new CommandOverload("enchantmentName", [
-                CommandParameterUtils::getPlayerParameter(false),
-                CommandParameterUtils::getStringEnumParameter("enchantmentName", CommandEnumValues::getEnchant()),
-                CommandParameterUtils::getIntParameter("level")
-            ]),
-		    // NOT VANILLA
-		    new CommandOverload("enchantmentId", [
-                CommandParameterUtils::getPlayerParameter(false),
-		        CommandParameterUtils::getIntParameter("enchantmentId", false),
-                CommandParameterUtils::getIntParameter("level")
-            ]),
-        ]);
+			new CommandOverload("enchantmentName", [
+				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
+				new CommandParameter("enchantName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getEnchant()),
+				new CommandParameter("level", CommandParameter::ARG_TYPE_INT)
+			]),
+			// NOT VANILLA
+			new CommandOverload("enchantmentId", [
+				new CommandParameter("player", CommandParameter::ARG_TYPE_INT, false),
+				new CommandParameter("enchantmentId", CommandParameter::ARG_TYPE_INT,false),
+				new CommandParameter("level", CommandParameter::ARG_TYPE_INT, false)
+			]),
+		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

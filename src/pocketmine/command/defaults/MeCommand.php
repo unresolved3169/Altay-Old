@@ -25,7 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
@@ -38,8 +38,8 @@ class MeCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.me.description",
 			"%commands.me.usage",
-            [],
-            [CommandParameterUtils::getMessageParameter(false)]
+			[],
+			[new CommandParameter("message", CommandParameter::ARG_TYPE_RAWTEXT, false)]
 		);
 		$this->setPermission("pocketmine.command.me");
 	}

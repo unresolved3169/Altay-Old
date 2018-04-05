@@ -28,7 +28,7 @@ use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\item\ItemFactory;
 use pocketmine\lang\TranslationContainer;
@@ -47,19 +47,19 @@ class GiveCommand extends VanillaCommand{
 		$this->setPermission("pocketmine.command.give");
 
 		$itemName = new CommandOverload("itemName", [
-            CommandParameterUtils::getPlayerParameter(false),
-            CommandParameterUtils::getStringEnumParameter("itemName", CommandEnumValues::getItem()),
-            CommandParameterUtils::getIntParameter("amount"),
-            CommandParameterUtils::getIntParameter("data"),
-            CommandParameterUtils::getJsonParameter("components"),
-        ]);
+			new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+			new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getItem()),
+			new CommandParameter("amount", CommandParameter::ARG_TYPE_INT),
+			//new CommandParameter("data", CommandParameter::ARG_TYPE_INT), not in Altay
+			new CommandParameter("components", CommandParameter::ARG_TYPE_JSON),
+		]);
 		// NOT VANILLA
 		$itemId = clone $itemName;
-		$itemId->setParameter(1, CommandParameterUtils::getIntParameter("itemId", false));
+		$itemId->setParameter(1, new CommandParameter("itemId", CommandParameter::ARG_TYPE_INT, false));
 
 		$this->setOverloads([
-		    $itemName, $itemId
-        ]);
+			$itemName, $itemId
+		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
@@ -72,23 +72,23 @@ class GiveCommand extends VanillaCommand{
 		}
 
 		$player = $sender->getServer()->getPlayer($args[0]);
-        if($player === null){
-            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
-            return true;
-        }
+		if($player === null){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
+			return true;
+		}
 
-        try{
-            $item = ItemFactory::fromString($args[1]);
-        }catch(\InvalidArgumentException $e){
-            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.give.item.notFound", [$args[1]]));
-            return true;
-        }
+		try{
+			$item = ItemFactory::fromString($args[1]);
+		}catch(\InvalidArgumentException $e){
+			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.give.item.notFound", [$args[1]]));
+			return true;
+		}
 
-        if(!isset($args[2])){
-            $item->setCount($item->getMaxStackSize());
-        }else{
-            $item->setCount((int) $args[2]);
-        }
+		if(!isset($args[2])){
+			$item->setCount($item->getMaxStackSize());
+		}else{
+			$item->setCount((int) $args[2]);
+		}
 
 		if(isset($args[3])){
 			$tags = $exception = null;
@@ -107,7 +107,7 @@ class GiveCommand extends VanillaCommand{
 			$item->setNamedTag($tags);
 		}
 
-        //TODO: overflow
+		//TODO: overflow
 		$player->getInventory()->addItem(clone $item);
 
 		Command::broadcastCommandMessage($sender, new TranslationContainer("%commands.give.success", [

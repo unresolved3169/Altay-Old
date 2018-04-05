@@ -1686,7 +1686,6 @@ class Server{
 			Enchantment::init();
 
 			$this->consoleSender = new ConsoleCommandSender();
-			CommandParameterUtils::init();
 			$this->commandMap = new SimpleCommandMap($this);
 
 			Entity::init();

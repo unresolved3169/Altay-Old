@@ -29,7 +29,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\level\Level;
@@ -46,26 +46,26 @@ class TimeCommand extends VanillaCommand{
 		);
 		$this->setPermission("pocketmine.command.time.add;pocketmine.command.time.set;pocketmine.command.time.start;pocketmine.command.time.stop");
 
-		$amount = CommandParameterUtils::getIntParameter("amount");
+		$amount = new CommandParameter("amount", CommandParameter::ARG_TYPE_INT);
 
 		$this->setOverloads([
-		    new CommandOverload("add", [
-                CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("add", ["add"])),
-                $amount
-            ]),
-            new CommandOverload("set", [
-                CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("set", ["set"])),
-                $amount
-            ]),
-            new CommandOverload("set1", [
-                CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("set", ["set"])),
-                CommandParameterUtils::getStringEnumParameter("time", CommandEnumValues::getTimeSpec())
-            ]),
-            new CommandOverload("query", [
-                CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("query", ["query"])),
-                CommandParameterUtils::getStringEnumParameter("query", CommandEnumValues::getTimeQuery())
-            ])
-        ]);
+			new CommandOverload("add", [
+				new CommandParameter("add", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("add", ["add"])),
+				$amount
+			]),
+			new CommandOverload("set", [
+				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("set", ["set"])),
+				$amount
+			]),
+			new CommandOverload("set1", [
+				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("set", ["set"])),
+				new CommandParameter("time", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getTimeSpec())
+			]),
+			new CommandOverload("query", [
+				new CommandParameter("querySE", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, new CommandEnum("query", ["query"])),
+				new CommandParameter("query", CommandParameter::ARG_TYPE_STRING, false, CommandParameter::ARG_FLAG_ENUM, CommandEnumValues::getTimeSpec()),
+			])
+		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
