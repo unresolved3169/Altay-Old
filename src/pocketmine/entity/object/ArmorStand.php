@@ -132,11 +132,11 @@ class ArmorStand extends Living{
 	}
 
 	public function setPose(int $pose) : void{
-		$this->propertyManager->setInt(self::DATA_ARMOR_STAND_POSE, $pose);
+		$this->propertyManager->setInt(self::DATA_ARMOR_STAND_POSE_INDEX, $pose);
 	}
 
 	public function getPose() : int{
-		return $this->propertyManager->getInt(self::DATA_ARMOR_STAND_POSE);
+		return $this->propertyManager->getInt(self::DATA_ARMOR_STAND_POSE_INDEX);
 	}
 
 	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
