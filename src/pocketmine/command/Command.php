@@ -35,6 +35,7 @@ use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\Server;
 use pocketmine\timings\TimingsHandler;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils;
 
 abstract class Command{
 
@@ -111,6 +112,14 @@ abstract class Command{
 	 */
 	public function getName() : string{
 		return $this->name;
+	}
+
+	public function getPermissionLevel() : int{
+		return $this->permissionLevel;
+	}
+
+	public function setPermissionLevel(int $permissionLevel) : void{
+		$this->permissionLevel = $permissionLevel;
 	}
 
 	/**
@@ -301,6 +310,34 @@ abstract class Command{
 	}
 
 	/**
+	 * @return CommandOverload[]
+	 */
+	public function getOverloads() : array{
+		return $this->overloads;
+	}
+
+	public function addOverload(CommandOverload $overload){
+		$this->overloads[$overload->getName()] = $overload;
+	}
+
+	public function removeAllOverload(){
+		$this->overloads = [];
+	}
+
+	public function getOverload(string $overloadName) : ?CommandOverload{
+		return $this->overloads[$overloadName] ?? null;
+	}
+
+	public function setOverloads(array $overloads) : void{
+		Utils::validateObjectArray($overloads, CommandOverload::class);
+		$this->overloads = $overloads;
+	}
+
+	public function getFlags() : int{
+		return $this->flags;
+	}
+
+	/**
 	 * @param CommandSender        $source
 	 * @param TextContainer|string $message
 	 * @param bool                 $sendToSource
@@ -343,40 +380,5 @@ abstract class Command{
 	 */
 	public function __toString() : string{
 		return $this->name;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getOverloads(): array{
-		return $this->overloads;
-	}
-
-	public function addOverload(CommandOverload $overload){
-		$this->overloads[$overload->getName()] = $overload;
-	}
-
-	public function removeAllOverload(){
-		$this->overloads = [];
-	}
-
-	public function getOverload(string $overloadName) : ?CommandOverload{
-		return $this->overloads[$overloadName] ?? null;
-	}
-
-	public function setOverloads(array $overloads): void{
-		$this->overloads = $overloads;
-	}
-
-	public function getPermissionLevel() : int{
-		return $this->permissionLevel;
-	}
-
-	public function setPermissionLevel(int $permissionLevel) : void{
-		$this->permissionLevel = $permissionLevel;
-	}
-
-	public function getFlags() : int{
-		return $this->flags;
 	}
 }
