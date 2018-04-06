@@ -1,43 +1,43 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
 namespace pocketmine\inventory\transaction;
 
 use pocketmine\event\inventory\InventoryTransactionEvent;
-use pocketmine\inventory\transaction\action\SlotChangeAction;
-use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\Inventory;
+use pocketmine\inventory\transaction\action\InventoryAction;
+use pocketmine\inventory\transaction\action\SlotChangeAction;
 use pocketmine\item\Item;
 use pocketmine\Player;
 use pocketmine\Server;
-use pocketmine\utils\MainLogger;
 
 /**
  * This InventoryTransaction only allows doing Transaction between one / two inventories
  */
 class InventoryTransaction{
 	/** @var float */
-	protected $creationTime;
+	private $creationTime;
 	protected $hasExecuted = false;
 	/** @var Player */
 	protected $source;
@@ -113,16 +113,16 @@ class InventoryTransaction{
 	 * @param Item[] $needItems
 	 * @param Item[] $haveItems
 	 *
-	 * @return bool
+	 * @throws TransactionValidationException
 	 */
-	protected function matchItems(array &$needItems, array &$haveItems) : bool{
+	protected function matchItems(array &$needItems, array &$haveItems) : void{
 		foreach($this->actions as $key => $action){
 			if(!$action->getTargetItem()->isNull()){
 				$needItems[] = $action->getTargetItem();
 			}
 
 			if(!$action->isValid($this->source)){
-				return false;
+				throw new TransactionValidationException("Action " . get_class($action) . " is not valid in the current transaction");
 			}
 
 			if(!$action->getSourceItem()->isNull()){
@@ -146,8 +146,6 @@ class InventoryTransaction{
 				}
 			}
 		}
-
-		return true;
 	}
 
 	/**
@@ -159,10 +157,8 @@ class InventoryTransaction{
 	 * multiple slot changes referring to the same slot in a single transaction. These multiples are not even guaranteed
 	 * to be in the correct order (slot splitting in the crafting grid for example, causes the actions to be sent in the
 	 * wrong order), so this method also tries to chain them into order.
-	 *
-	 * @return bool
 	 */
-	protected function squashDuplicateSlotChanges() : bool{
+	protected function squashDuplicateSlotChanges() : void{
 		/** @var SlotChangeAction[][] $slotChanges */
 		$slotChanges = [];
 		/** @var Inventory[] $inventories */
@@ -189,8 +185,7 @@ class InventoryTransaction{
 
 			$targetItem = $this->findResultItem($sourceItem, $list);
 			if($targetItem === null){
-				MainLogger::getLogger()->debug("Failed to compact " . count($list) . " actions for " . $this->source->getName());
-				return false;
+				throw new TransactionValidationException("Failed to compact " . count($list) . " duplicate actions");
 			}
 
 			foreach($list as $action){
@@ -202,8 +197,6 @@ class InventoryTransaction{
 				$this->addAction(new SlotChangeAction($inventory, $slot, $sourceItem, $targetItem));
 			}
 		}
-
-		return true;
 	}
 
 	/**
@@ -233,14 +226,26 @@ class InventoryTransaction{
 	}
 
 	/**
-	 * @return bool
+	 * Verifies that the transaction can execute.
+	 *
+	 * @throws TransactionValidationException
 	 */
-	public function canExecute() : bool{
+	public function validate() : void{
 		$this->squashDuplicateSlotChanges();
 
 		$haveItems = [];
 		$needItems = [];
-		return $this->matchItems($needItems, $haveItems) and count($this->actions) > 0 and count($haveItems) === 0 and count($needItems) === 0;
+		$this->matchItems($needItems, $haveItems);
+		if(count($this->actions) === 0){
+			throw new TransactionValidationException("Inventory transaction must have at least one action to be executable");
+		}
+
+		if(count($haveItems) > 0){
+			throw new TransactionValidationException("Transaction does not balance (tried to destroy some items)");
+		}
+		if(count($needItems) > 0){
+			throw new TransactionValidationException("Transaction does not balance (tried to create some items)");
+		}
 	}
 
 	protected function sendInventories() : void{
@@ -257,12 +262,16 @@ class InventoryTransaction{
 	/**
 	 * Executes the group of actions, returning whether the transaction executed successfully or not.
 	 * @return bool
+	 *
+	 * @throws TransactionValidationException
 	 */
 	public function execute() : bool{
-		if($this->hasExecuted() or !$this->canExecute()){
+		if($this->hasExecuted()){
 			$this->sendInventories();
 			return false;
 		}
+
+		$this->validate();
 
 		if(!$this->callExecuteEvent()){
 			$this->sendInventories();

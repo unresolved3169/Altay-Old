@@ -27,16 +27,15 @@ declare(strict_types=1);
  */
 namespace pocketmine\command;
 
-use pocketmine\command\overload\CommandData;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
-use pocketmine\event\TimingsHandler;
 use pocketmine\lang\TextContainer;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
-use pocketmine\Player;
 use pocketmine\Server;
+use pocketmine\timings\TimingsHandler;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils;
 
 abstract class Command{
 
@@ -78,15 +77,18 @@ abstract class Command{
 	/** @var array */
 	private $overloads = [];
 
-	private $permissionLevel = AdventureSettingsPacket::PERMISSION_NORMAL;
+	private $permissionLevel = AdventureSettingsPacket::PERMISSION_NORMAL; // TODO
 
-    /**
-     * @param string $name
-     * @param string $description
-     * @param string $usageMessage
-     * @param string[] $aliases
-     * @param array|null $parameters
-     */
+	/** @var int */
+	private $flags = 0; // TODO
+
+	/**
+	 * @param string $name
+	 * @param string $description
+	 * @param string $usageMessage
+	 * @param string[] $aliases
+	 * @param array|null $parameters
+	 */
 	public function __construct(string $name, string $description = "", string $usageMessage = null, array $aliases = [], array $parameters = null){
 		$this->name = $name;
 		$this->setLabel($name);
@@ -112,6 +114,14 @@ abstract class Command{
 		return $this->name;
 	}
 
+	public function getPermissionLevel() : int{
+		return $this->permissionLevel;
+	}
+
+	public function setPermissionLevel(int $permissionLevel) : void{
+		$this->permissionLevel = $permissionLevel;
+	}
+
 	/**
 	 * @return string|null
 	 */
@@ -134,13 +144,7 @@ abstract class Command{
 	 */
 	public function testPermission(CommandSender $target) : bool{
 		if($this->testPermissionSilent($target)){
-		    if($target instanceof Player){
-		        if($target->getCommandPermission() >= $this->getPermissionLevel()){
-                    return true;
-                }
-            }else{
-                return true;
-            }
+			return true;
 		}
 
 		if($this->permissionMessage === null){
@@ -285,9 +289,9 @@ abstract class Command{
 	 * @param string $description
 	 */
 	public function setDescription(string $description){
-        if(strlen($description) > 0 and $description{0} == '%'){
-            $description = Server::getInstance()->getLanguage()->translateString($description);
-        }
+		if(strlen($description) > 0 and $description{0} == '%'){
+			$description = Server::getInstance()->getLanguage()->translateString($description);
+		}
 		$this->description = $description;
 	}
 
@@ -303,6 +307,34 @@ abstract class Command{
 	 */
 	public function setUsage(string $usage){
 		$this->usageMessage = $usage;
+	}
+
+	/**
+	 * @return CommandOverload[]
+	 */
+	public function getOverloads() : array{
+		return $this->overloads;
+	}
+
+	public function addOverload(CommandOverload $overload){
+		$this->overloads[$overload->getName()] = $overload;
+	}
+
+	public function removeAllOverload(){
+		$this->overloads = [];
+	}
+
+	public function getOverload(string $overloadName) : ?CommandOverload{
+		return $this->overloads[$overloadName] ?? null;
+	}
+
+	public function setOverloads(array $overloads) : void{
+		Utils::validateObjectArray($overloads, CommandOverload::class);
+		$this->overloads = $overloads;
+	}
+
+	public function getFlags() : int{
+		return $this->flags;
 	}
 
 	/**
@@ -349,39 +381,4 @@ abstract class Command{
 	public function __toString() : string{
 		return $this->name;
 	}
-
-	public function getCommandData() : CommandData{
-	    return new CommandData($this);
-    }
-
-    /**
-     * @return array
-     */
-    public function getOverloads(): array{
-        return $this->overloads;
-    }
-
-    public function addOverload(CommandOverload $overload){
-        $this->overloads[$overload->getName()] = $overload;
-    }
-
-    public function removeAllOverload(){
-        $this->overloads = [];
-    }
-
-    public function getOverload(string $overloadName) : ?CommandOverload{
-        return $this->overloads[$overloadName] ?? null;
-    }
-
-    public function setOverloads(array $overloads): void{
-        $this->overloads = $overloads;
-    }
-
-    public function getPermissionLevel() : int{
-        return $this->permissionLevel;
-    }
-
-    public function setPermissionLevel(int $permissionLevel) : void{
-        $this->permissionLevel = $permissionLevel;
-    }
 }

@@ -38,7 +38,6 @@ use pocketmine\entity\Living;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\Skin;
-use pocketmine\entity\Vehicle;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -54,7 +53,6 @@ use pocketmine\event\player\PlayerChatEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerEditBookEvent;
-use pocketmine\event\player\PlayerEntityInteractEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -70,17 +68,16 @@ use pocketmine\event\player\PlayerToggleGlideEvent;
 use pocketmine\event\player\PlayerToggleSneakEvent;
 use pocketmine\event\player\PlayerToggleSprintEvent;
 use pocketmine\event\player\PlayerTransferEvent;
+use pocketmine\event\player\PlayerInteractEntityEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
-use pocketmine\event\Timings;
 use pocketmine\form\Form;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantTransaction;
-use pocketmine\inventory\transaction\TradingTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
@@ -136,7 +133,6 @@ use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\ResourcePacksInfoPacket;
 use pocketmine\network\mcpe\protocol\RespawnPacket;
 use pocketmine\network\mcpe\protocol\ServerSettingsResponsePacket;
-use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
 use pocketmine\network\mcpe\protocol\SetSpawnPositionPacket;
 use pocketmine\network\mcpe\protocol\SetTitlePacket;
@@ -145,7 +141,6 @@ use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
 use pocketmine\network\mcpe\protocol\types\DimensionIds;
-use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAttributesPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
@@ -162,6 +157,7 @@ use pocketmine\resourcepacks\ResourcePack;
 use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\tile\ItemFrame;
+use pocketmine\timings\Timings;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
 
@@ -358,9 +354,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	/** @var int */
 	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
-
-	/** @var int */
-	protected $vehicleEid = 0;
 
 	/**
 	 * @return TranslationContainer|string
@@ -710,11 +703,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				continue;
 			}
 
-			$pk->commandData[$command->getName()] = $command->getCommandData();
+			$pk->commands[$command->getName()] = $command;
 		}
 
 		$this->dataPacket($pk);
-
 	}
 
 	/**
@@ -1520,10 +1512,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->isCollided = $this->onGround;
 	}
 
-	protected function checkBlockCollision(){
-		foreach($this->getBlocksAround() as $block){
-			$block->onEntityCollide($this);
-		}
+	public function canBeMovedByCurrents() : bool{
+		return false; //currently has no server-side movement
 	}
 
 	protected function checkNearEntities(int $tickDiff){
@@ -2023,8 +2013,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->achievements[$achievement->getName()] = $achievement->getValue() !== 0;
 		}
 
-		$this->namedtag->setLong("lastPlayed", (int) floor(microtime(true) * 1000));
-
 		$this->sendPlayStatus(PlayStatusPacket::LOGIN_SUCCESS);
 
 		$this->loggedIn = true;
@@ -2240,8 +2228,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->isTeleporting = false;
 			}
 
-			$packet->ridingEid = $this->vehicleEid;
-			$packet->mode = ($this->vehicleEid == 0 ? MovePlayerPacket::MODE_NORMAL : MovePlayerPacket::MODE_PITCH);
+			$packet->ridingEid = $this->ridingEntity !== null ? $this->ridingEntity->getId() : 0;
+			$packet->mode = ($packet->ridingEid == 0 ? MovePlayerPacket::MODE_NORMAL : MovePlayerPacket::MODE_PITCH);
 			$packet->onGround = !$this->isGliding() && $this->onGround;
 
 			$packet->yaw = fmod($packet->yaw, 360);
@@ -2347,15 +2335,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					$this->craftingTransaction = null;
 					return $result;
 				}
+
 				return true;
 			case "Enchant":
 				$enchantTransaction = new EnchantTransaction($this, $actions);
 				$enchantTransaction->execute();
 				break;
-			case "Trading":
-				$tradingTransaction = new TradingTransaction($this, $actions);
-				$tradingTransaction->execute();
-				return true;
 			default:
 				if($this->craftingTransaction !== null){
 					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
@@ -2520,7 +2505,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						$clickPos = $packet->trData->clickPos;
 						$slot = $packet->trData->hotbarSlot;
 
-						$ev = new PlayerEntityInteractEvent($this, $target, $item, $clickPos, $slot);
+						$ev = new PlayerInteractEntityEvent($this, $target, $item, $clickPos, $slot);
 
 						if(!$this->canInteract($target, 8)){
 							$ev->setCancelled();
@@ -2696,7 +2681,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
-				$this->unlinkFromVehicle($target);
+				if($this->ridingEntity === $target){
+					$this->dismountEntity();
+				}
 				break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
@@ -2858,7 +2845,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				break;
 			case PlayerActionPacket::ACTION_CONTINUE_BREAK:
 				$block = $this->level->getBlock($pos);
-				$this->level->broadcastLevelEvent($pos, LevelEventPacket::EVENT_PARTICLE_PUNCH_BLOCK, $block->getId() | ($block->getDamage() << 8) | ($packet->face << 16));
+				$this->level->broadcastLevelEvent($pos, LevelEventPacket::EVENT_PARTICLE_PUNCH_BLOCK, BlockFactory::toStaticRuntimeId($block->getId(), $block->getDamage()) | ($packet->face << 24));
+				//TODO: destroy-progress level event
 				break;
 			case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
 				// TODO
@@ -3057,7 +3045,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function handleBookEdit(BookEditPacket $packet) : bool{
 		/** @var WritableBook $oldBook */
-		$oldBook = $this->inventory->getItem($packet->inventorySlot - 9);
+		$oldBook = $this->inventory->getItem($packet->inventorySlot);
 		if($oldBook->getId() !== Item::WRITABLE_BOOK){
 			return false;
 		}
@@ -3098,7 +3086,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			return true;
 		}
 
-		$this->getInventory()->setItem($packet->inventorySlot - 9, $event->getNewBook());
+		$this->getInventory()->setItem($packet->inventorySlot, $event->getNewBook());
 
 		return true;
 	}
@@ -3404,7 +3392,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function sendWhisper(string $sender, string $message){
 		$pk = new TextPacket();
 		$pk->type = TextPacket::TYPE_WHISPER;
-		$pk->source = $sender;
+		$pk->sourceName = $sender;
 		$pk->message = $message;
 		$this->dataPacket($pk);
 	}
@@ -3841,6 +3829,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->setCurrentTotalXp($xp);
 
 		$this->sendData($this);
+		$this->sendData($this->getViewers());
 
 		$this->sendSettings();
 		$this->inventory->sendContents($this);
@@ -4162,27 +4151,5 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function getDeviceOS() : int{
 		return $this->deviceOS;
-	}
-
-	public function linkToVehicle(Vehicle $vehicle, int $type = EntityLink::TYPE_RIDE){
-		$this->setGenericFlag(self::DATA_FLAG_RIDING);
-		$this->vehicleEid = $vehicle->getId();
-
-		$pk = new SetEntityLinkPacket();
-		$pk->link = new EntityLink($vehicle->getId(), $this->getId(), $type, false);
-		$this->dataPacket($pk);
-	}
-
-	public function unlinkFromVehicle(Vehicle $vehicle = null){
-		$vehicle = $vehicle ?? $this->level->getEntity($this->vehicleEid);
-
-		$this->setGenericFlag(self::DATA_FLAG_RIDING, false);
-		$this->vehicleEid = 0;
-
-		$vehicle->onLeave($this);
-
-		$pk = new SetEntityLinkPacket();
-		$pk->link = new EntityLink($vehicle->getId(), $this->getId(), EntityLink::TYPE_REMOVE, false);
-		$this->server->broadcastPacket($this->getViewers(), $pk);
 	}
 }

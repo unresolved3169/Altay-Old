@@ -43,8 +43,6 @@ use pocketmine\event\level\LevelInitEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\event\Timings;
-use pocketmine\event\TimingsHandler;
 use pocketmine\form\element\Label;
 use pocketmine\form\FormIcon;
 use pocketmine\form\ServerSettingsForm;
@@ -99,6 +97,8 @@ use pocketmine\scheduler\FileWriteTask;
 use pocketmine\scheduler\SendUsageTask;
 use pocketmine\scheduler\ServerScheduler;
 use pocketmine\tile\Tile;
+use pocketmine\timings\Timings;
+use pocketmine\timings\TimingsHandler;
 use pocketmine\updater\AutoUpdater;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Config;
@@ -773,14 +773,14 @@ class Server{
 		if($this->shouldSavePlayerData()){
 			if(file_exists($path . "$name.dat")){
 				try{
-                    $nbt = new BigEndianNBTStream();
-                    $compound = $nbt->readCompressed(file_get_contents($path . "$name.dat"));
-                    if(!($compound instanceof CompoundTag)){
-                        throw new \RuntimeException("Invalid data found in \"$name.dat\", expected " . CompoundTag::class . ", got " . (is_object($compound) ? get_class($compound) : gettype($compound)));
-                    }
+					$nbt = new BigEndianNBTStream();
+					$compound = $nbt->readCompressed(file_get_contents($path . "$name.dat"));
+					if(!($compound instanceof CompoundTag)){
+						throw new \RuntimeException("Invalid data found in \"$name.dat\", expected " . CompoundTag::class . ", got " . (is_object($compound) ? get_class($compound) : gettype($compound)));
+					}
 
-                    return $compound;
-                }catch(\Throwable $e){ //zlib decode error / corrupt data
+					return $compound;
+				}catch(\Throwable $e){ //zlib decode error / corrupt data
 					rename($path . "$name.dat", $path . "$name.dat.bak");
 					$this->logger->notice($this->getLanguage()->translateString("pocketmine.data.playerCorrupted", [$name]));
 				}
@@ -845,9 +845,9 @@ class Server{
 			$nbt = new BigEndianNBTStream();
 			try{
 				if($async){
-                    $this->getScheduler()->scheduleAsyncTask(new FileWriteTask($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData())));
+					$this->getScheduler()->scheduleAsyncTask(new FileWriteTask($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData())));
 				}else{
-                    file_put_contents($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData()));
+					file_put_contents($this->getDataPath() . "players/" . strtolower($name) . ".dat", $nbt->writeCompressed($ev->getSaveData()));
 				}
 			}catch(\Throwable $e){
 				$this->logger->critical($this->getLanguage()->translateString("pocketmine.data.saveError", [$name, $e->getMessage()]));
@@ -1059,7 +1059,7 @@ class Server{
 		$provider = LevelProviderManager::getProvider($path);
 
 		if($provider === null){
-            $this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, "Cannot identify format of world"]));
+			$this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, "Cannot identify format of world"]));
 
 			return false;
 		}
@@ -1168,18 +1168,18 @@ class Server{
 	 * @return bool
 	 */
 	public function isLevelGenerated(string $name) : bool{
-	    if(trim($name) === ""){
-	        return false;
-	    }
-        $path = $this->getDataPath() . "worlds/" . $name . "/";
-        if(!($this->getLevelByName($name) instanceof Level)){
-            return is_dir($path) and !empty(array_filter(scandir($path, SCANDIR_SORT_NONE), function ($v){
-                    return $v !== ".." and $v !== ".";
-                }));
-        }
+		if(trim($name) === ""){
+			return false;
+		}
+		$path = $this->getDataPath() . "worlds/" . $name . "/";
+		if(!($this->getLevelByName($name) instanceof Level)){
+			return is_dir($path) and !empty(array_filter(scandir($path, SCANDIR_SORT_NONE), function ($v){
+					return $v !== ".." and $v !== ".";
+				}));
+		}
 
-        return true;
-    }
+		return true;
+	}
 
 	/**
 	 * Searches all levels for the entity with the specified ID.
@@ -1226,11 +1226,11 @@ class Server{
 	}
 
 	public function getAltayProperty(string $variable, $defaultValue = null){
-	    if(!array_key_exists($variable, $this->altayPropertyCache)){
-	        $this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
-	    }
+		if(!array_key_exists($variable, $this->altayPropertyCache)){
+			$this->altayPropertyCache[$variable] = $this->altayConfig->getNested($variable);
+		}
 
-	    return $this->altayPropertyCache[$variable] ?? $defaultValue;
+		return $this->altayPropertyCache[$variable] ?? $defaultValue;
 	}
 
 	/**
@@ -1453,6 +1453,36 @@ class Server{
 		}, $microseconds);
 	}
 
+	public function about() : void{
+		$about = [
+			date(DATE_RFC822),
+			$this->getPocketMineVersion(),
+			$this->getCodename(),
+			$this->getVersion(),
+			implode(", ", ProtocolInfo::ACCEPTED_PROTOCOLS),
+			$this->getIp(),
+			$this->getPort(),
+			$this->getMotd(),
+			$this->getOnlineMode() ? "true" : "false",
+			extension_loaded("OpenSSL") ? "true" : "false",
+			$this->getApiVersion(),
+			$this->getLanguage()->getName() . " (".$this->getLanguage()->getLang().")",
+			\Phar::running(true) === "" ? "src" : "phar"
+		];
+
+		$yazi = base64_decode("CsKnYuKUjOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUkCAgwqdiLS0gTG9hZGVkOiBQcm9wZXJ0aWVzIGFuZCBDb25maWd1cmF0aW9uIC0tCsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICBfIF8gICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2RGF0ZTogwqdmeyUwfQrCp2LilIJ7fSAgICAgICAgICAgICAgL1wgICB8IHwgfCAgICAgICAgICAgICAgICAgICAgICAgICDCp2LilIIgIMKnNlZlcnNpb246IMKnZnslMX0gwqc2Q29kZW5hbWU6IMKnZnslMn0Kwqdi4pSCe30gICAgICAgICAgICAgLyAgXCAgfCB8IHxfIF9fIF8gXyAgIF8gICAgICAgICAgICAgwqdi4pSCICDCpzZNQ1BFOiDCp2Z7JTN9IMKnNlByb3RvY29sOiDCp2Z7JTR9CsKnYuKUgnt9ICAgICAgICAgICAgLyAvXCBcIHwgfCBfXy8gX2AgfCB8IHwgfCAgICAgICAgICAgIMKnYuKUgiAgwqc2TG9jYWwgSVA6IMKnZnslNX0gwqc2UG9ydDogwqdmeyU2fQrCp2LilIJ7fSAgICAgICAgICAgLyBfX19fIFx8IHwgfHwgKF98IHwgfF98IHwgICAgICAgICAgICDCp2LilIIgIMKnNk1PVEQ6IMKnZnslN30Kwqdi4pSCe30gICAgICAgICAgL18vICAgIFxfXF98XF9fXF9fLF98XF9fLCB8ICAgICAgICAgICAgwqdi4pSCICDCpzZBdXRoZW50aWNhdGlvbjogwqdmeyU4fQrCp2LilIJ7fSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgX18vIHwgICAgICAgICAgICDCp2LilIIgIMKnNlNTTCBFeHRlbnNpb246IMKnZnslOX0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfF9fXy8gICAgICAgICAgICAgwqdi4pSCICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgwqdi4pSCICDCpzZBUEkgVmVyc2lvbjogwqdmeyUxMH0Kwqdi4pSCwqdhICAgICDCpzlTdXBwb3J0OiDCp2ZnaXRodWIuY29tL1R1cmFuaWNUZWFtL0FsdGF5ICAgICAgIMKnYuKUgiAgwqc2TGFuZ3VhZ2U6IMKnZnslMTF9CsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2UGFja2FnZTogwqdmeyUxMn0Kwqdi4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSYICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0=");
+
+		foreach($about as $index => $value){
+			$yazi = str_ireplace("{%$index}", $value, $yazi);
+		}
+
+		$randColor = "0123456789abcdef";
+		$randColor = $randColor{mt_rand(0, 15)};
+		$yazi = str_replace("{}", TextFormat::ESCAPE.$randColor, $yazi);
+
+		$this->logger->info($yazi);
+	}
+
 	/**
 	 * @param \ClassLoader    $autoloader
 	 * @param \ThreadedLogger $logger
@@ -1551,6 +1581,9 @@ class Server{
 
 			$this->forceLanguage = (bool) $this->getProperty("settings.force-language", false);
 			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
+
+			$this->about();
+
 			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
 
 			$this->memoryManager = new MemoryManager($this);
@@ -1565,7 +1598,7 @@ class Server{
 					$poolSize = max(1, $processors);
 				}
 			}else{
-			    $poolSize = (int) $poolSize;
+				$poolSize = (int) $poolSize;
 			}
 
 			ServerScheduler::$WORKERS = $poolSize;
@@ -1665,10 +1698,10 @@ class Server{
 
 
 			Timings::init();
+			TimingsHandler::setEnabled((bool) $this->getProperty("settings.enable-profiling", false));
 			Enchantment::init();
 
 			$this->consoleSender = new ConsoleCommandSender();
-			CommandParameterUtils::init();
 			$this->commandMap = new SimpleCommandMap($this);
 
 			Entity::init();
@@ -1683,7 +1716,6 @@ class Server{
 
 			$this->pluginManager = new PluginManager($this, $this->commandMap);
 			$this->pluginManager->subscribeToPermission(Server::BROADCAST_CHANNEL_ADMINISTRATIVE, $this->consoleSender);
-			$this->pluginManager->setUseTimings($this->getProperty("settings.enable-profiling", false));
 			$this->profilingTickRate = (float) $this->getProperty("settings.profile-report-trigger", 20);
 			$this->pluginManager->registerInterface(FolderPluginLoader::class);
 			$this->pluginManager->registerInterface(PharPluginLoader::class);
@@ -2194,7 +2226,11 @@ class Server{
 
 		if($this->getProperty("network.upnp-forwarding", false)){
 			$this->logger->info("[UPnP] Trying to port forward...");
-			UPnP::PortForward($this->getPort());
+			try{
+				UPnP::PortForward($this->getPort());
+			}catch(\Throwable $e){
+				$this->logger->alert("UPnP portforward failed: " . $e->getMessage());
+			}
 		}
 
 		$this->tickCounter = 0;
@@ -2366,7 +2402,7 @@ class Server{
 	 * @param Player $player
 	 */
 	public function removePlayer(Player $player){
-	    unset($this->players[spl_object_hash($player)]);
+		unset($this->players[spl_object_hash($player)]);
 	}
 
 	public function addOnlinePlayer(Player $player){
@@ -2395,7 +2431,7 @@ class Server{
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
 
-		$pk->entries[] = PlayerListEntry::createAdditionEntry($uuid, $entityId, $name, $skin, $xboxUserId);
+		$pk->entries[] = PlayerListEntry::createAdditionEntry($uuid, $entityId, $name, "", 0, $skin, $xboxUserId);
 		$this->broadcastPacket($players ?? $this->playerList, $pk);
 	}
 
@@ -2417,7 +2453,7 @@ class Server{
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
 		foreach($this->playerList as $player){
-			$pk->entries[] = PlayerListEntry::createAdditionEntry($player->getUniqueId(), $player->getId(), $player->getDisplayName(), $player->getSkin());
+			$pk->entries[] = PlayerListEntry::createAdditionEntry($player->getUniqueId(), $player->getId(), $player->getDisplayName(), "", 0, $player->getSkin(), $player->getXuid());
 		}
 
 		$p->dataPacket($pk);

@@ -26,6 +26,7 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\level\Position;
+use pocketmine\utils\MainLogger;
 
 /**
  * Manages block registration and instance creation
@@ -51,58 +52,67 @@ class BlockFactory{
 	/** @var \SplFixedArray<float> */
 	public static $blastResistance = null;
 
+	/** @var int[] */
+	public static $staticRuntimeIdMap = [];
+
+	/** @var int[] */
+	public static $legacyIdMap = [];
+
+	/** @var int */
+	private static $lastRuntimeId = 0;
+
 	/**
 	 * Initializes the block factory. By default this is called only once on server start, however you may wish to use
 	 * this if you need to reset the block factory back to its original defaults for whatever reason.
 	 */
 	public static function init() : void{
-        self::$list = new \SplFixedArray(256);
-        self::$fullList = new \SplFixedArray(4096);
+		self::$list = new \SplFixedArray(256);
+		self::$fullList = new \SplFixedArray(4096);
 
-        self::$light = new \SplFixedArray(256);
-        self::$lightFilter = new \SplFixedArray(256);
-        self::$solid = new \SplFixedArray(256);
-        self::$hardness = new \SplFixedArray(256);
-        self::$transparent = new \SplFixedArray(256);
-        self::$diffusesSkyLight = new \SplFixedArray(256);
-        self::$blastResistance = new \SplFixedArray(256);
+		self::$light = new \SplFixedArray(256);
+		self::$lightFilter = new \SplFixedArray(256);
+		self::$solid = new \SplFixedArray(256);
+		self::$hardness = new \SplFixedArray(256);
+		self::$transparent = new \SplFixedArray(256);
+		self::$diffusesSkyLight = new \SplFixedArray(256);
+		self::$blastResistance = new \SplFixedArray(256);
 
-        self::registerBlock(new Air());
-        self::registerBlock(new Stone());
-        self::registerBlock(new Grass());
-        self::registerBlock(new Dirt());
-        self::registerBlock(new Cobblestone());
-        self::registerBlock(new Planks());
-        self::registerBlock(new Sapling());
-        self::registerBlock(new Bedrock());
-        self::registerBlock(new Water());
-        self::registerBlock(new StillWater());
-        self::registerBlock(new Lava());
-        self::registerBlock(new StillLava());
-        self::registerBlock(new Sand());
-        self::registerBlock(new Gravel());
-        self::registerBlock(new GoldOre());
-        self::registerBlock(new IronOre());
-        self::registerBlock(new CoalOre());
-        self::registerBlock(new Wood());
-        self::registerBlock(new Leaves());
-        self::registerBlock(new Sponge());
-        self::registerBlock(new Glass());
-        self::registerBlock(new LapisOre());
-        self::registerBlock(new Lapis());
-        //TODO: DISPENSER
-        self::registerBlock(new Sandstone());
-        self::registerBlock(new NoteBlock());
-        self::registerBlock(new Bed());
-        self::registerBlock(new PoweredRail());
-        self::registerBlock(new DetectorRail());
-        //TODO: STICKY_PISTON
-        self::registerBlock(new Cobweb());
-        self::registerBlock(new TallGrass());
-        self::registerBlock(new DeadBush());
-        //TODO: PISTON
-        //TODO: PISTONARMCOLLISION
-        self::registerBlock(new Wool());
+		self::registerBlock(new Air());
+		self::registerBlock(new Stone());
+		self::registerBlock(new Grass());
+		self::registerBlock(new Dirt());
+		self::registerBlock(new Cobblestone());
+		self::registerBlock(new Planks());
+		self::registerBlock(new Sapling());
+		self::registerBlock(new Bedrock());
+		self::registerBlock(new Water());
+		self::registerBlock(new StillWater());
+		self::registerBlock(new Lava());
+		self::registerBlock(new StillLava());
+		self::registerBlock(new Sand());
+		self::registerBlock(new Gravel());
+		self::registerBlock(new GoldOre());
+		self::registerBlock(new IronOre());
+		self::registerBlock(new CoalOre());
+		self::registerBlock(new Wood());
+		self::registerBlock(new Leaves());
+		self::registerBlock(new Sponge());
+		self::registerBlock(new Glass());
+		self::registerBlock(new LapisOre());
+		self::registerBlock(new Lapis());
+		//TODO: DISPENSER
+		self::registerBlock(new Sandstone());
+		self::registerBlock(new NoteBlock());
+		self::registerBlock(new Bed());
+		self::registerBlock(new PoweredRail());
+		self::registerBlock(new DetectorRail());
+		//TODO: STICKY_PISTON
+		self::registerBlock(new Cobweb());
+		self::registerBlock(new TallGrass());
+		self::registerBlock(new DeadBush());
+		//TODO: PISTON
+		//TODO: PISTONARMCOLLISION
+		self::registerBlock(new Wool());
 
         self::registerBlock(new Dandelion());
         self::registerBlock(new Flower());
@@ -234,94 +244,102 @@ class BlockFactory{
         self::registerBlock(new WoodenStairs(Block::DARK_OAK_STAIRS, 0, "Dark Oak Stairs"));
         //TODO: SLIME
 
-        self::registerBlock(new IronTrapdoor());
-        self::registerBlock(new Prismarine());
-        self::registerBlock(new SeaLantern());
-        self::registerBlock(new HayBale());
-        self::registerBlock(new Carpet());
-        self::registerBlock(new HardenedClay());
-        self::registerBlock(new Coal());
-        self::registerBlock(new PackedIce());
-        self::registerBlock(new DoublePlant());
-        self::registerBlock(new StandingBanner());
-        self::registerBlock(new WallBanner());
-        //TODO: DAYLIGHT_DETECTOR_INVERTED
-        self::registerBlock(new RedSandstone());
-        self::registerBlock(new RedSandstoneStairs());
-        self::registerBlock(new DoubleStoneSlab2());
-        self::registerBlock(new StoneSlab2());
-        self::registerBlock(new FenceGate(Block::SPRUCE_FENCE_GATE, 0, "Spruce Fence Gate"));
-        self::registerBlock(new FenceGate(Block::BIRCH_FENCE_GATE, 0, "Birch Fence Gate"));
-        self::registerBlock(new FenceGate(Block::JUNGLE_FENCE_GATE, 0, "Jungle Fence Gate"));
-        self::registerBlock(new FenceGate(Block::DARK_OAK_FENCE_GATE, 0, "Dark Oak Fence Gate"));
-        self::registerBlock(new FenceGate(Block::ACACIA_FENCE_GATE, 0, "Acacia Fence Gate"));
-        //TODO: REPEATING_COMMAND_BLOCK
-        //TODO: CHAIN_COMMAND_BLOCK
+		self::registerBlock(new IronTrapdoor());
+		self::registerBlock(new Prismarine());
+		self::registerBlock(new SeaLantern());
+		self::registerBlock(new HayBale());
+		self::registerBlock(new Carpet());
+		self::registerBlock(new HardenedClay());
+		self::registerBlock(new Coal());
+		self::registerBlock(new PackedIce());
+		self::registerBlock(new DoublePlant());
+		self::registerBlock(new StandingBanner());
+		self::registerBlock(new WallBanner());
+		//TODO: DAYLIGHT_DETECTOR_INVERTED
+		self::registerBlock(new RedSandstone());
+		self::registerBlock(new RedSandstoneStairs());
+		self::registerBlock(new DoubleStoneSlab2());
+		self::registerBlock(new StoneSlab2());
+		self::registerBlock(new FenceGate(Block::SPRUCE_FENCE_GATE, 0, "Spruce Fence Gate"));
+		self::registerBlock(new FenceGate(Block::BIRCH_FENCE_GATE, 0, "Birch Fence Gate"));
+		self::registerBlock(new FenceGate(Block::JUNGLE_FENCE_GATE, 0, "Jungle Fence Gate"));
+		self::registerBlock(new FenceGate(Block::DARK_OAK_FENCE_GATE, 0, "Dark Oak Fence Gate"));
+		self::registerBlock(new FenceGate(Block::ACACIA_FENCE_GATE, 0, "Acacia Fence Gate"));
+		//TODO: REPEATING_COMMAND_BLOCK
+		//TODO: CHAIN_COMMAND_BLOCK
 
-        self::registerBlock(new WoodenDoor(Block::SPRUCE_DOOR_BLOCK, 0, "Spruce Door", Item::SPRUCE_DOOR));
-        self::registerBlock(new WoodenDoor(Block::BIRCH_DOOR_BLOCK, 0, "Birch Door", Item::BIRCH_DOOR));
-        self::registerBlock(new WoodenDoor(Block::JUNGLE_DOOR_BLOCK, 0, "Jungle Door", Item::JUNGLE_DOOR));
-        self::registerBlock(new WoodenDoor(Block::ACACIA_DOOR_BLOCK, 0, "Acacia Door", Item::ACACIA_DOOR));
-        self::registerBlock(new WoodenDoor(Block::DARK_OAK_DOOR_BLOCK, 0, "Dark Oak Door", Item::DARK_OAK_DOOR));
-        self::registerBlock(new GrassPath());
-        self::registerBlock(new ItemFrame());
-        //TODO: CHORUS_FLOWER
-        self::registerBlock(new Purpur());
+		self::registerBlock(new WoodenDoor(Block::SPRUCE_DOOR_BLOCK, 0, "Spruce Door", Item::SPRUCE_DOOR));
+		self::registerBlock(new WoodenDoor(Block::BIRCH_DOOR_BLOCK, 0, "Birch Door", Item::BIRCH_DOOR));
+		self::registerBlock(new WoodenDoor(Block::JUNGLE_DOOR_BLOCK, 0, "Jungle Door", Item::JUNGLE_DOOR));
+		self::registerBlock(new WoodenDoor(Block::ACACIA_DOOR_BLOCK, 0, "Acacia Door", Item::ACACIA_DOOR));
+		self::registerBlock(new WoodenDoor(Block::DARK_OAK_DOOR_BLOCK, 0, "Dark Oak Door", Item::DARK_OAK_DOOR));
+		self::registerBlock(new GrassPath());
+		self::registerBlock(new ItemFrame());
+		//TODO: CHORUS_FLOWER
+		self::registerBlock(new Purpur());
 
-        self::registerBlock(new PurpurStairs());
+		self::registerBlock(new PurpurStairs());
 
-        //TODO: UNDYED_SHULKER_BOX
-        self::registerBlock(new EndStoneBricks());
-        //TODO: FROSTED_ICE
-        self::registerBlock(new EndRod());
-        //TODO: END_GATEWAY
+		//TODO: UNDYED_SHULKER_BOX
+		self::registerBlock(new EndStoneBricks());
+		//TODO: FROSTED_ICE
+		self::registerBlock(new EndRod());
+		//TODO: END_GATEWAY
 
-        self::registerBlock(new Magma());
-        self::registerBlock(new NetherWartBlock());
-        self::registerBlock(new NetherBrick(Block::RED_NETHER_BRICK, 0, "Red Nether Bricks"));
-        self::registerBlock(new BoneBlock());
+		self::registerBlock(new Magma());
+		self::registerBlock(new NetherWartBlock());
+		self::registerBlock(new NetherBrick(Block::RED_NETHER_BRICK, 0, "Red Nether Bricks"));
+		self::registerBlock(new BoneBlock());
 
-        //TODO: SHULKER_BOX
-        self::registerBlock(new GlazedTerracotta(Block::PURPLE_GLAZED_TERRACOTTA, 0, "Purple Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::WHITE_GLAZED_TERRACOTTA, 0, "White Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::ORANGE_GLAZED_TERRACOTTA, 0, "Orange Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::MAGENTA_GLAZED_TERRACOTTA, 0, "Magenta Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::LIGHT_BLUE_GLAZED_TERRACOTTA, 0, "Light Blue Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::YELLOW_GLAZED_TERRACOTTA, 0, "Yellow Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::LIME_GLAZED_TERRACOTTA, 0, "Lime Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::PINK_GLAZED_TERRACOTTA, 0, "Pink Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::GRAY_GLAZED_TERRACOTTA, 0, "Grey Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::SILVER_GLAZED_TERRACOTTA, 0, "Light Grey Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::CYAN_GLAZED_TERRACOTTA, 0, "Cyan Glazed Terracotta"));
+		//TODO: SHULKER_BOX
+		self::registerBlock(new GlazedTerracotta(Block::PURPLE_GLAZED_TERRACOTTA, 0, "Purple Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::WHITE_GLAZED_TERRACOTTA, 0, "White Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::ORANGE_GLAZED_TERRACOTTA, 0, "Orange Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::MAGENTA_GLAZED_TERRACOTTA, 0, "Magenta Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::LIGHT_BLUE_GLAZED_TERRACOTTA, 0, "Light Blue Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::YELLOW_GLAZED_TERRACOTTA, 0, "Yellow Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::LIME_GLAZED_TERRACOTTA, 0, "Lime Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::PINK_GLAZED_TERRACOTTA, 0, "Pink Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::GRAY_GLAZED_TERRACOTTA, 0, "Grey Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::SILVER_GLAZED_TERRACOTTA, 0, "Light Grey Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::CYAN_GLAZED_TERRACOTTA, 0, "Cyan Glazed Terracotta"));
 
-        self::registerBlock(new GlazedTerracotta(Block::BLUE_GLAZED_TERRACOTTA, 0, "Blue Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::BROWN_GLAZED_TERRACOTTA, 0, "Brown Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::GREEN_GLAZED_TERRACOTTA, 0, "Green Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::RED_GLAZED_TERRACOTTA, 0, "Red Glazed Terracotta"));
-        self::registerBlock(new GlazedTerracotta(Block::BLACK_GLAZED_TERRACOTTA, 0, "Black Glazed Terracotta"));
-        self::registerBlock(new Concrete());
-        self::registerBlock(new ConcretePowder());
+		self::registerBlock(new GlazedTerracotta(Block::BLUE_GLAZED_TERRACOTTA, 0, "Blue Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::BROWN_GLAZED_TERRACOTTA, 0, "Brown Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::GREEN_GLAZED_TERRACOTTA, 0, "Green Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::RED_GLAZED_TERRACOTTA, 0, "Red Glazed Terracotta"));
+		self::registerBlock(new GlazedTerracotta(Block::BLACK_GLAZED_TERRACOTTA, 0, "Black Glazed Terracotta"));
+		self::registerBlock(new Concrete());
+		self::registerBlock(new ConcretePowder());
 
-        //TODO: CHORUS_PLANT
-        self::registerBlock(new StainedGlass());
+		//TODO: CHORUS_PLANT
+		self::registerBlock(new StainedGlass());
 
-        self::registerBlock(new Podzol());
-        self::registerBlock(new Beetroot());
-        self::registerBlock(new Stonecutter());
-        self::registerBlock(new GlowingObsidian());
-        self::registerBlock(new NetherReactor());
-        //TODO: INFO_UPDATE
-        //TODO: INFO_UPDATE2
-        //TODO: MOVINGBLOCK
-        //TODO: OBSERVER
-        //TODO: STRUCTURE_BLOCK
+		self::registerBlock(new Podzol());
+		self::registerBlock(new Beetroot());
+		self::registerBlock(new Stonecutter());
+		self::registerBlock(new GlowingObsidian());
+		self::registerBlock(new NetherReactor());
+		//TODO: INFO_UPDATE
+		//TODO: INFO_UPDATE2
+		//TODO: MOVINGBLOCK
+		//TODO: OBSERVER
+		//TODO: STRUCTURE_BLOCK
 
-        //TODO: RESERVED6
+		//TODO: RESERVED6
 
-        foreach(self::$list as $id => $block)
-            if($block === null)
-                self::registerBlock(new UnknownBlock($id));
-    }
+		foreach(self::$list as $id => $block){
+			if($block === null){
+				self::registerBlock(new UnknownBlock($id));
+			}
+		}
+
+		/** @var mixed[] $runtimeIdMap */
+		$runtimeIdMap = json_decode(file_get_contents(\pocketmine\RESOURCE_PATH . "runtimeid_table.json"), true);
+		foreach($runtimeIdMap as $obj){
+			self::registerMapping($obj["runtimeID"], $obj["id"], $obj["data"]);
+		}
+	}
 
 	/**
 	 * Registers a block type into the index. Plugins may use this method to register new block types or override
@@ -411,5 +429,42 @@ class BlockFactory{
 	public static function isRegistered(int $id) : bool{
 		$b = self::$list[$id];
 		return $b !== null and !($b instanceof UnknownBlock);
+	}
+
+	/**
+	 * @internal
+	 *
+	 * @param int $id
+	 * @param int $meta
+	 *
+	 * @return int
+	 */
+	public static function toStaticRuntimeId(int $id, int $meta = 0) : int{
+		$index = ($id << 4) | $meta;
+		if(!isset(self::$staticRuntimeIdMap[$index])){
+			self::registerMapping($rtId = ++self::$lastRuntimeId, $id, $meta);
+			MainLogger::getLogger()->error("ID $id meta $meta does not have a corresponding block static runtime ID, added a new unknown runtime ID ($rtId)");
+			return $rtId;
+		}
+
+		return self::$staticRuntimeIdMap[$index];
+	}
+
+	/**
+	 * @internal
+	 *
+	 * @param int $runtimeId
+	 *
+	 * @return int[] [id, meta]
+	 */
+	public static function fromStaticRuntimeId(int $runtimeId) : array{
+		$v = self::$legacyIdMap[$runtimeId];
+		return [$v >> 4, $v & 0xf];
+	}
+
+	private static function registerMapping(int $staticRuntimeId, int $legacyId, int $legacyMeta) : void{
+		self::$staticRuntimeIdMap[($legacyId << 4) | $legacyMeta] = $staticRuntimeId;
+		self::$legacyIdMap[$staticRuntimeId] = ($legacyId << 4) | $legacyMeta;
+		self::$lastRuntimeId = max(self::$lastRuntimeId, $staticRuntimeId);
 	}
 }

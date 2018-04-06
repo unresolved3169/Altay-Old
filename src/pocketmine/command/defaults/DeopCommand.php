@@ -26,7 +26,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
@@ -39,8 +39,8 @@ class DeopCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.deop.description",
 			"%commands.deop.usage",
-            [],
-            [CommandParameterUtils::getPlayerParameter(false)]
+			[],
+			[new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false)]
 		);
 		$this->setPermission("pocketmine.command.op.take");
 	}

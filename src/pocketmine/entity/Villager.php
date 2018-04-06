@@ -24,8 +24,8 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\TradeItems;
-use pocketmine\inventory\TradingInventory;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -80,8 +80,10 @@ class Villager extends Creature implements NPC, Ageable{
 	protected $tradeTier;
 	/** @var CompoundTag */
 	protected $offers = null;
-	/** @var TradingInventory */
+	/** @var TradeInventory */
 	protected $inventory;
+	/** @var bool */
+	protected $isWilling = true;
 
 	public function getName() : string{
 		return "Villager";
@@ -101,11 +103,11 @@ class Villager extends Creature implements NPC, Ageable{
 
 		$this->career = $this->namedtag->getInt("Career", array_rand(self::$names[$this->getProfession()])); // custom
 		$this->tradeTier = $this->namedtag->getInt("TradeTier", 0);
-		$this->registerTrade();
+		$this->updateTradeItems(false);
 	}
 
-	public function registerTrade(bool $default = false){
-		if($default or !$this->namedtag->hasTag("Offers", CompoundTag::class)) {
+	public function updateTradeItems(bool $update = true){
+		if($update or !$this->namedtag->hasTag("Offers", CompoundTag::class)) {
 			$this->namedtag->setTag(new CompoundTag("Offers", [
 				new ListTag("Recipes", TradeItems::getItemsForVillager($this))
 			]));
@@ -114,12 +116,39 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->offers = $this->namedtag->getTag("Offers");
 	}
 
+	public function updateTradeTier() : void{
+		$tradeTier = $this->getTradeTier() + 1;
+		try{
+			$this->setTradeTier($tradeTier);
+			$this->addEffect(new EffectInstance(Effect::getEffect(Effect::REGENERATION), mt_rand(2, 5) * 20));
+		}catch(\InvalidArgumentException $exception){}
+	}
+
+	public function setTradeTier(int $tradeTier) : void{
+		$items = TradeItems::getItems()[$this->getProfession()][$this->getCareer()] ?? [];
+		if(count($items) < ($tradeTier + 1)){
+			throw new \InvalidArgumentException("Trade tier $tradeTier is not available");
+		}
+
+		$this->tradeTier = $tradeTier;
+		$this->updateTradeItems();
+	}
+
 	public function getTradeTier() : int{
 		return $this->tradeTier;
 	}
 
 	public function getCareer() : int{
 		return $this->career;
+	}
+
+	public function setCareer(int $career) : void{
+		$pro = $this->getProfession();
+		if(!isset(self::$names[$pro][$career])){
+			throw new \InvalidArgumentException("$career is not found on $pro profession.");
+		}
+
+		$this->career = $career;
 	}
 
 	public function setOffers(CompoundTag $offers) : void{
@@ -154,16 +183,23 @@ class Villager extends Creature implements NPC, Ageable{
 	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
 		if(!$this->isBaby() && $this->offers != null){
 			$player->addWindow($this->getInventory());
-			$this->propertyManager->setLong(self::DATA_TRADING_PLAYER_EID, $player->getId());
 		}
 	}
 
-	public function getInventory() : TradingInventory{
-		return new TradingInventory($this);
+	public function getInventory() : TradeInventory{
+		return new TradeInventory($this);
 	}
 
 	public function getDisplayName() : string{
-		return self::$names[$this->getProfession()][$this->getCareer()] ?? "Villager";
+		return self::$names[$this->getProfession()][$this->getCareer()] ?? "entity.villager.name";
+	}
+
+	public function isWilling() : bool{
+		return $this->isWilling;
+	}
+
+	public function setWilling(bool $isWilling) : void{
+		$this->isWilling = $isWilling;
 	}
 
 }

@@ -27,6 +27,7 @@ namespace pocketmine\block;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\Vector3;
+use pocketmine\Player;
 
 class DeadBush extends Flowable{
 
@@ -38,6 +39,14 @@ class DeadBush extends Flowable{
 
 	public function getName() : string{
 		return "Dead Bush";
+	}
+
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null): bool{
+		if(!$this->getSide(Vector3::SIDE_DOWN)->isTransparent()){
+			return parent::place($item, $blockReplace, $blockClicked, $face, $clickVector, $player);
+		}
+
+		return false;
 	}
 
 	public function onNearbyBlockChange() : void{

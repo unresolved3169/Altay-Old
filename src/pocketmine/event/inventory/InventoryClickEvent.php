@@ -30,31 +30,29 @@ use pocketmine\item\Item;
 use pocketmine\Player;
 
 class InventoryClickEvent extends InventoryEvent implements Cancellable{
-    public static $handlerList = null;
+	/** @var Player */
+	protected $who;
+	/** @var int */
+	protected $inventorySlot;
+	/** @var Item */
+	protected $item;
 
-    /** @var Player */
-    protected $who;
-    /** @var int */
-    protected $inventorySlot;
-    /** @var Item */
-    protected $item;
+	public function __construct(Inventory $inventory, Player $who, int $slot){
+		$this->who = $who;
+		$this->inventorySlot = $slot;
+		$this->item = $inventory->getItem($slot);
+		parent::__construct($inventory);
+	}
 
-    public function __construct(Inventory $inventory, Player $who, int $slot){
-        $this->who = $who;
-        $this->inventorySlot = $slot;
-        $this->item = $inventory->getItem($slot);
-        parent::__construct($inventory);
-    }
+	public function getPlayer() : Player{
+		return $this->who;
+	}
 
-    public function getPlayer() : Player{
-        return $this->who;
-    }
+	public function getItem(): Item{
+		return $this->item;
+	}
 
-    public function getItem(): Item{
-        return $this->item;
-    }
-
-    public function getSlot() : int{
-        return $this->inventorySlot;
-    }
+	public function getSlot() : int{
+		return $this->inventorySlot;
+	}
 }
