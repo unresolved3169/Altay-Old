@@ -22,10 +22,11 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\populator;
+namespace pocketmine\level\generator\end\populator;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
+use pocketmine\level\generator\populator\Populator;
 use pocketmine\utils\Random;
 
 class EndPillar extends Populator{
