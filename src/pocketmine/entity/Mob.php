@@ -169,35 +169,9 @@ abstract class Mob extends Living{
 		$level = $this->level;
 		$dir = $this->getDirectionVector()->normalize();
 		$dir->y = 0;
-
-		$entityCollide = false;
+		
 		$boundingBox = (clone $this->getBoundingBox())->offsetBy($dir->multiply($sf));
-
-		$players = $this->level->getPlayers();
-		foreach ($players as $player) {
-			$bbox = $boundingBox->addCoord(0.15, 0.15, 0.15);
-			if($player->getBoundingBox()->intersectsWith($bbox)) {
-				$entityCollide = true;
-				break;
-			}
-		}
-
-		if(!$entityCollide){
-			$bbox = $boundingBox->addCoord(0.3,0.3, 0.3);
-
-			foreach($this->level->getEntities() as $entry){
-				if($entry === $this) continue;
-
-				if($entry->getId() < $this->getId() and $bbox->isVectorInside($entry->asVector3())){
-					if($this->getMotion()->equals(new Vector3()) and $this->level->getRandom()->nextBoundedInt(1000) === 0){
-						break;
-					}
-
-					$entityCollide = true;
-					break;
-				}
-			}
-		}
+		$entityCollide = count($this->level->getCollidingEntities($boundingBox, $this)) > 0;
 
 		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
 
