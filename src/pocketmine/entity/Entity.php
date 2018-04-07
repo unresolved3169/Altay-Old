@@ -1541,7 +1541,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 	}
 
-	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDE, bool $send = true) : void{
+	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDER, bool $send = true) : void{
 		if($this->ridingEntity == null and $entity !== $this){
 			$this->setRidingEntity($entity);
 			$entity->setRiddenByEntity($this);

@@ -471,7 +471,7 @@ class NetworkBinaryStream extends BinaryStream{
 		$link->riddenId = $this->getEntityUniqueId();
 		$link->riderId = $this->getEntityUniqueId();
 		$link->type = $this->getByte();
-		$link->bool1 = $this->getBool();
+		$link->immediate = $this->getBool();
 
 		return $link;
 	}
@@ -483,7 +483,7 @@ class NetworkBinaryStream extends BinaryStream{
 		$this->putEntityUniqueId($link->riddenId);
 		$this->putEntityUniqueId($link->riderId);
 		$this->putByte($link->type);
-		$this->putBool($link->bool1);
+		$this->putBool($link->immediate);
 	}
 
 	protected function getCommandOriginData() : CommandOriginData{
