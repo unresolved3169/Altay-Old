@@ -62,7 +62,7 @@ class EndPillar extends Populator{
 						for($r = 0.5; $r < 5; $r += 0.5){
 							$nd = 360 / (2 * pi() * $r);
 							for($d = 0; $d < 360; $d += $nd){
-								$level->setBlockIdAt( (int) $x + (cos(deg2rad($d)) * $r), $ny, (int) $z + (sin(deg2rad($d)) * $r), Block::OBSIDIAN);
+								$level->setBlockIdAt(intval($x + (cos(deg2rad($d)) * $r)), $ny, intval($z + (sin(deg2rad($d)) * $r)), Block::OBSIDIAN);
 							}
 						}
 					}

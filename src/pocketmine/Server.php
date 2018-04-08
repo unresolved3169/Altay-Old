@@ -32,7 +32,6 @@ use pocketmine\block\BlockFactory;
 use pocketmine\command\CommandReader;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\entity\Entity;
@@ -1794,7 +1793,7 @@ class Server{
 					$netherLevelName = "nether";
 				}
 				if(!$this->loadLevel($netherLevelName)){
-					$this->generateLevel($netherLevelName, time(), "nether");
+					$this->generateLevel($netherLevelName, time(), Generator::getGenerator("hell"));
 				}
 
 				$this->netherLevel = $this->getLevelByName($netherLevelName);
@@ -1806,7 +1805,7 @@ class Server{
 					$endLevel = "end";
 				}
 				if(!$this->loadLevel($endLevel)){
-					$this->generateLevel($endLevel, time(), "end");
+					$this->generateLevel($endLevel, time(), Generator::getGenerator("end"));
 				}
 
 				$this->endLevel = $this->getLevelByName($endLevel);
