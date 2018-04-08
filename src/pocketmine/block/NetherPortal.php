@@ -26,7 +26,9 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
+use pocketmine\level\Position;
 use pocketmine\Player;
+use pocketmine\Server;
 
 class NetherPortal extends Flowable{
 	protected $id = self::PORTAL;
@@ -66,7 +68,11 @@ class NetherPortal extends Flowable{
 	}
 
 	public function onEntityCollide(Entity $entity) : void{
-		// TODO : Send to nether
+		$server = Server::getInstance();
+		if($server->allowNether){
+			$nether = $server->getNetherLevel();
+			$entity->teleport(Position::fromObject($entity, $nether));
+		}
 	}
 
 	public function onBreak(Item $item, Player $player = null) : bool{
