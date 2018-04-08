@@ -88,6 +88,7 @@ use pocketmine\lang\TextContainer;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\level\ChunkLoader;
 use pocketmine\level\format\Chunk;
+use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
 use pocketmine\level\Position;
@@ -963,7 +964,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					$dimension = Level::DIMENSION_OVERWORLD;
 				}
 
-				$this->changeDimension($dimension);
+				$this->changeDimension($dimension, $this, !$this->isAlive());
 			}
 
 			return true;
@@ -2023,6 +2024,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				new DoubleTag("", $spawnLocation->z)
 			]));
 		}else{
+			$biome = $level->getBiomeId(128, 128);
+			if($biome == Biome::HELL or $biome == Biome::END){
+				$level = $this->server->getDefaultLevel();
+			}
+
 			$this->setLevel($level);
 		}
 
@@ -2871,6 +2877,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				break;
 			case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
 				// TODO
+				break;
+			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_REQUEST:
+			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_ACK:
 				break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
