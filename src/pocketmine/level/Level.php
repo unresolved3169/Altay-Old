@@ -19,7 +19,7 @@
  * @link https://github.com/TuranicTeam/Altay
  *
  */
- 
+
 declare(strict_types=1);
 
 /**
@@ -104,6 +104,10 @@ class Level implements ChunkManager, Metadatable{
 	public const TIME_SUNRISE = 23000;
 
 	public const TIME_FULL = 24000;
+
+	public const DIMENSION_OVERWORLD = 0;
+	public const DIMENSION_NETHER = 1;
+	public const DIMENSION_END = 2;
 
 	public const DIFFICULTY_PEACEFUL = 0;
 	public const DIFFICULTY_EASY = 1;
@@ -267,12 +271,12 @@ class Level implements ChunkManager, Metadatable{
 		$z = ($hash & 0xFFFFFFF) << 36 >> 36;
 	}
 
-    /**
-     * @param int      $hash
-     * @param int|null $x
-     * @param int|null $z
-     */
-    public static function getXZ(int $hash, ?int &$x, ?int &$z) : void{
+	/**
+	 * @param int      $hash
+	 * @param int|null $x
+	 * @param int|null $z
+	 */
+	public static function getXZ(int $hash, ?int &$x, ?int &$z) : void{
 		$x = $hash >> 32;
 		$z = ($hash & 0xFFFFFFFF) << 32 >> 32;
 	}
@@ -443,7 +447,7 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		if($this->getAutoSave()){
-		    $this->save();
+			$this->save();
 		}
 
 		$this->unregisterGenerator();
@@ -960,7 +964,7 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	public function getRandomTickBlocks(): \SplFixedArray{
-	    return $this->randomTickBlocks;
+		return $this->randomTickBlocks;
 	}
 
 	public function addRandomTickedBlock(int $id){
@@ -1072,7 +1076,7 @@ class Level implements ChunkManager, Metadatable{
 
 	public function saveChunks(){
 		foreach($this->chunks as $chunk){
-            if(($chunk->hasChanged() or count($chunk->getTiles()) > 0 or count($chunk->getSavableEntities()) > 0) and $chunk->isGenerated()){
+			if(($chunk->hasChanged() or count($chunk->getTiles()) > 0 or count($chunk->getSavableEntities()) > 0) and $chunk->isGenerated()){
 				$this->provider->saveChunk($chunk);
 				$chunk->setChanged(false);
 			}

@@ -108,6 +108,7 @@ use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
+use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
@@ -933,6 +934,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->commandPermission = $commandPermission;
 	}
 
+	public function changeDimension(int $dimension, Vector3 $position = null, bool $respawn = false){
+		$pk = new ChangeDimensionPacket();
+		$pk->dimension = $dimension;
+		$pk->position = $position ?? $this;
+		$pk->respawn = $respawn;
+		$this->dataPacket($pk);
+	}
+
 	protected function switchLevel(Level $targetLevel) : bool{
 		$oldLevel = $this->level;
 		if(parent::switchLevel($targetLevel)){
@@ -944,6 +953,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->usedChunks = [];
 			$this->level->sendTime($this);
 			$this->level->sendDifficulty($this);
+
+			$xz = [(int) $this->x, (int) $this->z];
+			$oldBiome = $oldLevel->getBiomeId(...$xz);
+			$newBiome = $this->level->getBiomeId(...$xz);
+			if($oldBiome !== $newBiome){
+				$dimension = $newBiome - 7;
+				if($dimension < 0 or $dimension > 2){
+					$dimension = Level::DIMENSION_OVERWORLD;
+				}
+
+				$this->changeDimension($dimension);
+			}
 
 			return true;
 		}
