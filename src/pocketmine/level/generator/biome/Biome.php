@@ -25,7 +25,7 @@ namespace pocketmine\level\generator\biome;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
-use pocketmine\level\generator\end\EndBiome;
+use pocketmine\level\generator\end\biome\EndBiome;
 use pocketmine\level\generator\hell\HellBiome;
 use pocketmine\level\generator\normal\biome\DesertBiome;
 use pocketmine\level\generator\normal\biome\ForestBiome;
