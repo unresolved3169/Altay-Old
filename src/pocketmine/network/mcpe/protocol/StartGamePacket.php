@@ -113,9 +113,9 @@ class StartGamePacket extends DataPacket{
 	/** @var string */
 	public $premiumWorldTemplateId = "";
 	/** @var bool */
-	public $unknownBool = false;
+	public $isTrial = false;
 	/** @var int */
-	public $currentTick = 0;
+	public $currentTick = 0; //only used if isTrial is true
 	/** @var int */
 	public $enchantmentSeed = 0;
 
@@ -160,7 +160,7 @@ class StartGamePacket extends DataPacket{
 		$this->levelId = $this->getString();
 		$this->worldName = $this->getString();
 		$this->premiumWorldTemplateId = $this->getString();
-		$this->unknownBool = $this->getBool();
+		$this->isTrial = $this->getBool();
 		$this->currentTick = $this->getLLong();
 
 		$this->enchantmentSeed = $this->getVarInt();
@@ -207,7 +207,7 @@ class StartGamePacket extends DataPacket{
 		$this->putString($this->levelId);
 		$this->putString($this->worldName);
 		$this->putString($this->premiumWorldTemplateId);
-		$this->putBool($this->unknownBool);
+		$this->putBool($this->isTrial);
 		$this->putLLong($this->currentTick);
 
 		$this->putVarInt($this->enchantmentSeed);

@@ -220,7 +220,7 @@ class LevelSoundEventPacket extends DataPacket{
 	/** @var int */
 	public $pitch = 1;
 	/** @var bool */
-	public $unknownBool = false;
+	public $isBabyMob = false;
 	/** @var bool */
 	public $disableRelativeVolume = false;
 
@@ -229,7 +229,7 @@ class LevelSoundEventPacket extends DataPacket{
 		$this->position = $this->getVector3();
 		$this->extraData = $this->getVarInt();
 		$this->pitch = $this->getVarInt();
-		$this->unknownBool = $this->getBool();
+		$this->isBabyMob = $this->getBool();
 		$this->disableRelativeVolume = $this->getBool();
 	}
 
@@ -238,7 +238,7 @@ class LevelSoundEventPacket extends DataPacket{
 		$this->putVector3($this->position);
 		$this->putVarInt($this->extraData);
 		$this->putVarInt($this->pitch);
-		$this->putBool($this->unknownBool);
+		$this->putBool($this->isBabyMob);
 		$this->putBool($this->disableRelativeVolume);
 	}
 
