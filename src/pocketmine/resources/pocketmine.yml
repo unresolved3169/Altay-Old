@@ -150,22 +150,8 @@ chunk-generation:
 ticks-per:
  autosave: 6000
 
-auto-report:
- #Send crash reports for processing
- enabled: false
- send-code: true
- send-settings: true
- send-phpinfo: false
- use-https: true
- host: crash.pmmp.io
-
-anonymous-statistics:
- #Sends anonymous statistics for data aggregation, plugin usage tracking
- enabled: false #TODO: re-enable this when we have a new stats host
- host: stats.pocketmine.net
-
 auto-updater:
- enabled: false #TODO: Don't enable this.
+ enabled: false #Don't enable this.
  on-update:
   warn-console: true
   warn-ops: true
