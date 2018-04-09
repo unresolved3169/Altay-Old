@@ -1460,8 +1460,8 @@ class Server{
 			$yazi = str_ireplace("{%$index}", $value, $yazi);
 		}
 
-		$randColor = "0123456789abcdef";
-		$randColor = $randColor{mt_rand(0, 15)};
+		$randColor = "123456789abcdef";
+		$randColor = $randColor{mt_rand(0, 14)};
 		$yazi = str_replace("{}", TextFormat::ESCAPE.$randColor, $yazi);
 
 		$this->logger->info($yazi);
