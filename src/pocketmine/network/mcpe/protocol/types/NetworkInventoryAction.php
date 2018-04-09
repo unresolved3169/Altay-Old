@@ -122,6 +122,7 @@ class NetworkInventoryAction{
 						$packet->isFinalCraftingPart = true;
 					case self::SOURCE_TYPE_CRAFTING_USE_INGREDIENT:
 						$packet->inventoryType = "Crafting";
+						$packet->isCraftingPart = true;
 						break;
 					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
 						$packet->inventoryType = "Enchant";
