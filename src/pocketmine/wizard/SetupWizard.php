@@ -69,10 +69,6 @@ class SetupWizard{
 
 		$this->lang = new BaseLang($lang);
 
-        $config = new Config(\pocketmine\DATA . "pocketmine.yml", Config::YAML);
-        $config->set("settings.language", $lang);
-        $config->save();
-
 		$this->message($this->lang->get("language_has_been_selected"));
 
 		if(!$this->showLicense()){
