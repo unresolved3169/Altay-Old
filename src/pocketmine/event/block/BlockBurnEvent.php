@@ -21,27 +21,28 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\event\block;
 
-class WoodenStairs extends Stair{
+use pocketmine\block\Block;
+use pocketmine\event\Cancellable;
 
-	public function getHardness() : float{
-		return 2;
-	}
+/**
+ * Called when a block is burned away by fire.
+ */
+class BlockBurnEvent extends BlockEvent implements Cancellable{
+    /** @var Block */
+    private $causingBlock;
 
-	public function getBlastResistance() : float{
-		return 15;
-	}
-
-	public function getToolType() : int{
-		return BlockToolType::TYPE_AXE;
-	}
-
-    public function getFlameEncouragement() : int {
-        return 5;
+    public function __construct(Block $block, Block $causingBlock){
+        parent::__construct($block);
+        $this->causingBlock = $causingBlock;
     }
 
-    public function getFlammability() : int {
-        return 20;
+    /**
+     * Returns the block (usually Fire) which caused the target block to be burned away.
+     * @return Block
+     */
+    public function getCausingBlock() : Block{
+        return $this->causingBlock;
     }
 }

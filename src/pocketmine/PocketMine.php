@@ -84,7 +84,7 @@ namespace pocketmine {
 	const API_VERSION = "3.0.1";
 	const CODENAME = "TuranicPro";
 
-	const MIN_PHP_VERSION = "7.2.0RC3";
+	const MIN_PHP_VERSION = "7.2.0";
 
 	function critical_error($message){
 		echo "[ERROR] $message" . PHP_EOL;

@@ -32,7 +32,6 @@ use pocketmine\block\BlockFactory;
 use pocketmine\command\CommandReader;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\entity\Entity;
@@ -1293,7 +1292,7 @@ class Server{
 	 * @param bool   $value
 	 */
 	public function setConfigBool(string $variable, bool $value){
-		$this->properties->set($variable, $value == true ? "1" : "0");
+		$this->properties->set($variable, $value ? "1" : "0");
 	}
 
 	/**

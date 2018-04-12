@@ -4,7 +4,7 @@
    "type": "project",
    "license": "LGPL-3.0",
    "require": {
-	   "php": ">=7.2.0RC3",
+	   "php": ">=7.2.0",
 	   "ext-bcmath": "*",
 	   "ext-curl": "*",
 	   "ext-hash": "*",

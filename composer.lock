@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0b6b41eb1a809ee68765a874f991df9",
+    "content-hash": "bb31609f1598ae364cb73f23777be232",
     "packages": [
         {
             "name": "pocketmine/binaryutils",
@@ -153,7 +153,6 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "php": 5,
         "ext-pthreads": 20,
         "pocketmine/raklib": 20,
         "pocketmine/spl": 20,
@@ -163,7 +162,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.2.0RC3",
+        "php": ">=7.2.0",
         "ext-bcmath": "*",
         "ext-curl": "*",
         "ext-hash": "*",
