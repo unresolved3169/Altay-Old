@@ -80,6 +80,7 @@ use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\EnchantTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
+use pocketmine\inventory\transaction\TransactionValidationException;
 use pocketmine\item\Consumable;
 use pocketmine\item\WritableBook;
 use pocketmine\item\WrittenBook;
@@ -2327,13 +2328,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					//we get the actions for this in several packets, so we need to wait until we have all the pieces before
 					//trying to execute it
 
-					$result = $this->craftingTransaction->execute();
-					if(!$result){
-						$this->server->getLogger()->debug("Failed to execute crafting transaction from " . $this->getName());
-					}
+                    $ret = true;
+                    try{
+                        $this->craftingTransaction->execute();
+
+                    }catch(TransactionValidationException $e){
+                        $this->server->getLogger()->debug("Failed to execute crafting transaction for " . $this->getName() . ": " . $e->getMessage());
+                        $ret = false;
+                    }
 
 					$this->craftingTransaction = null;
-					return $result;
+					return $ret;
 				}
 
 				return true;
@@ -2350,15 +2355,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		switch($packet->transactionType){
-			case InventoryTransactionPacket::TYPE_NORMAL:
-				$this->setUsingItem(false);
-				$transaction = new InventoryTransaction($this, $actions);
-
-				if(!$transaction->execute()){
-					$this->server->getLogger()->debug("Failed to execute inventory transaction from " . $this->getName() . " with actions: " . json_encode($packet->actions));
-
-					return false; //oops!
-				}
+            case InventoryTransactionPacket::TYPE_NORMAL:
+                $this->setUsingItem(false);
+                $transaction = new InventoryTransaction($this, $actions);
+                try {
+                    $transaction->execute();
+                } catch (TransactionValidationException $e) {
+                    $this->server->getLogger()->debug("Failed to execute inventory transaction from ".$this->getName().": ".$e->getMessage());
+                    $this->server->getLogger()->debug("Actions: ".json_encode($packet->actions));
+                    return false;
+                }
 
 				//TODO: fix achievement for getting iron from furnace
 
