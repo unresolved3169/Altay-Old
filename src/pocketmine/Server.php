@@ -1460,7 +1460,7 @@ class Server{
 		$randColor = $randColor{mt_rand(0, 14)};
 		$yazi = str_replace("{}", TextFormat::ESCAPE.$randColor, $yazi);
 
-		$this->logger->info($yazi);
+		$this->logger->info("\n".$yazi);
 	}
 
 	/**
