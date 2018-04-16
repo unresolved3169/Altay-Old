@@ -2342,10 +2342,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}
 
 				return true;
-			case "Enchant":
-				$enchantTransaction = new EnchantTransaction($this, $actions);
-				$enchantTransaction->execute();
-				break;
 			default:
 				if($this->craftingTransaction !== null){
 					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");

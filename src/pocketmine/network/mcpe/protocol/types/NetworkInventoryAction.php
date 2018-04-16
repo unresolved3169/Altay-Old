@@ -122,10 +122,6 @@ class NetworkInventoryAction{
 						$packet->isFinalCraftingPart = true;
 					case self::SOURCE_TYPE_CRAFTING_USE_INGREDIENT:
 						$packet->inventoryType = "Crafting";
-						$packet->isCraftingPart = true;
-						break;
-					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
-						$packet->inventoryType = "Enchant";
 						break;
 				}
 				break;
@@ -243,8 +239,7 @@ class NetworkInventoryAction{
 						return new EnchantAction($window, 1, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
 						$window = $player->getWindowFromClass(EnchantInventory::class);
-						return new EnchantAction($window, -1, $this->oldItem, $this->newItem);
-
+						return new EnchantAction($window, $this->inventorySlot, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_TRADING_INPUT_1:
 					case self::SOURCE_TYPE_TRADING_INPUT_2:
 						$window = $player->getWindowFromClass(TradeInventory::class);
