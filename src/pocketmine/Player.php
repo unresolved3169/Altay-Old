@@ -4120,7 +4120,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->isConnected();
 	}
 
-	public function getWindowFromClass(string $class) : ?Inventory{
+	public function getWindowByType(string $class) : ?Inventory{
 		foreach ($this->windowIndex as $inventory)
 			if (get_class($inventory) === $class)
 				return $inventory;
