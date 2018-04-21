@@ -49,6 +49,7 @@ abstract class Tile extends Position{
 	public const TAG_Z = "z";
 
 	public const BANNER = "Banner";
+	public const BEACON = "Beacon";
 	public const BED = "Bed";
 	public const BREWING_STAND = "BrewingStand";
 	public const CHEST = "Chest";
@@ -97,6 +98,7 @@ abstract class Tile extends Position{
 		self::registerTile(ItemFrame::class, [self::ITEM_FRAME]); //this is an entity in PC
 		self::registerTile(Sign::class, [self::SIGN, "minecraft:sign"]);
 		self::registerTile(Skull::class, [self::SKULL, "minecraft:skull"]);
+		self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
 
 		self::registerTile(VirtualHolder::class, [self::VIRTUAL]);
 	}
