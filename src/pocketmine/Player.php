@@ -255,15 +255,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/** @var int */
 	protected $deviceOS;
 
-	/** @var int */
-	private $uiprofile;
-
-	/** @var int */
-	private $guiscale;
-
-	/** @var int */
-	private $inputmode;
-
 	protected $windowCnt = 2;
 	/** @var int[] */
 	protected $windows = [];
@@ -1888,10 +1879,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$this->deviceModel = $packet->clientData["DeviceModel"];
 		$this->deviceOS = $packet->clientData["DeviceOS"];
-
-        $this->uiprofile = $packet->clientData["UIProfile"];
-        $this->guiscale = $packet->clientData["GuiScale"];
-        $this->inputmode = $packet->clientData["CurrentInputMode"];
 
 		$skin = new Skin(
 			$packet->clientData["SkinId"],
@@ -4165,16 +4152,4 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function getDeviceOS() : int{
 		return $this->deviceOS;
 	}
-
-	public function getUIProfile() : int{
-	    return $this->uiprofile;
-    }
-
-    public function getGUIScale() : int{
-	    return $this->guiscale;
-    }
-
-    public function getInputMode() : int{
-	    return $this->inputmode;
-    }
 }
