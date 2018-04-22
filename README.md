@@ -40,7 +40,7 @@ Example servers running Altay
    - [x] Trade
    - [x] Level Upgrade
    - [x] Use++
- - [ ] Beacons
+ - [x] Beacons
  - [ ] Config Auto Updater
  - [ ] Entity Behaviors (MobAI)
  - [ ] Level Dimensions
