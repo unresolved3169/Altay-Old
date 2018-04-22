@@ -60,7 +60,7 @@ class Villager extends Creature implements NPC, Ageable{
 		]
 	];
 
-	public const CAREER_FARMER = 1, CAREER_LIBRARIAN = 1, CAREER_CLERIC= 1, CAREER_ARMOR = 1, CAREER_BUTCHER = 1;
+	public const CAREER_FARMER = 1, CAREER_LIBRARIAN = 1, CAREER_CLERIC = 1, CAREER_ARMOR = 1, CAREER_BUTCHER = 1;
 	public const CAREER_FISHERMAN = 2, CAREER_CARTOGRAPHER = 2, CAREER_WEAPON = 2, CAREER_LEATHER = 2;
 	public const CAREER_STEPHERD = 3, CAREER_TOOL = 3;
 	public const CAREER_FLETCHER = 4;
@@ -200,5 +200,4 @@ class Villager extends Creature implements NPC, Ageable{
 	public function setWilling(bool $isWilling) : void{
 		$this->isWilling = $isWilling;
 	}
-
 }

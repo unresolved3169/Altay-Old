@@ -78,7 +78,6 @@ use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
-use pocketmine\inventory\transaction\EnchantTransaction;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\inventory\transaction\TransactionValidationException;
@@ -3366,20 +3365,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->dataPacket($pk);
 	}
 
-	/**
-	 * Sends a popup message to the player
-	 *
-	 * TODO: add translation type popups
-	 *
-	 * @param string $message
-	 * @param string $subtitle @deprecated
-	 */
-	public function sendPopup(string $message, string $subtitle = ""){
-		$pk = new TextPacket();
-		$pk->type = TextPacket::TYPE_POPUP;
-		$pk->message = $message;
-		$this->dataPacket($pk);
-	}
+    /**
+     * Sends a popup message to the player
+     *
+     * TODO: add translation type popups
+     *
+     * @param string $message
+     */
+    public function sendPopup(string $message) {
+        $pk = new TextPacket();
+        $pk->type = TextPacket::TYPE_POPUP;
+        $pk->message = $message;
+        $this->dataPacket($pk);
+    }
 
 	public function sendTip(string $message){
 		$pk = new TextPacket();
