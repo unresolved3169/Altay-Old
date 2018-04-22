@@ -26,6 +26,7 @@ namespace pocketmine\network\mcpe\protocol\types;
 
 use pocketmine\block\Block;
 use pocketmine\inventory\AnvilInventory;
+use pocketmine\inventory\BeaconInventory;
 use pocketmine\inventory\EnchantInventory;
 use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\transaction\action\CreativeInventoryAction;
@@ -205,8 +206,13 @@ class NetworkInventoryAction{
 						return null;
 
 					case self::SOURCE_TYPE_CONTAINER_DROP_CONTENTS:
-						//TODO: this type applies to all fake windows, not just crafting
-						$window = $player->getCraftingGrid();
+						$window = $player->getLastOpenContainerInventory();
+						var_dump($window);
+
+						if($window === null){
+						    $window = $player->getCraftingGrid();
+						    var_dump("aha");
+                        }
 
 						//DROP_CONTENTS doesn't bother telling us what slot the item is in, so we find it ourselves
 						$inventorySlot = $window->first($this->oldItem, true);
@@ -249,6 +255,8 @@ class NetworkInventoryAction{
 						/** @var TradeInventory $window */
 						$window = $player->getWindowByType(TradeInventory::class);
 						return new TradeAction($this->oldItem, $this->newItem, $window, (abs($this->windowId) - 23) === 0);
+                    case self::SOURCE_TYPE_BEACON:
+                        return new SlotChangeAction($player->getWindowByType(BeaconInventory::class), 0, $this->oldItem, $this->newItem);
 				}
 
 				//TODO: more stuff

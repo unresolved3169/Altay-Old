@@ -72,23 +72,21 @@ class TradeAction extends InventoryAction{
 		if($this->output){
 			$holder = $this->inventory->getHolder();
 			$recipes = $holder->getOffers()->getListTag("Recipes");
-			$values = $recipes->getAllValues();
 			/** @var CompoundTag $tag */
-			foreach($values as $index => $tag){
+			foreach($recipes->getAllValues() as $index => $tag){
 				/** @var CompoundTag $sell */
 				$sell = $tag->getTag("sell");
 				$sellId = $sell->getShort("id");
 				$sellCount = $sell->getByte("Count");
 				if($sellId == $this->sourceItem->getId() and $sellCount == $this->sourceItem->getCount()){
 					$tag->setInt("uses", $tag->getInt("uses") + 1);
-					$recipes[$index] = $tag;
+					$recipes->set($index, $tag);
 					break;
 				}
 			}
 
-			$recipes->setValue($values);
 			$this->inventory->getHolder()->setWilling(mt_rand(1, 3) <= 2);
-			$this->inventory->setBuy(true);
+			$this->inventory->setTraded(true);
 		}
 	}
 

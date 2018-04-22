@@ -78,12 +78,12 @@ class Villager extends Creature implements NPC, Ageable{
 	protected $career;
 	/** @var int */
 	protected $tradeTier;
-	/** @var CompoundTag */
-	protected $offers = null;
 	/** @var TradeInventory */
 	protected $inventory;
 	/** @var bool */
 	protected $isWilling = true;
+
+	protected $offers;
 
 	public function getName() : string{
 		return "Villager";
@@ -103,17 +103,15 @@ class Villager extends Creature implements NPC, Ageable{
 
 		$this->career = $this->namedtag->getInt("Career", array_rand(self::$names[$this->getProfession()])); // custom
 		$this->tradeTier = $this->namedtag->getInt("TradeTier", 0);
-		$this->updateTradeItems(false);
+		$this->updateTradeItems();
+
+		$this->inventory = new TradeInventory($this);
 	}
 
-	public function updateTradeItems(bool $update = true){
-		if($update or !$this->namedtag->hasTag("Offers", CompoundTag::class)) {
-			$this->namedtag->setTag(new CompoundTag("Offers", [
-				new ListTag("Recipes", TradeItems::getItemsForVillager($this))
-			]));
-		}
-
-		$this->offers = $this->namedtag->getTag("Offers");
+	public function updateTradeItems() : void{
+	    $this->offers = new CompoundTag("Offers", [
+	        new ListTag("Recipes", TradeItems::getItemsForVillager($this))
+        ]);
 	}
 
 	public function updateTradeTier() : void{
@@ -155,7 +153,7 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->offers = $offers;
 	}
 
-	public function getOffers() : CompoundTag{
+	public function getOffers() : ?CompoundTag{
 		return $this->offers;
 	}
 
@@ -165,7 +163,7 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->namedtag->setInt("Profession", $this->getProfession());
 		$this->namedtag->setInt("Career", $this->career);
 		$this->namedtag->setInt("TradeTier", $this->tradeTier);
-		$this->namedtag->setTag($this->offers);
+		$this->namedtag->setTag($this->offers, true);
 	}
 
 	public function setProfession(int $profession){
@@ -181,13 +179,14 @@ class Villager extends Creature implements NPC, Ageable{
 	}
 
 	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
-		if(!$this->isBaby() && $this->offers != null){
+		if(!$this->isBaby() and $this->offers instanceof CompoundTag){
 			$player->addWindow($this->getInventory());
+			var_dump("za");
 		}
 	}
 
 	public function getInventory() : TradeInventory{
-		return new TradeInventory($this);
+		return $this->inventory;
 	}
 
 	public function getDisplayName() : string{

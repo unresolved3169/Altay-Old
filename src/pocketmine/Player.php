@@ -73,6 +73,7 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\form\Form;
+use pocketmine\inventory\ContainerInventory;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
@@ -4127,6 +4128,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		return null;
 	}
+
+	public function getLastOpenContainerInventory() : ?ContainerInventory{
+	    $index = -100;
+	    foreach($this->windowIndex as $i => $inv){
+	        if($inv instanceof ContainerInventory and $i > $index){
+	            $index = $i;
+            }
+        }
+
+        return $index !== -100 ? $this->windowIndex[$index] : null;
+    }
 
 	/**
 	 * Sets the movement speed of player
