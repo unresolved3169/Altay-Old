@@ -207,11 +207,9 @@ class NetworkInventoryAction{
 
 					case self::SOURCE_TYPE_CONTAINER_DROP_CONTENTS:
 						$window = $player->getLastOpenContainerInventory();
-						var_dump($window);
 
 						if($window === null){
 						    $window = $player->getCraftingGrid();
-						    var_dump("aha");
                         }
 
 						//DROP_CONTENTS doesn't bother telling us what slot the item is in, so we find it ourselves

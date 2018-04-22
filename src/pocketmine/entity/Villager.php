@@ -181,7 +181,6 @@ class Villager extends Creature implements NPC, Ageable{
 	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
 		if(!$this->isBaby() and $this->offers instanceof CompoundTag){
 			$player->addWindow($this->getInventory());
-			var_dump("za");
 		}
 	}
 
