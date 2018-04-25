@@ -107,11 +107,11 @@ class MeleeAttackBehavior extends Behavior{
 		if($this->currentPath->havePath()){
 			$next = $this->currentPath->getNextTile($this->mob);
 			if($next !== null){
-				$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+				$this->mob->lookAt(new Vector3($next->x, $this->mob->y, $next->y));
 				$this->mob->moveForward($this->speedMultiplier);
 			} // else something is really wrong
 		}else{
-			$this->mob->resetMotion();
+			//$this->mob->resetMotion();
 		}
 
 		$this->mob->lookAt($target);

@@ -167,7 +167,7 @@ abstract class Mob extends Living{
 	public function moveForward(float $spm) : void{
 		$sf = $this->getMovementSpeed() * $spm * 0.7;
 		$level = $this->level;
-		$dir = $this->getDirectionVector()->normalize();
+		$dir = $this->getDirectionVector();
 		$dir->y = 0;
 		
 		$boundingBox = (clone $this->getBoundingBox())->offsetBy($dir->multiply($sf));

@@ -36,6 +36,8 @@ class EntityNavigator{
 	/** @var \pocketmine\level\Level */
 	protected $level;
 
+	protected $currentY = 0;
+
 	protected $neighbors = [
 		[0, -1],
 		[1, 0],
@@ -54,6 +56,7 @@ class EntityNavigator{
 	public function __construct(Mob $entity){
 		$this->entity = $entity;
 		$this->level = $entity->getLevel();
+		$this->currentY = $this->entity->y;
 	}
 
 
@@ -63,33 +66,39 @@ class EntityNavigator{
 	 * @param int $maxAttempt
 	 * @return array
 	 */
-	public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 200): array{
+	public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 200) : array{
+	    $this->currentY = $this->entity->y;
+	    $this->level = $this->entity->getLevel(); //for level update
 		$attempt = 0;
 		$current = $to;
 		$path = [];
 
 		while(!$current->equals($from) and ++$attempt < $maxAttempt){
-			/** @var Vector2 $last */
-			$last = null;
-			foreach($this->getNeighbors($current) as $tile){
-				if($last === null or $last->distance($from) >= $tile->distance($from)){
-					$last = $tile;
-				}
-			}
+			$directionVector = $to->subtract($current)->normalize();
+			$block = $this->level->getBlock(new Vector3($current->x + $directionVector->x, $this->entity->y, $current->y + $directionVector->y));
+            $blockUp = $block->getSide(Vector3::SIDE_UP);
+            $blockDown = $block->getSide(Vector3::SIDE_DOWN);
+            $blockDownDown = $block->getSide(Vector3::SIDE_DOWN, 2);
+			if((!$blockDown->isSolid() and !$blockDownDown->isSolid()) or ($block->isSolid() and $blockUp->isSolid())){
+			    $dist = PHP_INT_MAX;
+			    $result = null;
+			    foreach($this->getNeighbors($current->add($directionVector)) as $neighbor){
+			        if($neighbor->distance($to) < $dist){
+			            $result = $neighbor;
+			            $dist = $neighbor->distance($to);
+                    }
+                }
 
-			if($last !== null){
-				$path[] = $last;
-				$current = $last;
-			}else{
-				break;
-			}
+                if($result instanceof Vector2){
+			        $path[] = $result->add(0.5,0.5);
+			        $current = $result;
+                }else{
+			        break;
+                }
+            }else{
+			    $path[] = $current = $current->add($directionVector);
+            }
 		}
-
-		$path = array_reverse($path);
-
-		unset($path[0]);
-
-		$path[] = $to;
 
 		return $path;
 	}
@@ -212,7 +221,7 @@ class EntityNavigator{
 		$path = Path::findPath($this->entity, $pos);
 
 		if($path->havePath() and $next = $path->getNextTile($this->entity)){
-			$this->entity->lookAt(new Vector3($next->x + 0.5, $this->entity->y, $next->y + 0.5));
+			$this->entity->lookAt(new Vector3($next->x, $this->entity->y, $next->y));
 			$this->entity->moveForward($speed);
 
 			return true;
