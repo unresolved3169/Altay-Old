@@ -28,7 +28,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 
@@ -42,30 +42,30 @@ class TitleCommand extends VanillaCommand{
 		);
 		$this->setPermission("pocketmine.command.title");
 
-        $playerParameter = CommandParameterUtils::getPlayerParameter(false);
+		$playerParameter = new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false);
 
-        $this->setOverloads([
-            new CommandOverload("clear", [
-                $playerParameter,
-                CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("clear", ["clear"]))
-            ]),
-            new CommandOverload("reset", [
-                $playerParameter,
-                CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("reset", ["reset"]))
-            ]),
-            new CommandOverload("title", [
-                $playerParameter,
-                CommandParameterUtils::getStringEnumParameter("TitleSet", CommandEnumValues::getTitleSet()),
-                CommandParameterUtils::getMessageParameter(false)->setName("titleText")
-            ]),
-            new CommandOverload("times", [
-                $playerParameter,
-                CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("times", ["times"])),
-                CommandParameterUtils::getIntParameter("fadeIn"),
-                CommandParameterUtils::getIntParameter("stay"),
-                CommandParameterUtils::getIntParameter("fadeOut")
-            ]),
-        ]);
+		$this->setOverloads([
+			new CommandOverload("clear", [
+				$playerParameter,
+				new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("clear", ["clear"]))
+			]),
+			new CommandOverload("reset", [
+				$playerParameter,
+				new CommandParameter("reset", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("reset", ["reset"]))
+			]),
+			new CommandOverload("title", [
+				$playerParameter,
+				new CommandParameter("TitleSet", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getTitleSet()),
+				new CommandParameter("titleText", CommandParameter::ARG_TYPE_RAWTEXT, false)
+			]),
+			new CommandOverload("times", [
+				$playerParameter,
+				new CommandParameter("times", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("times", ["times"])),
+				new CommandParameter("fadeIn", CommandParameter::ARG_TYPE_INT),
+				new CommandParameter("stay", CommandParameter::ARG_TYPE_INT),
+				new CommandParameter("fadeOut", CommandParameter::ARG_TYPE_INT)
+			]),
+		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

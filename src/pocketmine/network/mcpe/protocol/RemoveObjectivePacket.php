@@ -22,26 +22,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\particle;
+namespace pocketmine\network\mcpe\protocol;
 
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
+#include <rules/DataPacket.h>
 
-class DestroyParticle extends Particle{
-    /** @var int */
-    protected $data;
+use pocketmine\network\mcpe\NetworkSession;
 
-    public function __construct(Vector3 $pos, int $data){
-        parent::__construct($pos->x, $pos->y, $pos->z);
-        $this->data = $data;
-    }
+class RemoveObjectivePacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::REMOVE_OBJECTIVE_PACKET;
 
-    public function encode(){
-        $pk = new LevelEventPacket;
-        $pk->evid = LevelEventPacket::EVENT_PARTICLE_DESTROY;
-        $pk->position = $this->asVector3();
-        $pk->data = $this->data;
+	/** @var string */
+	public $objectiveName;
 
-        return $pk;
-    }
+	protected function decodePayload(){
+		$this->objectiveName = $this->getString();
+	}
+
+	protected function encodePayload(){
+		$this->putString($this->objectiveName);
+	}
+
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleRemoveObjective($this);
+	}
 }

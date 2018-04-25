@@ -24,25 +24,6 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory\transaction;
 
-use pocketmine\inventory\transaction\action\EnchantAction;
+class TransactionValidationException extends \RuntimeException{
 
-class EnchantTransaction extends InventoryTransaction{
-
-    public function canExecute(): bool{
-        $rm = 0;
-        foreach($this->getActions() as $index => $action){
-            if($action instanceof EnchantAction){
-                if($action->getSlot() == -1){
-                    unset($this->actions[$index]);
-                    $rm++;
-                }
-            }
-        }
-
-        if($rm > 0){
-            $this->squashDuplicateSlotChanges();
-            return true;
-        }
-        return parent::canExecute();
-    }
 }

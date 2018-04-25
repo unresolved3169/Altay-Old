@@ -80,7 +80,9 @@ use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
 use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -126,62 +128,63 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	//TODO: add more properties
 
 	public const DATA_ENDERMAN_HELD_ITEM_ID = 23; //short
-	public const DATA_ENDERMAN_HELD_ITEM_DAMAGE = 24; //short
-	public const DATA_ENTITY_AGE = 25; //short
+	public const DATA_ENTITY_AGE = 24; //short
 
-	/* 27 (byte) player-specific flags
-	 * 28 (int) player "index"?
-	 * 29 (block coords) bed position */
-	public const DATA_FIREBALL_POWER_X = 30; //float
-	public const DATA_FIREBALL_POWER_Y = 31;
-	public const DATA_FIREBALL_POWER_Z = 32;
-	/* 33 (unknown)
+	/* 26 (byte) player-specific flags
+	 * 27 (int) player "index"?
+	 * 28 (block coords) bed position */
+	public const DATA_FIREBALL_POWER_X = 29; //float
+	public const DATA_FIREBALL_POWER_Y = 30;
+	public const DATA_FIREBALL_POWER_Z = 31;
+	/* 32 (unknown)
+	 * 33 (float) fishing bobber
 	 * 34 (float) fishing bobber
-	 * 35 (float) fishing bobber
-	 * 36 (float) fishing bobber */
-	public const DATA_POTION_AUX_VALUE = 37; //short
-	public const DATA_LEAD_HOLDER_EID = 38; //long
-	public const DATA_SCALE = 39; //float
-	public const DATA_INTERACTIVE_TAG = 40; //string (button text)
-	public const DATA_NPC_SKIN_ID = 41; //string
-	public const DATA_URL_TAG = 42; //string
-	public const DATA_MAX_AIR = 43; //short
-	public const DATA_MARK_VARIANT = 44; //int
-	/* 45 (byte) container stuff
-	 * 46 (int) container stuff
-	 * 47 (int) container stuff */
-	public const DATA_BLOCK_TARGET = 48; //block coords (ender crystal)
-	public const DATA_WITHER_INVULNERABLE_TICKS = 49; //int
-	public const DATA_WITHER_TARGET_1 = 50; //long
-	public const DATA_WITHER_TARGET_2 = 51; //long
-	public const DATA_WITHER_TARGET_3 = 52; //long
-	/* 53 (short) */
-	public const DATA_BOUNDING_BOX_WIDTH = 54; //float
-	public const DATA_BOUNDING_BOX_HEIGHT = 55; //float
-	public const DATA_FUSE_LENGTH = 56; //int
-	public const DATA_RIDER_SEAT_POSITION = 57; //vector3f
-	public const DATA_RIDER_ROTATION_LOCKED = 58; //byte
-	public const DATA_RIDER_MAX_ROTATION = 59; //float
-	public const DATA_RIDER_MIN_ROTATION = 60; //float
-	public const DATA_AREA_EFFECT_CLOUD_RADIUS = 61; //float
-	public const DATA_AREA_EFFECT_CLOUD_WAITING = 62; //int
-	public const DATA_AREA_EFFECT_CLOUD_PARTICLE_ID = 63; //int
-	/* 64 (int) shulker-related */
-	public const DATA_SHULKER_ATTACH_FACE = 65; //byte
-	/* 66 (short) shulker-related */
-	public const DATA_SHULKER_ATTACH_POS = 67; //block coords
-	public const DATA_TRADING_PLAYER_EID = 68; //long
+	 * 35 (float) fishing bobber */
+	public const DATA_POTION_AUX_VALUE = 36; //short
+	public const DATA_LEAD_HOLDER_EID = 37; //long
+	public const DATA_SCALE = 38; //float
+	public const DATA_INTERACTIVE_TAG = 39; //string (button text)
+	public const DATA_NPC_SKIN_ID = 40; //string
+	public const DATA_URL_TAG = 41; //string
+	public const DATA_MAX_AIR = 42; //short
+	public const DATA_MARK_VARIANT = 43; //int
+	/* 44 (byte) container stuff
+	 * 45 (int) container stuff
+	 * 46 (int) container stuff */
+	public const DATA_BLOCK_TARGET = 47; //block coords (ender crystal)
+	public const DATA_WITHER_INVULNERABLE_TICKS = 48; //int
+	public const DATA_WITHER_TARGET_1 = 49; //long
+	public const DATA_WITHER_TARGET_2 = 50; //long
+	public const DATA_WITHER_TARGET_3 = 51; //long
+	/* 52 (short) */
+	public const DATA_BOUNDING_BOX_WIDTH = 53; //float
+	public const DATA_BOUNDING_BOX_HEIGHT = 54; //float
+	public const DATA_FUSE_LENGTH = 55; //int
+	public const DATA_RIDER_SEAT_POSITION = 56; //vector3f
+	public const DATA_RIDER_ROTATION_LOCKED = 57; //byte
+	public const DATA_RIDER_MAX_ROTATION = 58; //float
+	public const DATA_RIDER_MIN_ROTATION = 59; //float
+	public const DATA_AREA_EFFECT_CLOUD_RADIUS = 60; //float
+	public const DATA_AREA_EFFECT_CLOUD_WAITING = 61; //int
+	public const DATA_AREA_EFFECT_CLOUD_PARTICLE_ID = 62; //int
+	/* 63 (int) shulker-related */
+	public const DATA_SHULKER_ATTACH_FACE = 64; //byte
+	/* 65 (short) shulker-related */
+	public const DATA_SHULKER_ATTACH_POS = 66; //block coords
+	public const DATA_TRADING_PLAYER_EID = 67; //long
 
-	/* 70 (byte) command-block */
-	public const DATA_COMMAND_BLOCK_COMMAND = 71; //string
-	public const DATA_COMMAND_BLOCK_LAST_OUTPUT = 72; //string
-	public const DATA_COMMAND_BLOCK_TRACK_OUTPUT = 73; //byte
-	public const DATA_CONTROLLING_RIDER_SEAT_NUMBER = 74; //byte
-	public const DATA_STRENGTH = 75; //int
-	public const DATA_MAX_STRENGTH = 76; //int
-	/* 77 (int)
-	 * 78 (int) */
-	public const DATA_ARMOR_STAND_POSE = 79; //int
+	/* 69 (byte) command-block */
+	public const DATA_COMMAND_BLOCK_COMMAND = 70; //string
+	public const DATA_COMMAND_BLOCK_LAST_OUTPUT = 71; //string
+	public const DATA_COMMAND_BLOCK_TRACK_OUTPUT = 72; //byte
+	public const DATA_CONTROLLING_RIDER_SEAT_NUMBER = 73; //byte
+	public const DATA_STRENGTH = 74; //int
+	public const DATA_MAX_STRENGTH = 75; //int
+	/* 76 (int) */
+	public const DATA_LIMITED_LIFE = 77;
+	public const DATA_ARMOR_STAND_POSE_INDEX = 78; //int
+	public const DATA_ENDER_CRYSTAL_TIME_OFFSET = 79; //int
+	/* 80 (byte) something to do with nametag visibility? */
 
 
 	public const DATA_FLAG_ONFIRE = 0;
@@ -206,33 +209,35 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public const DATA_FLAG_CAN_CLIMB = 19;
 	public const DATA_FLAG_SWIMMER = 20;
 	public const DATA_FLAG_CAN_FLY = 21;
-	public const DATA_FLAG_RESTING = 22;
-	public const DATA_FLAG_SITTING = 23;
-	public const DATA_FLAG_ANGRY = 24;
-	public const DATA_FLAG_INTERESTED = 25;
-	public const DATA_FLAG_CHARGED = 26;
-	public const DATA_FLAG_TAMED = 27;
-	public const DATA_FLAG_LEASHED = 28;
-	public const DATA_FLAG_SHEARED = 29;
-	public const DATA_FLAG_GLIDING = 30;
-	public const DATA_FLAG_ELDER = 31;
-	public const DATA_FLAG_MOVING = 32;
-	public const DATA_FLAG_BREATHING = 33;
-	public const DATA_FLAG_CHESTED = 34;
-	public const DATA_FLAG_STACKABLE = 35;
-	public const DATA_FLAG_SHOWBASE = 36;
-	public const DATA_FLAG_REARING = 37;
-	public const DATA_FLAG_VIBRATING = 38;
-	public const DATA_FLAG_IDLING = 39;
-	public const DATA_FLAG_EVOKER_SPELL = 40;
-	public const DATA_FLAG_CHARGE_ATTACK = 41;
-	public const DATA_FLAG_WASD_CONTROLLED = 42;
-	public const DATA_FLAG_CAN_POWER_JUMP = 43;
-	public const DATA_FLAG_LINGER = 44;
-	public const DATA_FLAG_HAS_COLLISION = 45;
-	public const DATA_FLAG_AFFECTED_BY_GRAVITY = 46;
-	public const DATA_FLAG_FIRE_IMMUNE = 47;
-	public const DATA_FLAG_DANCING = 48;
+	public const DATA_FLAG_WALKER = 22;
+	public const DATA_FLAG_RESTING = 23;
+	public const DATA_FLAG_SITTING = 24;
+	public const DATA_FLAG_ANGRY = 25;
+	public const DATA_FLAG_INTERESTED = 26;
+	public const DATA_FLAG_CHARGED = 27;
+	public const DATA_FLAG_TAMED = 28;
+	public const DATA_FLAG_LEASHED = 29;
+	public const DATA_FLAG_SHEARED = 30;
+	public const DATA_FLAG_GLIDING = 31;
+	public const DATA_FLAG_ELDER = 32;
+	public const DATA_FLAG_MOVING = 33;
+	public const DATA_FLAG_BREATHING = 34;
+	public const DATA_FLAG_CHESTED = 35;
+	public const DATA_FLAG_STACKABLE = 36;
+	public const DATA_FLAG_SHOWBASE = 37;
+	public const DATA_FLAG_REARING = 38;
+	public const DATA_FLAG_VIBRATING = 39;
+	public const DATA_FLAG_IDLING = 40;
+	public const DATA_FLAG_EVOKER_SPELL = 41;
+	public const DATA_FLAG_CHARGE_ATTACK = 42;
+	public const DATA_FLAG_WASD_CONTROLLED = 43;
+	public const DATA_FLAG_CAN_POWER_JUMP = 44;
+	public const DATA_FLAG_LINGER = 45;
+	public const DATA_FLAG_HAS_COLLISION = 46;
+	public const DATA_FLAG_AFFECTED_BY_GRAVITY = 47;
+	public const DATA_FLAG_FIRE_IMMUNE = 48;
+	public const DATA_FLAG_DANCING = 49;
+	public const DATA_FLAG_ENCHANTED = 50;
 
 	public static $entityCount = 1;
 	/** @var Entity[] */
@@ -425,9 +430,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public $eyeHeight = null;
 
 	/** @var float */
-	public $height;
+	public $height = null;
 	/** @var float */
-	public $width;
+	public $width = null;
 
 	/** @var float */
 	protected $baseOffset = 0.0;
@@ -501,6 +506,15 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/** @var float */
 	protected $entityCollisionReduction = 0;
 
+	/** @var Entity */
+	protected $ridingEntity = null;
+	/** @var Entity */
+	protected $riddenByEntity = null;
+	/** @var float */
+	protected $entityRiderPitchDelta = 0;
+	/** @var float */
+	protected $entityRiderYawDelta = 0;
+
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->constructed = true;
@@ -549,6 +563,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->propertyManager->setString(self::DATA_NAMETAG, "");
 		$this->propertyManager->setLong(self::DATA_LEAD_HOLDER_EID, -1);
 		$this->propertyManager->setFloat(self::DATA_SCALE, 1);
+		if($this->width !== null) $this->propertyManager->setFloat(self::DATA_BOUNDING_BOX_WIDTH, $this->width);
+		if($this->height !== null) $this->propertyManager->setFloat(self::DATA_BOUNDING_BOX_HEIGHT, $this->height);
 
 		$this->fireTicks = $this->namedtag->getShort("Fire", 0);
 		if($this->isOnFire()){
@@ -640,17 +656,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->propertyManager->setFloat(self::DATA_SCALE, $value);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function isRiding() : bool{
 		return $this->getDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING);
 	}
 
-	/**
-	 * @param bool $value
-	 */
-	public function setRiding(bool $value){
+	public function setRiding(bool $value) : void{
 		$this->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING, $value);
 	}
 
@@ -660,6 +670,22 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function setInLove(bool $value){
 		$this->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_INLOVE, $value);
+	}
+
+	public function getRidingEntity(): ?Entity{
+		return $this->ridingEntity;
+	}
+
+	public function setRidingEntity(?Entity $ridingEntity = null): void{
+		$this->ridingEntity = $ridingEntity;
+	}
+
+	public function getRiddenByEntity(): ?Entity{
+		return $this->riddenByEntity;
+	}
+
+	public function setRiddenByEntity(?Entity $riddenByEntity = null): void{
+		$this->riddenByEntity = $riddenByEntity;
 	}
 
 	public function getBoundingBox(){
@@ -1508,6 +1534,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		);
 	}
 
+	public function hasEntityCollisionUpdate() : bool{
+		return false;
+	}
+
 	public function canTriggerWalking() : bool{
 		return true;
 	}
@@ -1516,10 +1546,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->fallDistance = 0.0;
 	}
 
-	/**
-	 * @param float $distanceThisTick
-	 * @param bool  $onGround
-	 */
 	protected function updateFallState(float $distanceThisTick, bool $onGround){
 		if($this instanceof Player) return;
 		if($onGround){
@@ -1529,6 +1555,105 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			}
 		}elseif($distanceThisTick < 0){
 			$this->fallDistance -= $distanceThisTick;
+		}
+	}
+
+	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDER, bool $send = true) : void{
+		if($this->ridingEntity == null and $entity !== $this){
+			$this->setRidingEntity($entity);
+			$entity->setRiddenByEntity($this);
+
+			if($send){
+				$this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, $this->getMountedYOffset(), 0));
+				$this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
+				$this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
+				$this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
+
+				$this->setRiding(true);
+				$this->ridingEntity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_WASD_CONTROLLED, true);
+
+				$pk = new SetEntityLinkPacket();
+				$pk->link = new EntityLink($this->ridingEntity->getId(), $this->id, $type);
+				$this->server->broadcastPacket($this->getViewers(), $pk);
+
+				if($this instanceof Player){
+					$this->dataPacket($pk);
+				}
+			}
+		}
+	}
+
+	public function dismountEntity(bool $send = true) : void{
+		if($this->ridingEntity !== null){
+			$this->ridingEntity->setRiddenByEntity(null);
+
+			if($send){
+				$this->setRiding(false);
+				$this->ridingEntity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_WASD_CONTROLLED, false);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_SEAT_POSITION);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_ROTATION_LOCKED);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_MAX_ROTATION);
+				$this->propertyManager->removeProperty(self::DATA_RIDER_MIN_ROTATION);
+
+				$pk = new SetEntityLinkPacket();
+				$pk->link = new EntityLink($this->ridingEntity->getId(), $this->id, EntityLink::TYPE_REMOVE);
+				$this->server->broadcastPacket($this->getViewers(), $pk);
+
+				if($this instanceof Player){
+					$this->sendDataPacket($pk);
+				}
+			}
+		}
+
+		$this->setRidingEntity(null);
+	}
+
+	public function getMountedYOffset() : float{
+		return $this->height * 0.75;
+	}
+
+	public function updateRiderPosition() : void{
+		if($this->riddenByEntity !== null){
+			$this->riddenByEntity->setPosition($this->add(0, $this->getMountedYOffset(), 0)); // is it need @EmreTr1 ?
+		}
+	}
+
+	public function updateRidden() : void{
+		if($this->ridingEntity === null) return;
+
+		if(!$this->ridingEntity->isAlive()){
+			$this->ridingEntity = null;
+		}else{
+			$this->motionX = $this->motionY = $this->motionZ = 0;
+
+			$this->ridingEntity->updateRiderPosition();
+			$this->entityRiderYawDelta += $this->ridingEntity->yaw -  $this->ridingEntity->lastYaw;
+
+			for($this->entityRiderPitchDelta += $this->ridingEntity->pitch - $this->ridingEntity->lastPitch; $this->entityRiderYawDelta >= 180; $this->entityRiderYawDelta -= 360){
+				//empty
+			}
+
+			while($this->entityRiderYawDelta < -180){
+				$this->entityRiderYawDelta += 360;
+			}
+
+			while($this->entityRiderPitchDelta >= 180){
+				$this->entityRiderPitchDelta -= 360;
+			}
+
+			while($this->entityRiderPitchDelta < -180){
+				$this->entityRiderPitchDelta += 360;
+			}
+
+			$d0 = $this->entityRiderYawDelta * 0.5;
+			$d1 = $this->entityRiderPitchDelta * 0.5;
+			$f = 10;
+
+			$d0 = ($d0 > $f) ? $f : (($d0 < -$f) ? -$f : $d0);
+			$d1 = ($d1 > $f) ? $f : (($d1 < -$f) ? -$f : $d1);
+
+			$this->entityRiderYawDelta -= $d0;
+			$this->entityRiderPitchDelta -= $d1;
 		}
 	}
 
@@ -1542,6 +1667,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function handleLavaMovement(){ //TODO
+
+	}
+
+	public function handleWaterMovement(){ //TODO
 
 	}
 
@@ -1847,9 +1976,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 	}
 
-	protected function checkEntityCollision(){
-		foreach ($this->level->getCollidingEntities($this->getBoundingBox(), $this) as $e){
-			$this->applyEntityCollision($e);
+	protected function checkEntityCollision() : void{
+		if($this->hasEntityCollisionUpdate()){
+			foreach($this->level->getCollidingEntities($this->getBoundingBox()->grow(0.3,0.3,0.3), $this) as $e){
+				$this->applyEntityCollision($e);
+			}
 		}
 	}
 

@@ -116,6 +116,29 @@ class ArmorStand extends Living{
 		$this->setPose($pose);
 	}
 
+	public function getEquipmentSlot(Item $item) : int{
+		if($item instanceof Armor){
+			return $item->getArmorSlot();
+		}else{
+			switch($item->getId()){
+				case Item::SKULL:
+				case Item::SKULL_BLOCK:
+				case Item::PUMPKIN:
+					return EquipmentSlot::HEAD;
+			}
+
+			return -1; // mainhand
+		}
+	}
+
+	public function setPose(int $pose) : void{
+		$this->propertyManager->setInt(self::DATA_ARMOR_STAND_POSE_INDEX, $pose);
+	}
+
+	public function getPose() : int{
+		return $this->propertyManager->getInt(self::DATA_ARMOR_STAND_POSE_INDEX);
+	}
+
 	public function onInteract(Player $player, Item $item, Vector3 $clickPos, int $slot) : void{
 		$player->getInventory()->sendContents($player);
 
@@ -189,17 +212,9 @@ class ArmorStand extends Living{
 		}
 	}
 
-	public function setPose(int $pose) : void{
-		$this->propertyManager->setInt(self::DATA_ARMOR_STAND_POSE, $pose);
-	}
-
-	public function getPose() : int{
-		return $this->propertyManager->getInt(self::DATA_ARMOR_STAND_POSE);
-	}
-
 	protected function applyGravity(){
-		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
 		parent::applyGravity();
+		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
 	}
 
 	public function saveNBT(){
@@ -249,18 +264,7 @@ class ArmorStand extends Living{
 		return "Armor Stand";
 	}
 
-	public function getEquipmentSlot(Item $item) : int{
-		if($item instanceof Armor){
-			return $item->getArmorSlot();
-		}else{
-			switch($item->getId()){
-				case Item::SKULL:
-				case Item::SKULL_BLOCK:
-				case Item::PUMPKIN:
-					return EquipmentSlot::HEAD;
-			}
-
-			return -1; // mainhand
-		}
+	public function hasEntityColissionUpdate() : bool{
+		return false;
 	}
 }

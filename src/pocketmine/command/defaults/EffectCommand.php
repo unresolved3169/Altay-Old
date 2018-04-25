@@ -28,7 +28,7 @@ use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
@@ -47,15 +47,15 @@ class EffectCommand extends VanillaCommand{
 
 		$this->setOverloads([
 			new CommandOverload("clear", [
-				CommandParameterUtils::getPlayerParameter(false),
-				CommandParameterUtils::getValueEnumParameter(false, new CommandEnum("clear", ["clear"]))
+				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+				new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("clear", ["clear"]))
 			]),
 			new CommandOverload("effect", [
-				CommandParameterUtils::getPlayerParameter(false),
-				CommandParameterUtils::getStringEnumParameter("effect", CommandEnumValues::getEffect()),
-				CommandParameterUtils::getIntParameter("seconds"),
-				CommandParameterUtils::getIntParameter("amplifier"),
-				CommandParameterUtils::getBoolEnum()
+				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+				new CommandParameter("effect", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getEffect()),
+				new CommandParameter("seconds", CommandParameter::ARG_TYPE_INT),
+				new CommandParameter("amplifier", CommandParameter::ARG_TYPE_INT),
+				new CommandParameter("bool", CommandParameter::ARG_TYPE_VALUE, false, CommandEnumValues::getBoolean())
 			])
 		]);
 	}

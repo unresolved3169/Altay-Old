@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -56,14 +57,24 @@ class PlayerListPacket extends DataPacket{
 				$entry->uuid = $this->getUUID();
 				$entry->entityUniqueId = $this->getEntityUniqueId();
 				$entry->username = $this->getString();
+				$entry->thirdPartyName = $this->getString();
+				$entry->platform = $this->getVarInt();
+
+				$skinId = $this->getString();
+				$skinData = $this->getString();
+				$capeData = $this->getString();
+				$geometryName = $this->getString();
+				$geometryData = $this->getString();
+
 				$entry->skin = new Skin(
-					$this->getString(), //id
-					$this->getString(), //data
-					$this->getString(), //cape
-					$this->getString(), //geometry name
-					$this->getString() //geometry data
+					$skinId,
+					$skinData,
+					$capeData,
+					$geometryName,
+					$geometryData
 				);
 				$entry->xboxUserId = $this->getString();
+				$entry->platformChatId = $this->getString();
 			}else{
 				$entry->uuid = $this->getUUID();
 			}
@@ -80,12 +91,15 @@ class PlayerListPacket extends DataPacket{
 				$this->putUUID($entry->uuid);
 				$this->putEntityUniqueId($entry->entityUniqueId);
 				$this->putString($entry->username);
+				$this->putString($entry->thirdPartyName);
+				$this->putVarInt($entry->platform);
 				$this->putString($entry->skin->getSkinId());
 				$this->putString($entry->skin->getSkinData());
 				$this->putString($entry->skin->getCapeData());
 				$this->putString($entry->skin->getGeometryName());
 				$this->putString($entry->skin->getGeometryData());
 				$this->putString($entry->xboxUserId);
+				$this->putString($entry->platformChatId);
 			}else{
 				$this->putUUID($entry->uuid);
 			}

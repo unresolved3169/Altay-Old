@@ -499,6 +499,50 @@ class Block extends Position implements BlockIds, Metadatable{
 		return 0;
 	}
 
+    /**
+     * Returns the chance that the block will catch fire from nearby fire sources. Higher values lead to faster catching
+     * fire.
+     *
+     * @return int
+     */
+    public function getFlameEncouragement() : int{
+        return 0;
+    }
+
+    /**
+     * Returns the base flammability of this block. Higher values lead to the block burning away more quickly.
+     *
+     * @return int
+     */
+    public function getFlammability() : int{
+        return 0;
+    }
+
+    /**
+     * Returns whether fire lit on this block will burn indefinitely.
+     *
+     * @return bool
+     */
+    public function burnsForever() : bool{
+        return false;
+    }
+
+    /**
+     * Returns whether this block can catch fire.
+     *
+     * @return bool
+     */
+    public function isFlammable() : bool{
+        return $this->getFlammability() > 0;
+    }
+
+    /**
+     * Called when this block is burned away by being on fire.
+     */
+    public function onIncinerate() : void{
+
+    }
+
 	/**
 	 * Returns the Block on the side $side, works like Vector3::getSide()
 	 *

@@ -25,6 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\tile;
 
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\block\Chest;
 use pocketmine\block\Hopper;
 use pocketmine\inventory\VirtualInventory;
@@ -76,8 +77,7 @@ class VirtualHolder extends Spawnable implements InventoryHolder, Container, Nam
         $pk->x = $this->x;
         $pk->y = $this->y;
         $pk->z = $this->z;
-        $pk->blockId = $this->holderBlock->getId();
-        $pk->blockData = $this->holderBlock->getDamage();
+		$pk->blockRuntimeId = BlockFactory::toStaticRuntimeId($this->holderBlock->getId(), $this->holderBlock->getDamage());
         $pk->flags = UpdateBlockPacket::FLAG_ALL;
         $player->dataPacket($pk);
 

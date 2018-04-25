@@ -26,7 +26,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\level\Level;
@@ -41,11 +41,11 @@ class SpawnpointCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.spawnpoint.description",
 			"%commands.spawnpoint.usage",
-            [],
-            [
-                CommandParameterUtils::getPlayerParameter(),
-                CommandParameterUtils::getPositionParameter("spawnPoint")
-            ]
+			[],
+			[
+				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
+				new CommandParameter("spawnPoint", CommandParameter::ARG_TYPE_POSITION)
+			]
 		);
 		$this->setPermission("pocketmine.command.spawnpoint");
 	}

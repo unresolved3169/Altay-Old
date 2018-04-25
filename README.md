@@ -12,7 +12,6 @@ Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10
 -------------
 Example servers running Altay
 --------------------
-- **entengames.de:703**
 - **oyna.minecraftpetr.net:19132**
 ------------     
     
@@ -41,7 +40,7 @@ Example servers running Altay
    - [x] Trade
    - [x] Level Upgrade
    - [x] Use++
- - [ ] Beacons
+ - [x] Beacons
  - [ ] Config Auto Updater
  - [ ] Entity Behaviors (MobAI)
  - [ ] Level Dimensions

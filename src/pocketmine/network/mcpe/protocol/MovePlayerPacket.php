@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -54,9 +55,9 @@ class MovePlayerPacket extends DataPacket{
 	/** @var int */
 	public $ridingEid = 0;
 	/** @var int */
-	public $int1 = 0;
+	public $teleportCause = 0;
 	/** @var int */
-	public $int2 = 0;
+	public $teleportItem = 0;
 
 	protected function decodePayload(){
 		$this->entityRuntimeId = $this->getEntityRuntimeId();
@@ -68,8 +69,8 @@ class MovePlayerPacket extends DataPacket{
 		$this->onGround = $this->getBool();
 		$this->ridingEid = $this->getEntityRuntimeId();
 		if($this->mode === MovePlayerPacket::MODE_TELEPORT){
-			$this->int1 = $this->getLInt();
-			$this->int2 = $this->getLInt();
+			$this->teleportCause = $this->getLInt();
+			$this->teleportItem = $this->getLInt();
 		}
 	}
 
@@ -83,8 +84,8 @@ class MovePlayerPacket extends DataPacket{
 		$this->putBool($this->onGround);
 		$this->putEntityRuntimeId($this->ridingEid);
 		if($this->mode === MovePlayerPacket::MODE_TELEPORT){
-			$this->putLInt($this->int1);
-			$this->putLInt($this->int2);
+			$this->putLInt($this->teleportCause);
+			$this->putLInt($this->teleportItem);
 		}
 	}
 

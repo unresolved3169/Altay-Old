@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -96,8 +97,14 @@ class StartGamePacket extends DataPacket{
 	public $defaultPlayerPermission = PlayerPermissions::MEMBER; //TODO
 	/** @var int */
 	public $xboxLiveBroadcastMode = 0; //TODO: find values
-    /** @var int */
+	/** @var int */
 	public $serverChunkTickRadius = 4; //TODO (leave as default for now)
+	/** @var bool */
+	public $hasPlatformBroadcast = false;
+	/** @var int */
+	public $platformBroadcastMode = 0;
+	/** @var bool */
+	public $xboxLiveBroadcastIntent = false;
 
 	/** @var string */
 	public $levelId = ""; //base64 string, usually the same as world folder name in vanilla
@@ -106,9 +113,9 @@ class StartGamePacket extends DataPacket{
 	/** @var string */
 	public $premiumWorldTemplateId = "";
 	/** @var bool */
-	public $unknownBool = false;
+	public $isTrial = false;
 	/** @var int */
-	public $currentTick = 0;
+	public $currentTick = 0; //only used if isTrial is true
 	/** @var int */
 	public $enchantmentSeed = 0;
 
@@ -146,11 +153,14 @@ class StartGamePacket extends DataPacket{
 		$this->defaultPlayerPermission = $this->getVarInt();
 		$this->xboxLiveBroadcastMode = $this->getVarInt();
 		$this->serverChunkTickRadius = $this->getLInt();
+		$this->hasPlatformBroadcast = $this->getBool();
+		$this->platformBroadcastMode = $this->getUnsignedVarInt();
+		$this->xboxLiveBroadcastIntent = $this->getBool();
 
 		$this->levelId = $this->getString();
 		$this->worldName = $this->getString();
 		$this->premiumWorldTemplateId = $this->getString();
-		$this->unknownBool = $this->getBool();
+		$this->isTrial = $this->getBool();
 		$this->currentTick = $this->getLLong();
 
 		$this->enchantmentSeed = $this->getVarInt();
@@ -190,11 +200,14 @@ class StartGamePacket extends DataPacket{
 		$this->putVarInt($this->defaultPlayerPermission);
 		$this->putVarInt($this->xboxLiveBroadcastMode);
 		$this->putLInt($this->serverChunkTickRadius);
+		$this->putBool($this->hasPlatformBroadcast);
+		$this->putUnsignedVarInt($this->platformBroadcastMode);
+		$this->putBool($this->xboxLiveBroadcastIntent);
 
 		$this->putString($this->levelId);
 		$this->putString($this->worldName);
 		$this->putString($this->premiumWorldTemplateId);
-		$this->putBool($this->unknownBool);
+		$this->putBool($this->isTrial);
 		$this->putLLong($this->currentTick);
 
 		$this->putVarInt($this->enchantmentSeed);

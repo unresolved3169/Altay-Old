@@ -26,7 +26,6 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandParameter;
-use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
@@ -41,10 +40,10 @@ class PlaySoundCommand extends VanillaCommand{
 			$name,
 			"Plays a sound",
 			"/playsound <sound: string> [player: target] [position: x y z] [volume: float] [pitch: float]",
-            [], [
-            	new CommandParameter("sound", CommandParameter::ARG_TYPE_STRING, false),
-				CommandParameterUtils::getPlayerParameter(),
-				CommandParameterUtils::getPositionParameter("pos"),
+			[], [
+				new CommandParameter("sound", CommandParameter::ARG_TYPE_STRING, false),
+				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
+				new CommandParameter("pos", CommandParameter::ARG_TYPE_POSITION),
 				new CommandParameter("volume", CommandParameter::ARG_TYPE_FLOAT),
 				new CommandParameter("pitch", CommandParameter::ARG_TYPE_FLOAT),
 			]

@@ -71,7 +71,6 @@ class Vine extends Flowable{
 	}
 
 	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-
 		$minX = 1;
 		$minY = 1;
 		$minZ = 1;
@@ -206,4 +205,12 @@ class Vine extends Flowable{
 	public function getToolType() : int{
 		return BlockToolType::TYPE_AXE;
 	}
+
+	public function getFlameEncouragement() : int {
+        return 15;
+    }
+
+    public function getFlammability() : int {
+	    return 100;
+    }
 }

@@ -29,24 +29,26 @@ use pocketmine\item\Book;
 use pocketmine\item\Bow;
 use pocketmine\item\Elytra;
 use pocketmine\item\FishingRod;
+use pocketmine\item\Sword;
+use pocketmine\item\Tool;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\utils\Random;
 
 class EnchantmentHelper{
 
-	public static function canEnchantItem(Item $item, Enchantment $enchantment): bool{
+	public static function canEnchantItem(Item $item, Enchantment $enchantment) : bool{
 		$slot = $enchantment->getSlot();
 		switch($slot){
 			case Enchantment::SLOT_ALL:
 				return true;
 			case Enchantment::SLOT_SWORD:
-				return $item->isSword();
+				return $item instanceof Sword;
 			case Enchantment::SLOT_NONE:
 				return false;
 			case Enchantment::SLOT_TOOL:
 			case Enchantment::SLOT_DIG:
-				return $item->isTool();
+				return $item instanceof Tool;
 			case Enchantment::SLOT_BOW:
 				return $item instanceof Bow;
 			case Enchantment::SLOT_FISHING_ROD:

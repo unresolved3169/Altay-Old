@@ -25,7 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
+use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
@@ -39,10 +39,10 @@ class TellCommand extends VanillaCommand{
 			"%pocketmine.command.tell.description",
 			"%commands.message.usage",
 			["w", "msg"],
-            [
-                CommandParameterUtils::getPlayerParameter(false),
-                CommandParameterUtils::getMessageParameter(false)
-            ]
+			[
+				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+				new CommandParameter("message", CommandParameter::ARG_TYPE_RAWTEXT, false)
+			]
 		);
 		$this->setPermission("pocketmine.command.tell");
 	}
