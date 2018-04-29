@@ -28,7 +28,9 @@ use pocketmine\entity\behavior\{
 	Behavior, TargetBehavior
 };
 use pocketmine\entity\behavior\EntityNavigator;
+use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 
 abstract class Mob extends Living{
 
@@ -37,21 +39,30 @@ abstract class Mob extends Living{
 
 	/** @var array */
 	protected $behaviors = [], $targetBehaviors = [], $behaviorTasks = [];
-	/** @var bool */
-	protected $behaviorsEnabled = true; // test
 	/** @var Behavior|null */
 	protected $currentBehavior = null, $currentTargetBehavior = null;
 	/** @var EntityNavigator */
 	protected $navigator;
 
-	protected function initEntity(){
+	public function __construct(Level $level, CompoundTag $nbt, bool $needAi = false)
+    {
+        parent::__construct($level, $nbt);
+
+        $this->setImmobile(!$needAi);
+    }
+
+    public function hasEntityCollisionUpdate(): bool
+    {
+        return !$this->isImmobile();
+    }
+
+    protected function initEntity(){
 		parent::initEntity();
 
 		$this->jumpVelocity = $this->jumpVelocity + ($this->width / 10) + $this->getAdditionalJumpVelocity(); // hmmmmmm
 		$this->behaviors = $this->getNormalBehaviors();
 		$this->targetBehaviors = $this->getTargetBehaviors();
 		$this->navigator = new EntityNavigator($this);
-		$this->setImmobile(); // for disable client-side mobai
 	}
 
 	/**
@@ -86,7 +97,7 @@ abstract class Mob extends Living{
 	 * @return bool
 	 */
 	public function onUpdate(int $tick): bool{
-		if($this->isAlive() and $this->behaviorsEnabled){
+		if($this->isAlive() and !$this->isImmobile()){
 			$this->currentBehavior = $this->getReadyBehavior($this->behaviors, $this->currentBehavior);
 			if($this->currentBehavior instanceof Behavior){
 				$this->currentBehavior->onTick($tick);
@@ -127,20 +138,6 @@ abstract class Mob extends Living{
 	 */
 	public function removeTargetBehavior(int $key) : void{
 		unset($this->targetBehaviors[$key]);
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isBehaviorsEnabled() : bool{
-		return $this->behaviorsEnabled;
-	}
-
-	/**
-	 * @param bool $value
-	 */
-	public function setBehaviorsEnabled(bool $value = true) : void{
-		$this->behaviorsEnabled = $value;
 	}
 
 	/**
