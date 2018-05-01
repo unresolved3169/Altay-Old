@@ -40,13 +40,6 @@ class BeaconInventory extends ContainerInventory{
         return 1;
     }
 
-    /**
-     * @return Beacon
-     */
-    public function getHolder(){
-        return $this->holder;
-    }
-
     public function getNetworkType() : int{
         return WindowTypes::BEACON;
     }

@@ -695,7 +695,7 @@ class Level implements ChunkManager, Metadatable{
 	 * WARNING: Do not use this, it's only for internal use.
 	 * Changes to this function won't be recorded on the version.
 	 *
-	 * @param Player[] ...$targets If empty, will send to all players in the level.
+	 * @param Player ...$targets
 	 */
 	public function sendTime(Player ...$targets){
 		$pk = new SetTimePacket();
@@ -2989,7 +2989,7 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
-	 * @param Player[] ...$targets
+	 * @param Player ...$targets
 	 */
 	public function sendDifficulty(Player ...$targets){
 		if(count($targets) === 0){
