@@ -49,22 +49,18 @@ class EntityNavigator{
 		[-1, 1]
 	];
 
-	/**
-	 * EntityNavigator constructor.
-	 * @param Mob $entity
-	 */
 	public function __construct(Mob $entity){
 		$this->entity = $entity;
 		$this->level = $entity->getLevel();
 		$this->currentY = $this->entity->y;
 	}
 
-
 	/**
 	 * @param Vector2 $from
 	 * @param Vector2 $to
-	 * @param int $maxAttempt
-	 * @return array
+	 * @param int     $maxAttempt
+	 *
+	 * @return Vector2[]
 	 */
 	public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 200) : array{
 	    $this->currentY = $this->entity->y;
