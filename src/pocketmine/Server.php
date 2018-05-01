@@ -1601,7 +1601,7 @@ class Server{
 			$this->alwaysTickPlayers = (int) $this->getProperty("level-settings.always-tick-players", false);
 			$this->baseTickRate = (int) $this->getProperty("level-settings.base-tick-rate", 1);
 
-			$this->doTitleTick = (bool) $this->getProperty("console.title-tick", true);
+			$this->doTitleTick = ((bool) $this->getProperty("console.title-tick", true)) && Terminal::hasFormattingCodes();
 
 			$this->scheduler = new ServerScheduler();
 
@@ -1861,11 +1861,11 @@ class Server{
 	}
 
 	/**
-	 * @param string $title
-	 * @param string $subtitle
-	 * @param int    $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
-	 * @param int    $stay Duration in ticks to stay on screen for
-	 * @param int    $fadeOut Duration in ticks for fade-out.
+	 * @param string        $title
+	 * @param string        $subtitle
+	 * @param int           $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
+	 * @param int           $stay Duration in ticks to stay on screen for
+	 * @param int           $fadeOut Duration in ticks for fade-out.
 	 * @param Player[]|null $recipients
 	 *
 	 * @return int
@@ -2289,7 +2289,7 @@ class Server{
 	}
 
 	public function onPlayerLogin(Player $player){
-	    $this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
+		$this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
 		$this->loggedInPlayers[$player->getRawUniqueId()] = $player;
 	}
 
@@ -2535,7 +2535,7 @@ class Server{
 		}
 
 		if(($this->tickCounter % 20) === 0){
-			if($this->doTitleTick and Terminal::hasFormattingCodes()){
+			if($this->doTitleTick){
 				$this->titleTick();
 			}
 			$this->currentTPS = 20;
