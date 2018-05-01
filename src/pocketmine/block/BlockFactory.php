@@ -167,7 +167,7 @@ class BlockFactory{
 		self::registerBlock(new Netherrack());
 		self::registerBlock(new SoulSand());
 		self::registerBlock(new Glowstone());
-		//TODO: PORTAL
+		self::registerBlock(new NetherPortal());
 		self::registerBlock(new LitPumpkin());
 		self::registerBlock(new Cake());
 		//TODO: REPEATER_BLOCK

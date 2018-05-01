@@ -89,6 +89,7 @@ use pocketmine\lang\TextContainer;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\level\ChunkLoader;
 use pocketmine\level\format\Chunk;
+use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
 use pocketmine\level\Position;
@@ -109,6 +110,7 @@ use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
+use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
@@ -934,6 +936,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->commandPermission = $commandPermission;
 	}
 
+	public function changeDimension(int $dimension, Vector3 $position = null, bool $respawn = false){
+		$pk = new ChangeDimensionPacket();
+		$pk->dimension = $dimension;
+		$pk->position = $position ?? $this;
+		$pk->respawn = $respawn;
+		$this->dataPacket($pk);
+	}
+
 	protected function switchLevel(Level $targetLevel) : bool{
 		$oldLevel = $this->level;
 		if(parent::switchLevel($targetLevel)){
@@ -945,6 +955,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->usedChunks = [];
 			$this->level->sendTime($this);
 			$this->level->sendDifficulty($this);
+
+			$xz = [(int) $this->x, (int) $this->z];
+			$oldBiome = $oldLevel->getBiomeId(...$xz);
+			$newBiome = $this->level->getBiomeId(...$xz);
+			if($oldBiome !== $newBiome){
+				$dimension = $newBiome - 7;
+				if($dimension < 0 or $dimension > 2){
+					$dimension = Level::DIMENSION_OVERWORLD;
+				}
+
+				$this->changeDimension($dimension, $this, !$this->isAlive());
+			}
 
 			return true;
 		}
@@ -2003,6 +2025,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				new DoubleTag("", $spawnLocation->z)
 			]));
 		}else{
+			$biome = $level->getBiomeId(128, 128);
+			if($biome == Biome::HELL or $biome == Biome::END){
+				$level = $this->server->getDefaultLevel();
+			}
+
 			$this->setLevel($level);
 		}
 
@@ -2852,6 +2879,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				break;
 			case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
 				// TODO
+				break;
+			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_REQUEST:
+			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_ACK:
 				break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());

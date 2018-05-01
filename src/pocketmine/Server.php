@@ -267,8 +267,10 @@ class Server{
 
 	/** @var Level */
 	private $levelDefault = null;
-
-	// ALTAY
+	/** @var Level */
+	private $netherLevel = null;
+	/** @var Level */
+	private $endLevel = null;
 
 	/** @var ServerSettingsForm */
 	protected $serverSettingsForm = null;
@@ -287,6 +289,10 @@ class Server{
 	public $keepExperience = false;
 	/** @var bool */
 	public $folderPluginLoader = true;
+	/** @var bool */
+	public $allowNether = true;
+	/** @var bool */
+	public $allowEnd = true;
 
 	public function loadAltayConfig(){
 		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -294,6 +300,8 @@ class Server{
 		$this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
 		$this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
 		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
+		$this->allowNether = $this->getAltayProperty("dimensions.nether.active", true);
+		$this->allowEnd = $this->getAltayProperty("dimensions.end.active", true);
 		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
 	}
 
@@ -939,6 +947,14 @@ class Server{
 	 */
 	public function getDefaultLevel() : ?Level{
 		return $this->levelDefault;
+	}
+
+	public function getNetherLevel() : ?Level{
+		return $this->netherLevel;
+	}
+
+	public function getEndLevel() : ?Level{
+		return $this->endLevel;
 	}
 
 	/**
@@ -1765,6 +1781,31 @@ class Server{
 				}
 
 				$this->setDefaultLevel($this->getLevelByName($default));
+			}
+
+			if($this->allowNether and $this->getNetherLevel() === null){
+				/** @var string $netherLevelName */
+				$netherLevelName = $this->getAltayProperty("dimensions.nether.level-name", "nether");
+				if(trim($netherLevelName) == ""){
+					$netherLevelName = "nether";
+				}
+				if(!$this->loadLevel($netherLevelName)){
+					$this->generateLevel($netherLevelName, time(), Generator::getGenerator("hell"));
+				}
+
+				$this->netherLevel = $this->getLevelByName($netherLevelName);
+			}
+
+			if($this->allowEnd and $this->endLevel === null){
+				$endLevel = $this->getAltayProperty("dimensions.end.level-name", "end");
+				if(trim($endLevel) == ""){
+					$endLevel = "end";
+				}
+				if(!$this->loadLevel($endLevel)){
+					$this->generateLevel($endLevel, time(), Generator::getGenerator("end"));
+				}
+
+				$this->endLevel = $this->getLevelByName($endLevel);
 			}
 
 			if($this->properties->hasChanged()){

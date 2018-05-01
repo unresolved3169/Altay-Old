@@ -105,6 +105,10 @@ class Level implements ChunkManager, Metadatable{
 
 	public const TIME_FULL = 24000;
 
+	public const DIMENSION_OVERWORLD = 0;
+	public const DIMENSION_NETHER = 1;
+	public const DIMENSION_END = 2;
+
 	public const DIFFICULTY_PEACEFUL = 0;
 	public const DIFFICULTY_EASY = 1;
 	public const DIFFICULTY_NORMAL = 2;
