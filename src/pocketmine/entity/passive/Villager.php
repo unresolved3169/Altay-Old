@@ -167,6 +167,7 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->namedtag->setInt("Profession", $this->getProfession());
 		$this->namedtag->setInt("Career", $this->career);
 		$this->namedtag->setInt("TradeTier", $this->tradeTier);
+		$this->updateTradeItems();
 		$this->namedtag->setTag($this->offers, true);
 	}
 

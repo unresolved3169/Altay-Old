@@ -51,9 +51,9 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\lang\BaseLang;
 use pocketmine\lang\TextContainer;
+use pocketmine\level\biome\Biome;
 use pocketmine\level\format\io\LevelProvider;
 use pocketmine\level\format\io\LevelProviderManager;
-use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\Level;
 use pocketmine\level\LevelException;
@@ -267,8 +267,10 @@ class Server{
 
 	/** @var Level */
 	private $levelDefault = null;
-
-	// ALTAY
+	/** @var Level */
+	private $netherLevel = null;
+	/** @var Level */
+	private $endLevel = null;
 
 	/** @var ServerSettingsForm */
 	protected $serverSettingsForm = null;
@@ -287,6 +289,10 @@ class Server{
 	public $keepExperience = false;
 	/** @var bool */
 	public $folderPluginLoader = true;
+	/** @var bool */
+	public $allowNether = true;
+	/** @var bool */
+	public $allowEnd = true;
 
 	public function loadAltayConfig(){
 		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -294,6 +300,8 @@ class Server{
 		$this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
 		$this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
 		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
+		$this->allowNether = $this->getAltayProperty("dimensions.nether.active", true);
+		$this->allowEnd = $this->getAltayProperty("dimensions.end.active", true);
 		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
 	}
 
@@ -939,6 +947,14 @@ class Server{
 	 */
 	public function getDefaultLevel() : ?Level{
 		return $this->levelDefault;
+	}
+
+	public function getNetherLevel() : ?Level{
+		return $this->netherLevel;
+	}
+
+	public function getEndLevel() : ?Level{
+		return $this->endLevel;
 	}
 
 	/**
@@ -1601,7 +1617,7 @@ class Server{
 			$this->alwaysTickPlayers = (int) $this->getProperty("level-settings.always-tick-players", false);
 			$this->baseTickRate = (int) $this->getProperty("level-settings.base-tick-rate", 1);
 
-			$this->doTitleTick = (bool) $this->getProperty("console.title-tick", true);
+			$this->doTitleTick = ((bool) $this->getProperty("console.title-tick", true)) && Terminal::hasFormattingCodes();
 
 			$this->scheduler = new ServerScheduler();
 
@@ -1767,6 +1783,31 @@ class Server{
 				$this->setDefaultLevel($this->getLevelByName($default));
 			}
 
+			if($this->allowNether and $this->getNetherLevel() === null){
+				/** @var string $netherLevelName */
+				$netherLevelName = $this->getAltayProperty("dimensions.nether.level-name", "nether");
+				if(trim($netherLevelName) == ""){
+					$netherLevelName = "nether";
+				}
+				if(!$this->loadLevel($netherLevelName)){
+					$this->generateLevel($netherLevelName, time(), Generator::getGenerator("hell"));
+				}
+
+				$this->netherLevel = $this->getLevelByName($netherLevelName);
+			}
+
+			if($this->allowEnd and $this->endLevel === null){
+				$endLevel = $this->getAltayProperty("dimensions.end.level-name", "end");
+				if(trim($endLevel) == ""){
+					$endLevel = "end";
+				}
+				if(!$this->loadLevel($endLevel)){
+					$this->generateLevel($endLevel, time(), Generator::getGenerator("end"));
+				}
+
+				$this->endLevel = $this->getLevelByName($endLevel);
+			}
+
 			if($this->properties->hasChanged()){
 				$this->properties->save(true);
 			}
@@ -1861,11 +1902,11 @@ class Server{
 	}
 
 	/**
-	 * @param string $title
-	 * @param string $subtitle
-	 * @param int    $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
-	 * @param int    $stay Duration in ticks to stay on screen for
-	 * @param int    $fadeOut Duration in ticks for fade-out.
+	 * @param string        $title
+	 * @param string        $subtitle
+	 * @param int           $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
+	 * @param int           $stay Duration in ticks to stay on screen for
+	 * @param int           $fadeOut Duration in ticks for fade-out.
 	 * @param Player[]|null $recipients
 	 *
 	 * @return int
@@ -2289,7 +2330,7 @@ class Server{
 	}
 
 	public function onPlayerLogin(Player $player){
-	    $this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
+		$this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
 		$this->loggedInPlayers[$player->getRawUniqueId()] = $player;
 	}
 
@@ -2535,7 +2576,7 @@ class Server{
 		}
 
 		if(($this->tickCounter % 20) === 0){
-			if($this->doTitleTick and Terminal::hasFormattingCodes()){
+			if($this->doTitleTick){
 				$this->titleTick();
 			}
 			$this->currentTPS = 20;

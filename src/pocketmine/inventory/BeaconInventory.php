@@ -22,9 +22,9 @@
 
 namespace pocketmine\inventory;
 
+use pocketmine\network\mcpe\protocol\types\WindowTypes;
 use pocketmine\Player;
 use pocketmine\tile\Beacon;
-use pocketmine\network\mcpe\protocol\types\WindowTypes;
 
 class BeaconInventory extends ContainerInventory{
 
@@ -38,13 +38,6 @@ class BeaconInventory extends ContainerInventory{
 
     public function getDefaultSize() : int{
         return 1;
-    }
-
-    /**
-     * @return Beacon
-     */
-    public function getHolder(){
-        return $this->holder;
     }
 
     public function getNetworkType() : int{

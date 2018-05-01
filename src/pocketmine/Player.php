@@ -78,15 +78,16 @@ use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
+use pocketmine\inventory\transaction\TransactionValidationException;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
-use pocketmine\inventory\transaction\TransactionValidationException;
 use pocketmine\item\Consumable;
 use pocketmine\item\WritableBook;
 use pocketmine\item\WrittenBook;
 use pocketmine\item\Item;
 use pocketmine\lang\TextContainer;
 use pocketmine\lang\TranslationContainer;
+use pocketmine\level\biome\Biome;
 use pocketmine\level\ChunkLoader;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
@@ -109,6 +110,7 @@ use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
 use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
+use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
@@ -699,8 +701,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function sendCommandData(){
 		$pk = new AvailableCommandsPacket();
-		foreach($this->server->getCommandMap()->getCommands() as $name => $command){
-			if((isset($pk->commandData[$command->getName()]) or $command->getName() === "help") and !$command->testPermissionSilent($this)){
+		foreach($this->server->getCommandMap()->getCommands() as $command){
+			if(!$command->testPermissionSilent($this)){
 				continue;
 			}
 
@@ -934,6 +936,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->commandPermission = $commandPermission;
 	}
 
+	public function changeDimension(int $dimension, Vector3 $position = null, bool $respawn = false){
+		$pk = new ChangeDimensionPacket();
+		$pk->dimension = $dimension;
+		$pk->position = $position ?? $this;
+		$pk->respawn = $respawn;
+		$this->dataPacket($pk);
+	}
+
 	protected function switchLevel(Level $targetLevel) : bool{
 		$oldLevel = $this->level;
 		if(parent::switchLevel($targetLevel)){
@@ -945,6 +955,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->usedChunks = [];
 			$this->level->sendTime($this);
 			$this->level->sendDifficulty($this);
+
+			$xz = [(int) $this->x, (int) $this->z];
+			$oldBiome = $oldLevel->getBiomeId(...$xz);
+			$newBiome = $this->level->getBiomeId(...$xz);
+			if($oldBiome !== $newBiome){
+				$dimension = $newBiome - 7;
+				if($dimension < 0 or $dimension > 2){
+					$dimension = Level::DIMENSION_OVERWORLD;
+				}
+
+				$this->changeDimension($dimension, $this, !$this->isAlive());
+			}
 
 			return true;
 		}
@@ -2003,6 +2025,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				new DoubleTag("", $spawnLocation->z)
 			]));
 		}else{
+			$biome = $level->getBiomeId(128, 128);
+			if($biome == Biome::HELL or $biome == Biome::END){
+				$level = $this->server->getDefaultLevel();
+			}
+
 			$this->setLevel($level);
 		}
 
@@ -2330,14 +2357,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					//we get the actions for this in several packets, so we need to wait until we have all the pieces before
 					//trying to execute it
 
-                    $ret = true;
-                    try{
-                        $this->craftingTransaction->execute();
+					$ret = true;
+					try{
+						$this->craftingTransaction->execute();
 
-                    }catch(TransactionValidationException $e){
-                        $this->server->getLogger()->debug("Failed to execute crafting transaction for " . $this->getName() . ": " . $e->getMessage());
-                        $ret = false;
-                    }
+					}catch(TransactionValidationException $e){
+						$this->server->getLogger()->debug("Failed to execute crafting transaction for " . $this->getName() . ": " . $e->getMessage());
+						$ret = false;
+					}
 
 					$this->craftingTransaction = null;
 					return $ret;
@@ -2353,16 +2380,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		switch($packet->transactionType){
-            case InventoryTransactionPacket::TYPE_NORMAL:
-                $this->setUsingItem(false);
-                $transaction = new InventoryTransaction($this, $actions);
-                try {
-                    $transaction->execute();
-                } catch (TransactionValidationException $e) {
-                    $this->server->getLogger()->debug("Failed to execute inventory transaction from ".$this->getName().": ".$e->getMessage());
-                    $this->server->getLogger()->debug("Actions: ".json_encode($packet->actions));
-                    return false;
-                }
+			case InventoryTransactionPacket::TYPE_NORMAL:
+				$this->setUsingItem(false);
+				$transaction = new InventoryTransaction($this, $actions);
+				try {
+					$transaction->execute();
+				} catch (TransactionValidationException $e) {
+					$this->server->getLogger()->debug("Failed to execute inventory transaction from ".$this->getName().": ".$e->getMessage());
+					$this->server->getLogger()->debug("Actions: ".json_encode($packet->actions));
+					return false;
+				}
 
 				//TODO: fix achievement for getting iron from furnace
 
@@ -2854,6 +2881,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				break;
 			case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
 				// TODO
+				break;
+			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_REQUEST:
+			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_ACK:
 				break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
@@ -3367,19 +3397,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->dataPacket($pk);
 	}
 
-    /**
-     * Sends a popup message to the player
-     *
-     * TODO: add translation type popups
-     *
-     * @param string $message
-     */
-    public function sendPopup(string $message) {
-        $pk = new TextPacket();
-        $pk->type = TextPacket::TYPE_POPUP;
-        $pk->message = $message;
-        $this->dataPacket($pk);
-    }
+	/**
+	 * Sends a popup message to the player
+	 *
+	 * TODO: add translation type popups
+	 *
+	 * @param string $message
+	 */
+	public function sendPopup(string $message) {
+		$pk = new TextPacket();
+		$pk->type = TextPacket::TYPE_POPUP;
+		$pk->message = $message;
+		$this->dataPacket($pk);
+	}
 
 	public function sendTip(string $message){
 		$pk = new TextPacket();
@@ -4131,15 +4161,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 
 	public function getLastOpenContainerInventory() : ?ContainerInventory{
-	    $index = -100;
-	    foreach($this->windowIndex as $i => $inv){
-	        if($inv instanceof ContainerInventory and $i > $index){
-	            $index = $i;
-            }
-        }
-
-        return $index !== -100 ? $this->windowIndex[$index] : null;
-    }
+		$windows = array_filter($this->windowIndex, function($inv) : bool{ return $inv instanceof ContainerInventory; });
+		return !empty($windows) ? max($windows) : null;
+	}
 
 	/**
 	 * Sets the movement speed of player

@@ -27,8 +27,8 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
+use pocketmine\nbt\tag\IntTag;
 
 class FlowerPot extends Spawnable{
     public const TAG_ITEM = "item";
