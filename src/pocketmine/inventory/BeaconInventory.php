@@ -22,9 +22,9 @@
 
 namespace pocketmine\inventory;
 
+use pocketmine\network\mcpe\protocol\types\WindowTypes;
 use pocketmine\Player;
 use pocketmine\tile\Beacon;
-use pocketmine\network\mcpe\protocol\types\WindowTypes;
 
 class BeaconInventory extends ContainerInventory{
 

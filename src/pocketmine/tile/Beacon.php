@@ -24,11 +24,11 @@ declare(strict_types=1);
 
 namespace pocketmine\tile;
 
+use pocketmine\block\Block;
+use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
 use pocketmine\inventory\BeaconInventory;
 use pocketmine\inventory\InventoryHolder;
-use pocketmine\block\Block;
-use pocketmine\entity\Effect;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
