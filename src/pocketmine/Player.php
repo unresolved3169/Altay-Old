@@ -2851,6 +2851,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
 				// TODO
 				break;
+			case PlayerActionPacket::ACTION_START_SWIMMING:
+				break; //TODO
+			case PlayerActionPacket::ACTION_STOP_SWIMMING:
+				//TODO: handle this when it doesn't spam every damn tick (yet another spam bug!!)
+				break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
 				return false;
