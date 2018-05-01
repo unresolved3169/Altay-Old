@@ -32,51 +32,52 @@ use pocketmine\tile\Tile;
 
 class Beacon extends Transparent{
 
-    protected $id = self::BEACON;
+	protected $id = self::BEACON;
 
-    public function __construct(int $meta = 0){
-        $this->meta = $meta;
-    }
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
+	}
 
-    public function getName() : string{
-        return "Beacon";
-    }
+	public function getName() : string{
+		return "Beacon";
+	}
 
-    public function getLightLevel() : int{
-        return 15;
-    }
+	public function getLightLevel() : int{
+		return 15;
+	}
 
-    public function getHardness() : float{
-        return 3;
-    }
+	public function getHardness() : float{
+		return 3;
+	}
 
-    public function getBreakTime(Item $item): float{
-        return 4.5;
-    }
+	public function getBreakTime(Item $item): float{
+		return 4.5;
+	}
 
-    public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
-        $placed = $this->getLevel()->setBlock($this, $this, true, true);
-        if($placed){
-            Tile::createTile(Tile::BEACON, $this->getLevel(), TileBeacon::createNBT($this, $face, $item, $player));
-        }
-        return $placed;
-    }
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
+		$placed = $this->getLevel()->setBlock($this, $this, true, true);
+		if($placed){
+			Tile::createTile(Tile::BEACON, $this->getLevel(), TileBeacon::createNBT($this, $face, $item, $player));
+		}
 
-    public function onActivate(Item $item, Player $player = null) : bool{
-        if($player instanceof Player){
-            $top = $this->getSide(Vector3::SIDE_UP);
-            if($top->isTransparent() !== true){
-                return true;
-            }
-            $t = $this->getLevel()->getTile($this);
-            $beacon = null;
-            if($t instanceof TileBeacon){
-                $beacon = $t;
-            }else{
-                $beacon = Tile::createTile(Tile::BEACON, $this->getLevel(), TileBeacon::createNBT($this));
-            }
-            $player->addWindow($beacon->getInventory());
-        }
-        return true;
-    }
+		return $placed;
+	}
+
+	public function onActivate(Item $item, Player $player = null) : bool{
+		if($player instanceof Player){
+			$top = $this->getSide(Vector3::SIDE_UP);
+			if($top->isTransparent() !== true){
+				return true;
+			}
+
+			$player->addWindow($this->getTile()->getInventory());
+		}
+
+		return true;
+	}
+
+	public function getTile() : TileBeacon{
+		$t = $this->getLevel()->getTileAt($this->x, $this->y, $this->z);
+		return $t instanceof TileBeacon ? $t : new TileBeacon($this->getLevel(), TileBeacon::createNBT($this));
+	}
 }

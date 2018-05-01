@@ -2328,14 +2328,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					//we get the actions for this in several packets, so we need to wait until we have all the pieces before
 					//trying to execute it
 
-                    $ret = true;
-                    try{
-                        $this->craftingTransaction->execute();
+					$ret = true;
+					try{
+						$this->craftingTransaction->execute();
 
-                    }catch(TransactionValidationException $e){
-                        $this->server->getLogger()->debug("Failed to execute crafting transaction for " . $this->getName() . ": " . $e->getMessage());
-                        $ret = false;
-                    }
+					}catch(TransactionValidationException $e){
+						$this->server->getLogger()->debug("Failed to execute crafting transaction for " . $this->getName() . ": " . $e->getMessage());
+						$ret = false;
+					}
 
 					$this->craftingTransaction = null;
 					return $ret;
@@ -2351,16 +2351,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		switch($packet->transactionType){
-            case InventoryTransactionPacket::TYPE_NORMAL:
-                $this->setUsingItem(false);
-                $transaction = new InventoryTransaction($this, $actions);
-                try {
-                    $transaction->execute();
-                } catch (TransactionValidationException $e) {
-                    $this->server->getLogger()->debug("Failed to execute inventory transaction from ".$this->getName().": ".$e->getMessage());
-                    $this->server->getLogger()->debug("Actions: ".json_encode($packet->actions));
-                    return false;
-                }
+			case InventoryTransactionPacket::TYPE_NORMAL:
+				$this->setUsingItem(false);
+				$transaction = new InventoryTransaction($this, $actions);
+				try {
+					$transaction->execute();
+				} catch (TransactionValidationException $e) {
+					$this->server->getLogger()->debug("Failed to execute inventory transaction from ".$this->getName().": ".$e->getMessage());
+					$this->server->getLogger()->debug("Actions: ".json_encode($packet->actions));
+					return false;
+				}
 
 				//TODO: fix achievement for getting iron from furnace
 
@@ -3365,19 +3365,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->dataPacket($pk);
 	}
 
-    /**
-     * Sends a popup message to the player
-     *
-     * TODO: add translation type popups
-     *
-     * @param string $message
-     */
-    public function sendPopup(string $message) {
-        $pk = new TextPacket();
-        $pk->type = TextPacket::TYPE_POPUP;
-        $pk->message = $message;
-        $this->dataPacket($pk);
-    }
+	/**
+	 * Sends a popup message to the player
+	 *
+	 * TODO: add translation type popups
+	 *
+	 * @param string $message
+	 */
+	public function sendPopup(string $message) {
+		$pk = new TextPacket();
+		$pk->type = TextPacket::TYPE_POPUP;
+		$pk->message = $message;
+		$this->dataPacket($pk);
+	}
 
 	public function sendTip(string $message){
 		$pk = new TextPacket();
@@ -4128,15 +4128,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function getLastOpenContainerInventory() : ?ContainerInventory{
-	    $index = -100;
-	    foreach($this->windowIndex as $i => $inv){
-	        if($inv instanceof ContainerInventory and $i > $index){
-	            $index = $i;
-            }
-        }
-
-        return $index !== -100 ? $this->windowIndex[$index] : null;
-    }
+		$windows = array_filter($this->windowIndex, function($inv) : bool{ return $inv instanceof ContainerInventory; });
+		return !empty($windows) ? max($windows) : null;
+	}
 
 	/**
 	 * Sets the movement speed of player
