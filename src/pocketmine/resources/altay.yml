@@ -8,9 +8,9 @@
 #                        |___/
 
 player:
-  # Choose if to keep a player's inventory after they die
+  # Keep player's inventory if they die
   keep-inventory: false
-  # Choose if to keep a player's experience after they die
+  # Keep player's experience if they die
   keep-experience: false
 
 dimensions:

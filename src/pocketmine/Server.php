@@ -93,7 +93,6 @@ use pocketmine\plugin\PluginManager;
 use pocketmine\plugin\ScriptPluginLoader;
 use pocketmine\resourcepacks\ResourcePackManager;
 use pocketmine\scheduler\FileWriteTask;
-use pocketmine\scheduler\SendUsageTask;
 use pocketmine\scheduler\ServerScheduler;
 use pocketmine\tile\Tile;
 use pocketmine\timings\Timings;
@@ -163,8 +162,6 @@ class Server{
 
 	/** @var bool */
 	private $doTitleTick = true;
-
-	private $sendUsageTicker = 0;
 
 	private $dispatchSignals = false;
 
@@ -1311,7 +1308,7 @@ class Server{
 	 * @param bool   $value
 	 */
 	public function setConfigBool(string $variable, bool $value){
-		$this->properties->set($variable, $value == true ? "1" : "0");
+		$this->properties->set($variable, $value ? "1" : "0");
 	}
 
 	/**
@@ -1459,7 +1456,7 @@ class Server{
 			$this->getCodename(),
 			$this->getVersion(),
 			implode(", ", ProtocolInfo::ACCEPTED_PROTOCOLS),
-			$this->getIp(),
+			Utils::getIP(),
 			$this->getPort(),
 			$this->getMotd(),
 			$this->getOnlineMode() ? "true" : "false",
@@ -1469,17 +1466,17 @@ class Server{
 			\Phar::running(true) === "" ? "src" : "phar"
 		];
 
-		$yazi = base64_decode("CsKnYuKUjOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUkCAgwqdiLS0gTG9hZGVkOiBQcm9wZXJ0aWVzIGFuZCBDb25maWd1cmF0aW9uIC0tCsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICBfIF8gICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2RGF0ZTogwqdmeyUwfQrCp2LilIJ7fSAgICAgICAgICAgICAgL1wgICB8IHwgfCAgICAgICAgICAgICAgICAgICAgICAgICDCp2LilIIgIMKnNlZlcnNpb246IMKnZnslMX0gwqc2Q29kZW5hbWU6IMKnZnslMn0Kwqdi4pSCe30gICAgICAgICAgICAgLyAgXCAgfCB8IHxfIF9fIF8gXyAgIF8gICAgICAgICAgICAgwqdi4pSCICDCpzZNQ1BFOiDCp2Z7JTN9IMKnNlByb3RvY29sOiDCp2Z7JTR9CsKnYuKUgnt9ICAgICAgICAgICAgLyAvXCBcIHwgfCBfXy8gX2AgfCB8IHwgfCAgICAgICAgICAgIMKnYuKUgiAgwqc2TG9jYWwgSVA6IMKnZnslNX0gwqc2UG9ydDogwqdmeyU2fQrCp2LilIJ7fSAgICAgICAgICAgLyBfX19fIFx8IHwgfHwgKF98IHwgfF98IHwgICAgICAgICAgICDCp2LilIIgIMKnNk1PVEQ6IMKnZnslN30Kwqdi4pSCe30gICAgICAgICAgL18vICAgIFxfXF98XF9fXF9fLF98XF9fLCB8ICAgICAgICAgICAgwqdi4pSCICDCpzZBdXRoZW50aWNhdGlvbjogwqdmeyU4fQrCp2LilIJ7fSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgX18vIHwgICAgICAgICAgICDCp2LilIIgIMKnNlNTTCBFeHRlbnNpb246IMKnZnslOX0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfF9fXy8gICAgICAgICAgICAgwqdi4pSCICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgwqdi4pSCICDCpzZBUEkgVmVyc2lvbjogwqdmeyUxMH0Kwqdi4pSCwqdhICAgICDCpzlTdXBwb3J0OiDCp2ZnaXRodWIuY29tL1R1cmFuaWNUZWFtL0FsdGF5ICAgICAgIMKnYuKUgiAgwqc2TGFuZ3VhZ2U6IMKnZnslMTF9CsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2UGFja2FnZTogwqdmeyUxMn0Kwqdi4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSYICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0=");
+		$yazi = base64_decode("wqdi4pSM4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSQICDCp2ItLSBMb2FkZWQ6IFByb3BlcnRpZXMgYW5kIENvbmZpZ3VyYXRpb24gLS0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgIF8gXyAgICAgICAgICAgICAgICAgICAgICAgICAgwqdi4pSCICDCpzZEYXRlOiDCp2Z7JTB9CsKnYuKUgnt9ICAgICAgICAgICAgICAvXCAgIHwgfCB8ICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2VmVyc2lvbjogwqdmeyUxfSDCpzZDb2RlbmFtZTogwqdmeyUyfQrCp2LilIJ7fSAgICAgICAgICAgICAvICBcICB8IHwgfF8gX18gXyBfICAgXyAgICAgICAgICAgICDCp2LilIIgIMKnNk1DQkU6IMKnZnslM30gwqc2UHJvdG9jb2w6IMKnZnslNH0Kwqdi4pSCe30gICAgICAgICAgICAvIC9cIFwgfCB8IF9fLyBfYCB8IHwgfCB8ICAgICAgICAgICAgwqdi4pSCICDCpzZFeHRlcm5hbCBJUDogwqdmeyU1fSDCpzZQb3J0OiDCp2Z7JTZ9CsKnYuKUgnt9ICAgICAgICAgICAvIF9fX18gXHwgfCB8fCAoX3wgfCB8X3wgfCAgICAgICAgICAgIMKnYuKUgiAgwqc2TU9URDogwqdmeyU3fQrCp2LilIJ7fSAgICAgICAgICAvXy8gICAgXF9cX3xcX19cX18sX3xcX18sIHwgICAgICAgICAgICDCp2LilIIgIMKnNk9ubGluZU1vZGU6IMKnZnslOH0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF9fLyB8ICAgICAgICAgICAgwqdi4pSCICDCpzZTU0wgRXh0ZW5zaW9uOiDCp2Z7JTl9CsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHxfX18vICAgICAgICAgICAgIMKnYuKUgiAgwqdiLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2QVBJIFZlcnNpb246IMKnZnslMTB9CsKnYuKUgsKnYSAgICAgwqc5U3VwcG9ydDogwqdmZ2l0aHViLmNvbS9UdXJhbmljVGVhbS9BbHRheSAgICAgICDCp2LilIIgIMKnNkxhbmd1YWdlOiDCp2Z7JTExfQrCp2LilIJ7fSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDCp2LilIIgIMKnNlBhY2thZ2U6IMKnZnslMTJ9CsKnYuKUlOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUmCAgwqdiLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t");
 
 		foreach($about as $index => $value){
 			$yazi = str_ireplace("{%$index}", $value, $yazi);
 		}
 
-		$randColor = "0123456789abcdef";
-		$randColor = $randColor{mt_rand(0, 15)};
+		$randColor = "123456789abcdef";
+		$randColor = $randColor{mt_rand(0, 14)};
 		$yazi = str_replace("{}", TextFormat::ESCAPE.$randColor, $yazi);
 
-		$this->logger->info($yazi);
+		$this->logger->info("\n".$yazi);
 	}
 
 	/**
@@ -1620,7 +1617,7 @@ class Server{
 			$this->alwaysTickPlayers = (int) $this->getProperty("level-settings.always-tick-players", false);
 			$this->baseTickRate = (int) $this->getProperty("level-settings.base-tick-rate", 1);
 
-			$this->doTitleTick = (bool) $this->getProperty("console.title-tick", true);
+			$this->doTitleTick = ((bool) $this->getProperty("console.title-tick", true)) && Terminal::hasFormattingCodes();
 
 			$this->scheduler = new ServerScheduler();
 
@@ -1905,11 +1902,11 @@ class Server{
 	}
 
 	/**
-	 * @param string $title
-	 * @param string $subtitle
-	 * @param int    $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
-	 * @param int    $stay Duration in ticks to stay on screen for
-	 * @param int    $fadeOut Duration in ticks for fade-out.
+	 * @param string        $title
+	 * @param string        $subtitle
+	 * @param int           $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
+	 * @param int           $stay Duration in ticks to stay on screen for
+	 * @param int           $fadeOut Duration in ticks for fade-out.
 	 * @param Player[]|null $recipients
 	 *
 	 * @return int
@@ -2133,10 +2130,6 @@ class Server{
 		}
 
 		try{
-			if(!$this->isRunning()){
-				$this->sendUsage(SendUsageTask::TYPE_CLOSE);
-			}
-
 			$this->hasStopped = true;
 
 			$this->shutdown();
@@ -2172,7 +2165,7 @@ class Server{
 				$this->scheduler->mainThreadHeartbeat(PHP_INT_MAX);
 			}
 
-			if($this->properties->hasChanged()){
+			if($this->properties !== null and $this->properties->hasChanged()){
 				$this->getLogger()->debug("Saving properties");
 				$this->properties->save();
 			}
@@ -2216,12 +2209,6 @@ class Server{
 		foreach($this->getIPBans()->getEntries() as $entry){
 			$this->network->blockAddress($entry->getName(), -1);
 		}
-
-		if($this->getProperty("settings.send-usage", true)){
-			$this->sendUsageTicker = 6000;
-			$this->sendUsage(SendUsageTask::TYPE_OPEN);
-		}
-
 
 		if($this->getProperty("network.upnp-forwarding", false)){
 			$this->logger->info("[UPnP] Trying to port forward...");
@@ -2298,9 +2285,6 @@ class Server{
 		if(!$this->isRunning){
 			return;
 		}
-		if($this->sendUsageTicker > 0){
-			$this->sendUsage(SendUsageTask::TYPE_CLOSE);
-		}
 		$this->hasStopped = false;
 
 		ini_set("error_reporting", '0');
@@ -2310,42 +2294,6 @@ class Server{
 			$dump = new CrashDump($this);
 
 			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.submit", [$dump->getPath()]));
-
-			if($this->getProperty("auto-report.enabled", true) !== false){
-				$report = true;
-				$plugin = $dump->getData()["plugin"];
-				if(is_string($plugin)){
-					$p = $this->pluginManager->getPlugin($plugin);
-					if($p instanceof Plugin and !($p->getPluginLoader() instanceof PharPluginLoader)){
-						$report = false;
-					}
-				}
-
-				if($dump->getData()["error"]["type"] === "E_PARSE" or $dump->getData()["error"]["type"] === "E_COMPILE_ERROR"){
-					$report = false;
-				}
-
-				if(strrpos(\pocketmine\GIT_COMMIT, "-dirty") !== false or \pocketmine\GIT_COMMIT === str_repeat("00", 20)){
-					$this->logger->debug("Not sending crashdump due to locally modified");
-					$report = false; //Don't send crashdumps for locally modified builds
-				}
-
-				if($report){
-					$url = ($this->getProperty("auto-report.use-https", true) ? "https" : "http") . "://" . $this->getProperty("auto-report.host", "crash.pmmp.io") . "/submit/api";
-					$reply = Utils::postURL($url, [
-						"report" => "yes",
-						"name" => $this->getName() . " " . $this->getPocketMineVersion(),
-						"email" => "crash@pocketmine.net",
-						"reportPaste" => base64_encode($dump->getEncodedData())
-					]);
-
-					if($reply !== false and ($data = json_decode($reply)) !== null and isset($data->crashId) and isset($data->crashUrl)){
-						$reportId = $data->crashId;
-						$reportUrl = $data->crashUrl;
-						$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.archive", [$reportUrl, $reportId]));
-					}
-				}
-			}
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 			try{
@@ -2382,10 +2330,7 @@ class Server{
 	}
 
 	public function onPlayerLogin(Player $player){
-		if($this->sendUsageTicker > 0){
-			$this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
-		}
-
+		$this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
 		$this->loggedInPlayers[$player->getRawUniqueId()] = $player;
 	}
 
@@ -2525,14 +2470,6 @@ class Server{
 		}
 	}
 
-	public function sendUsage($type = SendUsageTask::TYPE_STATUS){
-		if((bool) $this->getProperty("anonymous-statistics.enabled", true)){
-			$this->scheduler->scheduleAsyncTask(new SendUsageTask($this, $type, $this->uniquePlayers));
-		}
-		$this->uniquePlayers = [];
-	}
-
-
 	/**
 	 * @return BaseLang
 	 */
@@ -2639,7 +2576,7 @@ class Server{
 		}
 
 		if(($this->tickCounter % 20) === 0){
-			if($this->doTitleTick and Terminal::hasFormattingCodes()){
+			if($this->doTitleTick){
 				$this->titleTick();
 			}
 			$this->currentTPS = 20;
@@ -2663,11 +2600,6 @@ class Server{
 		if($this->autoSave and ++$this->autoSaveTicker >= $this->autoSaveTicks){
 			$this->autoSaveTicker = 0;
 			$this->doAutoSave();
-		}
-
-		if($this->sendUsageTicker > 0 and --$this->sendUsageTicker === 0){
-			$this->sendUsageTicker = 6000;
-			$this->sendUsage(SendUsageTask::TYPE_STATUS);
 		}
 
 		if(($this->tickCounter % 100) === 0){

@@ -26,6 +26,7 @@ namespace pocketmine\network\mcpe\protocol\types;
 
 use pocketmine\block\Block;
 use pocketmine\inventory\AnvilInventory;
+use pocketmine\inventory\BeaconInventory;
 use pocketmine\inventory\EnchantInventory;
 use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\transaction\action\CreativeInventoryAction;
@@ -123,9 +124,6 @@ class NetworkInventoryAction{
 					case self::SOURCE_TYPE_CRAFTING_USE_INGREDIENT:
 						$packet->inventoryType = "Crafting";
 						break;
-					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
-						$packet->inventoryType = "Enchant";
-						break;
 				}
 				break;
 		}
@@ -208,8 +206,11 @@ class NetworkInventoryAction{
 						return null;
 
 					case self::SOURCE_TYPE_CONTAINER_DROP_CONTENTS:
-						//TODO: this type applies to all fake windows, not just crafting
-						$window = $player->getCraftingGrid();
+						$window = $player->getLastOpenContainerInventory();
+
+						if($window === null){
+						    $window = $player->getCraftingGrid();
+                        }
 
 						//DROP_CONTENTS doesn't bother telling us what slot the item is in, so we find it ourselves
 						$inventorySlot = $window->first($this->oldItem, true);
@@ -219,13 +220,13 @@ class NetworkInventoryAction{
 						return new SlotChangeAction($window, $inventorySlot, $this->oldItem, $this->newItem);
 
 					case self::SOURCE_TYPE_ANVIL_INPUT:
-						$window = $player->getWindowFromClass(AnvilInventory::class);
+						$window = $player->getWindowByType(AnvilInventory::class);
 						return new SlotChangeAction($window, 0, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ANVIL_MATERIAL:
-						$window = $player->getWindowFromClass(AnvilInventory::class);
+						$window = $player->getWindowByType(AnvilInventory::class);
 						return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ANVIL_RESULT:
-						$window = $player->getWindowFromClass(AnvilInventory::class);
+						$window = $player->getWindowByType(AnvilInventory::class);
 						$air = ItemFactory::get(Block::AIR);
 						$window->setContents([
 							$air, $air, $this->oldItem
@@ -235,24 +236,25 @@ class NetworkInventoryAction{
 						throw new \RuntimeException("Anvil inventory source type OUTPUT");
 
 					case self::SOURCE_TYPE_ENCHANT_INPUT:
-						$window = $player->getWindowFromClass(EnchantInventory::class);
+						$window = $player->getWindowByType(EnchantInventory::class);
 						return new EnchantAction($window, 0, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ENCHANT_MATERIAL:
-						$window = $player->getWindowFromClass(EnchantInventory::class);
+						$window = $player->getWindowByType(EnchantInventory::class);
 						return new EnchantAction($window, 1, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_ENCHANT_OUTPUT:
-						$window = $player->getWindowFromClass(EnchantInventory::class);
-						return new EnchantAction($window, -1, $this->oldItem, $this->newItem);
-
+						$window = $player->getWindowByType(EnchantInventory::class);
+						return new EnchantAction($window, $this->inventorySlot, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_TRADING_INPUT_1:
 					case self::SOURCE_TYPE_TRADING_INPUT_2:
-						$window = $player->getWindowFromClass(TradeInventory::class);
+						$window = $player->getWindowByType(TradeInventory::class);
 						return new SlotChangeAction($window, abs($this->windowId) - 20, $this->oldItem, $this->newItem);
 					case self::SOURCE_TYPE_TRADING_USE_INPUTS:
 					case self::SOURCE_TYPE_TRADING_OUTPUT:
 						/** @var TradeInventory $window */
-						$window = $player->getWindowFromClass(TradeInventory::class);
+						$window = $player->getWindowByType(TradeInventory::class);
 						return new TradeAction($this->oldItem, $this->newItem, $window, (abs($this->windowId) - 23) === 0);
+                    case self::SOURCE_TYPE_BEACON:
+                        return new SlotChangeAction($player->getWindowByType(BeaconInventory::class), 0, $this->oldItem, $this->newItem);
 				}
 
 				//TODO: more stuff

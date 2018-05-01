@@ -1716,10 +1716,16 @@ class Level implements ChunkManager, Metadatable{
 			$item = ItemFactory::get(Item::AIR, 0, 0);
 		}
 
-		$drops = ($player !== null and $player->isCreative()) ? [] : array_merge(...array_map(function(Block $block) use ($item) : array{ return $block->getDrops($item); }, $affectedBlocks));
+		$drops = [];
+		$xpDrop = 0;
+
+		if($player !== null and !$player->isCreative()){
+			$drops = array_merge(...array_map(function(Block $block) use ($item) : array{ return $block->getDrops($item); }, $affectedBlocks));
+			$xpDrop = array_sum(array_map(function(Block $block) use ($item) : int{ return $block->getXpDropForTool($item); }, $affectedBlocks));
+		}
 
 		if($player !== null){
-			$ev = new BlockBreakEvent($player, $target, $item, $player->isCreative(), $drops);
+			$ev = new BlockBreakEvent($player, $target, $item, $player->isCreative(), $drops, $xpDrop);
 
 			if(($player->isSurvival() and !$target->isBreakable($item)) or $player->isSpectator()){
 				$ev->setCancelled();
@@ -1751,6 +1757,7 @@ class Level implements ChunkManager, Metadatable{
 			}
 
 			$drops = $ev->getDrops();
+			$xpDrop = $ev->getXpDropAmount();
 
 		}elseif(!$target->isBreakable($item)){
 			return false;
@@ -1764,28 +1771,18 @@ class Level implements ChunkManager, Metadatable{
 
 		$dropPos = $target->add(0.5, 0.5, 0.5);
 
-		$xpDropAmount = $target->getXpDropAmount();
-		if($xpDropAmount > 0 and $target->isXpDropCompatibleWithTool($item) and $player->isSurvival()){
-			$this->dropExperience($dropPos, $xpDropAmount);
+		if(!empty($drops)){
+			$this->dropItems($dropPos, $drops);
 		}
 
-		if(!empty($drops)){
-			foreach($drops as $drop){
-				if(!$drop->isNull()){
-					$this->dropItem($dropPos, $drop);
-				}
-			}
+		if($xpDrop > 0){
+			$this->dropExperience($target->add(0.5, 0.5, 0.5), $xpDrop);
 		}
 
 		return true;
 	}
 
 	private function destroyBlockInternal(Block $target, Item $item, ?Player $player = null, bool $createParticles = false) : void{
-		$above = $this->getBlockAt($target->x, $target->y + 1, $target->z);
-		if($above->getId() === Block::FIRE){ //TODO: this should be done in Fire's onUpdate(), not with this hack
-			$this->setBlock($above, BlockFactory::get(Block::AIR), true);
-		}
-
 		if($createParticles){
 			$this->addParticle(new DestroyBlockParticle($target->add(0.5, 0.5, 0.5), $target));
 		}

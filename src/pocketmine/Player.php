@@ -73,11 +73,12 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\form\Form;
+use pocketmine\inventory\ContainerInventory;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
-use pocketmine\inventory\transaction\EnchantTransaction;
+use pocketmine\inventory\transaction\TransactionValidationException;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
@@ -2354,20 +2355,20 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					//we get the actions for this in several packets, so we need to wait until we have all the pieces before
 					//trying to execute it
 
-					$result = $this->craftingTransaction->execute();
-					if(!$result){
-						$this->server->getLogger()->debug("Failed to execute crafting transaction from " . $this->getName());
+					$ret = true;
+					try{
+						$this->craftingTransaction->execute();
+
+					}catch(TransactionValidationException $e){
+						$this->server->getLogger()->debug("Failed to execute crafting transaction for " . $this->getName() . ": " . $e->getMessage());
+						$ret = false;
 					}
 
 					$this->craftingTransaction = null;
-					return $result;
+					return $ret;
 				}
 
 				return true;
-			case "Enchant":
-				$enchantTransaction = new EnchantTransaction($this, $actions);
-				$enchantTransaction->execute();
-				break;
 			default:
 				if($this->craftingTransaction !== null){
 					$this->server->getLogger()->debug("Got unexpected normal inventory action with incomplete crafting transaction from " . $this->getName() . ", refusing to execute crafting");
@@ -2380,11 +2381,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			case InventoryTransactionPacket::TYPE_NORMAL:
 				$this->setUsingItem(false);
 				$transaction = new InventoryTransaction($this, $actions);
-
-				if(!$transaction->execute()){
-					$this->server->getLogger()->debug("Failed to execute inventory transaction from " . $this->getName() . " with actions: " . json_encode($packet->actions));
-
-					return false; //oops!
+				try {
+					$transaction->execute();
+				} catch (TransactionValidationException $e) {
+					$this->server->getLogger()->debug("Failed to execute inventory transaction from ".$this->getName().": ".$e->getMessage());
+					$this->server->getLogger()->debug("Actions: ".json_encode($packet->actions));
+					return false;
 				}
 
 				//TODO: fix achievement for getting iron from furnace
@@ -3399,9 +3401,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * TODO: add translation type popups
 	 *
 	 * @param string $message
-	 * @param string $subtitle @deprecated
 	 */
-	public function sendPopup(string $message, string $subtitle = ""){
+	public function sendPopup(string $message) {
 		$pk = new TextPacket();
 		$pk->type = TextPacket::TYPE_POPUP;
 		$pk->message = $message;
@@ -4148,12 +4149,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->isConnected();
 	}
 
-	public function getWindowFromClass(string $class) : ?Inventory{
+	public function getWindowByType(string $class) : ?Inventory{
 		foreach ($this->windowIndex as $inventory)
 			if (get_class($inventory) === $class)
 				return $inventory;
 
 		return null;
+	}
+
+	public function getLastOpenContainerInventory() : ?ContainerInventory{
+		$windows = array_filter($this->windowIndex, function($inv) : bool{ return $inv instanceof ContainerInventory; });
+		return !empty($windows) ? max($windows) : null;
 	}
 
 	/**
