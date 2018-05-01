@@ -21,13 +21,20 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\hell;
+namespace pocketmine\level\biome;
 
-use pocketmine\level\generator\biome\Biome;
+use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 
-class HellBiome extends Biome{
+abstract class SandyBiome extends NormalBiome{
 
-	public function getName() : string{
-		return "Hell";
+	public function __construct(){
+		$this->setGroundCover([
+			BlockFactory::get(Block::SAND, 0),
+			BlockFactory::get(Block::SAND, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0),
+			BlockFactory::get(Block::SANDSTONE, 0)
+		]);
 	}
 }

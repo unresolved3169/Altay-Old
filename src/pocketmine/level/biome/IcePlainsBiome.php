@@ -21,20 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\normal\biome;
+namespace pocketmine\level\biome;
 
-class SwampBiome extends GrassyBiome{
+use pocketmine\level\generator\populator\TallGrass;
+
+class IcePlainsBiome extends SnowyBiome{
 
 	public function __construct(){
 		parent::__construct();
 
-		$this->setElevation(62, 63);
+		$tallGrass = new TallGrass();
+		$tallGrass->setBaseAmount(5);
 
-		$this->temperature = 0.8;
-		$this->rainfall = 0.9;
+		$this->addPopulator($tallGrass);
+
+		$this->setElevation(63, 74);
+
+		$this->temperature = 0.05;
+		$this->rainfall = 0.8;
 	}
 
 	public function getName() : string{
-		return "Swamp";
+		return "Ice Plains";
 	}
 }

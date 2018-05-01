@@ -25,8 +25,8 @@ declare(strict_types=1);
 namespace pocketmine\level\generator\end;
 
 use pocketmine\block\Block;
+use pocketmine\level\biome\Biome;
 use pocketmine\level\ChunkManager;
-use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\generator\end\populator\EndPillar;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\generator\noise\Simplex;

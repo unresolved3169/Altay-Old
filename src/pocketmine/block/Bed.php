@@ -23,11 +23,11 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\lang\TranslationContainer;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\lang\TranslationContainer;
+use pocketmine\level\biome\Biome;
 use pocketmine\level\Explosion;
-use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
