@@ -76,6 +76,16 @@ class Beacon extends Transparent{
 		return true;
 	}
 
+	public function buildPyramidLevels(int $levels, Block $block) : void{
+		for($i = 1; $i < $levels + 1; $i++){
+			for($x = -$i; $x < $i + 1; $x++){
+				for($z = -$i; $z < $i + 1; $z++){
+					$this->level->setBlock($this->add($x, -$i, $z), $block);
+				}
+			}
+		}
+	}
+
 	public function getTile() : TileBeacon{
 		$t = $this->getLevel()->getTileAt($this->x, $this->y, $this->z);
 		return $t instanceof TileBeacon ? $t : new TileBeacon($this->getLevel(), TileBeacon::createNBT($this));
