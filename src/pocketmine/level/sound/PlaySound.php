@@ -29,19 +29,14 @@ use pocketmine\network\mcpe\protocol\PlaySoundPacket;
 
 class PlaySound extends Sound{
 
+	/** @var string */
 	protected $soundName = "";
+	/** @var float */
 	protected $volume = 1;
+	/** @var float */
 	protected $pitch = 1;
 
-	/**
-	 * PlaySound constructor.
-	 *
-	 * @param Vector3 $pos
-	 * @param string $soundName
-	 * @param float $volume
-	 * @param float $pitch
-	 */
-	public function __construct(Vector3 $pos, string $soundName, float $volume = 1, float $pitch = 1){
+	public function __construct(Vector3 $pos, string $soundName, float $volume = 100, float $pitch = 1){
 		parent::__construct($pos->x, $pos->y, $pos->z);
 		$this->soundName = $soundName;
 		$this->volume = $volume;
