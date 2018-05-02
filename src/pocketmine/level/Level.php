@@ -324,25 +324,16 @@ class Level implements ChunkManager, Metadatable{
 	 *
 	 * @param Server $server
 	 * @param string $name
-	 * @param string $path
-	 * @param string $provider Class that extends LevelProvider
-	 *
-	 * @throws \Exception
+	 * @param LevelProvider $provider Class that extends LevelProvider
 	 */
-	public function __construct(Server $server, string $name, string $path, string $provider){
+	public function __construct(Server $server, string $name, LevelProvider $provider){
 		$this->blockStates = BlockFactory::getBlockStatesArray();
 		$this->levelId = static::$levelIdCounter++;
 		$this->blockMetadata = new BlockMetadataStore($this);
 		$this->server = $server;
 		$this->autoSave = $server->getAutoSave();
 
-		/** @var LevelProvider $provider */
-
-		if(is_subclass_of($provider, LevelProvider::class, true)){
-			$this->provider = new $provider($path);
-		}else{
-			throw new LevelException("Provider is not a subclass of LevelProvider");
-		}
+		$this->provider = $provider;
 
 		$this->displayName = $this->provider->getName();
 		$this->worldHeight = $this->provider->getWorldHeight();
@@ -446,9 +437,7 @@ class Level implements ChunkManager, Metadatable{
 			$this->unloadChunk($chunk->getX(), $chunk->getZ(), false);
 		}
 
-		if($this->getAutoSave()){
-			$this->save();
-		}
+		$this->save();
 
 		$this->unregisterGenerator();
 
