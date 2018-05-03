@@ -87,9 +87,6 @@ class Explosion{
 		$this->subChunkHandler = new SubChunkIteratorManager($this->level, false);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function explodeA() : bool{
 		if($this->size < 0.1){
 			return false;
@@ -256,5 +253,10 @@ class Explosion{
 		$this->level->broadcastLevelSoundEvent($source, LevelSoundEventPacket::SOUND_EXPLODE);
 
 		return true;
+	}
+
+	public function explode() : void{
+		$this->explodeA();
+		$this->explodeB();
 	}
 }

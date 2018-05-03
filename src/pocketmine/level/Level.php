@@ -44,6 +44,7 @@ use pocketmine\event\level\SpawnChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\level\biome\Biome;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\format\ChunkException;
 use pocketmine\level\format\EmptySubChunk;
@@ -3066,6 +3067,17 @@ class Level implements ChunkManager, Metadatable{
 					--$maxUnload;
 				}
 			}
+		}
+	}
+
+	public static function getDimensionByBiomeId(int $biome) : int{
+		switch($biome){
+			case Biome::END:
+				return Level::DIMENSION_END;
+			case Biome::HELL:
+				return Level::DIMENSION_NETHER;
+			default:
+				return Level::DIMENSION_OVERWORLD;
 		}
 	}
 

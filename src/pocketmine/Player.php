@@ -958,15 +958,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->level->sendDifficulty($this);
 
 			$xz = [(int) $this->x, (int) $this->z];
-			$oldBiome = $oldLevel->getBiomeId(...$xz);
-			$newBiome = $this->level->getBiomeId(...$xz);
-			if($oldBiome !== $newBiome){
-				$dimension = $newBiome - 7;
-				if($dimension < 0 or $dimension > 2){
-					$dimension = Level::DIMENSION_OVERWORLD;
-				}
-
-				$this->changeDimension($dimension, $this, !$this->isAlive());
+			$oldDimension = Level::getDimensionByBiomeId($oldLevel->getBiomeId(...$xz));
+			$newDimension = Level::getDimensionByBiomeId($this->level->getBiomeId(...$xz));
+			if($oldDimension !== $newDimension){
+				$this->changeDimension($newDimension, $this, !$this->isAlive());
 			}
 
 			return true;
