@@ -81,7 +81,7 @@ class TradeItems{
 		self::$items[Villager::PROFESSION_FARMER][Villager::CAREER_FLETCHER] = [
 			[
 				self::getCompound(ItemFactory::get(Item::STRING, 0, mt_rand(15, 20)), null, self::$emeraldItem),
-				self::getCompound((clone self::$emeraldItem)->setCount(mt_rand(7, 8)), null, ItemFactory::get(Item::FISHING_ROD, 0, mt_rand(8, 12)))
+				self::getCompound((clone self::$emeraldItem)->setCount(mt_rand(7, 8)), null, ItemFactory::get(Item::ARROW, 0, mt_rand(8, 12)))
 			],
 			[
 				self::getCompound(ItemFactory::get(Item::GRAVEL, 0, 10), self::$emeraldItem, ItemFactory::get(Item::FLINT, 0, mt_rand(6, 10))),
