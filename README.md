@@ -13,6 +13,7 @@ Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10
 Example servers running Altay
 --------------------
 - **oyna.minecraftpetr.net:19132**
+- **soteserver.net:19132**
 ------------     
     
 ## Finished & Planned Features
@@ -43,7 +44,7 @@ Example servers running Altay
  	- [x] Altay Configuration File
  	- [ ] Config Auto Updater
  	- [ ] Entity Behaviors (MobAI)
- 	- [ ] Level Dimensions
+ 	- [x] Level Dimensions
  	- [ ] Redstone
  - [ ] Tiles
  	- [x] Beacon
