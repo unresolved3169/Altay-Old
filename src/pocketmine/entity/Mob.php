@@ -90,7 +90,7 @@ abstract class Mob extends Living{
 	 * @return bool
 	 */
 	public function onUpdate(int $tick): bool{
-		if($this->isAlive() and !$this->isImmobile()){
+		if($this->isAlive()){
 			$this->currentBehavior = $this->getReadyBehavior($this->behaviors, $this->currentBehavior);
 			if($this->currentBehavior instanceof Behavior){
 				$this->currentBehavior->onTick($tick);
