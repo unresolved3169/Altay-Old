@@ -26,7 +26,6 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
-use pocketmine\level\Position;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -71,7 +70,7 @@ class NetherPortal extends Flowable{
 		$server = Server::getInstance();
 		if($server->allowNether){
 			$nether = $server->getNetherLevel();
-			$entity->teleport(Position::fromObject($entity, $nether));
+			$entity->teleport($nether->getSafeSpawn($entity));
 		}
 	}
 
