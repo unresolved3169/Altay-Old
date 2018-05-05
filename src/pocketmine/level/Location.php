@@ -30,6 +30,8 @@ class Location extends Position{
 	/** @var float */
 	public $yaw;
 	/** @var float */
+	public $headYaw;
+	/** @var float */
 	public $pitch;
 
 	/**
@@ -85,4 +87,12 @@ class Location extends Position{
 		}
 		return parent::equals($v);
 	}
+
+    /**
+     * @return float
+     */
+    public function getHeadYaw(): float
+    {
+        return $this->headYaw;
+    }
 }

@@ -28,6 +28,7 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\math\VoxelRayTrace;
 
 class Path{
 
@@ -38,11 +39,12 @@ class Path{
 		$this->tiles = $tiles;
 	}
 
-	public static function findPath(Mob $mob, Vector3 $targetPos) : Path{
-		$from = new Vector2((int) $mob->x, (int) $mob->z);
-		$to = new Vector2((int) $targetPos->x, (int) $targetPos->z);
+	public static function findPath(Mob $mob, Vector3 $targetPos, int $maxAttempt = 3) : Path{
+		$from = new Vector2($mob->x, $mob->z);
+		$to = new Vector2($targetPos->x, $targetPos->z);
+		$blockCache = [$to->floor()->__toString() => $mob->level->getBlock($targetPos)];
 
-		return new Path($mob->getNavigator()->navigate($from, $to, 200));
+		return new Path($mob->getNavigator()->navigate($from, $to, $maxAttempt, $blockCache));
 	}
 
 	public function havePath() : bool{
@@ -53,7 +55,7 @@ class Path{
 		if($this->havePath()){
 			$next = reset($this->tiles);
 
-			if($next->x === (int) $entity->x and $next->y === (int) $entity->z){
+			if($next->x === $entity->x and $next->y === $entity->z){
 				array_shift($this->tiles);
 			}
 

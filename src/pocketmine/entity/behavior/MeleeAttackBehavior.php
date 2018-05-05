@@ -28,6 +28,7 @@ use pocketmine\entity\Attribute;
 use pocketmine\entity\Mob;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
+use pocketmine\level\particle\RedstoneParticle;
 use pocketmine\math\Vector3;
 
 class MeleeAttackBehavior extends Behavior{
@@ -87,7 +88,7 @@ class MeleeAttackBehavior extends Behavior{
 		$canSee = true;
 
 		if($canSee || $this->delay <= 0 || $deltaDistance > 1 || $this->random->nextFloat() < 0.05){
-			$this->currentPath = Path::findPath($this->mob, $target);
+			$this->currentPath = Path::findPath($this->mob, $target, 20);
 			$this->lastPlayerPos = $target->asVector3();
 
 			$this->delay = 4 + $this->random->nextBoundedInt(7);
@@ -111,10 +112,10 @@ class MeleeAttackBehavior extends Behavior{
 				$this->mob->moveForward($this->speedMultiplier);
 			} // else something is really wrong
 		}else{
-			//$this->mob->resetMotion();
+			$this->mob->resetMotion();
 		}
 
-		$this->mob->lookAt($target);
+		$this->mob->lookAt($target, true);
 
 		$this->attackCooldown = max($this->attackCooldown - 1, 0);
 		if($this->attackCooldown <= 0 && $distanceToPlayer < $this->getAttackReach()){

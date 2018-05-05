@@ -33,7 +33,7 @@ interface ProtocolInfo{
 	 * Actual Minecraft: BE protocol version
 	 */
 	public const CURRENT_PROTOCOL = 223;
-	public const ACCEPTED_PROTOCOLS = [223, 240];
+	public const ACCEPTED_PROTOCOLS = [223];
 	/**
 	 * Current Minecraft BE version reported by the server. This is usually the earliest currently supported version.
 	 */

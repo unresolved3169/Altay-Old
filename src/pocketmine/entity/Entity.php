@@ -417,6 +417,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/** @var float */
 	public $lastYaw;
 	/** @var float */
+	public $lastHeadYaw;
+	/** @var float */
 	public $lastPitch;
 
 	/** @var AxisAlignedBB */
@@ -1222,7 +1224,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$pk->position = $this->getOffsetPosition($this);
 			$pk->yaw = $this->yaw;
 			$pk->pitch = $this->pitch;
-			$pk->headYaw = $this->yaw; //TODO
+			$pk->headYaw = $this->headYaw ?? $this->yaw; //TODO
 			$pk->teleported = $teleport;
 
 			$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
@@ -1242,8 +1244,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	/**
 	 * @param Entity $entity
 	 */
-	protected function applyEntityCollision(Entity $entity){
-		if(!$this->isRiding() and !$entity->isRiding()){
+	protected function applyEntityCollision(Entity $entity) : void{
+		if(!$this->isRiding() and !$entity->isRiding()and $entity->hasEntityCollisionUpdate()){
 			if(!($entity instanceof Player and $entity->isSpectator()) and !($this instanceof Player and $this->isSpectator())){
 				$d0 = $entity->x - $this->x;
 				$d1 = $entity->z - $this->z;
@@ -2016,8 +2018,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return true;
 	}
 
-	public function setRotation(float $yaw, float $pitch){
+	public function setRotation(float $yaw, float $pitch, ?float $headYaw = null){
 		$this->yaw = $yaw;
+		$this->headYaw = $headYaw ?? $yaw;
 		$this->pitch = $pitch;
 		$this->scheduleUpdate();
 	}
