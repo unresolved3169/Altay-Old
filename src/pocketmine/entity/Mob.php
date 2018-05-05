@@ -44,19 +44,12 @@ abstract class Mob extends Living{
 	/** @var EntityNavigator */
 	protected $navigator;
 
-	public function __construct(Level $level, CompoundTag $nbt, bool $needAi = false)
-    {
-        parent::__construct($level, $nbt);
+	public function __construct(Level $level, CompoundTag $nbt){
+		parent::__construct($level, $nbt);
+		$this->setImmobile(true);
+	}
 
-        $this->setImmobile(!$needAi);
-    }
-
-    public function hasEntityCollisionUpdate(): bool
-    {
-        return !$this->isImmobile();
-    }
-
-    protected function initEntity(){
+	protected function initEntity(){
 		parent::initEntity();
 
 		$this->jumpVelocity = $this->jumpVelocity + ($this->width / 10) + $this->getAdditionalJumpVelocity(); // hmmmmmm
@@ -166,7 +159,7 @@ abstract class Mob extends Living{
 		$level = $this->level;
 		$dir = $this->getDirectionVector();
 		$dir->y = 0;
-		
+
 		$boundingBox = (clone $this->getBoundingBox())->offsetBy($dir->multiply($sf));
 		$entityCollide = count($this->level->getCollidingEntities($boundingBox, $this)) > 0;
 
