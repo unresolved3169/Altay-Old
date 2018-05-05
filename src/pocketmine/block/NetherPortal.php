@@ -35,6 +35,9 @@ class NetherPortal extends Flowable{
 
 	public const MAX_PORTAL_SIZE = 23;
 
+	/** @var int[] */
+	protected $time = [];
+
 	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
@@ -70,9 +73,22 @@ class NetherPortal extends Flowable{
 	public function onEntityCollide(Entity $entity) : void{
 		$server = Server::getInstance();
 		if($server->allowNether){
-			$biome = $entity->getLevel()->getBiomeId($entity->x, $entity->z);
+			$biome = $entity->getLevel()->getBiomeId((int) $entity->x, (int) $entity->z);
 			$level = $biome !== Biome::HELL ? $server->getNetherLevel() : $server->getDefaultLevel();
-			$entity->teleport($level->getSafeSpawn($entity));
+			if($entity instanceof Player and $entity->isSurvival()){
+				if(isset($this->time[$entity->getName()])){
+					$subtract = time() - $this->time[$entity->getName()];
+					if($subtract == 3){
+						$entity->teleport($level->getSafeSpawn($entity));
+					}elseif($subtract > 3){
+						$this->time[$entity->getName()] = time();
+					}
+				}else{
+					$this->time[$entity->getName()] = time();
+				}
+			}else{
+				$entity->teleport($level->getSafeSpawn($entity));
+			}
 		}
 	}
 
