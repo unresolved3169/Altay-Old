@@ -227,7 +227,7 @@ class EntityNavigator{
 			Vector3::SIDE_NORTH => [Vector3::SIDE_EAST, Vector3::SIDE_WEST],
 			Vector3::SIDE_SOUTH => [Vector3::SIDE_EAST, Vector3::SIDE_WEST],
 			Vector3::SIDE_EAST => [Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH],
-			Vector3::SIDE_WEST => [Vector3::SIDE_NORTH, Vector3::SIDE_NORTH] // ??
+			Vector3::SIDE_WEST => [Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH]
 		];
 
 		foreach($checkDiagonals as $index => $diagonal){
