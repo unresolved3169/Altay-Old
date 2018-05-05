@@ -16,35 +16,38 @@ Example servers running Altay
 ------------     
     
 ## Finished & Planned Features
- - [x] Altay Configuration File
- - [x] Anvil
- - [x] Armor Stand
- - [x] Boats
- - [x] BossbarAPI
- - [x] Command Parameters
+ - [x] API
+ 	- [x] BossbarAPI
+ 	- [x] Command Parameters
+ 	- [x] Forms
+ 	- [x] Villager Trade
+ 	- [x] Virtual Inventory
+ - [x] Blocks
+ 	- [x] Anvil
+ 	- [x] Enchantment Table
  - [x] Commands
-   - [x] /clear
-   - [x] /playsound
-   - [x] /stopsound
-   - [x] /setblock
- - [x] Elytra
- - [x] Enchantment Table
+ 	- [x] /clear
+ 	- [x] /playsound
+ 	- [x] /setblock
+ 	- [x] /stopsound
+ - [x] Entities
+ 	- [x] Armor Stand
+ 	- [x] Boats
+ 	- [x] Fireworks
  - [x] Events
-    - [x] InventoryClickEvent
-    - [x] PlayerInteractEntityEvent (Credits: @CortexPE)
- - [x] Fireworks
- - [x] Forms
- - [x] Hopper
- - [x] Virtual Inventory
- - [x] Trading
-   - [x] Trade
-   - [x] Level Upgrade
-   - [x] Use++
- - [x] Beacons
- - [ ] Config Auto Updater
- - [ ] Entity Behaviors (MobAI)
- - [ ] Level Dimensions
- - [ ] Redstone
- - [ ] Shulker Boxes
- 
+ 	- [x] InventoryClickEvent
+ 	- [x] PlayerInteractEntityEvent
+ - [x] Items
+ 	- [x] Elytra
+ - [ ] Others
+ 	- [x] Altay Configuration File
+ 	- [ ] Config Auto Updater
+ 	- [ ] Entity Behaviors (MobAI)
+ 	- [ ] Level Dimensions
+ 	- [ ] Redstone
+ - [ ] Tiles
+ 	- [x] Beacon
+ 	- [x] Hopper
+ 	- [ ] Shulker Boxes
+	
 ***more...***

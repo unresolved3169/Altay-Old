@@ -24,138 +24,129 @@ declare(strict_types=1);
 
 namespace pocketmine\tile;
 
+use pocketmine\block\Block;
+use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
 use pocketmine\inventory\BeaconInventory;
 use pocketmine\inventory\InventoryHolder;
-use pocketmine\block\Block;
-use pocketmine\entity\Effect;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 
 class Beacon extends Spawnable implements Nameable, InventoryHolder{
-    use NameableTrait;
+	use NameableTrait, ContainerTrait;
 
-    public const TAG_PRIMARY = "primary";
-    public const TAG_SECONDARY = "secondary";
+	public const TAG_PRIMARY = "primary";
+	public const TAG_SECONDARY = "secondary";
 
-    public const POWER_LEVEL_MAX = 4;
+	/** @var BeaconInventory */
+	private $inventory;
 
-    /** @var BeaconInventory */
-    private $inventory;
-    protected $currentTick = 0;
+	protected $currentTick = 0;
 
-    /**
-     * Beacon constructor.
-     *
-     * @param Level       $level
-     * @param CompoundTag $nbt
-     */
-    public function __construct(Level $level, CompoundTag $nbt){
-        if(!$nbt->hasTag(self::TAG_PRIMARY)){
-            $nbt->setInt(self::TAG_PRIMARY, 0);
-        }
-        if(!$nbt->hasTag(self::TAG_SECONDARY)){
-            $nbt->setInt(self::TAG_SECONDARY, 0);
-        }
-        parent::__construct($level, $nbt);
-        $this->inventory = new BeaconInventory($this);
-        $this->scheduleUpdate();
-    }
+	public function __construct(Level $level, CompoundTag $nbt){
+		if(!$nbt->hasTag(self::TAG_PRIMARY)){
+			$nbt->setInt(self::TAG_PRIMARY, 0);
+		}
+		if(!$nbt->hasTag(self::TAG_SECONDARY)){
+			$nbt->setInt(self::TAG_SECONDARY, 0);
+		}
 
-    public function addAdditionalSpawnData(CompoundTag $nbt) : void{
-        $nbt->setByte("isMovable", 1);
-        $nbt->setTag($this->namedtag->getTag(self::TAG_PRIMARY));
-        $nbt->setTag($this->namedtag->getTag(self::TAG_SECONDARY));
-        if($this->hasName()) {
-            $nbt->setTag($this->namedtag->getTag("CustomName"));
-        }
-    }
+		parent::__construct($level, $nbt);
 
-    public function getDefaultName(): string{
-        return "Beacon";
-    }
+		$this->inventory = new BeaconInventory($this);
+		$this->loadItems();
 
-    /**
-     * @return BeaconInventory
-     */
-    public function getInventory(){
-        return $this->inventory;
-    }
+		$this->scheduleUpdate();
+	}
 
-    /**
-     * @param CompoundTag $nbt
-     * @param Player      $player
-     *
-     * @return bool
-     */
-    public function updateCompoundTag(CompoundTag $nbt, Player $player) : bool{
-        if($nbt->getString("id") !== Tile::BEACON){
-            return false;
-        }
-        $this->namedtag->setInt(self::TAG_PRIMARY, $nbt->getInt(self::TAG_PRIMARY, 0));
-        $this->namedtag->setInt(self::TAG_SECONDARY, $nbt->getInt(self::TAG_SECONDARY, 0));
-        return true;
-    }
+	public function close() : void{
+		if(!$this->closed){
+			$this->inventory->removeAllViewers(true);
+			$this->inventory = null;
 
-    /**
-     * @return bool
-     */
-    public function onUpdate() : bool{
-        if($this->closed === true){
-            return false;
-        }
-        if($this->currentTick++ % 100 != 0){
-            return true;
-        }
-        $level = $this->calculatePowerLevel();
-        $this->timings->startTiming();
-        $id = 0;
-        if($level > 0){
-            if($this->namedtag->hasTag(self::TAG_PRIMARY) && $this->namedtag->getInt(self::TAG_PRIMARY, 0) != 0){
-                $id = $this->namedtag->getInt(self::TAG_PRIMARY);
-            }else if($this->namedtag->hasTag(self::TAG_SECONDARY) && $this->namedtag->getInt(self::TAG_SECONDARY, 0) != 0){
-                $id = $this->namedtag->getInt(self::TAG_SECONDARY);
-            }
-            if($id != 0){
-                $range = ($level + 1) * 10;
-                $effect = new EffectInstance(Effect::getEffect($id));
-                $effect->setDuration(10 * 30);
-                $effect->setAmplifier(0);
-                foreach($this->level->getPlayers() as $player){
-                    if($this->distance($player) <= $range){
-                        $player->addEffect($effect);
-                    }
-                }
-            }
-        }
-        $this->timings->stopTiming();
-        return true;
-    }
+			parent::close();
+		}
+	}
 
-    /**
-     * @return int
-     */
-    protected function calculatePowerLevel() : int{
-        $tileX = $this->getFloorX();
-        $tileY = $this->getFloorY();
-        $tileZ = $this->getFloorZ();
-        for($powerLevel = 1; $powerLevel <= self::POWER_LEVEL_MAX; $powerLevel++){
-            $queryY = $tileY - $powerLevel;
-            for($queryX = $tileX - $powerLevel; $queryX <= $tileX + $powerLevel; $queryX++){
-                for($queryZ = $tileZ - $powerLevel; $queryZ <= $tileZ + $powerLevel; $queryZ++){
-                    $testBlockId = $this->level->getBlockIdAt($queryX, $queryY, $queryZ);
-                    if(
-                        $testBlockId != Block::IRON_BLOCK &&
-                        $testBlockId != Block::GOLD_BLOCK &&
-                        $testBlockId != Block::EMERALD_BLOCK &&
-                        $testBlockId != Block::DIAMOND_BLOCK
-                    ){
-                        return $powerLevel - 1;
-                    }
-                }
-            }
-        }
-        return self::POWER_LEVEL_MAX;
-    }
+	public function addAdditionalSpawnData(CompoundTag $nbt) : void{
+		$nbt->setTag($this->namedtag->getTag(self::TAG_PRIMARY));
+		$nbt->setTag($this->namedtag->getTag(self::TAG_SECONDARY));
+
+		if($this->hasName()) {
+			$nbt->setTag($this->namedtag->getTag("CustomName"));
+		}
+	}
+
+	public function getDefaultName() : string{
+		return "Beacon";
+	}
+
+	public function getInventory() : ?BeaconInventory{
+		return $this->inventory;
+	}
+
+	public function getRealInventory() : ?BeaconInventory{
+		return $this->getInventory();
+	}
+
+	public function updateCompoundTag(CompoundTag $nbt, Player $player) : bool{
+		if($nbt->getString("id") !== Tile::BEACON){
+			return false;
+		}
+
+		$this->namedtag->setInt(self::TAG_PRIMARY, $nbt->getInt(self::TAG_PRIMARY, 0));
+		$this->namedtag->setInt(self::TAG_SECONDARY, $nbt->getInt(self::TAG_SECONDARY, 0));
+
+		return true;
+	}
+
+	public function onUpdate() : bool{
+		$levelTime = $this->level->getProvider()->getTime();
+		if($this->currentTick > $levelTime){
+			return true;
+		}
+
+		$pyramidLevels = $this->getPyramidLevels();
+		$this->currentTick = $levelTime + 80;
+
+		$duration = 180 + $pyramidLevels*40;
+		$range = 10 + $pyramidLevels*10;
+
+		$prim = $this->namedtag->getInt(self::TAG_PRIMARY, 0);
+		$sec = $this->namedtag->getInt(self::TAG_SECONDARY, 0);
+
+		$effectPrim = Effect::getEffect($prim);
+
+		if($effectPrim != null && $pyramidLevels > 0){
+			$effectPrim = new EffectInstance($effectPrim, $duration, $pyramidLevels == 4 && $prim == $sec ? 1 : 0);
+
+			$players = array_filter($this->level->getPlayers(), function(Player $player) use($range) : bool{ return $player->spawned && $player->distance($this) <= $range; });
+			/** @var Player $player */
+			foreach($players as $player){
+				$player->addEffect($effectPrim);
+
+				if($pyramidLevels == 4 && $prim != $sec){
+					$regen = new EffectInstance(Effect::getEffect(Effect::REGENERATION), $duration);
+					$player->addEffect($regen);
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private function getPyramidLevels() : int{
+		$allIron = true;
+		for($i = 1; $i < 5; $i++){
+			for($x = -$i; $x < $i + 1; $x++){
+				for($z = -$i; $z < $i + 1; $z++){
+					$allIron = $allIron && $this->level->getBlockIdAt($this->x + $x, $this->y - $i, $this->z + $z) == Block::IRON_BLOCK;
+					if(!$allIron) return $i - 1;
+				}
+			}
+		}
+
+		return 4;
+	}
 }

@@ -79,7 +79,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	protected $foodTickTimer = 0;
 
 	protected $totalXp = 0;
-	protected $xpSeed;
+	protected $xpSeed = 0;
 	protected $xpCooldown = 0;
 
 	protected $baseOffset = 1.62;

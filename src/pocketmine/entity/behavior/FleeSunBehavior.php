@@ -78,10 +78,6 @@ class FleeSunBehavior extends Behavior{
 		$this->currentPath = null;
 	}
 
-	/**
-	 * @param Entity $entity
-	 * @return null|Block
-	 */
 	public function findPossibleShelter(Entity $entity) : ?Block{
 		for($i = 0; $i < 10; $i++){
 			$block = $this->mob->level->getBlock($this->mob->add($this->random->nextBoundedInt(20) - 10, $this->random->nextBoundedInt(6) - 3, $this->random->nextBoundedInt(20) - 10));

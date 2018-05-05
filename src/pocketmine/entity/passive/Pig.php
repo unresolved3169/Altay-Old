@@ -44,7 +44,6 @@ class Pig extends Animal implements Rideable{
 
 	protected function initEntity(){
 		$this->setMaxHealth(10);
-		$this->setImmobile();
 		parent::initEntity();
 	}
 

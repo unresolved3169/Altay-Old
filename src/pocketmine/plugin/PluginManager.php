@@ -39,6 +39,7 @@ use pocketmine\permission\Permission;
 use pocketmine\Server;
 use pocketmine\timings\Timings;
 use pocketmine\timings\TimingsHandler;
+use pocketmine\utils\MainLogger;
 
 /**
  * Manages all the plugins, Permissions and Permissibles
@@ -352,7 +353,7 @@ class PluginManager{
 	/**
 	 * Returns whether a specified API version string is considered compatible with the server's API version.
 	 *
-	 * @param string[] ...$versions
+	 * @param string ...$versions
 	 * @return bool
 	 */
 	public function isCompatibleApi(string ...$versions) : bool{
@@ -623,37 +624,35 @@ class PluginManager{
 				}
 
 				if(isset($data["overloads"]) and is_array($data["overloads"])){
-				    foreach($data["overloads"] as $name => $value){
-				        $parameters = [];
-                        if(isset($value["parameters"]) and is_array($value["parameters"])){
-                            foreach($value["parameters"] as $pname => $pdata){
-                                $enum = null;
-                                if(isset($pdata["enum"]) and is_array($pdata["enum"])){
-                                    foreach($pdata as $enumName => $enumValues){
-                                        if(is_array($enumValues)){
-                                            $enum = new CommandEnum($enumName, $enumValues);
-                                        }
-                                    }
+					foreach($data["overloads"] as $name => $value){
+						$parameters = [];
+						if(isset($value["parameters"]) and is_array($value["parameters"])){
+							foreach($value["parameters"] as $pname => $pdata){
+								$enum = null;
+								if(isset($pdata["enum"]) and is_array($pdata["enum"])){
+									foreach($pdata as $enumName => $enumValues){
+										if(is_array($enumValues)){
+											$enum = new CommandEnum($enumName, $enumValues);
+										}
+									}
 
-                                    $parameters[] = new CommandParameter(
-                                        $pname,
-                                        isset($pdata["type"]) ? CommandParameter::convertString($pdata["type"]) : CommandParameter::ARG_TYPE_TEXT,
-                                        isset($pdata["optional"]) ? $pdata["optional"] : true,
-                                        isset($pdata["flag"]) ? CommandParameter::convertString($pdata["flag"]) : CommandParameter::ARG_FLAG_VALID,
-                                        $enum,
-                                        isset($pdata["postfix"]) ? $pdata["postfix"] : ""
-                                    );
-                                }
-                            }
-                        }
+									$parameters[] = new CommandParameter(
+										$pname,
+										isset($pdata["type"]) ? CommandParameter::convertString($pdata["type"]) : CommandParameter::ARG_TYPE_TEXT,
+										isset($pdata["optional"]) ? $pdata["optional"] : true,
+										$enum ?? ($pdata["postfix"] ?? null)
+									);
+								}
+							}
+						}
 
-                        $newCmd->addOverload(new CommandOverload($name, $parameters));
-                    }
-                }
+						$newCmd->addOverload(new CommandOverload($name, $parameters));
+					}
+				}
 
-                if(isset($data["permission-level"])){
-				    $newCmd->setPermissionLevel((int) $data["permission-level"]);
-                }
+				if(isset($data["permission-level"])){
+					$newCmd->setPermissionLevel((int) $data["permission-level"]);
+				}
 
 				$pluginCmds[] = $newCmd;
 			}
@@ -776,7 +775,17 @@ class PluginManager{
 				$ignoreCancelled = isset($tags["ignoreCancelled"]) && strtolower($tags["ignoreCancelled"]) === "true";
 
 				$parameters = $method->getParameters();
-				if(count($parameters) === 1 and $parameters[0]->getClass() instanceof \ReflectionClass and is_subclass_of($parameters[0]->getClass()->getName(), Event::class)){
+				try{
+					$isHandler = count($parameters) === 1 && $parameters[0]->getClass() instanceof \ReflectionClass && is_subclass_of($parameters[0]->getClass()->getName(), Event::class);
+				}catch(\ReflectionException $e){
+					if(isset($tags["softDepend"]) && !isset($this->plugins[$tags["softDepend"]])){
+						MainLogger::getLogger()->debug("Not registering @softDepend listener " . get_class($listener) . "::" . $method->getName() . "(" . $parameters[0]->getType()->getName() . ") because plugin \"" . $tags["softDepend"] . "\" not found");
+						continue;
+					}
+
+					throw $e;
+				}
+				if($isHandler){
 					$class = $parameters[0]->getClass()->getName();
 					$this->registerEvent($class, $listener, $priority, new MethodEventExecutor($method->getName()), $plugin, $ignoreCancelled);
 				}

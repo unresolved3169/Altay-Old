@@ -21,9 +21,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\hell;
-
-use pocketmine\level\generator\biome\Biome;
+namespace pocketmine\level\biome;
 
 class HellBiome extends Biome{
 

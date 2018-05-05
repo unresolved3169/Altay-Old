@@ -26,6 +26,8 @@ namespace pocketmine\entity\passive;
 
 use pocketmine\entity\Ageable;
 use pocketmine\entity\Creature;
+use pocketmine\entity\Effect;
+use pocketmine\entity\EffectInstance;
 use pocketmine\entity\NPC;
 
 use pocketmine\inventory\TradeInventory;
@@ -120,6 +122,7 @@ class Villager extends Creature implements NPC, Ageable{
 
 	public function updateTradeTier() : void{
 		$tradeTier = $this->getTradeTier() + 1;
+
 		try{
 			$this->setTradeTier($tradeTier);
 			$this->addEffect(new EffectInstance(Effect::getEffect(Effect::REGENERATION), mt_rand(2, 5) * 20));
@@ -167,6 +170,7 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->namedtag->setInt("Profession", $this->getProfession());
 		$this->namedtag->setInt("Career", $this->career);
 		$this->namedtag->setInt("TradeTier", $this->tradeTier);
+		$this->updateTradeItems();
 		$this->namedtag->setTag($this->offers, true);
 	}
 
