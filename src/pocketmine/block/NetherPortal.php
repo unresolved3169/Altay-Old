@@ -26,6 +26,7 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
+use pocketmine\level\biome\Biome;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -69,8 +70,9 @@ class NetherPortal extends Flowable{
 	public function onEntityCollide(Entity $entity) : void{
 		$server = Server::getInstance();
 		if($server->allowNether){
-			$nether = $server->getNetherLevel();
-			$entity->teleport($nether->getSafeSpawn($entity));
+			$biome = $entity->getLevel()->getBiomeId($entity->x, $entity->z);
+			$level = $biome !== Biome::HELL ? $server->getNetherLevel() : $server->getDefaultLevel();
+			$entity->teleport($level->getSafeSpawn($entity));
 		}
 	}
 
