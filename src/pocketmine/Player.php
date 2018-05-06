@@ -358,6 +358,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	/** @var int */
 	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
+	protected $keepExperience = false;
 
 	/**
 	 * @return TranslationContainer|string
@@ -1513,7 +1514,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function getXpDropAmount() : int{
-		if(!$this->server->keepExperience && !$this->isCreative()){
+		if(!$this->server->keepExperience && !$this->isCreative() and !$this->keepExperience){
 			return parent::getXpDropAmount();
 		}
 
@@ -3795,7 +3796,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params));
 		$ev->setKeepInventory($this->server->keepInventory);
+		$ev->setKeepExperience($this->server->keepExperience);
 		$this->server->getPluginManager()->callEvent($ev);
+		
+		$this->keepExperience = $ev->getKeepExperience();
 
 		if(!$ev->getKeepInventory()){
 			foreach($ev->getDrops() as $item){
@@ -3852,8 +3856,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$attr->resetToDefault();
 		}
 
-		if($this->server->keepExperience)
+		if($this->keepExperience){
 			$this->setCurrentTotalXp($xp);
+			$this->keepExperience = false;
+		}
 
 		$this->sendData($this);
 		$this->sendData($this->getViewers());
