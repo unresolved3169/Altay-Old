@@ -3037,6 +3037,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function handleCommandRequest(CommandRequestPacket $packet) : bool{
+		if(!$this->spawned or !$this->isAlive()){
+			return false;
+		}
+
+		$this->resetCraftingGridType();
+
 		$command = $packet->command;
 		if($command{0} != "/"){
 			return false;
