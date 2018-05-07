@@ -113,6 +113,7 @@ use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
+use pocketmine\network\mcpe\protocol\CommandRequestPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
@@ -2198,27 +2199,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$message = TextFormat::clean($message, $this->removeFormat);
 		foreach(explode("\n", $message) as $messagePart){
 			if(trim($messagePart) !== "" and strlen($messagePart) <= 255 and $this->messageCounter-- > 0){
-				if(strpos($messagePart, './') === 0){
-					$messagePart = substr($messagePart, 1);
-				}
-
-				$ev = new PlayerCommandPreprocessEvent($this, $messagePart);
-
-				$this->server->getPluginManager()->callEvent($ev);
-
-				if($ev->isCancelled()){
-					break;
-				}
-
-				if(strpos($ev->getMessage(), "/") === 0){
-					Timings::$playerCommandTimer->startTiming();
-					$this->server->dispatchCommand($ev->getPlayer(), substr($ev->getMessage(), 1));
-					Timings::$playerCommandTimer->stopTiming();
-				}else{
-					$this->server->getPluginManager()->callEvent($ev = new PlayerChatEvent($this, $ev->getMessage()));
-					if(!$ev->isCancelled()){
-						$this->server->broadcastMessage($this->getServer()->getLanguage()->translateString($ev->getFormat(), [$ev->getPlayer()->getDisplayName(), $ev->getMessage()]), $ev->getRecipients());
-					}
+				$this->server->getPluginManager()->callEvent($ev = new PlayerChatEvent($this, $messagePart));
+				if(!$ev->isCancelled()){
+					$this->server->broadcastMessage($this->getServer()->getLanguage()->translateString($ev->getFormat(), [$ev->getPlayer()->getDisplayName(), $ev->getMessage()]), $ev->getRecipients());
 				}
 			}
 		}
@@ -3053,6 +3036,24 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return true;
 	}
 
+	public function handleCommandRequest(CommandRequestPacket $packet) : bool{
+		$command = $packet->command;
+		if($command{0} != "/"){
+			return false;
+		}
+
+		$this->server->getPluginManager()->callEvent($ev = new PlayerCommandPreprocessEvent($this, $command));
+		if($ev->isCancelled()){
+			return true;
+		}
+
+		Timings::$playerCommandTimer->startTiming();
+		$this->server->dispatchCommand($ev->getPlayer(), substr($ev->getMessage(), 1));
+		Timings::$playerCommandTimer->stopTiming();
+
+		return true;
+	}
+
 	public function handleResourcePackChunkRequest(ResourcePackChunkRequestPacket $packet) : bool{
 		$manager = $this->server->getResourcePackManager();
 		$pack = $manager->getPackById($packet->packId);
@@ -3798,7 +3799,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$ev->setKeepInventory($this->server->keepInventory);
 		$ev->setKeepExperience($this->server->keepExperience);
 		$this->server->getPluginManager()->callEvent($ev);
-		
+
 		$this->keepExperience = $ev->getKeepExperience();
 
 		if(!$ev->getKeepInventory()){
