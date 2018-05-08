@@ -255,6 +255,9 @@ class Level implements ChunkManager, Metadatable{
 	/** @var bool */
 	private $closed = false;
 
+	/** @var int */
+	protected $dimension = self::DIMENSION_OVERWORLD;
+
 	public static function chunkHash(int $x, int $z) : int{
 		return (($x & 0xFFFFFFFF) << 32) | ($z & 0xFFFFFFFF);
 	}
@@ -320,6 +323,25 @@ class Level implements ChunkManager, Metadatable{
 		return -1;
 	}
 
+    public static function getDimensionFromString(string $str) : int{
+        switch(strtolower(trim($str))){
+            case "default":
+            case "overworld":
+            case "normal":
+                return Level::DIMENSION_OVERWORLD;
+
+            case "nether":
+            case "hell":
+                return Level::DIMENSION_NETHER;
+
+            case "end":
+            case "ender":
+                return Level::DIMENSION_END;
+        }
+
+        return Level::DIMENSION_OVERWORLD;
+    }
+
 	/**
 	 * Init the default level data
 	 *
@@ -341,6 +363,7 @@ class Level implements ChunkManager, Metadatable{
 
 		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.level.preparing", [$this->displayName]));
 		$this->generator = Generator::getGenerator($this->provider->getGenerator());
+		$this->dimension = self::getDimensionFromString($this->provider->getGenerator());
 
 		$this->folderName = $name;
 
@@ -3096,4 +3119,20 @@ class Level implements ChunkManager, Metadatable{
 	public function removeMetadata(string $metadataKey, Plugin $owningPlugin){
 		$this->server->getLevelMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
 	}
+
+    /**
+     * @return int
+     */
+    public function getDimension(): int
+    {
+        return $this->dimension;
+    }
+
+    /**
+     * @param int $dimension
+     */
+    public function setDimension(int $dimension): void
+    {
+        $this->dimension = $dimension;
+    }
 }
