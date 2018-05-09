@@ -44,7 +44,6 @@ use pocketmine\event\level\SpawnChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\biome\Biome;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\format\ChunkException;
 use pocketmine\level\format\EmptySubChunk;
@@ -323,24 +322,18 @@ class Level implements ChunkManager, Metadatable{
 		return -1;
 	}
 
-    public static function getDimensionFromString(string $str) : int{
-        switch(strtolower(trim($str))){
-            case "default":
-            case "overworld":
-            case "normal":
-                return Level::DIMENSION_OVERWORLD;
-
-            case "nether":
-            case "hell":
-                return Level::DIMENSION_NETHER;
-
-            case "end":
-            case "ender":
-                return Level::DIMENSION_END;
-        }
-
-        return Level::DIMENSION_OVERWORLD;
-    }
+	public static function getDimensionFromString(string $str) : int{
+		switch(strtolower(trim($str))){
+			case "nether":
+			case "hell":
+				return Level::DIMENSION_NETHER;
+			case "end":
+			case "ender":
+				return Level::DIMENSION_END;
+			default:
+				return Level::DIMENSION_OVERWORLD;
+		}
+	}
 
 	/**
 	 * Init the default level data
@@ -2340,6 +2333,28 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
+	 * Return dimension of Level
+	 *
+	 * @return int
+	 */
+	public function getDimension() : int{
+		return $this->dimension;
+	}
+
+	/**
+	 * Sets dimension of Level
+	 *
+	 * @param int $dimension
+	 */
+	public function setDimension(int $dimension) : void{
+		if($dimension > 2 or $dimension < 0){
+			throw new \ArrayOutOfBoundsException("Dimension must be 0-2");
+		}
+
+		$this->dimension = $dimension;
+	}
+
+	/**
 	 * @return Chunk[]
 	 */
 	public function getChunks() : array{
@@ -3093,17 +3108,6 @@ class Level implements ChunkManager, Metadatable{
 		}
 	}
 
-	public static function getDimensionByBiomeId(int $biome) : int{
-		switch($biome){
-			case Biome::END:
-				return Level::DIMENSION_END;
-			case Biome::HELL:
-				return Level::DIMENSION_NETHER;
-			default:
-				return Level::DIMENSION_OVERWORLD;
-		}
-	}
-
 	public function setMetadata(string $metadataKey, MetadataValue $newMetadataValue){
 		$this->server->getLevelMetadata()->setMetadata($this, $metadataKey, $newMetadataValue);
 	}
@@ -3119,20 +3123,4 @@ class Level implements ChunkManager, Metadatable{
 	public function removeMetadata(string $metadataKey, Plugin $owningPlugin){
 		$this->server->getLevelMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
 	}
-
-    /**
-     * @return int
-     */
-    public function getDimension(): int
-    {
-        return $this->dimension;
-    }
-
-    /**
-     * @param int $dimension
-     */
-    public function setDimension(int $dimension): void
-    {
-        $this->dimension = $dimension;
-    }
 }

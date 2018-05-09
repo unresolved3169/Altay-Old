@@ -26,7 +26,6 @@ namespace pocketmine\block;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\lang\TranslationContainer;
-use pocketmine\level\biome\Biome;
 use pocketmine\level\Explosion;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
@@ -136,8 +135,8 @@ class Bed extends Transparent{
 				return true;
 			}
 
-			$biome = $this->level->getBiomeId($this->x, $this->z);
-			if($biome == Biome::HELL or $biome == Biome::END){
+			$dimension = $this->level->getDimension();
+			if($dimension != Level::DIMENSION_OVERWORLD){
 				(new Explosion($this, 5, true))->explode();
 				return true;
 			}
