@@ -73,6 +73,7 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\form\Form;
+use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\ContainerInventory;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
@@ -354,6 +355,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $sentForm = null;
 	/** @var Form[] */
 	protected $formQueue = [];
+	/** @var ServerSettingsForm */
+	protected $serverSettingsForm = null;
 
 	/** @var int */
 	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
@@ -2014,7 +2017,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				new DoubleTag("", $spawnLocation->z)
 			]));
 		}else{
-		    $dimension = $level->getDimension();
+			$dimension = $level->getDimension();
 			if($dimension === Level::DIMENSION_NETHER or $dimension === Level::DIMENSION_END){
 				$level = $this->server->getDefaultLevel();
 			}
@@ -3495,7 +3498,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 	}
 
-	public function sendServerSettings(Form $form){
+	public function sendServerSettings(ServerSettingsForm $form){
 		$id = $this->formIdCounter++;
 		$pk = new ServerSettingsResponsePacket();
 		$pk->formId = $id;
@@ -3504,6 +3507,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->sentFormId = $id;
 			$this->sentForm = $form;
 		}
+	}
+
+	public function setServerSettingsForm(ServerSettingsForm $form) : void{
+		$this->serverSettingsForm = $form;
+	}
+
+	public function getServerSettingsForm() : ?ServerSettingsForm{
+		return $this->serverSettingsForm;
 	}
 
 	/**

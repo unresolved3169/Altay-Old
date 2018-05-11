@@ -42,9 +42,6 @@ use pocketmine\event\level\LevelInitEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\form\element\Label;
-use pocketmine\form\FormIcon;
-use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\CraftingManager;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
@@ -267,9 +264,6 @@ class Server{
 	private $netherLevel = null;
 	/** @var Level */
 	private $endLevel = null;
-
-	/** @var ServerSettingsForm */
-	protected $serverSettingsForm = null;
 
 	/** ALTAY CONFIG */
 
@@ -1523,8 +1517,6 @@ class Server{
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
 
-			$this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
-
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
 			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
@@ -2634,21 +2626,5 @@ class Server{
 	 */
 	public function __sleep(){
 		throw new \BadMethodCallException("Cannot serialize Server instance");
-	}
-
-	// ALTAY
-
-	/**
-	 * @return ServerSettingsForm
-	 */
-	public function getServerSettingsForm(): ServerSettingsForm{
-		return $this->serverSettingsForm;
-	}
-
-	/**
-	 * @param ServerSettingsForm $serverSettingsForm
-	 */
-	public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
-		$this->serverSettingsForm = $serverSettingsForm;
 	}
 }
