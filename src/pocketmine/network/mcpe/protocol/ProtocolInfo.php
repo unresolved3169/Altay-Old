@@ -32,16 +32,16 @@ interface ProtocolInfo{
 	/**
 	 * Actual Minecraft: BE protocol version
 	 */
-	public const CURRENT_PROTOCOL = 270;
-	public const ACCEPTED_PROTOCOLS = [270];
+	public const CURRENT_PROTOCOL = 271;
+	public const ACCEPTED_PROTOCOLS = [270, 271];
 	/**
 	 * Current Minecraft BE version reported by the server. This is usually the earliest currently supported version.
 	 */
-	public const MINECRAFT_VERSION = 'v1.5.0.0 beta';
+	public const MINECRAFT_VERSION = 'v1.5.0.1 beta';
 	/**
 	 * Version number sent to clients in ping responses.
 	 */
-	public const MINECRAFT_VERSION_NETWORK = '1.5.0.0';
+	public const MINECRAFT_VERSION_NETWORK = '1.5.0.1';
 
 	public const LOGIN_PACKET = 0x01;
 	public const PLAY_STATUS_PACKET = 0x02;
