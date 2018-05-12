@@ -19,7 +19,7 @@
  * @link https://github.com/TuranicTeam/Altay
  *
  */
- 
+
 declare(strict_types=1);
 
 /**
@@ -104,6 +104,10 @@ class Level implements ChunkManager, Metadatable{
 	public const TIME_SUNRISE = 23000;
 
 	public const TIME_FULL = 24000;
+
+	public const DIMENSION_OVERWORLD = 0;
+	public const DIMENSION_NETHER = 1;
+	public const DIMENSION_END = 2;
 
 	public const DIFFICULTY_PEACEFUL = 0;
 	public const DIFFICULTY_EASY = 1;
@@ -250,6 +254,9 @@ class Level implements ChunkManager, Metadatable{
 	/** @var bool */
 	private $closed = false;
 
+	/** @var int */
+	protected $dimension = self::DIMENSION_OVERWORLD;
+
 	public static function chunkHash(int $x, int $z) : int{
 		return (($x & 0xFFFFFFFF) << 32) | ($z & 0xFFFFFFFF);
 	}
@@ -267,12 +274,12 @@ class Level implements ChunkManager, Metadatable{
 		$z = ($hash & 0xFFFFFFF) << 36 >> 36;
 	}
 
-    /**
-     * @param int      $hash
-     * @param int|null $x
-     * @param int|null $z
-     */
-    public static function getXZ(int $hash, ?int &$x, ?int &$z) : void{
+	/**
+	 * @param int      $hash
+	 * @param int|null $x
+	 * @param int|null $z
+	 */
+	public static function getXZ(int $hash, ?int &$x, ?int &$z) : void{
 		$x = $hash >> 32;
 		$z = ($hash & 0xFFFFFFFF) << 32 >> 32;
 	}
@@ -315,36 +322,41 @@ class Level implements ChunkManager, Metadatable{
 		return -1;
 	}
 
+	public static function getDimensionFromString(string $str) : int{
+		switch(strtolower(trim($str))){
+			case "nether":
+			case "hell":
+				return Level::DIMENSION_NETHER;
+			case "end":
+			case "ender":
+				return Level::DIMENSION_END;
+			default:
+				return Level::DIMENSION_OVERWORLD;
+		}
+	}
+
 	/**
 	 * Init the default level data
 	 *
 	 * @param Server $server
 	 * @param string $name
-	 * @param string $path
-	 * @param string $provider Class that extends LevelProvider
-	 *
-	 * @throws \Exception
+	 * @param LevelProvider $provider Class that extends LevelProvider
 	 */
-	public function __construct(Server $server, string $name, string $path, string $provider){
+	public function __construct(Server $server, string $name, LevelProvider $provider){
 		$this->blockStates = BlockFactory::getBlockStatesArray();
 		$this->levelId = static::$levelIdCounter++;
 		$this->blockMetadata = new BlockMetadataStore($this);
 		$this->server = $server;
 		$this->autoSave = $server->getAutoSave();
 
-		/** @var LevelProvider $provider */
-
-		if(is_subclass_of($provider, LevelProvider::class, true)){
-			$this->provider = new $provider($path);
-		}else{
-			throw new LevelException("Provider is not a subclass of LevelProvider");
-		}
+		$this->provider = $provider;
 
 		$this->displayName = $this->provider->getName();
 		$this->worldHeight = $this->provider->getWorldHeight();
 
 		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.level.preparing", [$this->displayName]));
 		$this->generator = Generator::getGenerator($this->provider->getGenerator());
+		$this->dimension = self::getDimensionFromString($this->provider->getGenerator());
 
 		$this->folderName = $name;
 
@@ -442,9 +454,7 @@ class Level implements ChunkManager, Metadatable{
 			$this->unloadChunk($chunk->getX(), $chunk->getZ(), false);
 		}
 
-		if($this->getAutoSave()){
-		    $this->save();
-		}
+		$this->save();
 
 		$this->unregisterGenerator();
 
@@ -511,18 +521,18 @@ class Level implements ChunkManager, Metadatable{
 	 * Broadcasts a LevelSoundEvent to players in the area.
 	 *
 	 * @param Vector3 $pos
-	 * @param int $soundId
-	 * @param int $pitch
-	 * @param int $extraData
-	 * @param bool $unknown
-	 * @param bool $disableRelativeVolume If true, all players receiving this sound-event will hear the sound at full volume regardless of distance
+	 * @param int     $soundId
+	 * @param int     $pitch
+	 * @param int     $extraData
+	 * @param bool    $isBabyMob
+	 * @param bool    $disableRelativeVolume If true, all players receiving this sound-event will hear the sound at full volume regardless of distance
 	 */
-	public function broadcastLevelSoundEvent(Vector3 $pos, int $soundId, int $pitch = 1, int $extraData = -1, bool $unknown = false, bool $disableRelativeVolume = false){
+	public function broadcastLevelSoundEvent(Vector3 $pos, int $soundId, int $pitch = 1, int $extraData = -1, bool $isBabyMob = false, bool $disableRelativeVolume = false){
 		$pk = new LevelSoundEventPacket();
 		$pk->sound = $soundId;
 		$pk->pitch = $pitch;
 		$pk->extraData = $extraData;
-		$pk->unknownBool = $unknown;
+		$pk->isBabyMob = $isBabyMob;
 		$pk->disableRelativeVolume = $disableRelativeVolume;
 		$pk->position = $pos->asVector3();
 		$this->addChunkPacket($pos->getFloorX() >> 4, $pos->getFloorZ() >> 4, $pk);
@@ -691,7 +701,7 @@ class Level implements ChunkManager, Metadatable{
 	 * WARNING: Do not use this, it's only for internal use.
 	 * Changes to this function won't be recorded on the version.
 	 *
-	 * @param Player[] ...$targets If empty, will send to all players in the level.
+	 * @param Player ...$targets
 	 */
 	public function sendTime(Player ...$targets){
 		$pk = new SetTimePacket();
@@ -960,7 +970,7 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	public function getRandomTickBlocks(): \SplFixedArray{
-	    return $this->randomTickBlocks;
+		return $this->randomTickBlocks;
 	}
 
 	public function addRandomTickedBlock(int $id){
@@ -1072,7 +1082,7 @@ class Level implements ChunkManager, Metadatable{
 
 	public function saveChunks(){
 		foreach($this->chunks as $chunk){
-            if(($chunk->hasChanged() or count($chunk->getTiles()) > 0 or count($chunk->getSavableEntities()) > 0) and $chunk->isGenerated()){
+			if(($chunk->hasChanged() or count($chunk->getTiles()) > 0 or count($chunk->getSavableEntities()) > 0) and $chunk->isGenerated()){
 				$this->provider->saveChunk($chunk);
 				$chunk->setChanged(false);
 			}
@@ -1712,10 +1722,18 @@ class Level implements ChunkManager, Metadatable{
 			$item = ItemFactory::get(Item::AIR, 0, 0);
 		}
 
-		$drops = ($player !== null and $player->isCreative()) ? [] : array_merge(...array_map(function(Block $block) use ($item) : array{ return $block->getDrops($item); }, $affectedBlocks));
+		$drops = [];
+		if($player === null or !$player->isCreative()){
+			$drops = array_merge(...array_map(function(Block $block) use ($item) : array{ return $block->getDrops($item); }, $affectedBlocks));
+		}
+
+		$xpDrop = 0;
+		if($player !== null and !$player->isCreative()){
+			$xpDrop = array_sum(array_map(function(Block $block) use ($item) : int{ return $block->getXpDropForTool($item); }, $affectedBlocks));
+		}
 
 		if($player !== null){
-			$ev = new BlockBreakEvent($player, $target, $item, $player->isCreative(), $drops);
+			$ev = new BlockBreakEvent($player, $target, $item, $player->isCreative(), $drops, $xpDrop);
 
 			if(($player->isSurvival() and !$target->isBreakable($item)) or $player->isSpectator()){
 				$ev->setCancelled();
@@ -1747,6 +1765,7 @@ class Level implements ChunkManager, Metadatable{
 			}
 
 			$drops = $ev->getDrops();
+			$xpDrop = $ev->getXpDropAmount();
 
 		}elseif(!$target->isBreakable($item)){
 			return false;
@@ -1756,16 +1775,10 @@ class Level implements ChunkManager, Metadatable{
 			$this->destroyBlockInternal($t, $item, $player, $createParticles);
 		}
 
-		$item->useOn($target);
-
-		$dropPos = $target->add(0.5, 0.5, 0.5);
-
-		$xpDropAmount = $target->getXpDropAmount();
-		if($xpDropAmount > 0 and $target->isXpDropCompatibleWithTool($item) and $player->isSurvival()){
-			$this->dropExperience($dropPos, $xpDropAmount);
-		}
+		$item->onDestroyBlock($target);
 
 		if(!empty($drops)){
+			$dropPos = $target->add(0.5, 0.5, 0.5);
 			foreach($drops as $drop){
 				if(!$drop->isNull()){
 					$this->dropItem($dropPos, $drop);
@@ -1773,15 +1786,14 @@ class Level implements ChunkManager, Metadatable{
 			}
 		}
 
+		if($xpDrop > 0){
+			$this->dropExperience($target->add(0.5, 0.5, 0.5), $xpDrop);
+		}
+
 		return true;
 	}
 
 	private function destroyBlockInternal(Block $target, Item $item, ?Player $player = null, bool $createParticles = false) : void{
-		$above = $this->getBlockAt($target->x, $target->y + 1, $target->z);
-		if($above->getId() === Block::FIRE){ //TODO: this should be done in Fire's onUpdate(), not with this hack
-			$this->setBlock($above, BlockFactory::get(Block::AIR), true);
-		}
-
 		if($createParticles){
 			$this->addParticle(new DestroyBlockParticle($target->add(0.5, 0.5, 0.5), $target));
 		}
@@ -2295,6 +2307,28 @@ class Level implements ChunkManager, Metadatable{
 	 */
 	public function setHeightMap(int $x, int $z, int $value){
 		$this->getChunk($x >> 4, $z >> 4, true)->setHeightMap($x & 0x0f, $z & 0x0f, $value);
+	}
+
+	/**
+	 * Return dimension of Level
+	 *
+	 * @return int
+	 */
+	public function getDimension() : int{
+		return $this->dimension;
+	}
+
+	/**
+	 * Sets dimension of Level
+	 *
+	 * @param int $dimension
+	 */
+	public function setDimension(int $dimension) : void{
+		if($dimension > 2 or $dimension < 0){
+			throw new \ArrayOutOfBoundsException("Dimension must be 0-2");
+		}
+
+		$this->dimension = $dimension;
 	}
 
 	/**
@@ -2960,7 +2994,7 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
-	 * @param Player[] ...$targets
+	 * @param Player ...$targets
 	 */
 	public function sendDifficulty(Player ...$targets){
 		if(count($targets) === 0){

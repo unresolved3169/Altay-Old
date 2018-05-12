@@ -34,201 +34,210 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ListTag;
-use pocketmine\nbt\tag\ShortTag;
 use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
 use pocketmine\Player;
 
 class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
-	use NameableTrait, ContainerTrait;
+    use NameableTrait, ContainerTrait;
 
-	public const TAG_BURN_TIME = "BurnTime";
-	public const TAG_COOK_TIME = "CookTime";
-	public const TAG_MAX_TIME = "MaxTime";
-	public const TAG_BURN_TICKS = "BurnTicks";
+    public const TAG_BURN_TIME = "BurnTime";
+    public const TAG_COOK_TIME = "CookTime";
+    public const TAG_MAX_TIME = "MaxTime";
 
-	/** @var FurnaceInventory */
-	protected $inventory;
+    /** @var FurnaceInventory */
+    protected $inventory;
+    /** @var int */
+    private $burnTime;
+    /** @var int */
+    private $cookTime;
+    /** @var int */
+    private $maxTime;
 
-	public function __construct(Level $level, CompoundTag $nbt){
-		if(!$nbt->hasTag(self::TAG_BURN_TIME, ShortTag::class) or $nbt->getShort(self::TAG_BURN_TIME) < 0){
-			$nbt->setShort(self::TAG_BURN_TIME, 0, true);
-		}
+    public function __construct(Level $level, CompoundTag $nbt){
+        $this->burnTime = max(0, $nbt->getShort(self::TAG_BURN_TIME, 0, true));
 
-		if(
-			!$nbt->hasTag(self::TAG_COOK_TIME, ShortTag::class) or
-			$nbt->getShort(self::TAG_COOK_TIME) < 0 or
-			($nbt->getShort(self::TAG_BURN_TIME) === 0 and $nbt->getShort(self::TAG_COOK_TIME) > 0)
-		){
-			$nbt->setShort(self::TAG_COOK_TIME, 0, true);
-		}
+        $this->cookTime = $nbt->getShort(self::TAG_COOK_TIME, 0, true);
+        if($this->burnTime === 0){
+            $this->cookTime = 0;
+        }
 
-		if(!$nbt->hasTag(self::TAG_MAX_TIME, ShortTag::class)){
-			$nbt->setShort(self::TAG_MAX_TIME, $nbt->getShort(self::TAG_BURN_TIME), true);
-			$nbt->removeTag(self::TAG_BURN_TICKS);
-		}
+        $this->maxTime = $nbt->getShort(self::TAG_MAX_TIME, 0, true);
+        if($this->maxTime === 0){
+            $this->maxTime = $this->burnTime;
+        }
 
-		if(!$nbt->getTag(self::TAG_BURN_TICKS, ShortTag::class)){
-			$nbt->setShort(self::TAG_BURN_TICKS, 0, true);
-		}
+        parent::__construct($level, $nbt);
+        $this->inventory = new FurnaceInventory($this);
+        $this->loadItems();
 
-		parent::__construct($level, $nbt);
-		$this->inventory = new FurnaceInventory($this);
-		$this->loadItems();
+        if($this->burnTime > 0){
+            $this->scheduleUpdate();
+        }
+    }
 
-		if($this->namedtag->getShort(self::TAG_BURN_TIME) > 0){
-			$this->scheduleUpdate();
-		}
-	}
+    /**
+     * @return string
+     */
+    public function getDefaultName() : string{
+        return "Furnace";
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getDefaultName() : string{
-		return "Furnace";
-	}
+    public function close() : void{
+        if(!$this->closed){
+            $this->inventory->removeAllViewers(true);
+            $this->inventory = null;
 
-	public function close() : void{
-		if(!$this->closed){
-			$this->inventory->removeAllViewers(true);
-			$this->inventory = null;
+            parent::close();
+        }
+    }
 
-			parent::close();
-		}
-	}
+    public function saveNBT() : void{
+        parent::saveNBT();
+        $this->namedtag->setShort(self::TAG_BURN_TIME, $this->burnTime);
+        $this->namedtag->setShort(self::TAG_COOK_TIME, $this->cookTime);
+        $this->namedtag->setShort(self::TAG_MAX_TIME, $this->maxTime);
 
-	public function saveNBT() : void{
-		parent::saveNBT();
-		$this->saveItems();
-	}
+        $this->saveItems();
+    }
 
-	/**
-	 * @return FurnaceInventory
-	 */
-	public function getInventory(){
-		return $this->inventory;
-	}
+    /**
+     * @return FurnaceInventory
+     */
+    public function getInventory(){
+        return $this->inventory;
+    }
 
-	/**
-	 * @return FurnaceInventory
-	 */
-	public function getRealInventory(){
-		return $this->getInventory();
-	}
+    /**
+     * @return FurnaceInventory
+     */
+    public function getRealInventory(){
+        return $this->getInventory();
+    }
 
-	protected function checkFuel(Item $fuel){
-		$this->server->getPluginManager()->callEvent($ev = new FurnaceBurnEvent($this, $fuel, $fuel->getFuelTime()));
+    protected function checkFuel(Item $fuel){
+        $this->server->getPluginManager()->callEvent($ev = new FurnaceBurnEvent($this, $fuel, $fuel->getFuelTime()));
 
-		if($ev->isCancelled()){
-			return;
-		}
+        if($ev->isCancelled()){
+            return;
+        }
 
-		$this->namedtag->setShort(self::TAG_MAX_TIME, $ev->getBurnTime());
-		$this->namedtag->setShort(self::TAG_BURN_TIME, $ev->getBurnTime());
-		$this->namedtag->setShort(self::TAG_BURN_TICKS, 0);
-		if($this->getBlock()->getId() === Block::FURNACE){
-			$this->getLevel()->setBlock($this, BlockFactory::get(Block::BURNING_FURNACE, $this->getBlock()->getDamage()), true);
-		}
+        $this->maxTime = $this->burnTime = $ev->getBurnTime();
 
-		if($this->namedtag->getShort(self::TAG_BURN_TIME) > 0 and $ev->isBurning()){
-			$fuel->pop();
-			$this->inventory->setFuel($fuel);
-		}
-	}
+        if($this->getBlock()->getId() === Block::FURNACE){
+            $this->getLevel()->setBlock($this, BlockFactory::get(Block::BURNING_FURNACE, $this->getBlock()->getDamage()), true);
+        }
 
-	public function onUpdate() : bool{
-		if($this->closed){
-			return false;
-		}
+        if($this->burnTime > 0 and $ev->isBurning()){
+            $fuel->pop();
+            $this->inventory->setFuel($fuel);
+        }
+    }
 
-		$this->timings->startTiming();
+    protected function getFuelTicksLeft() : int{
+        return $this->maxTime > 0 ? (int) ceil($this->burnTime / $this->maxTime * 200) : 0;
+    }
 
-		$ret = false;
+    public function onUpdate() : bool{
+        if($this->closed){
+            return false;
+        }
 
-		$fuel = $this->inventory->getFuel();
-		$raw = $this->inventory->getSmelting();
-		$product = $this->inventory->getResult();
-		$smelt = $this->server->getCraftingManager()->matchFurnaceRecipe($raw);
-		$canSmelt = ($smelt instanceof FurnaceRecipe and $raw->getCount() > 0 and (($smelt->getResult()->equals($product) and $product->getCount() < $product->getMaxStackSize()) or $product->isNull()));
+        $this->timings->startTiming();
 
-		if($this->namedtag->getShort(self::TAG_BURN_TIME) <= 0 and $canSmelt and $fuel->getFuelTime() > 0 and $fuel->getCount() > 0){
-			$this->checkFuel($fuel);
-		}
+        $prevCookTime = $this->cookTime;
+        $prevFuelTicksLeft = $this->getFuelTicksLeft();
 
-		if($this->namedtag->getShort(self::TAG_BURN_TIME) > 0){
-			$this->namedtag->setShort(self::TAG_BURN_TIME, $this->namedtag->getShort(self::TAG_BURN_TIME) - 1);
-			$this->namedtag->setShort(self::TAG_BURN_TICKS, (int) ceil($this->namedtag->getShort(self::TAG_BURN_TIME) / $this->namedtag->getShort(self::TAG_MAX_TIME) * 200));
+        $ret = false;
 
-			if($smelt instanceof FurnaceRecipe and $canSmelt){
-				$this->namedtag->setShort(self::TAG_COOK_TIME, $this->namedtag->getShort(self::TAG_COOK_TIME) + 1);
-				if($this->namedtag->getShort(self::TAG_COOK_TIME) >= 200){ //10 seconds
-					$product = ItemFactory::get($smelt->getResult()->getId(), $smelt->getResult()->getDamage(), $product->getCount() + 1);
+        $fuel = $this->inventory->getFuel();
+        $raw = $this->inventory->getSmelting();
+        $product = $this->inventory->getResult();
+        $smelt = $this->server->getCraftingManager()->matchFurnaceRecipe($raw);
+        $canSmelt = ($smelt instanceof FurnaceRecipe and $raw->getCount() > 0 and (($smelt->getResult()->equals($product) and $product->getCount() < $product->getMaxStackSize()) or $product->isNull()));
 
-					$this->server->getPluginManager()->callEvent($ev = new FurnaceSmeltEvent($this, $raw, $product));
+        if($this->burnTime <= 0 and $canSmelt and $fuel->getFuelTime() > 0 and $fuel->getCount() > 0){
+            $this->checkFuel($fuel);
+        }
 
-					if(!$ev->isCancelled()){
-						$this->inventory->setResult($ev->getResult());
-						$raw->pop();
-						$this->inventory->setSmelting($raw);
-					}
+        if($this->burnTime > 0){
+            --$this->burnTime;
 
-					$this->namedtag->setShort(self::TAG_COOK_TIME, $this->namedtag->getShort(self::TAG_COOK_TIME) - 200);
-				}
-			}elseif($this->namedtag->getShort(self::TAG_BURN_TIME) <= 0){
-				$this->namedtag->setShort(self::TAG_BURN_TIME, 0);
-				$this->namedtag->setShort(self::TAG_COOK_TIME, 0);
-				$this->namedtag->setShort(self::TAG_BURN_TICKS, 0);
-			}else{
-				$this->namedtag->setShort(self::TAG_COOK_TIME, 0);
-			}
-			$ret = true;
-		}else{
-			if($this->getBlock()->getId() === Block::BURNING_FURNACE){
-				$this->getLevel()->setBlock($this, BlockFactory::get(Block::FURNACE, $this->getBlock()->getDamage()), true);
-			}
-			$this->namedtag->setShort(self::TAG_BURN_TIME, 0);
-			$this->namedtag->setShort(self::TAG_COOK_TIME, 0);
-			$this->namedtag->setShort(self::TAG_BURN_TICKS, 0);
-		}
+            if($smelt instanceof FurnaceRecipe and $canSmelt){
+                ++$this->cookTime;
 
-		foreach($this->getInventory()->getViewers() as $player){
-			$windowId = $player->getWindowId($this->getInventory());
-			if($windowId > 0){
-				$pk = new ContainerSetDataPacket();
-				$pk->windowId = $windowId;
-				$pk->property = ContainerSetDataPacket::PROPERTY_FURNACE_TICK_COUNT; //Smelting
-				$pk->value = $this->namedtag->getShort(self::TAG_COOK_TIME);
-				$player->dataPacket($pk);
+                if($this->cookTime >= 200){ //10 seconds
+                    $product = ItemFactory::get($smelt->getResult()->getId(), $smelt->getResult()->getDamage(), $product->getCount() + 1);
 
-				$pk = new ContainerSetDataPacket();
-				$pk->windowId = $windowId;
-				$pk->property = ContainerSetDataPacket::PROPERTY_FURNACE_LIT_TIME;
-				$pk->value = $this->namedtag->getShort(self::TAG_BURN_TICKS);
-				$player->dataPacket($pk);
-			}
-		}
+                    $this->server->getPluginManager()->callEvent($ev = new FurnaceSmeltEvent($this, $raw, $product));
 
-		$this->timings->stopTiming();
+                    if(!$ev->isCancelled()){
+                        $this->inventory->setResult($ev->getResult());
+                        $raw->pop();
+                        $this->inventory->setSmelting($raw);
+                    }
 
-		return $ret;
-	}
+                    $this->cookTime -= 200;
+                }
+            }elseif($this->burnTime <= 0){
+                $this->burnTime = $this->cookTime = $this->maxTime = 0;
+            }else{
+                $this->cookTime = 0;
+            }
+            $ret = true;
+        }else{
+            if($this->getBlock()->getId() === Block::BURNING_FURNACE){
+                $this->getLevel()->setBlock($this, BlockFactory::get(Block::FURNACE, $this->getBlock()->getDamage()), true);
+            }
+            $this->burnTime = $this->cookTime = $this->maxTime = 0;
+        }
 
-	public function addAdditionalSpawnData(CompoundTag $nbt) : void{
-		$nbt->setTag($this->namedtag->getTag(self::TAG_BURN_TIME));
-		$nbt->setTag($this->namedtag->getTag(self::TAG_COOK_TIME));
+        /** @var ContainerSetDataPacket[] $packets */
+        $packets = [];
+        if($prevCookTime !== $this->cookTime){
+            $pk = new ContainerSetDataPacket();
+            $pk->property = ContainerSetDataPacket::PROPERTY_FURNACE_TICK_COUNT;
+            $pk->value = $this->cookTime;
+            $packets[] = $pk;
+        }
 
-		if($this->hasName()){
-			$nbt->setTag($this->namedtag->getTag("CustomName"));
-		}
-	}
+        $fuelTicksLeft = $this->getFuelTicksLeft();
+        if($prevFuelTicksLeft !== $fuelTicksLeft){
+            $pk = new ContainerSetDataPacket();
+            $pk->property = ContainerSetDataPacket::PROPERTY_FURNACE_LIT_TIME;
+            $pk->value = $fuelTicksLeft;
+            $packets[] = $pk;
+        }
 
-	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
-		$nbt->setTag(new ListTag("Items", [], NBT::TAG_Compound));
+        if(!empty($packets)){
+            foreach($this->getInventory()->getViewers() as $player){
+                $windowId = $player->getWindowId($this->getInventory());
+                if($windowId > 0){
+                    foreach($packets as $pk){
+                        $pk->windowId = $windowId;
+                        $player->dataPacket(clone $pk);
+                    }
+                }
+            }
+        }
 
-		if($item !== null and $item->hasCustomName()){
-			$nbt->setString("CustomName", $item->getCustomName());
-		}
-	}
+        $this->timings->stopTiming();
+
+        return $ret;
+    }
+
+    public function addAdditionalSpawnData(CompoundTag $nbt) : void{
+        $nbt->setShort(self::TAG_BURN_TIME, $this->burnTime);
+        $nbt->setShort(self::TAG_COOK_TIME, $this->cookTime);
+
+        if($this->hasName()){
+            $nbt->setTag($this->namedtag->getTag("CustomName"));
+        }
+    }
+
+    protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
+        if($item !== null and $item->hasCustomName()){
+            $nbt->setString("CustomName", $item->getCustomName());
+        }
+    }
 }

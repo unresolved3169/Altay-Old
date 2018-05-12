@@ -66,7 +66,7 @@ class NetworkBinaryStream extends BinaryStream{
 
 	public function getSlot() : Item{
 		$id = $this->getVarInt();
-		if($id <= 0){
+		if($id === 0){
 			return ItemFactory::get(0, 0, 0);
 		}
 
@@ -255,7 +255,7 @@ class NetworkBinaryStream extends BinaryStream{
 	/**
 	 * Writes a list of Attributes to the packet buffer using the standard format.
 	 *
-	 * @param Attribute[] ...$attributes
+	 * @param Attribute ...$attributes
 	 */
 	public function putAttributeList(Attribute ...$attributes) : void{
 		$this->putUnsignedVarInt(count($attributes));
@@ -471,7 +471,7 @@ class NetworkBinaryStream extends BinaryStream{
 		$link->riddenId = $this->getEntityUniqueId();
 		$link->riderId = $this->getEntityUniqueId();
 		$link->type = $this->getByte();
-		$link->bool1 = $this->getBool();
+		$link->immediate = $this->getBool();
 
 		return $link;
 	}
@@ -483,7 +483,7 @@ class NetworkBinaryStream extends BinaryStream{
 		$this->putEntityUniqueId($link->riddenId);
 		$this->putEntityUniqueId($link->riderId);
 		$this->putByte($link->type);
-		$this->putBool($link->bool1);
+		$this->putBool($link->immediate);
 	}
 
 	protected function getCommandOriginData() : CommandOriginData{

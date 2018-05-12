@@ -87,9 +87,6 @@ class Explosion{
 		$this->subChunkHandler = new SubChunkIteratorManager($this->level, false);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function explodeA() : bool{
 		if($this->size < 0.1){
 			return false;
@@ -213,6 +210,7 @@ class Explosion{
 			}
 
 			$this->level->setBlockIdAt($block->x, $block->y, $block->z, 0);
+			$this->level->setBlockDataAt($block->x, $block->y, $block->z, 0);
 
 			$t = $this->level->getTileAt($block->x, $block->y, $block->z);
 			if($t instanceof Tile){
@@ -255,5 +253,10 @@ class Explosion{
 		$this->level->broadcastLevelSoundEvent($source, LevelSoundEventPacket::SOUND_EXPLODE);
 
 		return true;
+	}
+
+	public function explode() : void{
+		$this->explodeA();
+		$this->explodeB();
 	}
 }

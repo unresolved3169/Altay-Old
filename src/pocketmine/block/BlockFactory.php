@@ -167,7 +167,7 @@ class BlockFactory{
 		self::registerBlock(new Netherrack());
 		self::registerBlock(new SoulSand());
 		self::registerBlock(new Glowstone());
-		//TODO: PORTAL
+		self::registerBlock(new NetherPortal());
 		self::registerBlock(new LitPumpkin());
 		self::registerBlock(new Cake());
 		//TODO: REPEATER_BLOCK
@@ -215,7 +215,7 @@ class BlockFactory{
 		self::registerBlock(new WoodenStairs(Block::BIRCH_STAIRS, 0, "Birch Stairs"));
 		self::registerBlock(new WoodenStairs(Block::JUNGLE_STAIRS, 0, "Jungle Stairs"));
 		//TODO: COMMAND_BLOCK
-		//TODO: BEACON
+        self::registerBlock(new Beacon());
 		self::registerBlock(new CobblestoneWall());
 		self::registerBlock(new FlowerPot());
 		self::registerBlock(new Carrot());
@@ -440,6 +440,10 @@ class BlockFactory{
 	 * @return int
 	 */
 	public static function toStaticRuntimeId(int $id, int $meta = 0) : int{
+	    if ($id === Block::AIR){
+	        $meta = 0;
+        }
+
 		$index = ($id << 4) | $meta;
 		if(!isset(self::$staticRuntimeIdMap[$index])){
 			self::registerMapping($rtId = ++self::$lastRuntimeId, $id, $meta);

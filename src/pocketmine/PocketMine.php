@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -84,7 +85,7 @@ namespace pocketmine {
 	const API_VERSION = "3.0.1";
 	const CODENAME = "TuranicPro";
 
-	const MIN_PHP_VERSION = "7.2.0RC3";
+	const MIN_PHP_VERSION = "7.2.0";
 
 	function critical_error($message){
 		echo "[ERROR] $message" . PHP_EOL;
@@ -202,8 +203,8 @@ namespace pocketmine {
 	if(!class_exists(RakLib::class)){
 		composer_error_die("Unable to find the RakLib library.");
 	}
-	if(version_compare(RakLib::VERSION, "0.9.0") < 0){ //TODO: remove this check (it's managed by Composer now)
-		composer_error_die("RakLib version 0.9.0 is required, while you have version " . RakLib::VERSION . ".");
+	if(version_compare(RakLib::VERSION, "0.11.0") < 0){ //TODO: remove this check (it's managed by Composer now)
+		composer_error_die("RakLib version 0.11.0 is required, while you have version " . RakLib::VERSION . ".");
 	}
 	if(!class_exists(\BaseClassLoader::class)){
 		composer_error_die("Unable to find the PocketMine-SPL library.");
@@ -232,8 +233,7 @@ namespace pocketmine {
 	define('pocketmine\DATA', isset($opts["data"]) ? $opts["data"] . DIRECTORY_SEPARATOR : \realpath(\getcwd()) . DIRECTORY_SEPARATOR);
 	define('pocketmine\PLUGIN_PATH', isset($opts["plugins"]) ? $opts["plugins"] . DIRECTORY_SEPARATOR : \realpath(\getcwd()) . DIRECTORY_SEPARATOR . "plugins" . DIRECTORY_SEPARATOR);
 
-	Terminal::init();
-
+	//hasFormattingCodes() initializes static colour codes on the fly
 	define('pocketmine\ANSI', Terminal::hasFormattingCodes());
 
 	if(!file_exists(\pocketmine\DATA)){
@@ -267,7 +267,7 @@ namespace pocketmine {
 	$gitHash = str_repeat("00", 20);
 
 	if(\Phar::running(true) === ""){
-		if(Utils::execute("git rev-parse HEAD", $out) === 0){
+		if(Utils::execute("git rev-parse HEAD", $out) === 0 and $out !== false and strlen($out) === 40){
 			$gitHash = trim($out);
 			if(Utils::execute("git diff --quiet") === 1 or Utils::execute("git diff --cached --quiet") === 1){ //Locally-modified
 				$gitHash .= "-dirty";

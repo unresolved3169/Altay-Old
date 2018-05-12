@@ -113,6 +113,28 @@ class Enchantment{
 		self::registerEnchantment(new Enchantment(self::EFFICIENCY, "%enchantment.digging", self::RARITY_COMMON, self::SLOT_DIG | self::SLOT_SHEARS, 5, 1));
 		self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.untouching", self::RARITY_MYTHIC, self::SLOT_DIG | self::SLOT_SHEARS, 1, 8));
 		self::registerEnchantment(new Enchantment(self::UNBREAKING, "%enchantment.durability", self::RARITY_UNCOMMON, self::SLOT_ALL, 3, 2)); //TODO: item type flags need to be split up
+
+        //TODO: Implement this enchantments
+        self::registerEnchantment(new Enchantment(self::KNOCKBACK, "%enchantment.knockback", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_NONE, 2));
+        self::registerEnchantment(new Enchantment(self::POWER, "%enchantment.power", self::RARITY_UNCOMMON, self::SLOT_BOW | self::SLOT_NONE, 5));
+        self::registerEnchantment(new Enchantment(self::PUNCH, "%enchantment.puch", self::RARITY_UNCOMMON, self::SLOT_BOW, 2));
+        self::registerEnchantment(new Enchantment(self::AQUA_AFFINITY, "%enchantment.aqua_affinity", self::RARITY_UNCOMMON, self::SLOT_HEAD, 1));
+        self::registerEnchantment(new Enchantment(self::MENDING, "%enchantment.mending", self::RARITY_UNCOMMON, self::SLOT_ARMOR | self::SLOT_DIG | self::SLOT_CARROT_STICK | self::SLOT_ELYTRA | self::SLOT_FISHING_ROD | self::SLOT_FLINT_AND_STEEL, 1));
+        self::registerEnchantment(new Enchantment(self::SHARPNESS, "%enchantment.sharpness", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_AXE, 5));
+        self::registerEnchantment(new Enchantment(self::LOOTING, "%enchantment.looting", self::RARITY_UNCOMMON, self::SLOT_SWORD, 3));
+        self::registerEnchantment(new Enchantment(self::LUCK_OF_THE_SEA, "%enchantment.luck_of_the_sea", self::RARITY_UNCOMMON, self::SLOT_FISHING_ROD, 3));
+        self::registerEnchantment(new Enchantment(self::LURE, "%enchantment.lure", self::RARITY_UNCOMMON, self::SLOT_FISHING_ROD, 3));
+        self::registerEnchantment(new Enchantment(self::FIRE_ASPECT, "%enchantment.fire_aspect", self::RARITY_UNCOMMON, self::SLOT_SWORD, 2));
+        self::registerEnchantment(new Enchantment(self::FLAME, "%enchantment.flame", self::RARITY_UNCOMMON, self::SLOT_BOW, 1));
+        self::registerEnchantment(new Enchantment(self::FORTUNE, "%enchantment.fortune", self::RARITY_UNCOMMON, self::SLOT_DIG, 3));
+        self::registerEnchantment(new Enchantment(self::FROST_WALKER, "%enchantment.frost_walker", self::RARITY_UNCOMMON, self::SLOT_FEET, 2));
+        self::registerEnchantment(new Enchantment(self::INFINITY, "%enchantment.infinity", self::RARITY_UNCOMMON, self::SLOT_BOW, 1));
+        self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.silk_touch", self::RARITY_UNCOMMON, self::SLOT_DIG, 1));
+        self::registerEnchantment(new Enchantment(self::BANE_OF_ARTHROPODS, "%enchantment.bane_of_arthropods", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_AXE, 5));
+        self::registerEnchantment(new Enchantment(self::THORNS, "%enchantment.thorns", self::RARITY_UNCOMMON, self::SLOT_ARMOR, 3));
+        self::registerEnchantment(new Enchantment(self::SMITE, "%enchantment.smite", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_AXE, 5));
+        self::registerEnchantment(new Enchantment(self::DEPTH_STRIDER, "%enchantment.depth_strider", self::RARITY_UNCOMMON, self::SLOT_FEET, 3));
+
 	}
 
 	/**

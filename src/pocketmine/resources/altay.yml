@@ -8,10 +8,19 @@
 #                        |___/
 
 player:
-  # Choose if to keep a player's inventory after they die
+  # Keep player's inventory if they die
   keep-inventory: false
-  # Choose if to keep a player's experience after they die
+  # Keep player's experience if they die
   keep-experience: false
+
+dimensions:
+  # Choose if the nether is allowed. The level of nether will generate automatically
+  nether:
+    active: true
+    level-name: "nether"
+  end:
+    active: true
+    level-name: "end"
 
 developer:
   # This setting allows the server to load plugins through the source directory over a .phar file

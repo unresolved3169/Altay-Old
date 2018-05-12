@@ -79,7 +79,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	protected $foodTickTimer = 0;
 
 	protected $totalXp = 0;
-	protected $xpSeed;
+	protected $xpSeed = 0;
 	protected $xpCooldown = 0;
 
 	protected $baseOffset = 1.62;
@@ -106,7 +106,8 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	 * @return bool
 	 */
 	public static function isValidSkin(string $skin) : bool{
-		return strlen($skin) === 64 * 64 * 4 or strlen($skin) === 64 * 32 * 4;
+		$len = strlen($skin);
+		return $len === 64 * 64 * 4 or $len === 64 * 32 * 4 or $len === 128 * 128 * 4;
 	}
 
 	/**
@@ -547,9 +548,9 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 			$this->setSkin(new Skin(
 				$skin->getString("Name"),
 				$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
-				$skin->getByteArray("CapeData", ""),
+				$skin->hasTag("CapeData", ByteArrayTag::class) ?  $skin->getByteArray("CapeData", "") : $skin->getString("CapeData", ""),
 				$skin->getString("GeometryName", ""),
-				$skin->getByteArray("GeometryData", "")
+				$skin->hasTag("GeometryData", ByteArrayTag::class) ? $skin->getByteArray("GeometryData", "") : $skin->getString("GeometryData", "")
 			));
 		}
 

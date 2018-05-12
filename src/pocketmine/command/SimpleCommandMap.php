@@ -315,7 +315,6 @@ class SimpleCommandMap implements CommandMap{
 		return $this->knownCommands;
 	}
 
-
 	/**
 	 * @return void
 	 */

@@ -29,6 +29,7 @@ use pocketmine\Player;
 class EnchantAction extends SlotChangeAction{
 
 	public function isValid(Player $source): bool{
-		return $this->getSlot() == -1 or parent::isValid($source);
+	    //TODO: check this
+		return true; // client-side enchant so we need this
 	}
 }

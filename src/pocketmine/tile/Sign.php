@@ -42,7 +42,7 @@ class Sign extends Spawnable{
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		if($nbt->hasTag(self::TAG_TEXT_BLOB, StringTag::class)){ //MCPE 1.2 save format
-			$this->text = explode("\n", $nbt->getString(self::TAG_TEXT_BLOB));
+			$this->text = array_pad(explode("\n", $nbt->getString(self::TAG_TEXT_BLOB)), 4, "");
 			assert(count($this->text) === 4, "Too many lines!");
 			$nbt->removeTag(self::TAG_TEXT_BLOB);
 		}else{
@@ -79,18 +79,12 @@ class Sign extends Spawnable{
 	 * @param null|string $line3
 	 * @param null|string $line4
 	 */
-	public function setText($line1 = "", $line2 = "", $line3 = "", $line4 = ""){
-		if($line1 !== null){
-			$this->text[0] = $line1;
-		}
-		if($line2 !== null){
-			$this->text[1] = $line2;
-		}
-		if($line3 !== null){
-			$this->text[2] = $line3;
-		}
-		if($line4 !== null){
-			$this->text[3] = $line4;
+	public function setText(?string $line1 = "", ?string $line2 = "", ?string $line3 = "", ?string $line4 = "") : void{
+		for($i=1; $i<=4; $i++){
+			$text = ${"line".$i};
+			if($text !== null){
+				$this->text[$i - 1] = $text;
+			}
 		}
 
 		$this->onChanged();
@@ -101,7 +95,7 @@ class Sign extends Spawnable{
 	 * @param string $line
 	 * @param bool   $update
 	 */
-	public function setLine(int $index, string $line, bool $update = true){
+	public function setLine(int $index, string $line, bool $update = true) : void{
 		if($index < 0 or $index > 3){
 			throw new \InvalidArgumentException("Index must be in the range 0-3!");
 		}
@@ -171,13 +165,8 @@ class Sign extends Spawnable{
 	}
 
 	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
-		for($i = 1; $i <= 4; ++$i){
-			$nbt->setString(sprintf(self::TAG_TEXT_LINE, $i), "");
-		}
-
 		if($player !== null){
 			$nbt->setString(self::TAG_CREATOR, $player->getRawUniqueId());
 		}
 	}
-
 }

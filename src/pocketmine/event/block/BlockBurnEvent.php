@@ -21,33 +21,28 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\normal\biome;
+namespace pocketmine\event\block;
 
-use pocketmine\block\Sapling;
-use pocketmine\level\generator\populator\TallGrass;
-use pocketmine\level\generator\populator\Tree;
+use pocketmine\block\Block;
+use pocketmine\event\Cancellable;
 
-class TaigaBiome extends SnowyBiome{
+/**
+ * Called when a block is burned away by fire.
+ */
+class BlockBurnEvent extends BlockEvent implements Cancellable{
+    /** @var Block */
+    private $causingBlock;
 
-	public function __construct(){
-		parent::__construct();
+    public function __construct(Block $block, Block $causingBlock){
+        parent::__construct($block);
+        $this->causingBlock = $causingBlock;
+    }
 
-		$trees = new Tree(Sapling::SPRUCE);
-		$trees->setBaseAmount(10);
-		$this->addPopulator($trees);
-
-		$tallGrass = new TallGrass();
-		$tallGrass->setBaseAmount(1);
-
-		$this->addPopulator($tallGrass);
-
-		$this->setElevation(63, 81);
-
-		$this->temperature = 0.05;
-		$this->rainfall = 0.8;
-	}
-
-	public function getName() : string{
-		return "Taiga";
-	}
+    /**
+     * Returns the block (usually Fire) which caused the target block to be burned away.
+     * @return Block
+     */
+    public function getCausingBlock() : Block{
+        return $this->causingBlock;
+    }
 }

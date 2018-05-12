@@ -32,7 +32,6 @@ use pocketmine\block\BlockFactory;
 use pocketmine\command\CommandReader;
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
-use pocketmine\command\overload\CommandParameterUtils;
 use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\entity\Entity;
@@ -43,18 +42,15 @@ use pocketmine\event\level\LevelInitEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\form\element\Label;
-use pocketmine\form\FormIcon;
-use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\CraftingManager;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\lang\BaseLang;
 use pocketmine\lang\TextContainer;
+use pocketmine\level\biome\Biome;
 use pocketmine\level\format\io\LevelProvider;
 use pocketmine\level\format\io\LevelProviderManager;
-use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\generator\Generator;
 use pocketmine\level\Level;
 use pocketmine\level\LevelException;
@@ -94,12 +90,12 @@ use pocketmine\plugin\PluginManager;
 use pocketmine\plugin\ScriptPluginLoader;
 use pocketmine\resourcepacks\ResourcePackManager;
 use pocketmine\scheduler\FileWriteTask;
-use pocketmine\scheduler\SendUsageTask;
 use pocketmine\scheduler\ServerScheduler;
+use pocketmine\snooze\SleeperHandler;
+use pocketmine\snooze\SleeperNotifier;
 use pocketmine\tile\Tile;
 use pocketmine\timings\Timings;
 use pocketmine\timings\TimingsHandler;
-use pocketmine\updater\AutoUpdater;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Config;
 use pocketmine\utils\MainLogger;
@@ -121,6 +117,9 @@ class Server{
 
 	/** @var \Threaded */
 	private static $sleeper = null;
+
+	/** @var SleeperHandler */
+	private $tickSleeper;
 
 	/** @var BanList */
 	private $banByName = null;
@@ -144,9 +143,6 @@ class Server{
 
 	private $profilingTickRate = 20;
 
-	/** @var AutoUpdater */
-	private $updater = null;
-
 	/** @var ServerScheduler */
 	private $scheduler = null;
 
@@ -164,8 +160,6 @@ class Server{
 
 	/** @var bool */
 	private $doTitleTick = true;
-
-	private $sendUsageTicker = 0;
 
 	private $dispatchSignals = false;
 
@@ -271,11 +265,10 @@ class Server{
 
 	/** @var Level */
 	private $levelDefault = null;
-
-	// ALTAY
-
-	/** @var ServerSettingsForm */
-	protected $serverSettingsForm = null;
+	/** @var Level */
+	private $netherLevel = null;
+	/** @var Level */
+	private $endLevel = null;
 
 	/** ALTAY CONFIG */
 
@@ -291,6 +284,10 @@ class Server{
 	public $keepExperience = false;
 	/** @var bool */
 	public $folderPluginLoader = true;
+	/** @var bool */
+	public $allowNether = true;
+	/** @var bool */
+	public $allowEnd = true;
 
 	public function loadAltayConfig(){
 		self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -298,6 +295,8 @@ class Server{
 		$this->allowServerSettingsForm = $this->getAltayProperty("server.allow-server-settings-form", true);
 		$this->keepInventory = $this->getAltayProperty("player.keep-inventory", false);
 		$this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
+		$this->allowNether = $this->getAltayProperty("dimensions.nether.active", true);
+		$this->allowEnd = $this->getAltayProperty("dimensions.end.active", true);
 		$this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
 	}
 
@@ -425,7 +424,8 @@ class Server{
 	 * @return string
 	 */
 	public function getIp() : string{
-		return $this->getConfigString("server-ip", "0.0.0.0");
+		$str = $this->getConfigString("server-ip");
+		return $str !== "" ? $str : "0.0.0.0";
 	}
 
 	/**
@@ -608,7 +608,7 @@ class Server{
 	}
 
 	/**
-	 * @return MainLogger
+	 * @return \AttachableThreadedLogger
 	 */
 	public function getLogger(){
 		return $this->logger;
@@ -633,13 +633,6 @@ class Server{
 	 */
 	public function getLevelMetadata(){
 		return $this->levelMetadata;
-	}
-
-	/**
-	 * @return AutoUpdater
-	 */
-	public function getUpdater(){
-		return $this->updater;
 	}
 
 	/**
@@ -945,6 +938,14 @@ class Server{
 		return $this->levelDefault;
 	}
 
+	public function getNetherLevel() : ?Level{
+		return $this->netherLevel;
+	}
+
+	public function getEndLevel() : ?Level{
+		return $this->endLevel;
+	}
+
 	/**
 	 * Sets the default level to a different level
 	 * This won't change the level-name property,
@@ -1040,16 +1041,16 @@ class Server{
 
 		$path = $this->getDataPath() . "worlds/" . $name . "/";
 
-		$provider = LevelProviderManager::getProvider($path);
+		$providerClass = LevelProviderManager::getProvider($path);
 
-		if($provider === null){
+		if($providerClass === null){
 			$this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, "Cannot identify format of world"]));
 
 			return false;
 		}
 
 		try{
-			$level = new Level($this, $name, $path, $provider);
+			$level = new Level($this, $name, new $providerClass($path));
 		}catch(\Throwable $e){
 
 			$this->logger->error($this->getLanguage()->translateString("pocketmine.level.loadError", [$name, $e->getMessage()]));
@@ -1093,16 +1094,16 @@ class Server{
 			$generator = Generator::getGenerator($this->getLevelType());
 		}
 
-		if(($provider = LevelProviderManager::getProviderByName($providerName = $this->getProperty("level-settings.default-format", "pmanvil"))) === null){
-			$provider = LevelProviderManager::getProviderByName($providerName = "pmanvil");
+		if(($providerClass = LevelProviderManager::getProviderByName($this->getProperty("level-settings.default-format", "pmanvil"))) === null){
+			$providerClass = LevelProviderManager::getProviderByName("pmanvil");
 		}
 
 		try{
 			$path = $this->getDataPath() . "worlds/" . $name . "/";
-			/** @var LevelProvider $provider */
-			$provider::generate($path, $name, $seed, $generator, $options);
+			/** @var LevelProvider $providerClass */
+			$providerClass::generate($path, $name, $seed, $generator, $options);
 
-			$level = new Level($this, $name, $path, (string) $provider);
+			$level = new Level($this, $name, new $providerClass($path));
 			$this->levels[$level->getId()] = $level;
 
 			$level->initLevel();
@@ -1296,7 +1297,7 @@ class Server{
 	 * @param bool   $value
 	 */
 	public function setConfigBool(string $variable, bool $value){
-		$this->properties->set($variable, $value == true ? "1" : "0");
+		$this->properties->set($variable, $value ? "1" : "0");
 	}
 
 	/**
@@ -1444,7 +1445,7 @@ class Server{
 			$this->getCodename(),
 			$this->getVersion(),
 			implode(", ", ProtocolInfo::ACCEPTED_PROTOCOLS),
-			$this->getIp(),
+			Utils::getIP(),
 			$this->getPort(),
 			$this->getMotd(),
 			$this->getOnlineMode() ? "true" : "false",
@@ -1454,31 +1455,32 @@ class Server{
 			\Phar::running(true) === "" ? "src" : "phar"
 		];
 
-		$yazi = base64_decode("CsKnYuKUjOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUkCAgwqdiLS0gTG9hZGVkOiBQcm9wZXJ0aWVzIGFuZCBDb25maWd1cmF0aW9uIC0tCsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICBfIF8gICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2RGF0ZTogwqdmeyUwfQrCp2LilIJ7fSAgICAgICAgICAgICAgL1wgICB8IHwgfCAgICAgICAgICAgICAgICAgICAgICAgICDCp2LilIIgIMKnNlZlcnNpb246IMKnZnslMX0gwqc2Q29kZW5hbWU6IMKnZnslMn0Kwqdi4pSCe30gICAgICAgICAgICAgLyAgXCAgfCB8IHxfIF9fIF8gXyAgIF8gICAgICAgICAgICAgwqdi4pSCICDCpzZNQ1BFOiDCp2Z7JTN9IMKnNlByb3RvY29sOiDCp2Z7JTR9CsKnYuKUgnt9ICAgICAgICAgICAgLyAvXCBcIHwgfCBfXy8gX2AgfCB8IHwgfCAgICAgICAgICAgIMKnYuKUgiAgwqc2TG9jYWwgSVA6IMKnZnslNX0gwqc2UG9ydDogwqdmeyU2fQrCp2LilIJ7fSAgICAgICAgICAgLyBfX19fIFx8IHwgfHwgKF98IHwgfF98IHwgICAgICAgICAgICDCp2LilIIgIMKnNk1PVEQ6IMKnZnslN30Kwqdi4pSCe30gICAgICAgICAgL18vICAgIFxfXF98XF9fXF9fLF98XF9fLCB8ICAgICAgICAgICAgwqdi4pSCICDCpzZBdXRoZW50aWNhdGlvbjogwqdmeyU4fQrCp2LilIJ7fSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgX18vIHwgICAgICAgICAgICDCp2LilIIgIMKnNlNTTCBFeHRlbnNpb246IMKnZnslOX0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgfF9fXy8gICAgICAgICAgICAgwqdi4pSCICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgwqdi4pSCICDCpzZBUEkgVmVyc2lvbjogwqdmeyUxMH0Kwqdi4pSCwqdhICAgICDCpzlTdXBwb3J0OiDCp2ZnaXRodWIuY29tL1R1cmFuaWNUZWFtL0FsdGF5ICAgICAgIMKnYuKUgiAgwqc2TGFuZ3VhZ2U6IMKnZnslMTF9CsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2UGFja2FnZTogwqdmeyUxMn0Kwqdi4pSU4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSYICDCp2ItLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0=");
+		$yazi = base64_decode("wqdi4pSM4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSQICDCp2ItLSBMb2FkZWQ6IFByb3BlcnRpZXMgYW5kIENvbmZpZ3VyYXRpb24gLS0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgIF8gXyAgICAgICAgICAgICAgICAgICAgICAgICAgwqdi4pSCICDCpzZEYXRlOiDCp2Z7JTB9CsKnYuKUgnt9ICAgICAgICAgICAgICAvXCAgIHwgfCB8ICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2VmVyc2lvbjogwqdmeyUxfSDCpzZDb2RlbmFtZTogwqdmeyUyfQrCp2LilIJ7fSAgICAgICAgICAgICAvICBcICB8IHwgfF8gX18gXyBfICAgXyAgICAgICAgICAgICDCp2LilIIgIMKnNk1DQkU6IMKnZnslM30gwqc2UHJvdG9jb2w6IMKnZnslNH0Kwqdi4pSCe30gICAgICAgICAgICAvIC9cIFwgfCB8IF9fLyBfYCB8IHwgfCB8ICAgICAgICAgICAgwqdi4pSCICDCpzZFeHRlcm5hbCBJUDogwqdmeyU1fSDCpzZQb3J0OiDCp2Z7JTZ9CsKnYuKUgnt9ICAgICAgICAgICAvIF9fX18gXHwgfCB8fCAoX3wgfCB8X3wgfCAgICAgICAgICAgIMKnYuKUgiAgwqc2TU9URDogwqdmeyU3fQrCp2LilIJ7fSAgICAgICAgICAvXy8gICAgXF9cX3xcX19cX18sX3xcX18sIHwgICAgICAgICAgICDCp2LilIIgIMKnNk9ubGluZU1vZGU6IMKnZnslOH0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF9fLyB8ICAgICAgICAgICAgwqdi4pSCICDCpzZTU0wgRXh0ZW5zaW9uOiDCp2Z7JTl9CsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHxfX18vICAgICAgICAgICAgIMKnYuKUgiAgwqdiLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2QVBJIFZlcnNpb246IMKnZnslMTB9CsKnYuKUgsKnYSAgICAgwqc5U3VwcG9ydDogwqdmZ2l0aHViLmNvbS9UdXJhbmljVGVhbS9BbHRheSAgICAgICDCp2LilIIgIMKnNkxhbmd1YWdlOiDCp2Z7JTExfQrCp2LilIJ7fSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDCp2LilIIgIMKnNlBhY2thZ2U6IMKnZnslMTJ9CsKnYuKUlOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUmCAgwqdiLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t");
 
 		foreach($about as $index => $value){
 			$yazi = str_ireplace("{%$index}", $value, $yazi);
 		}
 
-		$randColor = "0123456789abcdef";
-		$randColor = $randColor{mt_rand(0, 15)};
+		$randColor = "123456789abcdef";
+		$randColor = $randColor{mt_rand(0, 14)};
 		$yazi = str_replace("{}", TextFormat::ESCAPE.$randColor, $yazi);
 
-		$this->logger->info($yazi);
+		$this->logger->info("\n".$yazi);
 	}
 
 	/**
-	 * @param \ClassLoader    $autoloader
-	 * @param \ThreadedLogger $logger
-	 * @param string          $dataPath
-	 * @param string          $pluginPath
+	 * @param \ClassLoader              $autoloader
+	 * @param \AttachableThreadedLogger $logger
+	 * @param string                    $dataPath
+	 * @param string                    $pluginPath
 	 */
-	public function __construct(\ClassLoader $autoloader, \ThreadedLogger $logger, string $dataPath, string $pluginPath){
+	public function __construct(\ClassLoader $autoloader, \AttachableThreadedLogger $logger, string $dataPath, string $pluginPath){
 		if(self::$instance !== null){
 			throw new \InvalidStateException("Only one server instance can exist at once");
 		}
 		self::$instance = $this;
 		self::$sleeper = new \Threaded;
+		$this->tickSleeper = new SleeperHandler();
 		$this->autoloader = $autoloader;
 		$this->logger = $logger;
 
@@ -1502,7 +1504,12 @@ class Server{
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
 
-			$this->console = new CommandReader();
+			$consoleNotifier = new SleeperNotifier();
+			$this->console = new CommandReader($consoleNotifier);
+			$this->tickSleeper->addNotifier($consoleNotifier, function() : void{
+				$this->checkConsole();
+			});
+			$this->console->start(PTHREADS_INHERIT_NONE);
 
 			$version = new VersionString($this->getPocketMineVersion());
 
@@ -1521,8 +1528,6 @@ class Server{
 			}
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
-
-			$this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
 
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
@@ -1605,7 +1610,7 @@ class Server{
 			$this->alwaysTickPlayers = (int) $this->getProperty("level-settings.always-tick-players", false);
 			$this->baseTickRate = (int) $this->getProperty("level-settings.base-tick-rate", 1);
 
-			$this->doTitleTick = (bool) $this->getProperty("console.title-tick", true);
+			$this->doTitleTick = ((bool) $this->getProperty("console.title-tick", true)) && Terminal::hasFormattingCodes();
 
 			$this->scheduler = new ServerScheduler();
 
@@ -1615,11 +1620,10 @@ class Server{
 						$this,
 						$this->getConfigString("rcon.password", ""),
 						$this->getConfigInt("rcon.port", $this->getPort()),
-						($ip = $this->getIp()) != "" ? $ip : "0.0.0.0",
-						$this->getConfigInt("rcon.threads", 1),
-						$this->getConfigInt("rcon.clients-per-thread", 50)
+						$this->getIp(),
+						$this->getConfigInt("rcon.max-clients", 50)
 					);
-				}catch(\Throwable $e){
+				}catch(\Exception $e){
 					$this->getLogger()->critical("RCON can't be started: " . $e->getMessage());
 				}
 			}
@@ -1661,7 +1665,7 @@ class Server{
 				@cli_set_process_title($this->getName() . " " . $this->getPocketMineVersion());
 			}
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp() === "" ? "*" : $this->getIp(), $this->getPort()]));
+			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp(), $this->getPort()]));
 			define("BOOTUP_RANDOM", random_bytes(16));
 			$this->serverID = Utils::getMachineUniqueId($this->getIp() . $this->getPort());
 
@@ -1710,8 +1714,6 @@ class Server{
 			$this->queryRegenerateTask = new QueryRegenerateEvent($this, 5);
 
 			$this->pluginManager->loadPlugins($this->pluginPath);
-
-			$this->updater = new AutoUpdater($this, $this->getProperty("auto-updater.host", "update.pmmp.io"));
 
 			$this->enablePlugins(PluginLoadOrder::STARTUP);
 
@@ -1769,6 +1771,31 @@ class Server{
 				}
 
 				$this->setDefaultLevel($this->getLevelByName($default));
+			}
+
+			if($this->allowNether and $this->getNetherLevel() === null){
+				/** @var string $netherLevelName */
+				$netherLevelName = $this->getAltayProperty("dimensions.nether.level-name", "nether");
+				if(trim($netherLevelName) == ""){
+					$netherLevelName = "nether";
+				}
+				if(!$this->loadLevel($netherLevelName)){
+					$this->generateLevel($netherLevelName, time(), Generator::getGenerator("hell"));
+				}
+
+				$this->netherLevel = $this->getLevelByName($netherLevelName);
+			}
+
+			if($this->allowEnd and $this->endLevel === null){
+				$endLevel = $this->getAltayProperty("dimensions.end.level-name", "end");
+				if(trim($endLevel) == ""){
+					$endLevel = "end";
+				}
+				if(!$this->loadLevel($endLevel)){
+					$this->generateLevel($endLevel, time(), Generator::getGenerator("end"));
+				}
+
+				$this->endLevel = $this->getLevelByName($endLevel);
 			}
 
 			if($this->properties->hasChanged()){
@@ -1865,11 +1892,11 @@ class Server{
 	}
 
 	/**
-	 * @param string $title
-	 * @param string $subtitle
-	 * @param int    $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
-	 * @param int    $stay Duration in ticks to stay on screen for
-	 * @param int    $fadeOut Duration in ticks for fade-out.
+	 * @param string        $title
+	 * @param string        $subtitle
+	 * @param int           $fadeIn Duration in ticks for fade-in. If -1 is given, client-sided defaults will be used.
+	 * @param int           $stay Duration in ticks to stay on screen for
+	 * @param int           $fadeOut Duration in ticks for fade-out.
 	 * @param Player[]|null $recipients
 	 *
 	 * @return int
@@ -2015,7 +2042,7 @@ class Server{
 
 	public function checkConsole(){
 		Timings::$serverCommandTimer->startTiming();
-		if(($line = $this->console->getLine()) !== null){
+		while(($line = $this->console->getLine()) !== null){
 			$this->pluginManager->callEvent($ev = new ServerCommandEvent($this->consoleSender, $line));
 			if(!$ev->isCancelled()){
 				$this->dispatchCommand($ev->getSender(), $ev->getCommand());
@@ -2093,10 +2120,6 @@ class Server{
 		}
 
 		try{
-			if(!$this->isRunning()){
-				$this->sendUsage(SendUsageTask::TYPE_CLOSE);
-			}
-
 			$this->hasStopped = true;
 
 			$this->shutdown();
@@ -2127,12 +2150,11 @@ class Server{
 			HandlerList::unregisterAll();
 
 			if($this->scheduler instanceof ServerScheduler){
-				$this->getLogger()->debug("Stopping all tasks");
-				$this->scheduler->cancelAllTasks();
-				$this->scheduler->mainThreadHeartbeat(PHP_INT_MAX);
+				$this->getLogger()->debug("Shutting down task scheduler");
+				$this->scheduler->shutdown();
 			}
 
-			if($this->properties->hasChanged()){
+			if($this->properties !== null and $this->properties->hasChanged()){
 				$this->getLogger()->debug("Saving properties");
 				$this->properties->save();
 			}
@@ -2177,17 +2199,11 @@ class Server{
 			$this->network->blockAddress($entry->getName(), -1);
 		}
 
-		if($this->getProperty("settings.send-usage", true)){
-			$this->sendUsageTicker = 6000;
-			$this->sendUsage(SendUsageTask::TYPE_OPEN);
-		}
-
-
 		if($this->getProperty("network.upnp-forwarding", false)){
 			$this->logger->info("[UPnP] Trying to port forward...");
 			try{
 				UPnP::PortForward($this->getPort());
-			}catch(\Throwable $e){
+			}catch(\Exception $e){
 				$this->logger->alert("UPnP portforward failed: " . $e->getMessage());
 			}
 		}
@@ -2258,9 +2274,6 @@ class Server{
 		if(!$this->isRunning){
 			return;
 		}
-		if($this->sendUsageTicker > 0){
-			$this->sendUsage(SendUsageTask::TYPE_CLOSE);
-		}
 		$this->hasStopped = false;
 
 		ini_set("error_reporting", '0');
@@ -2270,51 +2283,12 @@ class Server{
 			$dump = new CrashDump($this);
 
 			$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.submit", [$dump->getPath()]));
-
-			if($this->getProperty("auto-report.enabled", true) !== false){
-				$report = true;
-				$plugin = $dump->getData()["plugin"];
-				if(is_string($plugin)){
-					$p = $this->pluginManager->getPlugin($plugin);
-					if($p instanceof Plugin and !($p->getPluginLoader() instanceof PharPluginLoader)){
-						$report = false;
-					}
-				}
-
-				if($dump->getData()["error"]["type"] === "E_PARSE" or $dump->getData()["error"]["type"] === "E_COMPILE_ERROR"){
-					$report = false;
-				}
-
-				if(strrpos(\pocketmine\GIT_COMMIT, "-dirty") !== false or \pocketmine\GIT_COMMIT === str_repeat("00", 20)){
-					$this->logger->debug("Not sending crashdump due to locally modified");
-					$report = false; //Don't send crashdumps for locally modified builds
-				}
-
-				if($report){
-					$url = ($this->getProperty("auto-report.use-https", true) ? "https" : "http") . "://" . $this->getProperty("auto-report.host", "crash.pmmp.io") . "/submit/api";
-					$reply = Utils::postURL($url, [
-						"report" => "yes",
-						"name" => $this->getName() . " " . $this->getPocketMineVersion(),
-						"email" => "crash@pocketmine.net",
-						"reportPaste" => base64_encode($dump->getEncodedData())
-					]);
-
-					if($reply !== false and ($data = json_decode($reply)) !== null and isset($data->crashId) and isset($data->crashUrl)){
-						$reportId = $data->crashId;
-						$reportUrl = $data->crashUrl;
-						$this->logger->emergency($this->getLanguage()->translateString("pocketmine.crash.archive", [$reportUrl, $reportId]));
-					}
-				}
-			}
 		}catch(\Throwable $e){
 			$this->logger->logException($e);
 			try{
 				$this->logger->critical($this->getLanguage()->translateString("pocketmine.crash.error", [$e->getMessage()]));
 			}catch(\Throwable $exception){}
 		}
-
-		//$this->checkMemory();
-		//$dump .= "Memory Usage Tracking: \r\n" . chunk_split(base64_encode(gzdeflate(implode(";", $this->memoryStats), 9))) . "\r\n";
 
 		$this->forceShutdown();
 		$this->isRunning = false;
@@ -2326,26 +2300,23 @@ class Server{
 		return [];
 	}
 
+	public function getTickSleeper() : SleeperHandler{
+		return $this->tickSleeper;
+	}
+
 	private function tickProcessor(){
 		$this->nextTick = microtime(true);
+
 		while($this->isRunning){
 			$this->tick();
-			$next = $this->nextTick - 0.0001;
-			if($next > microtime(true)){
-				try{
-					@time_sleep_until($next);
-				}catch(\Throwable $e){
-					//Sometimes $next is less than the current time. High load?
-				}
-			}
+
+			//sleeps are self-correcting - if we undersleep 1ms on this tick, we'll sleep an extra ms on the next tick
+			$this->tickSleeper->sleepUntil($this->nextTick);
 		}
 	}
 
 	public function onPlayerLogin(Player $player){
-		if($this->sendUsageTicker > 0){
-			$this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
-		}
-
+		$this->uniquePlayers[$player->getRawUniqueId()] = $player->getRawUniqueId();
 		$this->loggedInPlayers[$player->getRawUniqueId()] = $player;
 	}
 
@@ -2485,14 +2456,6 @@ class Server{
 		}
 	}
 
-	public function sendUsage($type = SendUsageTask::TYPE_STATUS){
-		if((bool) $this->getProperty("anonymous-statistics.enabled", true)){
-			$this->scheduler->scheduleAsyncTask(new SendUsageTask($this, $type, $this->uniquePlayers));
-		}
-		$this->uniquePlayers = [];
-	}
-
-
 	/**
 	 * @return BaseLang
 	 */
@@ -2577,15 +2540,8 @@ class Server{
 
 		++$this->tickCounter;
 
-		$this->checkConsole();
-
 		Timings::$connectionTimer->startTiming();
 		$this->network->processInterfaces();
-
-		if($this->rcon !== null){
-			$this->rcon->check();
-		}
-
 		Timings::$connectionTimer->stopTiming();
 
 		Timings::$schedulerTimer->startTiming();
@@ -2599,7 +2555,7 @@ class Server{
 		}
 
 		if(($this->tickCounter % 20) === 0){
-			if($this->doTitleTick and Terminal::hasFormattingCodes()){
+			if($this->doTitleTick){
 				$this->titleTick();
 			}
 			$this->currentTPS = 20;
@@ -2623,11 +2579,6 @@ class Server{
 		if($this->autoSave and ++$this->autoSaveTicker >= $this->autoSaveTicks){
 			$this->autoSaveTicker = 0;
 			$this->doAutoSave();
-		}
-
-		if($this->sendUsageTicker > 0 and --$this->sendUsageTicker === 0){
-			$this->sendUsageTicker = 6000;
-			$this->sendUsage(SendUsageTask::TYPE_STATUS);
 		}
 
 		if(($this->tickCounter % 100) === 0){
@@ -2675,21 +2626,5 @@ class Server{
 	 */
 	public function __sleep(){
 		throw new \BadMethodCallException("Cannot serialize Server instance");
-	}
-
-	// ALTAY
-
-	/**
-	 * @return ServerSettingsForm
-	 */
-	public function getServerSettingsForm(): ServerSettingsForm{
-		return $this->serverSettingsForm;
-	}
-
-	/**
-	 * @param ServerSettingsForm $serverSettingsForm
-	 */
-	public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
-		$this->serverSettingsForm = $serverSettingsForm;
 	}
 }

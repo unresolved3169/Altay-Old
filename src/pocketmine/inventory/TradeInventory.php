@@ -34,7 +34,7 @@ class TradeInventory extends BaseInventory{
 	/** @var Villager */
 	protected $holder;
 	/** @var bool */
-	protected $isBuy = false;
+	protected $isTraded = false;
 
 	public function __construct(Villager $villager){
 		$this->holder = $villager;
@@ -50,7 +50,7 @@ class TradeInventory extends BaseInventory{
 	}
 
 	public function onOpen(Player $who) : void{
-		$tag = $this->holder->getOffers();
+		$tag = clone $this->holder->getOffers();
 		if($tag !== null){
 			parent::onOpen($who);
 
@@ -76,11 +76,10 @@ class TradeInventory extends BaseInventory{
 	}
 
 	public function onClose(Player $who) : void{
-		// TODO : THIS IS NOT WORK
 		$this->holder->getDataPropertyManager()->removeProperty(Villager::DATA_TRADING_PLAYER_EID);
-		if($this->isBuy){
+		if($this->isTraded){
 			$this->holder->updateTradeTier();
-			$this->isBuy = false;
+			$this->isTraded = false;
 		}
 		parent::onClose($who);
 	}
@@ -89,12 +88,13 @@ class TradeInventory extends BaseInventory{
 		return $this->holder;
 	}
 
-	/**
-	 * For update trade tier
-	 *
-	 * @param bool $isBuy
-	 */
-	public function setBuy(bool $isBuy) : void{
-		$this->isBuy = $isBuy;
+
+    /**
+     * For trade tier update
+     *
+     * @param bool $value
+     */
+    public function setTraded(bool $value) : void{
+		$this->isTraded = $value;
 	}
 }

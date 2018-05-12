@@ -21,20 +21,10 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\generator\biome;
+namespace pocketmine\level\biome;
 
 use pocketmine\block\Block;
 use pocketmine\level\ChunkManager;
-use pocketmine\level\generator\normal\biome\DesertBiome;
-use pocketmine\level\generator\normal\biome\ForestBiome;
-use pocketmine\level\generator\normal\biome\MountainsBiome;
-use pocketmine\level\generator\normal\biome\OceanBiome;
-use pocketmine\level\generator\normal\biome\PlainBiome;
-use pocketmine\level\generator\normal\biome\RiverBiome;
-use pocketmine\level\generator\normal\biome\SmallMountainsBiome;
-use pocketmine\level\generator\normal\biome\SwampBiome;
-use pocketmine\level\generator\normal\biome\TaigaBiome;
-use pocketmine\level\generator\normal\biome\IcePlainsBiome;
 use pocketmine\level\generator\populator\Populator;
 use pocketmine\utils\Random;
 
@@ -48,8 +38,8 @@ abstract class Biome{
 	public const TAIGA = 5;
 	public const SWAMP = 6;
 	public const RIVER = 7;
-
 	public const HELL = 8;
+	public const END = 9, SKY = 9;
 
 	public const ICE_PLAINS = 12;
 
@@ -100,6 +90,8 @@ abstract class Biome{
 		self::register(self::TAIGA, new TaigaBiome());
 		self::register(self::SWAMP, new SwampBiome());
 		self::register(self::RIVER, new RiverBiome());
+		self::register(self::HELL, new HellBiome());
+		self::register(self::END, new EndBiome());
 
 		self::register(self::ICE_PLAINS, new IcePlainsBiome());
 

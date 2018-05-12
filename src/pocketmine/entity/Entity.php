@@ -1528,8 +1528,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		);
 	}
 
-	public function hasEntityColissionUpdate() : bool{
-		return true;
+	public function hasEntityCollisionUpdate() : bool{
+		return false;
 	}
 
 	public function canTriggerWalking() : bool{
@@ -1552,7 +1552,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 	}
 
-	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDE, bool $send = true) : void{
+	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDER, bool $send = true) : void{
 		if($this->ridingEntity == null and $entity !== $this){
 			$this->setRidingEntity($entity);
 			$entity->setRiddenByEntity($this);
@@ -1971,7 +1971,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function checkEntityCollision() : void{
-		if($this->hasEntityColissionUpdate()){
+		if($this->hasEntityCollisionUpdate()){
 			foreach($this->level->getCollidingEntities($this->getBoundingBox()->grow(0.3,0.3,0.3), $this) as $e){
 				$this->applyEntityCollision($e);
 			}

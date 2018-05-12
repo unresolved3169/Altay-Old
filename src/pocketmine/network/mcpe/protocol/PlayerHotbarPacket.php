@@ -29,9 +29,6 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
 
-#ifndef COMPILE
-#endif
-
 class PlayerHotbarPacket extends DataPacket{
 	public const NETWORK_ID = ProtocolInfo::PLAYER_HOTBAR_PACKET;
 
