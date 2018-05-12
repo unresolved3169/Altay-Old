@@ -1206,12 +1206,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * @param Vector3|Position $pos
 	 */
 	public function setSpawn(Vector3 $pos){
-		if(!($pos instanceof Position)){
-			$level = $this->level;
+		if($pos instanceof Position){
+			$this->spawnPosition = $pos;
 		}else{
-			$level = $pos->getLevel();
+			$this->spawnPosition = Position::fromObject($pos, $this->level);
 		}
-		$this->spawnPosition = new Position($pos->x, $pos->y, $pos->z, $level);
+
 		$pk = new SetSpawnPositionPacket();
 		$pk->x = $this->spawnPosition->getFloorX();
 		$pk->y = $this->spawnPosition->getFloorY();
