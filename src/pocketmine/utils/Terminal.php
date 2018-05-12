@@ -59,14 +59,16 @@ abstract class Terminal{
 			}else{
 				$stdout = fopen("php://stdout", "w");
 				self::$formattingCodes = (isset($opts["enable-ansi"]) or ( //user explicitly told us to enable ANSI
-					stream_isatty($stdout) and //STDOUT isn't being piped
-					(
-						getenv('TERM') !== false or //Console says it supports colours
-						(function_exists('sapi_windows_vt100_support') and sapi_windows_vt100_support($stdout)) //we're on windows and have vt100 support
-					)
-				));
+						stream_isatty($stdout) and //STDOUT isn't being piped
+						(
+							getenv('TERM') !== false or //Console says it supports colours
+							(function_exists('sapi_windows_vt100_support') and sapi_windows_vt100_support($stdout)) //we're on windows and have vt100 support
+						)
+					));
 				fclose($stdout);
 			}
+
+			self::init();
 		}
 
 		return self::$formattingCodes;
@@ -159,96 +161,96 @@ abstract class Terminal{
 		//TODO: iOS
 	}
 
-    /**
-     * Returns a string with colorized ANSI Escape codes
-     *
-     * @param string|array $string
-     *
-     * @return string
-     */
-    public static function toANSI($string) : string{
-        if(!is_array($string)){
-            $string = TextFormat::tokenize($string);
-        }
+	/**
+	 * Returns a string with colorized ANSI Escape codes
+	 *
+	 * @param string|array $string
+	 *
+	 * @return string
+	 */
+	public static function toANSI($string) : string{
+		if(!is_array($string)){
+			$string = TextFormat::tokenize($string);
+		}
 
-        $newString = "";
-        foreach($string as $token){
-            switch($token){
-                case TextFormat::BOLD:
-                    $newString .= Terminal::$FORMAT_BOLD;
-                    break;
-                case TextFormat::OBFUSCATED:
-                    $newString .= Terminal::$FORMAT_OBFUSCATED;
-                    break;
-                case TextFormat::ITALIC:
-                    $newString .= Terminal::$FORMAT_ITALIC;
-                    break;
-                case TextFormat::UNDERLINE:
-                    $newString .= Terminal::$FORMAT_UNDERLINE;
-                    break;
-                case TextFormat::STRIKETHROUGH:
-                    $newString .= Terminal::$FORMAT_STRIKETHROUGH;
-                    break;
-                case TextFormat::RESET:
-                    $newString .= Terminal::$FORMAT_RESET;
-                    break;
+		$newString = "";
+		foreach($string as $token){
+			switch($token){
+				case TextFormat::BOLD:
+					$newString .= Terminal::$FORMAT_BOLD;
+					break;
+				case TextFormat::OBFUSCATED:
+					$newString .= Terminal::$FORMAT_OBFUSCATED;
+					break;
+				case TextFormat::ITALIC:
+					$newString .= Terminal::$FORMAT_ITALIC;
+					break;
+				case TextFormat::UNDERLINE:
+					$newString .= Terminal::$FORMAT_UNDERLINE;
+					break;
+				case TextFormat::STRIKETHROUGH:
+					$newString .= Terminal::$FORMAT_STRIKETHROUGH;
+					break;
+				case TextFormat::RESET:
+					$newString .= Terminal::$FORMAT_RESET;
+					break;
 
-                //Colors
-                case TextFormat::BLACK:
-                    $newString .= Terminal::$COLOR_BLACK;
-                    break;
-                case TextFormat::DARK_BLUE:
-                    $newString .= Terminal::$COLOR_DARK_BLUE;
-                    break;
-                case TextFormat::DARK_GREEN:
-                    $newString .= Terminal::$COLOR_DARK_GREEN;
-                    break;
-                case TextFormat::DARK_AQUA:
-                    $newString .= Terminal::$COLOR_DARK_AQUA;
-                    break;
-                case TextFormat::DARK_RED:
-                    $newString .= Terminal::$COLOR_DARK_RED;
-                    break;
-                case TextFormat::DARK_PURPLE:
-                    $newString .= Terminal::$COLOR_PURPLE;
-                    break;
-                case TextFormat::GOLD:
-                    $newString .= Terminal::$COLOR_GOLD;
-                    break;
-                case TextFormat::GRAY:
-                    $newString .= Terminal::$COLOR_GRAY;
-                    break;
-                case TextFormat::DARK_GRAY:
-                    $newString .= Terminal::$COLOR_DARK_GRAY;
-                    break;
-                case TextFormat::BLUE:
-                    $newString .= Terminal::$COLOR_BLUE;
-                    break;
-                case TextFormat::GREEN:
-                    $newString .= Terminal::$COLOR_GREEN;
-                    break;
-                case TextFormat::AQUA:
-                    $newString .= Terminal::$COLOR_AQUA;
-                    break;
-                case TextFormat::RED:
-                    $newString .= Terminal::$COLOR_RED;
-                    break;
-                case TextFormat::LIGHT_PURPLE:
-                    $newString .= Terminal::$COLOR_LIGHT_PURPLE;
-                    break;
-                case TextFormat::YELLOW:
-                    $newString .= Terminal::$COLOR_YELLOW;
-                    break;
-                case TextFormat::WHITE:
-                    $newString .= Terminal::$COLOR_WHITE;
-                    break;
-                default:
-                    $newString .= $token;
-                    break;
-            }
-        }
+				//Colors
+				case TextFormat::BLACK:
+					$newString .= Terminal::$COLOR_BLACK;
+					break;
+				case TextFormat::DARK_BLUE:
+					$newString .= Terminal::$COLOR_DARK_BLUE;
+					break;
+				case TextFormat::DARK_GREEN:
+					$newString .= Terminal::$COLOR_DARK_GREEN;
+					break;
+				case TextFormat::DARK_AQUA:
+					$newString .= Terminal::$COLOR_DARK_AQUA;
+					break;
+				case TextFormat::DARK_RED:
+					$newString .= Terminal::$COLOR_DARK_RED;
+					break;
+				case TextFormat::DARK_PURPLE:
+					$newString .= Terminal::$COLOR_PURPLE;
+					break;
+				case TextFormat::GOLD:
+					$newString .= Terminal::$COLOR_GOLD;
+					break;
+				case TextFormat::GRAY:
+					$newString .= Terminal::$COLOR_GRAY;
+					break;
+				case TextFormat::DARK_GRAY:
+					$newString .= Terminal::$COLOR_DARK_GRAY;
+					break;
+				case TextFormat::BLUE:
+					$newString .= Terminal::$COLOR_BLUE;
+					break;
+				case TextFormat::GREEN:
+					$newString .= Terminal::$COLOR_GREEN;
+					break;
+				case TextFormat::AQUA:
+					$newString .= Terminal::$COLOR_AQUA;
+					break;
+				case TextFormat::RED:
+					$newString .= Terminal::$COLOR_RED;
+					break;
+				case TextFormat::LIGHT_PURPLE:
+					$newString .= Terminal::$COLOR_LIGHT_PURPLE;
+					break;
+				case TextFormat::YELLOW:
+					$newString .= Terminal::$COLOR_YELLOW;
+					break;
+				case TextFormat::WHITE:
+					$newString .= Terminal::$COLOR_WHITE;
+					break;
+				default:
+					$newString .= $token;
+					break;
+			}
+		}
 
-        return $newString;
-    }
+		return $newString;
+	}
 
 }

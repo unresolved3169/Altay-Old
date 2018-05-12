@@ -40,6 +40,8 @@ class MainLogger extends \AttachableThreadedLogger{
 	/** @var bool */
 	private $syncFlush = false;
 
+	private $format = TextFormat::GREEN . "%s" . TextFormat::RESET . "%s %s " . TextFormat::GRAY . "> %s%s" . TextFormat::RESET;
+
 	/**
 	 * @param string $logFile
 	 * @param bool $logDebug
@@ -203,13 +205,13 @@ class MainLogger extends \AttachableThreadedLogger{
 	protected function send($message, $level, $prefix, $color){
 		$now = time();
 
-		$message = Terminal::toANSI(TextFormat::GREEN . date("H:i:s", $now) . TextFormat::RESET . $color . " " . $prefix . " §7> " . $color . $message . TextFormat::RESET);
+		$message = sprintf($this->format, date("H:i:s", $now), $color, $prefix, $color, $message);
 		$cleanMessage = TextFormat::clean($message);
 
-		if(!Terminal::hasFormattingCodes()){
-			echo $cleanMessage . PHP_EOL;
+		if(Terminal::hasFormattingCodes()){
+			echo Terminal::toANSI($message) . PHP_EOL;
 		}else{
-			echo $message . PHP_EOL;
+			echo $cleanMessage . PHP_EOL;
 		}
 
 		foreach($this->attachments as $attachment){
