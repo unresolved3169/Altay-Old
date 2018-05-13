@@ -67,7 +67,7 @@ class Item implements ItemIds, \JsonSerializable{
 			self::$cachedParser = new LittleEndianNBTStream();
 		}
 
-        $data = self::$cachedParser->read($tag);
+		$data = self::$cachedParser->read($tag);
 		if(!($data instanceof CompoundTag)){
 			throw new \InvalidArgumentException("Invalid item NBT string given, it could not be deserialized");
 		}
@@ -80,7 +80,7 @@ class Item implements ItemIds, \JsonSerializable{
 			self::$cachedParser = new LittleEndianNBTStream();
 		}
 
-        return self::$cachedParser->write($tag);
+		return self::$cachedParser->write($tag);
 	}
 
 	/**
@@ -165,7 +165,7 @@ class Item implements ItemIds, \JsonSerializable{
 
 	public static function getCreativeItemIndex(Item $item) : int{
 		foreach(Item::$creative as $i => $d){
-			if($item->equals($d, !$item->isTool())){
+			if($item->equals($d, !($item instanceof Durable))){
 				return $i;
 			}
 		}
@@ -344,7 +344,7 @@ class Item implements ItemIds, \JsonSerializable{
 		/** @var CompoundTag $entry */
 		foreach($ench as $k => $entry){
 			if($entry->getShort("id") === $id and ($level === -1 or $entry->getShort("lvl") === $level)){
-                $ench->remove($k);
+				$ench->remove($k);
 				break;
 			}
 		}
@@ -369,7 +369,7 @@ class Item implements ItemIds, \JsonSerializable{
 			/** @var CompoundTag $entry */
 			foreach($ench as $k => $entry){
 				if($entry->getShort("id") === $enchantment->getId()){
-				    $ench->set($k, new CompoundTag("", [
+					$ench->set($k, new CompoundTag("", [
 						new ShortTag("id", $enchantment->getId()),
 						new ShortTag("lvl", $enchantment->getLevel())
 					]));
@@ -380,7 +380,7 @@ class Item implements ItemIds, \JsonSerializable{
 		}
 
 		if(!$found){
-		    $ench->push(new CompoundTag("", [
+			$ench->push(new CompoundTag("", [
 				new ShortTag("id", $enchantment->getId()),
 				new ShortTag("lvl", $enchantment->getLevel())
 			]));
@@ -636,8 +636,8 @@ class Item implements ItemIds, \JsonSerializable{
 	}
 
 	public function getVanillaName() : string{
-	    return $this->name;
-    }
+		return $this->name;
+	}
 
 	/**
 	 * @return bool
@@ -651,7 +651,7 @@ class Item implements ItemIds, \JsonSerializable{
 	 * @return Block
 	 */
 	public function getBlock() : Block{
-        return BlockFactory::get(Block::AIR);
+		return BlockFactory::get(Block::AIR);
 	}
 
 	/**
@@ -726,13 +726,6 @@ class Item implements ItemIds, \JsonSerializable{
 	 * @return bool
 	 */
 	public function useOn($object){
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function isTool(){
 		return false;
 	}
 
@@ -826,14 +819,14 @@ class Item implements ItemIds, \JsonSerializable{
 		return false;
 	}
 
-    /**
-     * Returns the number of ticks a player must wait before activating this item again.
-     *
-     * @return int
-     */
-    public function getCooldownTicks() : int{
-	    return 0;
-    }
+	/**
+	 * Returns the number of ticks a player must wait before activating this item again.
+	 *
+	 * @return int
+	 */
+	public function getCooldownTicks() : int{
+		return 0;
+	}
 
 	/**
 	 * Compares an Item to this Item and check if they match.
@@ -990,11 +983,11 @@ class Item implements ItemIds, \JsonSerializable{
 	// ALTAY
 
 	public function getRepairCost() : int{
-        return $this->getNamedTag()->getInt("RepairCost", 0);
-    }
+		return $this->getNamedTag()->getInt("RepairCost", 0);
+	}
 
-    public function setRepairCost(int $repairCost) : void{
-	    $this->getNamedTag()->setInt("RepairCost", $repairCost);
-    }
+	public function setRepairCost(int $repairCost) : void{
+		$this->getNamedTag()->setInt("RepairCost", $repairCost);
+	}
 
 }

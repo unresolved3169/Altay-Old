@@ -82,6 +82,7 @@ use pocketmine\inventory\transaction\TransactionValidationException;
 use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
+use pocketmine\item\Durable;
 use pocketmine\item\WritableBook;
 use pocketmine\item\WrittenBook;
 use pocketmine\item\Item;
@@ -112,6 +113,7 @@ use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
+use pocketmine\network\mcpe\protocol\CommandRequestPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
@@ -357,6 +359,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	/** @var int */
 	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
+	protected $keepExperience = false;
 
 	/**
 	 * @return TranslationContainer|string
@@ -957,15 +960,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->level->sendDifficulty($this);
 
 			$xz = [(int) $this->x, (int) $this->z];
-			$oldBiome = $oldLevel->getBiomeId(...$xz);
-			$newBiome = $this->level->getBiomeId(...$xz);
-			if($oldBiome !== $newBiome){
-				$dimension = $newBiome - 7;
-				if($dimension < 0 or $dimension > 2){
-					$dimension = Level::DIMENSION_OVERWORLD;
-				}
-
-				$this->changeDimension($dimension, $this, !$this->isAlive());
+			if($oldLevel->getDimension() !== $targetLevel->getDimension()){
+				$this->changeDimension($targetLevel->getDimension(), $this, !$this->isAlive());
 			}
 
 			return true;
@@ -1517,7 +1513,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	public function getXpDropAmount() : int{
-		if(!$this->server->keepExperience && !$this->isCreative()){
+		if(!$this->server->keepExperience && !$this->isCreative() and !$this->keepExperience){
 			return parent::getXpDropAmount();
 		}
 
@@ -1743,7 +1739,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							$expectedVelocity = (-$this->gravity) / $this->drag - ((-$this->gravity) / $this->drag) * exp(-$this->drag * ($this->inAirTicks - $this->startAirTicks));
 							$diff = ($this->speed->y - $expectedVelocity) ** 2;
 
-							if(!$this->hasEffect(Effect::JUMP) and !$this->hasEffect(Effect::LEVITATION) and $diff > 0.6 and $expectedVelocity < $this->speed->y and !$this->server->getAllowFlight()){
+							if(!$this->hasEffect(Effect::JUMP) and !$this->hasEffect(Effect::LEVITATION) and $diff > 0.6 and $expectedVelocity < $this->speed->y and !$this->server->getAllowFlight() and !$this->allowMovementCheats){
 								if($this->inAirTicks < 100){
 									$this->setMotion(new Vector3(0, $expectedVelocity, 0));
 								}elseif($this->kick($this->server->getLanguage()->translateString("kick.reason.cheat", ["%ability.flight"]))){
@@ -2025,8 +2021,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				new DoubleTag("", $spawnLocation->z)
 			]));
 		}else{
-			$biome = $level->getBiomeId(128, 128);
-			if($biome == Biome::HELL or $biome == Biome::END){
+		    $dimension = $level->getDimension();
+			if($dimension === Level::DIMENSION_NETHER or $dimension === Level::DIMENSION_END){
 				$level = $this->server->getDefaultLevel();
 			}
 
@@ -2132,7 +2128,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk->pitch = $this->pitch;
 		$pk->yaw = $this->yaw;
 		$pk->seed = -1;
-		$pk->dimension = DimensionIds::OVERWORLD; //TODO: implement this properly
+		$pk->dimension = $this->level->getDimension();
 		$pk->worldGamemode = Player::getClientFriendlyGamemode($this->server->getGamemode());
 		$pk->difficulty = $this->level->getDifficulty();
 		$pk->spawnX = $spawnPosition->getFloorX();
@@ -2203,27 +2199,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$message = TextFormat::clean($message, $this->removeFormat);
 		foreach(explode("\n", $message) as $messagePart){
 			if(trim($messagePart) !== "" and strlen($messagePart) <= 255 and $this->messageCounter-- > 0){
-				if(strpos($messagePart, './') === 0){
-					$messagePart = substr($messagePart, 1);
-				}
-
-				$ev = new PlayerCommandPreprocessEvent($this, $messagePart);
-
-				$this->server->getPluginManager()->callEvent($ev);
-
-				if($ev->isCancelled()){
-					break;
-				}
-
-				if(strpos($ev->getMessage(), "/") === 0){
-					Timings::$playerCommandTimer->startTiming();
-					$this->server->dispatchCommand($ev->getPlayer(), substr($ev->getMessage(), 1));
-					Timings::$playerCommandTimer->stopTiming();
-				}else{
-					$this->server->getPluginManager()->callEvent($ev = new PlayerChatEvent($this, $ev->getMessage()));
-					if(!$ev->isCancelled()){
-						$this->server->broadcastMessage($this->getServer()->getLanguage()->translateString($ev->getFormat(), [$ev->getPlayer()->getDisplayName(), $ev->getMessage()]), $ev->getRecipients());
-					}
+				$this->server->getPluginManager()->callEvent($ev = new PlayerChatEvent($this, $messagePart));
+				if(!$ev->isCancelled()){
+					$this->server->broadcastMessage($this->getServer()->getLanguage()->translateString($ev->getFormat(), [$ev->getPlayer()->getDisplayName(), $ev->getMessage()]), $ev->getRecipients());
 				}
 			}
 		}
@@ -2583,7 +2561,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						$target->attack($ev);
 
 						if($ev->isCancelled()){
-							if($heldItem->isTool() and $this->isSurvival()){
+							if($heldItem instanceof Durable and $this->isSurvival()){
 								$this->inventory->sendContents($this);
 							}
 							return true;
@@ -3054,6 +3032,30 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$tile->setItem(null);
 			$tile->setItemRotation(0);
 		}
+
+		return true;
+	}
+
+	public function handleCommandRequest(CommandRequestPacket $packet) : bool{
+		if(!$this->spawned or !$this->isAlive()){
+			return false;
+		}
+
+		$this->resetCraftingGridType();
+
+		$command = $packet->command;
+		if($command{0} != "/"){
+			return false;
+		}
+
+		$this->server->getPluginManager()->callEvent($ev = new PlayerCommandPreprocessEvent($this, $command));
+		if($ev->isCancelled()){
+			return true;
+		}
+
+		Timings::$playerCommandTimer->startTiming();
+		$this->server->dispatchCommand($ev->getPlayer(), substr($ev->getMessage(), 1));
+		Timings::$playerCommandTimer->stopTiming();
 
 		return true;
 	}
@@ -3801,7 +3803,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params));
 		$ev->setKeepInventory($this->server->keepInventory);
+		$ev->setKeepExperience($this->server->keepExperience);
 		$this->server->getPluginManager()->callEvent($ev);
+
+		$this->keepExperience = $ev->getKeepExperience();
 
 		if(!$ev->getKeepInventory()){
 			foreach($ev->getDrops() as $item){
@@ -3858,8 +3863,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$attr->resetToDefault();
 		}
 
-		if($this->server->keepExperience)
+		if($this->keepExperience){
 			$this->setCurrentTotalXp($xp);
+			$this->keepExperience = false;
+		}
 
 		$this->sendData($this);
 		$this->sendData($this->getViewers());
@@ -4027,6 +4034,27 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	/**
+	 * Returns the opened inventory type that is opened, or null if no window is opened.
+	 *
+	 * @param string $class
+	 * @return null|Inventory
+	 */
+	public function getWindowByType(string $class) : ?Inventory{
+		foreach($this->windowIndex as $inventory){
+			if($inventory instanceof $class){
+				return $inventory;
+			}
+		}
+
+		return null;
+	}
+
+	public function getLastOpenContainerInventory() : ?ContainerInventory{
+		$windows = array_filter($this->windowIndex, function($inv) : bool{ return $inv instanceof ContainerInventory; });
+		return !empty($windows) ? max($windows) : null;
+	}
+
+	/**
 	 * Opens an inventory window to the player. Returns the ID of the created window, or the existing window ID if the
 	 * player is already viewing the specified inventory.
 	 *
@@ -4190,5 +4218,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function getDeviceOS() : int{
 		return $this->deviceOS;
+	}
+
+	public function isTeleporting() : bool{
+		return $this->isTeleporting;
 	}
 }

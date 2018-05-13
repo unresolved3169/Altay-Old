@@ -548,9 +548,9 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 			$this->setSkin(new Skin(
 				$skin->getString("Name"),
 				$skin->hasTag("Data", StringTag::class) ? $skin->getString("Data") : $skin->getByteArray("Data"), //old data (this used to be saved as a StringTag in older versions of PM)
-				$skin->hasTag("CapeData", ByteArrayTag::class) ?  $skin->getByteArray("CapeData", "") : $skin->getString("CapeData"),
+				$skin->hasTag("CapeData", ByteArrayTag::class) ?  $skin->getByteArray("CapeData", "") : $skin->getString("CapeData", ""),
 				$skin->getString("GeometryName", ""),
-				$skin->hasTag("GeometryData", ByteArrayTag::class) ? $skin->getByteArray("GeometryData", "") : $skin->getString("GeometryData")
+				$skin->hasTag("GeometryData", ByteArrayTag::class) ? $skin->getByteArray("GeometryData", "") : $skin->getString("GeometryData", "")
 			));
 		}
 

@@ -26,7 +26,8 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
-use pocketmine\level\Position;
+use pocketmine\level\biome\Biome;
+use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -34,6 +35,9 @@ class NetherPortal extends Flowable{
 	protected $id = self::PORTAL;
 
 	public const MAX_PORTAL_SIZE = 23;
+
+	/** @var int[] */
+	protected $time = [];
 
 	public function __construct(int $meta = 0){
 		$this->meta = $meta;
@@ -70,8 +74,21 @@ class NetherPortal extends Flowable{
 	public function onEntityCollide(Entity $entity) : void{
 		$server = Server::getInstance();
 		if($server->allowNether){
-			$nether = $server->getNetherLevel();
-			$entity->teleport(Position::fromObject($entity, $nether));
+			$level = $entity->getLevel()->getDimension() !== Level::DIMENSION_NETHER ? $server->getNetherLevel() : $server->getDefaultLevel();
+			if($entity instanceof Player and $entity->isSurvival()){
+				if(isset($this->time[$entity->getName()])){
+					$subtract = time() - $this->time[$entity->getName()];
+					if($subtract == 3){
+						$entity->teleport($level->getSafeSpawn($entity));
+					}elseif($subtract > 3){
+						$this->time[$entity->getName()] = time();
+					}
+				}else{
+					$this->time[$entity->getName()] = time();
+				}
+			}else{
+				$entity->teleport($level->getSafeSpawn($entity));
+			}
 		}
 	}
 

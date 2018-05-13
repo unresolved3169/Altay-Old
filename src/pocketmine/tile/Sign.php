@@ -83,7 +83,7 @@ class Sign extends Spawnable{
 		for($i=1; $i<=4; $i++){
 			$text = ${"line".$i};
 			if($text !== null){
-				$this->text[$i] = $text;
+				$this->text[$i - 1] = $text;
 			}
 		}
 

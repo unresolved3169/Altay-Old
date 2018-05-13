@@ -78,8 +78,6 @@ class Villager extends Creature implements NPC, Ageable{
 	protected $career;
 	/** @var int */
 	protected $tradeTier;
-	/** @var TradeInventory */
-	protected $inventory;
 	/** @var bool */
 	protected $isWilling = true;
 
@@ -104,8 +102,6 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->career = $this->namedtag->getInt("Career", array_rand(self::$names[$this->getProfession()])); // custom
 		$this->tradeTier = $this->namedtag->getInt("TradeTier", 0);
 		$this->updateTradeItems();
-
-		$this->inventory = new TradeInventory($this);
 	}
 
 	public function updateTradeItems() : void{
@@ -186,7 +182,7 @@ class Villager extends Creature implements NPC, Ageable{
 	}
 
 	public function getInventory() : TradeInventory{
-		return $this->inventory;
+		return new TradeInventory($this);
 	}
 
 	public function getDisplayName() : string{

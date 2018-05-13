@@ -44,6 +44,7 @@ use pocketmine\event\level\SpawnChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\level\biome\Biome;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\format\ChunkException;
 use pocketmine\level\format\EmptySubChunk;
@@ -254,6 +255,10 @@ class Level implements ChunkManager, Metadatable{
 	/** @var bool */
 	private $closed = false;
 
+	/** @var int */
+	protected $dimension = self::DIMENSION_OVERWORLD;
+
+	public static function chunkHash(int $x, int $z) : int{
 	/** @var Random */
     private $random;
 
@@ -322,36 +327,47 @@ class Level implements ChunkManager, Metadatable{
 		return -1;
 	}
 
+    public static function getDimensionFromString(string $str) : int{
+        switch(strtolower(trim($str))){
+            case "default":
+            case "overworld":
+            case "normal":
+                return Level::DIMENSION_OVERWORLD;
+
+            case "nether":
+            case "hell":
+                return Level::DIMENSION_NETHER;
+
+            case "end":
+            case "ender":
+                return Level::DIMENSION_END;
+        }
+
+        return Level::DIMENSION_OVERWORLD;
+    }
+
 	/**
 	 * Init the default level data
 	 *
 	 * @param Server $server
 	 * @param string $name
-	 * @param string $path
-	 * @param string $provider Class that extends LevelProvider
-	 *
-	 * @throws \Exception
+	 * @param LevelProvider $provider Class that extends LevelProvider
 	 */
-	public function __construct(Server $server, string $name, string $path, string $provider){
+	public function __construct(Server $server, string $name, LevelProvider $provider){
 		$this->blockStates = BlockFactory::getBlockStatesArray();
 		$this->levelId = static::$levelIdCounter++;
 		$this->blockMetadata = new BlockMetadataStore($this);
 		$this->server = $server;
 		$this->autoSave = $server->getAutoSave();
 
-		/** @var LevelProvider $provider */
-
-		if(is_subclass_of($provider, LevelProvider::class, true)){
-			$this->provider = new $provider($path);
-		}else{
-			throw new LevelException("Provider is not a subclass of LevelProvider");
-		}
+		$this->provider = $provider;
 
 		$this->displayName = $this->provider->getName();
 		$this->worldHeight = $this->provider->getWorldHeight();
 
 		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.level.preparing", [$this->displayName]));
 		$this->generator = Generator::getGenerator($this->provider->getGenerator());
+		$this->dimension = self::getDimensionFromString($this->provider->getGenerator());
 
 		$this->folderName = $name;
 
@@ -450,9 +466,7 @@ class Level implements ChunkManager, Metadatable{
 			$this->unloadChunk($chunk->getX(), $chunk->getZ(), false);
 		}
 
-		if($this->getAutoSave()){
-			$this->save();
-		}
+		$this->save();
 
 		$this->unregisterGenerator();
 
@@ -3084,6 +3098,17 @@ class Level implements ChunkManager, Metadatable{
 		}
 	}
 
+	public static function getDimensionByBiomeId(int $biome) : int{
+		switch($biome){
+			case Biome::END:
+				return Level::DIMENSION_END;
+			case Biome::HELL:
+				return Level::DIMENSION_NETHER;
+			default:
+				return Level::DIMENSION_OVERWORLD;
+		}
+	}
+
 	public function setMetadata(string $metadataKey, MetadataValue $newMetadataValue){
 		$this->server->getLevelMetadata()->setMetadata($this, $metadataKey, $newMetadataValue);
 	}
@@ -3103,4 +3128,20 @@ class Level implements ChunkManager, Metadatable{
 	public function getRandom() : Random{
 	    return $this->random;
 	}
+
+    /**
+     * @return int
+     */
+    public function getDimension(): int
+    {
+        return $this->dimension;
+    }
+
+    /**
+     * @param int $dimension
+     */
+    public function setDimension(int $dimension): void
+    {
+        $this->dimension = $dimension;
+    }
 }

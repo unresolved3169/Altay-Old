@@ -10,9 +10,13 @@ Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition - v1.2.10
 | [![Jenkins](https://img.shields.io/jenkins/s/http/turanic.io:8181/job/Altay.svg?style=flat-square&colorB=1C6BA0)](http://turanic.io:8181/job/Altay/) | [![Travis branch](https://img.shields.io/travis/TuranicTeam/Altay/master.svg?style=flat-square)](https://travis-ci.org/TuranicTeam/Altay) | [![Discord](https://img.shields.io/discord/427472879072968714.svg?style=flat-square&label=discord&colorB=7289da)](https://discord.gg/UsuhCFj) | [![Twitter Follow](https://img.shields.io/twitter/follow/TuranicTeam.svg?style=flat-square&logo=twitter&label=Follow)](https://twitter.com/TuranicTeam) |
 
 -------------
-Example servers running Altay
---------------------
+Can I test this before I download it?
+-------------
+Yes, you can.
+
 - **oyna.minecraftpetr.net:19132**
+- **soteserver.net:19132**
+- **play.oyungg.net:19132**
 ------------     
     
 ## Finished & Planned Features
@@ -43,7 +47,7 @@ Example servers running Altay
  	- [x] Altay Configuration File
  	- [ ] Config Auto Updater
  	- [ ] Entity Behaviors (MobAI)
- 	- [ ] Level Dimensions
+ 	- [x] Level Dimensions
  	- [ ] Redstone
  - [ ] Tiles
  	- [x] Beacon
