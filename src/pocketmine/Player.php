@@ -4179,20 +4179,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->isConnected();
 	}
 
-	public function getWindowByType(string $class) : ?Inventory{
-		foreach ($this->windowIndex as $inventory)
-			if (get_class($inventory) === $class)
-				return $inventory;
-
-		return null;
-	}
-
-
-	public function getLastOpenContainerInventory() : ?ContainerInventory{
-		$windows = array_filter($this->windowIndex, function($inv) : bool{ return $inv instanceof ContainerInventory; });
-		return !empty($windows) ? max($windows) : null;
-	}
-
 	/**
 	 * Sets the movement speed of player
 	 * 1 = default 0 = immobile

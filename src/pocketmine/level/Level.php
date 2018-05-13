@@ -258,7 +258,6 @@ class Level implements ChunkManager, Metadatable{
 	/** @var int */
 	protected $dimension = self::DIMENSION_OVERWORLD;
 
-	public static function chunkHash(int $x, int $z) : int{
 	/** @var Random */
     private $random;
 
