@@ -87,8 +87,8 @@ class MeleeAttackBehavior extends Behavior{
 
 		$canSee = true;
 
-		if($canSee || $this->delay <= 0 || $deltaDistance > 1 || $this->random->nextFloat() < 0.05){
-			$this->currentPath = Path::findPath($this->mob, $target, 20);
+		if($canSee or $this->delay <= 0 or ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)){
+			$this->currentPath = Path::findPath($this->mob, $target, 50);
 			$this->lastPlayerPos = $target->asVector3();
 
 			$this->delay = 4 + $this->random->nextBoundedInt(7);
@@ -106,10 +106,11 @@ class MeleeAttackBehavior extends Behavior{
 
 		// Movement
 		if($this->currentPath->havePath()){
-			$next = $this->currentPath->getNextTile($this->mob);
+			$next = $this->currentPath->getNextTile($this->mob, true);
 			if($next !== null){
-				$this->mob->lookAt(new Vector3($next->x, $this->mob->y, $next->y));
+				$this->mob->lookAt($pos = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
 				$this->mob->moveForward($this->speedMultiplier);
+				//$this->mob->level->addParticle(new RedstoneParticle($pos->add(0,0.5,0)));
 			} // else something is really wrong
 		}else{
 			$this->mob->resetMotion();

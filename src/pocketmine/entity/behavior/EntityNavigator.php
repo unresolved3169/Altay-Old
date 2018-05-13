@@ -47,66 +47,61 @@ class EntityNavigator{
 		[-1, 1]
 	];
 
+	protected $currentY = 0;
+
 	public function __construct(Mob $entity){
 		$this->entity = $entity;
 		$this->level = $entity->getLevel();
 	}
 
-	/**
-	 * @param Vector2 $from
-	 * @param Vector2 $to
-	 * @param int $maxAttempt
-	 *
-	 * @param array $blockCache
-	 * @return Vector2[]
-	 */
-	public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 3, array $blockCache) : array{
-		$this->level = $this->entity->getLevel(); //for level update
-		$attempt = 0;
-		$current = $from;
-		$path = [];
+    public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 3, array $blockCache) : array{
+        $this->level = $this->entity->getLevel(); //for level update
+        $attempt = 0;
+        $current = $from;
+        $path = [];
+        $this->currentY = $this->entity->y;
 
-		while($attempt++ < $maxAttempt){
-			$directionVector = $to->subtract($current)->normalize();
-			$newCoord = $current->add($directionVector);
+        while($attempt++ < $maxAttempt){
+            $neighbors = $this->getNeighbors($current, $blockCache);
+            $currentG = PHP_INT_MAX;
+            $result = null;
+            foreach ($neighbors as $n){
+                $g = $this->calculateBaseDistance($n, $to) + $this->calculateBlockDistance($current, $n, $blockCache);
 
-			$neighbors = $this->getNeighbors($current->floor(), $blockCache);
-			$nextSafeVector = $newCoord->floor();
-			if(!isset($blockCache[$nextSafeVector->__toString()])){
-				$dist = PHP_INT_MAX;
-				$result = null;
-				foreach ($neighbors as $n){
-					if(!in_array($n->add(0.5, 0.5), $path)){
-						if(($d = $this->getBlockDistance($n, $to->floor(), $blockCache)) < $dist){
-							$result = $n;
-							$dist = $d;
-						}
-					}
-				}
+                if(!in_array($n, $path)){
+                    if($g <= $currentG){
+                        $currentG = $g;
+                        $result = $n;
+                    }
+                }
+            }
 
-				if($result instanceof Vector2){
-					$newCoord = $result->add(0.5, 0.5);
-				}else{
-					//TODO: Fix empty path problem
-					return $path;
-				}
-			}
+            if($result instanceof Vector2){
+                $current = $result;
 
-			$path[] = $newCoord;
+                $path[] = $current;
 
-			$current = $newCoord;
+                $this->currentY = $this->getBlockByPoint($current, $blockCache)->y;
+            }else{
+                //TODO: Fix this bug!
+                return $path; // empty path
+            }
 
-			if($this->getBlockByTile($current->floor(), $blockCache)->equals($this->getBlockByTile($to->floor(), $blockCache))){
-				return $path;
-			}
-		}
+            if($current->floor()->equals($to->floor())){
+                return $path;
+            }
+        }
 
-		return $path;
-	}
+        return $path;
+    }
 
-	public function getBlockDistance(Vector2 $from, Vector2 $to, array $cache) : float{
-		$block1 = $this->getBlockByTile($from, $cache);
-		$block2 = $this->getBlockByTile($to, $cache);
+    public function calculateBaseDistance(Vector2 $from, Vector2 $to) : float{
+	    return abs($from->x - $to->x) + abs($from->y - $to->y);
+    }
+
+	public function calculateBlockDistance(Vector2 $from, Vector2 $to, array $cache) : float{
+		$block1 = $this->getBlockByPoint($from, $cache);
+		$block2 = $this->getBlockByPoint($to, $cache);
 
 		if($block1 === null or $block2 === null){
 			return 0;
@@ -122,7 +117,7 @@ class EntityNavigator{
 		return $block1->distance($block2);
 	}
 
-	public function getBlockByTile(Vector2 $tile, array $cache) : ?Block{
+	public function getBlockByPoint(Vector2 $tile, array $cache) : ?Block{
 		return $cache[$tile->__toString()] ?? null;
 	}
 
@@ -132,7 +127,7 @@ class EntityNavigator{
 	 * @return Vector2[]
 	 */
 	public function getNeighbors(Vector2 $tile, array &$cache) : array{
-		$block = $this->level->getBlock(new Vector3($tile->x, $this->entity->y, $tile->y));
+		$block = $this->level->getBlock(new Vector3($tile->x, $this->currentY, $tile->y));
 
 		if(!isset($cache[$tile->__toString()])){
 			$cache[$tile->__toString()] = $block;
@@ -220,7 +215,7 @@ class EntityNavigator{
 		return $list;
 	}
 
-	public function checkDiagonals(Block $block, array &$list){
+	public function checkDiagonals(Block $block, array &$list){ // TODO: Improve this
 		$pos = $block->asVector3();
 
 		$checkDiagonals = [
@@ -260,7 +255,7 @@ class EntityNavigator{
 		$path = Path::findPath($this->entity, $pos, 1);
 
 		if($path->havePath() and $next = $path->getNextTile($this->entity)){
-			$this->entity->lookAt(new Vector3($next->x, $this->entity->y, $next->y));
+			$this->entity->lookAt(new Vector3($next->x + 0.5, $this->entity->y, $next->y + 0.5));
 			$this->entity->moveForward($speed);
 
 			return true;

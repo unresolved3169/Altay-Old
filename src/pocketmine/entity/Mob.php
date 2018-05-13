@@ -173,7 +173,7 @@ abstract class Mob extends Living{
 
 		if(!$collide and !$entityCollide){
 			$blockDown = $block->getSide(Vector3::SIDE_DOWN);
-			if (!$this->onGround && !$blockDown->isSolid()) return;
+			//if (!$this->onGround && !$blockDown->isSolid()) return;
 
 			$velocity = $dir->multiply($sf);
 			$entityVelocity = $this->getMotion();
@@ -188,9 +188,10 @@ abstract class Mob extends Living{
 				if($this->onGround and $this->motionY === 0){
 					$this->server->getLogger()->debug("Jump Velocity: ".$this->getJumpVelocity());
 					$this->motionY += $this->getJumpVelocity(); // shortcut jump
+                    $this->moveForward($spm);
 				}
 			}else{
-				//$this->motionX = $this->motionZ = 0;
+				$this->motionX = $this->motionZ = 0;
 			}
 		}
 	}

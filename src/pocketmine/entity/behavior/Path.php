@@ -26,6 +26,7 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
+use pocketmine\level\Level;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\math\VoxelRayTrace;
@@ -40,27 +41,59 @@ class Path{
 	}
 
 	public static function findPath(Mob $mob, Vector3 $targetPos, int $maxAttempt = 3) : Path{
-		$from = new Vector2($mob->x, $mob->z);
-		$to = new Vector2($targetPos->x, $targetPos->z);
-		$blockCache = [$to->floor()->__toString() => $mob->level->getBlock($targetPos)];
+		$from = new Vector2((int)$mob->x, (int)$mob->z);
+		$to = new Vector2((int)$targetPos->x, (int)$targetPos->z);
 
-		return new Path($mob->getNavigator()->navigate($from, $to, $maxAttempt, $blockCache));
+		return new Path($mob->getNavigator()->navigate($from, $to, $maxAttempt, []));
 	}
 
 	public function havePath() : bool{
 		return !empty($this->tiles);
 	}
 
-	public function getNextTile(Entity $entity) : ?Vector2{
+	public function getNextTile(Entity $entity, bool $compressPath = false) : ?Vector2{
 		if($this->havePath()){
 			$next = reset($this->tiles);
 
-			if($next->x === $entity->x and $next->y === $entity->z){
+			if((int) $next->x === floor($entity->x) and (int) $next->y === floor($entity->z)){
 				array_shift($this->tiles);
+
+				return $this->getNextTile($entity);
 			}
 
+			if($compressPath){
+			    foreach ($this->tiles as $tile){
+			        if($this->isClearBetweenPoints($entity->level, $entity->asVector3(), new Vector3($tile->x, floor($entity->y), $tile->y))) {
+                        $next = $tile;
+                        unset($this->tiles[array_search($tile, $this->tiles)]);
+                    }else{
+			            break;
+                    }
+                }
+            }
 			return $next;
 		}
 		return null;
 	}
+
+    public function isClearBetweenPoints(Level $level, Vector3 $from, Vector3 $to) : bool{
+        $entityPos = $from;
+        $targetPos = $to;
+        $distance = $entityPos->distance($targetPos);
+        $rayPos = $entityPos;
+        $direction = $targetPos->subtract($entityPos)->normalize();
+
+        if ($distance < $direction->length()){
+            return true;
+        }
+
+        do{
+            if ($level->getBlock($rayPos)->isSolid()){
+                return false;
+            }
+            $rayPos = $rayPos->add($direction);
+        }while($distance > $entityPos->distance($rayPos));
+
+        return true;
+    }
 }
