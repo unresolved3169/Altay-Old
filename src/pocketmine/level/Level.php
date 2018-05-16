@@ -2187,34 +2187,6 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
-	 * Gets the raw block extra data
-	 *
-	 * @param int $x
-	 * @param int $y
-	 * @param int $z
-	 *
-	 * @return int 16-bit
-	 */
-	public function getBlockExtraDataAt(int $x, int $y, int $z) : int{
-		return $this->getChunk($x >> 4, $z >> 4, true)->getBlockExtraData($x & 0x0f, $y, $z & 0x0f);
-	}
-
-	/**
-	 * Sets the raw block metadata.
-	 *
-	 * @param int $x
-	 * @param int $y
-	 * @param int $z
-	 * @param int $id
-	 * @param int $data
-	 */
-	public function setBlockExtraDataAt(int $x, int $y, int $z, int $id, int $data){
-		$this->getChunk($x >> 4, $z >> 4, true)->setBlockExtraData($x & 0x0f, $y, $z & 0x0f, ($data << 8) | $id);
-
-		$this->sendBlockExtraData($x, $y, $z, $id, $data);
-	}
-
-	/**
 	 * Gets the raw block metadata
 	 *
 	 * @param int $x

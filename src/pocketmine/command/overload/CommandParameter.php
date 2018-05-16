@@ -26,20 +26,22 @@ namespace pocketmine\command\overload;
 
 class CommandParameter{
 
-	public const ARG_FLAG_VALID = 0x100000;
-	public const ARG_FLAG_ENUM = 0x200000;
+	public const ARG_FLAG_VALID   = 0x100000;
+	public const ARG_FLAG_ENUM    = 0x200000;
 	public const ARG_FLAG_POSTFIX = 0x1000000;
 
-	public const ARG_TYPE_INT      = 0x01;
-	public const ARG_TYPE_FLOAT    = 0x02;
-	public const ARG_TYPE_VALUE    = 0x03;
-	public const ARG_TYPE_TARGET   = 0x04;
-	public const ARG_TYPE_STRING   = 0x0d;
-	public const ARG_TYPE_POSITION = 0x0e;
-	public const ARG_TYPE_RAWTEXT  = 0x11;
-	public const ARG_TYPE_TEXT     = 0x13;
-	public const ARG_TYPE_JSON     = 0x16;
-	public const ARG_TYPE_COMMAND  = 0x1d;
+	public const ARG_TYPE_INT             = 0x01;
+	public const ARG_TYPE_FLOAT           = 0x02;
+	public const ARG_TYPE_VALUE           = 0x03;
+	public const ARG_TYPE_WILDCARD_INT    = 0x04;
+	public const ARG_TYPE_TARGET          = 0x05;
+	public const ARG_TYPE_WILDCARD_TARGET = 0x06;
+	public const ARG_TYPE_STRING          = 0x0f;
+	public const ARG_TYPE_POSITION        = 0x10;
+	public const ARG_TYPE_MESSAGE         = 0x13;
+	public const ARG_TYPE_RAWTEXT         = 0x15;
+	public const ARG_TYPE_JSON            = 0x18;
+	public const ARG_TYPE_COMMAND         = 0x1f;
 
 	/** @var string */
 	public $paramName;
@@ -129,14 +131,12 @@ class CommandParameter{
 				return self::ARG_TYPE_TARGET;
 			case "position":
 				return self::ARG_TYPE_POSITION;
-			case "rawtext":
-			case "raw_text":
 			case "message":
-				return self::ARG_TYPE_RAWTEXT;
+				return self::ARG_TYPE_MESSAGE;
 			case "json":
 				return self::ARG_TYPE_JSON;
 			case "text":
-				return self::ARG_TYPE_TEXT;
+				return self::ARG_TYPE_RAWTEXT;
 			case "command":
 				return self::ARG_TYPE_COMMAND;
 			// flags

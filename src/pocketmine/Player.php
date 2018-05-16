@@ -2853,6 +2853,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_REQUEST:
 			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_ACK:
 				break;
+			case PlayerActionPacket::ACTION_START_SWIMMING:
+				break; //TODO
+			case PlayerActionPacket::ACTION_STOP_SWIMMING:
+				//TODO: handle this when it doesn't spam every damn tick (yet another spam bug!!)
+				break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
 				return false;
@@ -3377,6 +3382,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk = new TextPacket();
 		if(!$this->server->isLanguageForced()){
 			$pk->type = TextPacket::TYPE_TRANSLATION;
+			$pk->needsTranslation = true;
 			$pk->message = $this->server->getLanguage()->translateString($message, $parameters, "pocketmine.");
 			foreach($parameters as $i => $p){
 				$parameters[$i] = $this->server->getLanguage()->translateString($p, $parameters, "pocketmine.");
