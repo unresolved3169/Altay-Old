@@ -30,9 +30,11 @@ use pocketmine\command\overload\CommandEnum;
 use pocketmine\command\overload\CommandOverload;
 use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\event\player\PlayerTeleportEvent;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\Server;
 use pocketmine\utils\TextFormat;
 
 class TeleportCommand extends VanillaCommand{
@@ -147,7 +149,10 @@ class TeleportCommand extends VanillaCommand{
 		}
 
 		if(count($args) < 3){
-			$origin->teleport($target);
+		    Server::getInstance()->getPluginManager()->callEvent($ev = new PlayerTeleportEvent($sender, PlayerTeleportEvent::CAUSE_COMMAND));
+		    if(!$ev->isCancelled()){
+                $origin->teleport($target);
+            }
 			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.tp.success", [$origin->getName(), $target->getName()]));
 
 			return true;
@@ -169,7 +174,10 @@ class TeleportCommand extends VanillaCommand{
 				$pitch = (float) $args[$pos++];
 			}
 
-			$target->teleport(new Vector3($x, $y, $z), $yaw, $pitch);
+            Server::getInstance()->getPluginManager()->callEvent($ev = new PlayerTeleportEvent($sender, PlayerTeleportEvent::CAUSE_COMMAND));
+            if(!$ev->isCancelled()){
+                $target->teleport(new Vector3($x, $y, $z), $yaw, $pitch);
+            }
 			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.tp.success.coordinates", [$target->getName(), round($x, 2), round($y, 2), round($z, 2)]));
 
 			return true;
