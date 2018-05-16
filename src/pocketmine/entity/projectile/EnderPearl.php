@@ -28,11 +28,14 @@ use pocketmine\block\Block;
 use pocketmine\entity\EntityIds;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\ProjectileHitEvent;
+use pocketmine\event\player\PlayerTeleportEvent;
 use pocketmine\level\sound\EndermanTeleportSound;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\RayTraceResult;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\Player;
+use pocketmine\Server;
 
 class EnderPearl extends Throwable{
 
@@ -67,13 +70,17 @@ class EnderPearl extends Throwable{
         if($owner !== null){
             //TODO: check end gateways (when they are added)
             //TODO: spawn endermites at origin
+            if($owner instanceof Player){
+                Server::getInstance()->getPluginManager()->callEvent($ev = new PlayerTeleportEvent($owner, PlayerTeleportEvent::CAUSE_ENDER_PEARL));
+                if(!$ev->isCancelled()){
+                    $this->level->broadcastLevelEvent($owner, LevelEventPacket::EVENT_PARTICLE_ENDERMAN_TELEPORT);
+                    $this->level->addSound(new EndermanTeleportSound($owner));
+                    $owner->teleport($event->getRayTraceResult()->getHitVector());
+                    $this->level->addSound(new EndermanTeleportSound($owner));
 
-            $this->level->broadcastLevelEvent($owner, LevelEventPacket::EVENT_PARTICLE_ENDERMAN_TELEPORT);
-            $this->level->addSound(new EndermanTeleportSound($owner));
-            $owner->teleport($event->getRayTraceResult()->getHitVector());
-            $this->level->addSound(new EndermanTeleportSound($owner));
-
-            $owner->attack(new EntityDamageEvent($owner, EntityDamageEvent::CAUSE_FALL, 5));
+                    $owner->attack(new EntityDamageEvent($owner, EntityDamageEvent::CAUSE_FALL, 5));
+                    }
+            }
         }
 
         $this->flagForDespawn();
