@@ -40,6 +40,7 @@ use pocketmine\Server;
 use pocketmine\timings\Timings;
 use pocketmine\timings\TimingsHandler;
 use pocketmine\utils\MainLogger;
+use pocketmine\utils\Utils;
 
 /**
  * Manages all the plugins, Permissions and Permissibles
@@ -739,17 +740,6 @@ class PluginManager{
 	}
 
 	/**
-	 * Extracts one-line tags from the doc-comment
-	 *
-	 * @param string $docComment
-	 * @return string[] an array of tagName => tag value. If the tag has no value, an empty string is used as the value.
-	 */
-	public static function parseDocComment(string $docComment) : array{
-		preg_match_all('/^[\t ]*\* @([a-zA-Z]+)(?:[\t ]+(.+))?[\t ]*$/m', $docComment, $matches);
-		return array_combine($matches[1], array_map("trim", $matches[2]));
-	}
-
-	/**
 	 * Registers all the events in the given Listener class
 	 *
 	 * @param Listener $listener
@@ -765,7 +755,7 @@ class PluginManager{
 		$reflection = new \ReflectionClass(get_class($listener));
 		foreach($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method){
 			if(!$method->isStatic()){
-				$tags = self::parseDocComment((string) $method->getDocComment());
+				$tags = Utils::parseDocComment((string) $method->getDocComment());
 
 				try{
 					$priority = isset($tags["priority"]) ? EventPriority::fromString($tags["priority"]) : EventPriority::NORMAL;
@@ -808,7 +798,7 @@ class PluginManager{
 			throw new PluginException($event . " is not an Event");
 		}
 
-		$tags = self::parseDocComment((string) (new \ReflectionClass($event))->getDocComment());
+		$tags = Utils::parseDocComment((string) (new \ReflectionClass($event))->getDocComment());
 		if(isset($tags["deprecated"]) and $this->server->getProperty("settings.deprecated-verbose", true)){
 			$this->server->getLogger()->warning($this->server->getLanguage()->translateString("pocketmine.plugin.deprecatedEvent", [
 				$plugin->getName(),

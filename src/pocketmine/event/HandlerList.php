@@ -27,6 +27,7 @@ namespace pocketmine\event;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginManager;
 use pocketmine\plugin\RegisteredListener;
+use pocketmine\utils\Utils;
 
 class HandlerList{
 	/**
@@ -70,7 +71,7 @@ class HandlerList{
 		}
 
 		$class = new \ReflectionClass($event);
-		$tags = PluginManager::parseDocComment((string) $class->getDocComment());
+		$tags = Utils::parseDocComment((string) $class->getDocComment());
 
 		if($class->isAbstract() && !isset($tags["allowHandle"])){
 			return null;

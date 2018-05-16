@@ -36,8 +36,6 @@ use pocketmine\Server;
  * This InventoryTransaction only allows doing Transaction between one / two inventories
  */
 class InventoryTransaction{
-	/** @var float */
-	private $creationTime;
 	protected $hasExecuted = false;
 	/** @var Player */
 	protected $source;
@@ -53,7 +51,6 @@ class InventoryTransaction{
 	 * @param InventoryAction[] $actions
 	 */
 	public function __construct(Player $source, array $actions = []){
-		$this->creationTime = microtime(true);
 		$this->source = $source;
 		foreach($actions as $action){
 			$this->addAction($action);
@@ -65,10 +62,6 @@ class InventoryTransaction{
 	 */
 	public function getSource() : Player{
 		return $this->source;
-	}
-
-	public function getCreationTime() : float{
-		return $this->creationTime;
 	}
 
 	/**

@@ -50,8 +50,6 @@ class CommandReader extends Thread{
 		if(extension_loaded("readline") and !isset($opts["disable-readline"]) and !$this->isPipe(STDIN)){
 			$this->type = self::TYPE_READLINE;
 		}
-
-		$this->setClassLoader();
 	}
 
 	public function shutdown(){
