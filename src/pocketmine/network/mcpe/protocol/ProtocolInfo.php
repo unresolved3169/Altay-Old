@@ -34,9 +34,7 @@ interface ProtocolInfo{
 	 */
 	public const CURRENT_PROTOCOL = 261;
 	public const ACCEPTED_PROTOCOLS = [
-		261, // 1.4.0
-		270, // 1.5.0.0
-		271  // 1.5.0.1
+		261 // 1.4.0
 	];
 
 	/**
