@@ -47,9 +47,11 @@ abstract class MenuForm extends Form{
 	 * @param MenuOption[] $options
 	 */
 	public function __construct(string $title, string $text, array $options){
-		$this->setOptions($options);
+		assert(Utils::validateObjectArray($options, MenuOption::class));
+
 		parent::__construct($title);
 		$this->content = $text;
+		$this->options = array_values($options);
 	}
 
 	public function getType() : string{
@@ -61,15 +63,6 @@ abstract class MenuForm extends Form{
 	 */
 	public function getOptions() : array{
 		return $this->options;
-	}
-
-	/**
-	 * @param MenuOption[] $options
-	 */
-	public function setOptions(array $options) : void{
-		assert(Utils::validateObjectArray($options, MenuOption::class));
-
-		$this->options = array_values($options);
 	}
 
 	public function getOption(int $position) : ?MenuOption{
