@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\event;
 
 use pocketmine\plugin\Plugin;
-use pocketmine\plugin\PluginManager;
 use pocketmine\plugin\RegisteredListener;
 use pocketmine\utils\Utils;
 
