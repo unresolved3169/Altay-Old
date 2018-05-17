@@ -256,5 +256,13 @@ class Enchantment{
 		return $this->maxLevel;
 	}
 
+	public function getMinEnchantability(int $enchLevel){
+		return 1 + $enchLevel * 10;
+	}
+
+	public function getMaxEnchantability(int $enchLevel){
+		return $this->getMinEnchantability($enchLevel) + 5;
+	}
+
 	//TODO: methods for min/max XP cost bounds based on enchantment level (not needed yet - enchanting is client-side)
 }
