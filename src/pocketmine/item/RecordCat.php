@@ -20,15 +20,17 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 class RecordCat extends Record{
-	
+
 	public function __construct(){
 		parent::__construct(self::RECORD_CAT);
 	}
-	
- public function getSoundId() : string{
- 	 return "record.cat";
- }
+
+	public function getSoundId() : string{
+		return "record.cat";
+	}
 }

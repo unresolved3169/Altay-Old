@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\Record;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -44,21 +45,18 @@ class Jukebox extends Solid{
 	}
 
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
-		$this->getLevel()->setBlock($blockReplace, $this, true, true);
-		$tile = Tile::createTile(Tile::JUKEBOX, $this->getLevel(), TileJukebox::createNBT($this, $face, $item, $player));
-		return true;
+		$place = parent::place($item, $blockReplace, $blockClicked, $face, $clickVector, $player);
+		if($place){
+			Tile::createTile(Tile::JUKEBOX, $this->getLevel(), TileJukebox::createNBT($this, $face, $item, $player));
+		}
+
+		return $place;
 	}
 
 	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
-			$t = $this->getLevel()->getTile($this);
-			$jb = null;
-			if($t instanceof TileJukebox){
-				$jb = $t;
-			}else{
-				$jb = Tile::createTile(Tile::JUKEBOX, $this->getLevel(), TileJukebox::createNBT($this));
-			}
-			
+			$jb = $this->getTile();
+
 			if($jb->getRecordItem()->getId() === 0){
 				if($item instanceof Record){
 					$jb->setRecordItem(Item::get($item->getId()));
@@ -71,13 +69,22 @@ class Jukebox extends Solid{
 
 		return true;
 	}
-	
+
 	public function onBreak(Item $item, Player $player = null) : bool{
 		$tile = $this->getLevel()->getTile($this);
 		if($tile instanceof TileJukebox){
 			$tile->stopDisc();
 		}
-		
+
 		return parent::onBreak($item, $player);
+	}
+
+	public function getTile() : TileJukebox{
+		$t = $this->getLevel()->getTileAt($this->x, $this->y, $this->z);
+		if(!($t instanceof TileJukebox)){
+			$t = Tile::createTile(Tile::JUKEBOX, $this->getLevel(), TileJukebox::createNBT($this));
+		}
+
+		return $t;
 	}
 }

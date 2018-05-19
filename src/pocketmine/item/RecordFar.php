@@ -20,15 +20,17 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 class RecordFar extends Record{
-	
+
 	public function __construct(){
 		parent::__construct(self::RECORD_FAR);
 	}
-	
- public function getSoundId() : string{
- 	 return "record.far";
- }
+
+	public function getSoundId() : string{
+		return "record.far";
+	}
 }

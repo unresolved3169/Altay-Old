@@ -20,15 +20,17 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 class RecordMellohi extends Record{
-	
+
 	public function __construct(){
 		parent::__construct(self::RECORD_MELLOHI);
 	}
-	
- public function getSoundId() : string{
- 	 return "record.mellohi";
- }
+
+	public function getSoundId() : string{
+		return "record.mellohi";
+	}
 }

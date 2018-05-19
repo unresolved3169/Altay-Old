@@ -20,15 +20,17 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace pocketmine\item;
 
 class RecordStal extends Record{
-	
+
 	public function __construct(){
 		parent::__construct(self::RECORD_STAL);
 	}
-	
- public function getSoundId() : string{
- 	 return "record.stal";
- }
+
+	public function getSoundId() : string{
+		return "record.stal";
+	}
 }

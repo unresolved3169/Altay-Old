@@ -29,29 +29,20 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\item\Item;
 use pocketmine\item\Record;
-use pocketmine\Server;
 use pocketmine\network\mcpe\protocol\{PlaySoundPacket, StopSoundPacket};
 
 class Jukebox extends Spawnable{
+	public const TAG_RECORD_ITEM = "RecordItem";
 
-	public const TAG_RECORD_ITEM = "recordItem";
-
-	protected $recordItem;
+	/** @var Record|null */
+	protected $recordItem = null;
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		if($nbt->hasTag(self::TAG_RECORD_ITEM)){
-			$this->recordItem = Item::nbtDeserialize($nbt->getTag(self::TAG_RECORD_ITEM));
-		}else{
-			$this->recordItem = Item::get(0);
+			$this->recordItem = Item::nbtDeserialize($nbt->getCompoundTag(self::TAG_RECORD_ITEM));
 		}
-		parent::__construct($level, $nbt);
-	}
 
-	public function close() : void{
-		if(!$this->closed){
-			$this->dropDisc();
-			parent::close();
-		}
+		parent::__construct($level, $nbt);
 	}
 
 	public function addAdditionalSpawnData(CompoundTag $nbt) : void{
@@ -62,57 +53,60 @@ class Jukebox extends Spawnable{
 		return "Jukebox";
 	}
 
-	public function setRecordItem(Item $item) : void{
+	public function setRecordItem(?Record $item) : void{
 		$this->recordItem = $item;
 	}
-	
-	public function getRecordItem() : Item{
+
+	public function getRecordItem() : ?Record{
 		return $this->recordItem;
 	}
-	
-	public function playDisc() : bool{
+
+	public function playDisc(Player $player) : bool{
 		if($this->getRecordItem() instanceof Record){
-			$pk = new PlaySoundPacket;
+			$pk = new PlaySoundPacket();
 			$pk->soundName = $this->getRecordItem()->getSoundId();
-			$pk->pitch = 1.0;
-			$pk->volume = 1.0;
+			$pk->pitch = $pk->volume = 1.0;
 			$pk->x = $this->x;
 			$pk->y = $this->y;
 			$pk->z = $this->z;
-			
-			Server::getInstance()->broadcastPacket($pk, $this->getViewers());
-			
+			$this->level->addChunkPacket($this->getFloorX() >> 4, $this->getFloorZ() >> 4, $pk);
+			//TODO : Add popup
 			return true;
 		}
+
 		return false;
 	}
-	
+
 	public function stopDisc() : bool{
 		if($this->getRecordItem() instanceof Record){
-			$pk = new StopSoundPacket;
+			$pk = new StopSoundPacket();
 			$pk->soundName = $this->getRecordItem()->getSoundId();
-			
-			Server::getInstance()->broadcastPacket($pk, $this->getViewers());
-			
+			$this->level->addChunkPacket($this->getFloorX() >> 4, $this->getFloorZ() >> 4, $pk);
+
 			return true;
 		}
+
 		return false;
 	}
-		
+
 	public function dropDisc() : bool{
 		if($this->getRecordItem() instanceof Record){
 			$this->stopDisc();
 			$this->level->dropItem($this->add(0.5,1,0.5), $this->getRecordItem());
-			$this->setRecordItem(Item::get(0));
+			$this->setRecordItem(null);
 			return true;
 		}
+
 		return false;
 	}
-	
+
 	public function saveNBT() : void{
 		parent::saveNBT();
+
 		if($this->recordItem !== null){
 			$this->namedtag->setTag($this->recordItem->nbtSerialize(-1, self::TAG_RECORD_ITEM));
+		}else{
+			$this->namedtag->removeTag(self::TAG_RECORD_ITEM);
 		}
 	}
 }
