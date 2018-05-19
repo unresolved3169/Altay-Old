@@ -44,6 +44,7 @@ class SpawnEgg extends Item{
 
 		if($entity instanceof Entity){
 			--$this->count;
+			$entity->setImmobile(false);
 			$entity->spawnToAll();
 			return true;
 		}
