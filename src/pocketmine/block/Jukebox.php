@@ -29,6 +29,7 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\tile\Jukebox as TileJukebox;
 use pocketmine\tile\Tile;
+use pocketmine\block\Block;
 
 class Jukebox extends Solid{
 
