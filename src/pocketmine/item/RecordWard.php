@@ -22,15 +22,13 @@
 
 namespace pocketmine\item;
 
-abstract class Record extends Item{
+class RecordWard extends Record{
 	
-	public function __construct(int $id){
-		parent::__construct($id, 0, "Music Disc");
+	public function __construct(){
+		parent::__construct(self::RECORD_WARD);
 	}
 	
-	public function getMaxStackSize() : int{
-		return 1;
-	}
-	
-	abstract public function getSoundId() : string;
+ public function getSoundId() : string{
+ 	 return "record.ward";
+ }
 }

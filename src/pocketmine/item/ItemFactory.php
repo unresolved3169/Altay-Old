@@ -243,18 +243,18 @@ class ItemFactory{
 
         self::registerItem(new GoldenAppleEnchanted());
 
-        //TODO: RECORD_13
-        //TODO: RECORD_CAT
-        //TODO: RECORD_BLOCKS
-        //TODO: RECORD_CHIRP
-        //TODO: RECORD_FAR
-        //TODO: RECORD_MALL
-        //TODO: RECORD_MELLOHI
-        //TODO: RECORD_STAL
-        //TODO: RECORD_STRAD
-        //TODO: RECORD_WARD
-        //TODO: RECORD_11
-        //TODO: RECORD_WAIT
+        self::registerItem(new Record13());
+        self::registerItem(new RecordCat());
+        self::registerItem(new RecordBlocks());
+        self::registerItem(new RecordChirp());
+        self::registerItem(new RecordFar());
+        self::registerItem(new RecordMall());
+        self::registerItem(new RecordMellohi());
+        self::registerItem(new RecordStal());
+        self::registerItem(new RecordStrad());
+        self::registerItem(new RecordWard());
+        self::registerItem(new Record11());
+        self::registerItem(new RecordWait());
     }
 
 	/**
