@@ -63,6 +63,7 @@ abstract class Tile extends Position{
 	public const SKULL = "Skull";
 	public const BEACON = "Beacon";
 	public const VIRTUAL = "Virtual";
+	public const JUKEBOX = "Jukebox";
 
 	/** @var int */
 	public static $tileCount = 1;
@@ -97,9 +98,9 @@ abstract class Tile extends Position{
 		self::registerTile(ItemFrame::class, [self::ITEM_FRAME]); //this is an entity in PC
 		self::registerTile(Sign::class, [self::SIGN, "minecraft:sign"]);
 		self::registerTile(Skull::class, [self::SKULL, "minecraft:skull"]);
-        self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
-
+		self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
 		self::registerTile(VirtualHolder::class, [self::VIRTUAL]);
+		self::registerTile(Jukebox::class, [self::JUKEBOX, "minecraft:jukebox"]);
 	}
 
 	/**
@@ -223,7 +224,7 @@ abstract class Tile extends Position{
 		static::createAdditionalNBT($nbt, $pos, $face, $item, $player);
 
 		if($item !== null){
-		    $customBlockData = $item->getCustomBlockData();
+			$customBlockData = $item->getCustomBlockData();
 			if($customBlockData != null){
 				foreach($customBlockData as $customBlockDataTag){
 					$nbt->setTag(clone $customBlockDataTag);

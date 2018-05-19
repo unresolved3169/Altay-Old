@@ -161,7 +161,7 @@ class BlockFactory{
 		self::registerBlock(new Cactus());
 		self::registerBlock(new Clay());
 		self::registerBlock(new Sugarcane());
-		//TODO: JUKEBOX
+		self::registerBlock(new Jukebox());
 		self::registerBlock(new WoodenFence());
 		self::registerBlock(new Pumpkin());
 		self::registerBlock(new Netherrack());
@@ -215,7 +215,7 @@ class BlockFactory{
 		self::registerBlock(new WoodenStairs(Block::BIRCH_STAIRS, 0, "Birch Stairs"));
 		self::registerBlock(new WoodenStairs(Block::JUNGLE_STAIRS, 0, "Jungle Stairs"));
 		//TODO: COMMAND_BLOCK
-        self::registerBlock(new Beacon());
+		self::registerBlock(new Beacon());
 		self::registerBlock(new CobblestoneWall());
 		self::registerBlock(new FlowerPot());
 		self::registerBlock(new Carrot());
@@ -440,9 +440,9 @@ class BlockFactory{
 	 * @return int
 	 */
 	public static function toStaticRuntimeId(int $id, int $meta = 0) : int{
-	    if ($id === Block::AIR){
-	        $meta = 0;
-        }
+		if ($id === Block::AIR){
+			$meta = 0;
+		}
 
 		$index = ($id << 4) | $meta;
 		if(!isset(self::$staticRuntimeIdMap[$index])){
