@@ -25,6 +25,7 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\Player;
 
 abstract class Button extends Flowable{
@@ -45,7 +46,34 @@ abstract class Button extends Flowable{
 	}
 
 	public function onActivate(Item $item, Player $player = null) : bool{
-		//TODO
+		if(!$this->isRedstoneSource()){
+			$this->updateRedstone();
+			$this->level->scheduleDelayedBlockUpdate($this, 30);
+		}
+
 		return true;
+	}
+
+	public function onScheduledUpdate() : void{
+		if($this->isRedstoneSource()){
+			$this->updateRedstone();
+		}
+	}
+
+	private function updateRedstone(){
+		$this->meta ^= 0x08;
+		$this->level->setBlock($this, $this, true, false);
+		$power = $this->getPower();
+		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_REDSTONE_TRIGGER);
+		$this->level->updateRedstone($this, $power);
+		$this->level->updateRedstone($this->asVector3()->getSide(Vector3::getOppositeSide($this->isRedstoneSource() ? $this->meta ^ 0x08 : $this->meta)), $power);
+	}
+
+	public function getPower() : int{
+		return $this->isRedstoneSource() ? 15 : 0;
+	}
+
+	public function isRedstoneSource() : bool{
+		return (($this->meta & 0x08) === 0x08);
 	}
 }

@@ -404,6 +404,10 @@ class Block extends Position implements BlockIds, Metadatable{
 		return true;
 	}
 
+	public function isRedstoneSource() : bool{
+		return $this->getPower() > 0;
+	}
+
 	/**
 	 * AKA: Block->isFlowable
 	 * @return bool
