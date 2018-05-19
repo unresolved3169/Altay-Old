@@ -42,6 +42,14 @@ class Jukebox extends Solid{
 	public function getName() : string{
 		return "Jukebox";
 	}
+	
+	public function getHardness() : float{
+		return 2.0;
+	}
+	
+	public function getToolType() : int{
+		return BlockToolType::TYPE_AXE;
+	}
 
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		$place = parent::place($item, $blockReplace, $blockClicked, $face, $clickVector, $player);
@@ -70,7 +78,7 @@ class Jukebox extends Solid{
 	}
 
 	public function onBreak(Item $item, Player $player = null) : bool{
-		$this->getTile()->stopDisc();
+		$this->getTile()->dropDisc();
 
 		return parent::onBreak($item, $player);
 	}
