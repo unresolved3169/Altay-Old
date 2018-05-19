@@ -311,6 +311,15 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
+	 * Called when this block is updated by redstone source.
+	 *
+	 * @param int $power
+	 */
+	public function onRedstoneUpdate(int $power) : void{
+
+	}
+
+	/**
 	 * Do actions when activated by Item. Returns if it has done anything
 	 *
 	 * @param Item        $item
@@ -360,6 +369,15 @@ class Block extends Position implements BlockIds, Metadatable{
 	 */
 	public function getLightFilter() : int{
 		return 15;
+	}
+
+	/**
+	 * Returns the redstone power.
+	 *
+	 * @return int 0-15
+	 */
+	public function getPower() : int{
+		return 0;
 	}
 
 	/**

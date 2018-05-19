@@ -38,4 +38,10 @@ class RedstoneLamp extends Solid{
 	public function getHardness() : float{
 		return 0.3;
 	}
+
+	public function onRedstoneUpdate(int $power) : void{
+		if($power > 0){
+			$this->level->setBlock($this, BlockFactory::get(Block::LIT_REDSTONE_LAMP));
+		}
+	}
 }
