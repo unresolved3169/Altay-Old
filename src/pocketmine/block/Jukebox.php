@@ -30,7 +30,6 @@ use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\tile\Jukebox as TileJukebox;
 use pocketmine\tile\Tile;
-use pocketmine\block\Block;
 
 class Jukebox extends Solid{
 
@@ -57,10 +56,10 @@ class Jukebox extends Solid{
 		if($player instanceof Player){
 			$jb = $this->getTile();
 
-			if($jb->getRecordItem()->getId() === 0){
+			if($jb->getRecordItem() == null){
 				if($item instanceof Record){
-					$jb->setRecordItem(Item::get($item->getId()));
-					$jb->playDisc();
+					$jb->setRecordItem($item);
+					$jb->playDisc($player);
 				}
 			}else{
 				$jb->dropDisc();
@@ -71,10 +70,7 @@ class Jukebox extends Solid{
 	}
 
 	public function onBreak(Item $item, Player $player = null) : bool{
-		$tile = $this->getLevel()->getTile($this);
-		if($tile instanceof TileJukebox){
-			$tile->stopDisc();
-		}
+		$this->getTile()->stopDisc();
 
 		return parent::onBreak($item, $player);
 	}
