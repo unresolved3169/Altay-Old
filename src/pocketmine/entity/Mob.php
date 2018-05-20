@@ -49,7 +49,7 @@ abstract class Mob extends Living{
 		$this->setImmobile(true);
 	}
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		parent::initEntity();
 
 		$this->jumpVelocity = $this->jumpVelocity + ($this->width / 10) + $this->getAdditionalJumpVelocity(); // hmmmmmm

@@ -38,7 +38,7 @@ class Zombie extends Monster implements Ageable{
 	public $width = 0.6;
 	public $height = 1.8;
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		parent::initEntity();
 		$this->setMovementSpeed($this->isBaby() ? 0.345 : 0.23);
 		if($this->isBaby()){

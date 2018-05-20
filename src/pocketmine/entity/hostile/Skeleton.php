@@ -43,7 +43,7 @@ class Skeleton extends Monster{
 	protected $equipment;
 
 	// speed 0.25
-	protected function initEntity(){
+	protected function initEntity() : void{
 		$this->setMaxHealth(20);
 		$this->equipment = new AltayEntityEquipment($this);
 		$this->equipment->setItemInHand(ItemFactory::get(Item::BOW));

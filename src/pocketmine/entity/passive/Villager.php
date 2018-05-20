@@ -29,7 +29,6 @@ use pocketmine\entity\Creature;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
 use pocketmine\entity\NPC;
-
 use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\TradeItems;
 use pocketmine\item\Item;
@@ -84,8 +83,6 @@ class Villager extends Creature implements NPC, Ageable{
 	protected $career;
 	/** @var int */
 	protected $tradeTier;
-	/** @var TradeInventory */
-	protected $inventory;
 	/** @var bool */
 	protected $isWilling = true;
 
@@ -95,7 +92,7 @@ class Villager extends Creature implements NPC, Ageable{
 		return "Villager";
 	}
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		parent::initEntity();
 
 		/** @var int $profession */
@@ -110,19 +107,16 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->career = $this->namedtag->getInt("Career", array_rand(self::$names[$this->getProfession()])); // custom
 		$this->tradeTier = $this->namedtag->getInt("TradeTier", 0);
 		$this->updateTradeItems();
-
-		$this->inventory = new TradeInventory($this);
 	}
 
 	public function updateTradeItems() : void{
-	    $this->offers = new CompoundTag("Offers", [
-	        new ListTag("Recipes", TradeItems::getItemsForVillager($this))
-        ]);
+		$this->offers = new CompoundTag("Offers", [
+			new ListTag("Recipes", TradeItems::getItemsForVillager($this))
+		]);
 	}
 
 	public function updateTradeTier() : void{
 		$tradeTier = $this->getTradeTier() + 1;
-
 		try{
 			$this->setTradeTier($tradeTier);
 			$this->addEffect(new EffectInstance(Effect::getEffect(Effect::REGENERATION), mt_rand(2, 5) * 20));
@@ -164,7 +158,7 @@ class Villager extends Creature implements NPC, Ageable{
 		return $this->offers;
 	}
 
-	public function saveNBT(){
+	public function saveNBT() : void{
 		parent::saveNBT();
 
 		$this->namedtag->setInt("Profession", $this->getProfession());
@@ -174,7 +168,7 @@ class Villager extends Creature implements NPC, Ageable{
 		$this->namedtag->setTag($this->offers, true);
 	}
 
-	public function setProfession(int $profession){
+	public function setProfession(int $profession) : void{
 		$this->propertyManager->setInt(self::DATA_VARIANT, $profession);
 	}
 
@@ -193,7 +187,7 @@ class Villager extends Creature implements NPC, Ageable{
 	}
 
 	public function getInventory() : TradeInventory{
-		return $this->inventory;
+		return new TradeInventory($this);
 	}
 
 	public function getDisplayName() : string{

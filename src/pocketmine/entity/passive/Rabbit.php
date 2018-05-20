@@ -46,7 +46,7 @@ class Rabbit extends Animal{
 	public const COAT_DESERT = 4;
 	public const COAT_SALT = 5;
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		$this->setHealth(3);
 
 		parent::initEntity();

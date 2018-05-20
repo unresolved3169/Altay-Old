@@ -49,6 +49,6 @@ class CreeperSwellBehavior extends Behavior{
 	}
 
 	public function onEnd() : void{
-		$this->mob->setTargetEntity();
+		$this->mob->setTargetEntity(null);
 	}
 }
