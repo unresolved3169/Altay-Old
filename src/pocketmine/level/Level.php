@@ -693,7 +693,7 @@ class Level implements ChunkManager, Metadatable{
 		if($this->stopTime){
 			return;
 		}else{
-			$this->time += 1;
+			++$this->time;
 		}
 	}
 
@@ -868,15 +868,6 @@ class Level implements ChunkManager, Metadatable{
 		$this->sleepTicks = $ticks;
 	}
 
-	public function sendBlockExtraData(int $x, int $y, int $z, int $id, int $data, array $targets = null){
-		$pk = new LevelEventPacket;
-		$pk->evid = LevelEventPacket::EVENT_SET_DATA;
-		$pk->position = new Vector3($x, $y, $z);
-		$pk->data = ($data << 8) | $id;
-
-		$this->server->broadcastPacket($targets ?? $this->getChunkPlayers($x >> 4, $z >> 4), $pk);
-	}
-
 	/**
 	 * @param Player[] $target
 	 * @param Block[]  $blocks
@@ -1012,7 +1003,7 @@ class Level implements ChunkManager, Metadatable{
 			Level::getXZ($index, $chunkX, $chunkZ);
 
 
-			if(!isset($this->chunks[$index]) or ($chunk = $this->getChunk($chunkX, $chunkZ, false)) === null){
+			if(($chunk = $this->chunks[$index] ?? null) === null){
 				unset($this->chunkTickList[$index]);
 				continue;
 			}elseif($loaders <= 0){
@@ -1131,13 +1122,12 @@ class Level implements ChunkManager, Metadatable{
 	 * @return Block[]
 	 */
 	public function getCollisionBlocks(AxisAlignedBB $bb, bool $targetFirst = false) : array{
-		$bbPlusOne = $bb->grow(1, 1, 1);
-		$minX = Math::floorFloat($bbPlusOne->minX);
-		$minY = Math::floorFloat($bbPlusOne->minY);
-		$minZ = Math::floorFloat($bbPlusOne->minZ);
-		$maxX = Math::ceilFloat($bbPlusOne->maxX);
-		$maxY = Math::ceilFloat($bbPlusOne->maxY);
-		$maxZ = Math::ceilFloat($bbPlusOne->maxZ);
+		$minX = Math::floorFloat($bb->minX - 1);
+		$minY = Math::floorFloat($bb->minY - 1);
+		$minZ = Math::floorFloat($bb->minZ - 1);
+		$maxX = Math::ceilFloat($bb->maxX + 1);
+		$maxY = Math::ceilFloat($bb->maxY + 1);
+		$maxZ = Math::ceilFloat($bb->maxZ + 1);
 
 		$collides = [];
 
@@ -1195,13 +1185,12 @@ class Level implements ChunkManager, Metadatable{
 	 * @return AxisAlignedBB[]
 	 */
 	public function getCollisionCubes(Entity $entity, AxisAlignedBB $bb, bool $entities = true) : array{
-		$bbPlusOne = $bb->grow(1, 1, 1);
-		$minX = Math::floorFloat($bbPlusOne->minX);
-		$minY = Math::floorFloat($bbPlusOne->minY);
-		$minZ = Math::floorFloat($bbPlusOne->minZ);
-		$maxX = Math::ceilFloat($bbPlusOne->maxX);
-		$maxY = Math::ceilFloat($bbPlusOne->maxY);
-		$maxZ = Math::ceilFloat($bbPlusOne->maxZ);
+		$minX = Math::floorFloat($bb->minX - 1);
+		$minY = Math::floorFloat($bb->minY - 1);
+		$minZ = Math::floorFloat($bb->minZ - 1);
+		$maxX = Math::ceilFloat($bb->maxX + 1);
+		$maxY = Math::ceilFloat($bb->maxY + 1);
+		$maxZ = Math::ceilFloat($bb->maxZ + 1);
 
 		$collides = [];
 
@@ -1330,7 +1319,7 @@ class Level implements ChunkManager, Metadatable{
 		return $this->getChunk($x >> 4, $z >> 4, false)->getFullBlock($x & 0x0f, $y, $z & 0x0f);
 	}
 
-	public function isInWorld(float $x, float $y, float $z) : bool{
+	public function isInWorld(int $x, int $y, int $z) : bool{
 		return (
 			$x <= INT32_MAX and $x >= INT32_MIN and
 			$y < $this->worldHeight and $y >= 0 and
@@ -2600,6 +2589,25 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
+	 * @param Entity $entity
+	 *
+	 * @throws LevelException
+	 */
+	public function addEntity(Entity $entity){
+		if($entity->isClosed()){
+			throw new \InvalidArgumentException("Attempted to add a garbage closed Entity to Level");
+		}
+		if($entity->getLevel() !== $this){
+			throw new LevelException("Invalid Entity level");
+		}
+
+		if($entity instanceof Player){
+			$this->players[$entity->getId()] = $entity;
+		}
+		$this->entities[$entity->getId()] = $entity;
+	}
+
+	/**
 	 * Removes the entity from the level index
 	 *
 	 * @param Entity $entity
@@ -2618,25 +2626,6 @@ class Level implements ChunkManager, Metadatable{
 
 		unset($this->entities[$entity->getId()]);
 		unset($this->updateEntities[$entity->getId()]);
-	}
-
-	/**
-	 * @param Entity $entity
-	 *
-	 * @throws LevelException
-	 */
-	public function addEntity(Entity $entity){
-		if($entity->isClosed()){
-			throw new \InvalidArgumentException("Attempted to add a garbage closed Entity to Level");
-		}
-		if($entity->getLevel() !== $this){
-			throw new LevelException("Invalid Entity level");
-		}
-
-		if($entity instanceof Player){
-			$this->players[$entity->getId()] = $entity;
-		}
-		$this->entities[$entity->getId()] = $entity;
 	}
 
 	/**
@@ -2852,51 +2841,48 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
-	 * @param Vector3 $spawn default null
+	 * @param Vector3|null $spawn
 	 *
-	 * @return bool|Position
+	 * @return Position
 	 */
-	public function getSafeSpawn($spawn = null){
+	public function getSafeSpawn(?Vector3 $spawn = null) : Position{
 		if(!($spawn instanceof Vector3) or $spawn->y < 1){
 			$spawn = $this->getSpawnLocation();
 		}
-		if($spawn instanceof Vector3){
-			$max = $this->worldHeight;
-			$v = $spawn->floor();
-			$chunk = $this->getChunk($v->x >> 4, $v->z >> 4, false);
-			$x = (int) $v->x;
-			$z = (int) $v->z;
-			if($chunk !== null){
-				$y = (int) min($max - 2, $v->y);
-				$wasAir = ($chunk->getBlockId($x & 0x0f, $y - 1, $z & 0x0f) === 0);
-				for(; $y > 0; --$y){
-					if($this->isFullBlock($this->getBlockAt($x, $y, $z))){
-						if($wasAir){
-							$y++;
-							break;
-						}
-					}else{
-						$wasAir = true;
-					}
-				}
 
-				for(; $y >= 0 and $y < $max; ++$y){
-					if(!$this->isFullBlock($this->getBlockAt($x, $y + 1, $z))){
-						if(!$this->isFullBlock($this->getBlockAt($x, $y, $z))){
-							return new Position($spawn->x, $y === (int) $spawn->y ? $spawn->y : $y, $spawn->z, $this);
-						}
-					}else{
-						++$y;
+		$max = $this->worldHeight;
+		$v = $spawn->floor();
+		$chunk = $this->getChunk($v->x >> 4, $v->z >> 4, false);
+		$x = (int) $v->x;
+		$z = (int) $v->z;
+		if($chunk !== null){
+			$y = (int) min($max - 2, $v->y);
+			$wasAir = ($chunk->getBlockId($x & 0x0f, $y - 1, $z & 0x0f) === 0);
+			for(; $y > 0; --$y){
+				if($this->isFullBlock($this->getBlockAt($x, $y, $z))){
+					if($wasAir){
+						$y++;
+						break;
 					}
+				}else{
+					$wasAir = true;
 				}
-
-				$v->y = $y;
 			}
 
-			return new Position($spawn->x, $v->y, $spawn->z, $this);
+			for(; $y >= 0 and $y < $max; ++$y){
+				if(!$this->isFullBlock($this->getBlockAt($x, $y + 1, $z))){
+					if(!$this->isFullBlock($this->getBlockAt($x, $y, $z))){
+						return new Position($spawn->x, $y === (int) $spawn->y ? $spawn->y : $y, $spawn->z, $this);
+					}
+				}else{
+					++$y;
+				}
+			}
+
+			$v->y = $y;
 		}
 
-		return false;
+		return new Position($spawn->x, $v->y, $spawn->z, $this);
 	}
 
 	/**

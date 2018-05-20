@@ -63,13 +63,13 @@ abstract class Projectile extends Entity{
 		}
 	}
 
-	public function attack(EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source) : void{
 		if($source->getCause() === EntityDamageEvent::CAUSE_VOID){
 			parent::attack($source);
 		}
 	}
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		parent::initEntity();
 
 		$this->setMaxHealth(1);
@@ -121,7 +121,7 @@ abstract class Projectile extends Entity{
 		return (int) ceil(sqrt($this->motionX ** 2 + $this->motionY ** 2 + $this->motionZ ** 2) * $this->damage);
 	}
 
-	public function saveNBT(){
+	public function saveNBT() : void{
 		parent::saveNBT();
 
 		$this->namedtag->setShort("Age", $this->age);

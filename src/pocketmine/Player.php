@@ -440,7 +440,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 *
 	 * @return UUID|null
 	 */
-	public function getUniqueId(){
+	public function getUniqueId() : ?UUID{
 		return parent::getUniqueId();
 	}
 
@@ -498,7 +498,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/**
 	 * @param Player $player
 	 */
-	public function spawnTo(Player $player){
+	public function spawnTo(Player $player) : void{
 		if($this->spawned and $player->spawned and $this->isAlive() and $player->isAlive() and $player->getLevel() === $this->level and $player->canSee($this) and !$this->isSpectator()){
 			parent::spawnTo($player);
 		}
@@ -577,7 +577,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return !$this->isSpectator();
 	}
 
-	public function resetFallDistance(){
+	public function resetFallDistance() : void{
 		parent::resetFallDistance();
 		if($this->inAirTicks !== 0){
 			$this->startAirTicks = 5;
@@ -825,7 +825,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 *
 	 * If null is given, will additionally send the skin to the player itself as well as its viewers.
 	 */
-	public function sendSkin(array $targets = null) : void{
+	public function sendSkin(?array $targets = null) : void{
 		parent::sendSkin($targets ?? $this->server->getOnlinePlayers());
 	}
 
@@ -1517,7 +1517,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return 0;
 	}
 
-	protected function checkGroundState(float $movX, float $movY, float $movZ, float $dx, float $dy, float $dz){
+	protected function checkGroundState(float $movX, float $movY, float $movZ, float $dx, float $dy, float $dz) : void{
 		if(!$this->onGround or $movY != 0){
 			$bb = clone $this->boundingBox;
 			$bb->minY = $this->y - 0.2;
@@ -1651,13 +1651,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->newPosition = null;
 	}
 
-	public function jump(){
+	public function jump() : void{
 		$this->server->getPluginManager()->callEvent(new PlayerJumpEvent($this));
 		parent::jump();
 	}
 
-	public function setMotion(Vector3 $mot){
-		if(parent::setMotion($mot)){
+	public function setMotion(Vector3 $motion) : bool{
+		if(parent::setMotion($motion)){
 			$this->broadcastMotion();
 
 			if($this->motionY > 0){
@@ -1669,11 +1669,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return false;
 	}
 
-	protected function updateMovement(bool $teleport = false){
+	protected function updateMovement(bool $teleport = false) : void{
 
 	}
 
-	protected function tryChangeMovement(){
+	protected function tryChangeMovement() : void{
 
 	}
 
@@ -1758,7 +1758,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return true;
 	}
 
-	public function doFoodTick(int $tickDiff = 1){
+	protected function doFoodTick(int $tickDiff = 1) : void{
 		if($this->isSurvival()){
 			parent::doFoodTick($tickDiff);
 		}
@@ -1841,11 +1841,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return ($targetDot - $eyeDot) >= -$maxDiff;
 	}
 
-	protected function initHumanData(){
+	protected function initHumanData() : void{
 		$this->setNameTag($this->username);
 	}
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		parent::initEntity();
 		$this->addDefaultWindows();
 	}
@@ -2548,7 +2548,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							$ev->setCancelled();
 						}
 
-						if(!$this->isSprinting() and !$this->isFlying() and $this->fallDistance > 0 and !$this->hasEffect(Effect::BLINDNESS) and !$this->isInsideOfWater()){
+						if(!$this->isSprinting() and !$this->isFlying() and $this->fallDistance > 0 and !$this->hasEffect(Effect::BLINDNESS) and !$this->isUnderwater()){
 							$ev->setDamage($ev->getFinalDamage() / 2, EntityDamageEvent::MODIFIER_CRITICAL);
 						}
 
@@ -3529,7 +3529,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * @param string               $reason Reason showed in console
 	 * @param bool                 $notify
 	 */
-	final public function close($message = "", string $reason = "generic reason", bool $notify = true){
+	final public function close($message = "", string $reason = "generic reason", bool $notify = true) : void{
 		if($this->isConnected() and !$this->closed){
 
 			try{
@@ -3680,7 +3680,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 	}
 
-	public function kill(){
+	public function kill() : void{
 		if(!$this->spawned){
 			return;
 		}
@@ -3690,7 +3690,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->sendRespawnPacket($this->getSpawn());
 	}
 
-	protected function onDeath(){
+	protected function onDeath() : void{
 		$message = "death.attack.generic";
 
 		$params = [
@@ -3890,7 +3890,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->exhaust(0.3, PlayerExhaustEvent::CAUSE_DAMAGE);
 	}
 
-	public function attack(EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source) : void{
 		if(!$this->isAlive()){
 			return;
 		}

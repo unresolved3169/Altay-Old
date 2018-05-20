@@ -1,7 +1,7 @@
 <h1>Altay<img src="http://fs1.directupload.net/images/180401/urn5z9ic.png" height="64" width="64" align="left"></img></h1>
 <br />
 
-Fast server software for Minecraft: Bedrock/PE Edition and W10 Edition. Altay is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).
+Fast server software for Minecraft: Bedrock/W10 Edition. Altay is a fork of [pmmp](https://github.com/pmmp/PocketMine-MP).
 
 ------------       
 

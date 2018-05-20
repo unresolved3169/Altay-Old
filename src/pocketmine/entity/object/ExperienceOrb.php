@@ -101,7 +101,7 @@ class ExperienceOrb extends Entity{
 	 */
 	protected $targetPlayerRuntimeId = null;
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		parent::initEntity();
 
 		$this->age = $this->namedtag->getShort("Age", 0);
@@ -116,7 +116,7 @@ class ExperienceOrb extends Entity{
 		$this->setXpValue($value);
 	}
 
-	public function saveNBT(){
+	public function saveNBT() : void{
 		parent::saveNBT();
 
 		$this->namedtag->setShort("Age", $this->age);
@@ -213,7 +213,7 @@ class ExperienceOrb extends Entity{
 		return $hasUpdate;
 	}
 
-	protected function tryChangeMovement(){
+	protected function tryChangeMovement() : void{
 		$this->checkObstruction($this->x, $this->y, $this->z);
 		parent::tryChangeMovement();
 	}

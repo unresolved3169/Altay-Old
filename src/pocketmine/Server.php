@@ -136,11 +136,13 @@ class Server{
 	/** @var bool */
 	private $isRunning = true;
 
+	/** @var bool */
 	private $hasStopped = false;
 
 	/** @var PluginManager */
 	private $pluginManager = null;
 
+	/** @var float */
 	private $profilingTickRate = 20;
 
 	/** @var ServerScheduler */
@@ -152,15 +154,21 @@ class Server{
 	 * @var int
 	 */
 	private $tickCounter = 0;
+	/** @var int */
 	private $nextTick = 0;
+	/** @var array */
 	private $tickAverage = [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20];
+	/** @var array */
 	private $useAverage = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	/** @var int */
 	private $currentTPS = 20;
+	/** @var int */
 	private $currentUse = 0;
 
 	/** @var bool */
 	private $doTitleTick = true;
 
+	/** @var bool */
 	private $dispatchSignals = false;
 
 	/** @var MainLogger */
@@ -208,28 +216,42 @@ class Server{
 	/** @var Network */
 	private $network;
 
+	/** @var bool */
 	private $networkCompressionAsync = true;
+	/** @var int */
 	public $networkCompressionLevel = 7;
 
+	/** @var bool */
 	private $autoTickRate = true;
+	/** @var int */
 	private $autoTickRateLimit = 20;
+	/** @var bool */
 	private $alwaysTickPlayers = false;
+	/** @var int  */
 	private $baseTickRate = 1;
 
+	/** @var int */
 	private $autoSaveTicker = 0;
+	/** @var int */
 	private $autoSaveTicks = 6000;
 
 	/** @var BaseLang */
 	private $baseLang;
 
+	/** @var bool */
 	private $forceLanguage = false;
 
+	/** @var UUID */
 	private $serverID;
 
+	/** @var \ClassLoader */
 	private $autoloader;
+	/** @var string */
 	private $dataPath;
+	/** @var string */
 	private $pluginPath;
 
+	/** @var array */
 	private $uniquePlayers = [];
 
 	/** @var QueryHandler */
@@ -241,8 +263,10 @@ class Server{
 	/** @var Config */
 	private $properties;
 
+	/** @var mixed[] */
 	private $propertyCache = [];
 
+	/** @var mixed[] */
 	private $altayPropertyCache = [];
 
 	/** @var Config */
@@ -1603,11 +1627,11 @@ class Server{
 				$this->logger->warning("Invalid network compression level $this->networkCompressionLevel set, setting to default 7");
 				$this->networkCompressionLevel = 7;
 			}
-			$this->networkCompressionAsync = $this->getProperty("network.async-compression", true);
+			$this->networkCompressionAsync = (bool) $this->getProperty("network.async-compression", true);
 
 			$this->autoTickRate = (bool) $this->getProperty("level-settings.auto-tick-rate", true);
 			$this->autoTickRateLimit = (int) $this->getProperty("level-settings.auto-tick-rate-limit", 20);
-			$this->alwaysTickPlayers = (int) $this->getProperty("level-settings.always-tick-players", false);
+			$this->alwaysTickPlayers = (bool) $this->getProperty("level-settings.always-tick-players", false);
 			$this->baseTickRate = (int) $this->getProperty("level-settings.base-tick-rate", 1);
 
 			$this->doTitleTick = ((bool) $this->getProperty("console.title-tick", true)) && Terminal::hasFormattingCodes();

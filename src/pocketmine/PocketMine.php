@@ -200,16 +200,6 @@ namespace pocketmine {
 		composer_error_die("Composer autoloader not found.");
 	}
 
-	if(!class_exists(RakLib::class)){
-		composer_error_die("Unable to find the RakLib library.");
-	}
-	if(version_compare(RakLib::VERSION, "0.11.0") < 0){ //TODO: remove this check (it's managed by Composer now)
-		composer_error_die("RakLib version 0.11.0 is required, while you have version " . RakLib::VERSION . ".");
-	}
-	if(!class_exists(\BaseClassLoader::class)){
-		composer_error_die("Unable to find the PocketMine-SPL library.");
-	}
-
 	/*
      * We now use the Composer autoloader, but this autoloader is still for loading plugins.
      */
@@ -232,9 +222,6 @@ namespace pocketmine {
 
 	define('pocketmine\DATA', isset($opts["data"]) ? $opts["data"] . DIRECTORY_SEPARATOR : \realpath(\getcwd()) . DIRECTORY_SEPARATOR);
 	define('pocketmine\PLUGIN_PATH', isset($opts["plugins"]) ? $opts["plugins"] . DIRECTORY_SEPARATOR : \realpath(\getcwd()) . DIRECTORY_SEPARATOR . "plugins" . DIRECTORY_SEPARATOR);
-
-	//hasFormattingCodes() initializes static colour codes on the fly
-	define('pocketmine\ANSI', Terminal::hasFormattingCodes());
 
 	if(!file_exists(\pocketmine\DATA)){
 		mkdir(\pocketmine\DATA, 0777, true);

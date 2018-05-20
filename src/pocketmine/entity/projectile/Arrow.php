@@ -96,7 +96,7 @@ class Arrow extends Projectile{
 		$this->broadcastEntityEvent(EntityEventPacket::ARROW_SHAKE, 7); //7 ticks
 	}
 
-	public function onCollideWithPlayer(Player $player){
+	public function onCollideWithPlayer(Player $player) : void{
 		if($this->blockHit === null){
 			return;
 		}
