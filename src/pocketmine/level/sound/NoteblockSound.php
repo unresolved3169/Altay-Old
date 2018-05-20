@@ -20,6 +20,8 @@
  *
  */
 
+declare(strict_types=1);
+
 namespace pocketmine\level\sound;
 
 use pocketmine\math\Vector3;
@@ -42,7 +44,7 @@ class NoteblockSound extends GenericSound {
 	 *
 	 * @param Vector3 $pos
 	 * @param int     $instrument
-	 * @param int     $pitch
+	 * @param float     $pitch
 	 */
 	public function __construct(Vector3 $pos, int $instrument = self::INSTRUMENT_PIANO, float $pitch = 0){
 		parent::__construct($pos, $instrument, $pitch);
@@ -59,13 +61,13 @@ class NoteblockSound extends GenericSound {
 		$pk->y = $this->y;
 		$pk->z = $this->z;
 		$pk->eventType = $this->instrument;
-		$pk->eventData = $this->pitch;
+		$pk->eventData = (int) $this->pitch;
 
 		$pk2 = new LevelSoundEventPacket();
 		$pk2->sound = LevelSoundEventPacket::SOUND_NOTE;
 		$pk2->position = $this;
 		$pk2->extraData = $this->instrument;
-		$pk2->pitch = $this->pitch;
+		$pk2->pitch = (int) $this->pitch;
 
 		return [$pk, $pk2];
 	}

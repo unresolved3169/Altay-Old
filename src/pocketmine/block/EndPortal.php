@@ -24,6 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\entity\Entity;
 use pocketmine\item\Item;
 use pocketmine\level\Level;
 use pocketmine\Player;
@@ -56,19 +57,19 @@ class EndPortal extends Solid{
 	public function isBreakable(Item $item) : bool{
 		return false;
 	}
-	
+
 	public function hasEntityCollision() : bool{
 		return true;
 	}
-	
+
 	public function canPassThrough() : bool{
 		return true;
 	}
-	
+
 	public function onEntityCollide(Entity $entity) : void{
 		$server = Server::getInstance();
 		if($server->allowEnd){
-			$entity->teleport(self::getTeleportLevel($entity, $server));
+			$entity->teleport(self::getTeleportLevel($entity, $server)->getSafeSpawn($entity));
 		}
 	}
 

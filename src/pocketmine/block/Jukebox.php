@@ -42,11 +42,11 @@ class Jukebox extends Solid{
 	public function getName() : string{
 		return "Jukebox";
 	}
-	
+
 	public function getHardness() : float{
 		return 2.0;
 	}
-	
+
 	public function getToolType() : int{
 		return BlockToolType::TYPE_AXE;
 	}

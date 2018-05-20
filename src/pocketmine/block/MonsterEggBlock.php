@@ -30,33 +30,23 @@ use pocketmine\item\Item;
 use pocketmine\Player;
 
 class MonsterEggBlock extends Solid{
-	
-	protected $id = self::MONSTER_EGG_BLOCK;
-	
+	protected $id = self::MONSTER_EGG;
+
 	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
-	
+
 	public function getName() : string{
 		return "Monster Egg Block";
 	}
-	
+
 	public function getHardness() : float{
 		return 0.75;
 	}
- 
- public function onBreak(Item $item, Player $player = null) : bool{
- 	 if($item->getEnchantmentLevel(Enchantment::SILK_TOUCH) == 0){
- 	 	 /*$sf = Entity::createEntity("Silverfish", $this->level, Entity::createBaseNBT($this));
- 	 	 if($sf instanceof Silverfish){
- 	 	 	 $sf->spawnToAll();
- 	 	 	}*/
- 	 	 	// TODO: Add Silverfish entity
-  }
-  return parent::onBreak($item, $player);
- }
 
- public function getDropsForCompatibleTool(Item $item): array{
- 	 return [];
- }
+	public function getDropsForCompatibleTool(Item $item): array{
+		return [];
+	}
+
+	// TODO : Spawn silverfish
 }

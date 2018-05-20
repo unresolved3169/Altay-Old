@@ -29,9 +29,8 @@ use pocketmine\level\sound\NoteblockSound;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-// TODO: Support with Redstone
 class Noteblock extends Solid{
-	
+
 	protected $id = self::NOTEBLOCK;
 
 	public function __construct(int $meta = 0){
@@ -64,29 +63,33 @@ class Noteblock extends Solid{
 		switch($below->getId()){
 			case Block::WOOD:
 			case Block::WOOD2:
-			case Block::WOODEN_PLANK:
-			case Block::WOODEN_SLABS:
-			case Block::DOUBLE_WOOD_SLABS:
-			case Block::OAK_WOODEN_STAIRS:
-			case Block::SPRUCE_WOODEN_STAIRS:
-			case Block::BIRCH_WOODEN_STAIRS:
-			case Block::JUNGLE_WOODEN_STAIRS:
-			case Block::ACACIA_WOODEN_STAIRS:
-			case Block::DARK_OAK_WOODEN_STAIRS:
+			case Block::PLANKS:
+			case Block::WOODEN_SLAB:
+			case Block::DOUBLE_WOODEN_SLAB:
+			case Block::OAK_STAIRS:
+			case Block::SPRUCE_STAIRS:
+			case Block::BIRCH_STAIRS:
+			case Block::JUNGLE_STAIRS:
+			case Block::ACACIA_STAIRS:
+			case Block::DARK_OAK_STAIRS:
 			case Block::FENCE:
 			case Block::FENCE_GATE:
-			case Block::FENCE_GATE_SPRUCE:
-			case Block::FENCE_GATE_BIRCH:
-			case Block::FENCE_GATE_JUNGLE:
-			case Block::FENCE_GATE_DARK_OAK:
-			case Block::FENCE_GATE_ACACIA:
-			case Block::SPRUCE_WOOD_STAIRS:
+			case Block::SPRUCE_FENCE_GATE:
+			case Block::BIRCH_FENCE_GATE:
+			case Block::JUNGLE_FENCE_GATE:
+			case Block::DARK_OAK_FENCE_GATE:
+			case Block::ACACIA_FENCE_GATE:
 			case Block::BOOKSHELF:
 			case Block::CHEST:
 			case Block::CRAFTING_TABLE:
 			case Block::SIGN_POST:
 			case Block::WALL_SIGN:
-			case Block::DOOR_BLOCK:
+			case Block::OAK_DOOR_BLOCK:
+			case Block::SPRUCE_DOOR_BLOCK:
+			case Block::BIRCH_DOOR_BLOCK:
+			case Block::JUNGLE_DOOR_BLOCK:
+			case Block::ACACIA_DOOR_BLOCK:
+			case Block::DARK_OAK_DOOR_BLOCK:
 			case Block::NOTEBLOCK:
 				return NoteblockSound::INSTRUMENT_BASS;
 			case Block::SAND:
@@ -99,15 +102,15 @@ class Noteblock extends Solid{
 			case Block::COBBLESTONE:
 			case Block::SANDSTONE:
 			case Block::MOSS_STONE:
-			case Block::BRICKS:
+			case Block::BRICK_BLOCK:
 			case Block::STONE_BRICK:
-			case Block::NETHER_BRICKS:
+			case Block::NETHER_BRICK_BLOCK:
 			case Block::QUARTZ_BLOCK:
-			case Block::SLAB:
+			case Block::STONE_SLAB:
 			case Block::COBBLESTONE_STAIRS:
 			case Block::BRICK_STAIRS:
 			case Block::STONE_BRICK_STAIRS:
-			case Block::NETHER_BRICKS_STAIRS:
+			case Block::NETHER_BRICK_STAIRS:
 			case Block::SANDSTONE_STAIRS:
 			case Block::QUARTZ_STAIRS:
 			case Block::COBBLESTONE_WALL:
@@ -132,6 +135,7 @@ class Noteblock extends Solid{
 			case Block::COAL_BLOCK:
 				return NoteblockSound::INSTRUMENT_BASS_DRUM;
 		}
+
 		return NoteblockSound::INSTRUMENT_PIANO;
 	}
 
@@ -148,8 +152,10 @@ class Noteblock extends Solid{
 	public function getName() : string{
 		return "Noteblock";
 	}
-	
+
 	public function getFuelTime() : int{
 		return 300;
 	}
+
+	// TODO: Support with Redstone
 }
