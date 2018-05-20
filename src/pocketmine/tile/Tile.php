@@ -63,6 +63,7 @@ abstract class Tile extends Position{
 	public const SKULL = "Skull";
 	public const BEACON = "Beacon";
 	public const VIRTUAL = "Virtual";
+	public const JUKEBOX = "Jukebox";
 
 	/** @var int */
 	public static $tileCount = 1;
@@ -97,9 +98,9 @@ abstract class Tile extends Position{
 		self::registerTile(ItemFrame::class, [self::ITEM_FRAME]); //this is an entity in PC
 		self::registerTile(Sign::class, [self::SIGN, "minecraft:sign"]);
 		self::registerTile(Skull::class, [self::SKULL, "minecraft:skull"]);
-        self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
-
+		self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
 		self::registerTile(VirtualHolder::class, [self::VIRTUAL]);
+		self::registerTile(Jukebox::class, [self::JUKEBOX, "minecraft:jukebox"]);
 	}
 
 	/**
@@ -165,13 +166,10 @@ abstract class Tile extends Position{
 
 		$this->namedtag = $nbt;
 		$this->server = $level->getServer();
-		$this->setLevel($level);
-
 		$this->name = "";
 		$this->id = Tile::$tileCount++;
-		$this->x = $this->namedtag->getInt(self::TAG_X);
-		$this->y = $this->namedtag->getInt(self::TAG_Y);
-		$this->z = $this->namedtag->getInt(self::TAG_Z);
+
+		parent::__construct($this->namedtag->getInt(self::TAG_X), $this->namedtag->getInt(self::TAG_Y), $this->namedtag->getInt(self::TAG_Z), $level);
 
 		$this->getLevel()->addTile($this);
 	}
@@ -223,7 +221,7 @@ abstract class Tile extends Position{
 		static::createAdditionalNBT($nbt, $pos, $face, $item, $player);
 
 		if($item !== null){
-		    $customBlockData = $item->getCustomBlockData();
+			$customBlockData = $item->getCustomBlockData();
 			if($customBlockData != null){
 				foreach($customBlockData as $customBlockDataTag){
 					$nbt->setTag(clone $customBlockDataTag);

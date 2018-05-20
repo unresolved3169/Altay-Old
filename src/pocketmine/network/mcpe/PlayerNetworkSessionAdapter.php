@@ -163,7 +163,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handleEntityFall(EntityFallPacket $packet) : bool{
-	    $this->player->fall($packet->fallDistance);
+		$this->player->fall($packet->fallDistance);
 		return true;
 	}
 
@@ -255,8 +255,9 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
-		if($this->server->allowServerSettingsForm){
-			$this->player->sendServerSettings($this->server->getServerSettingsForm());
+		$setting = $this->player->getServerSettingsForm();
+		if($setting !== null){
+			$this->player->sendServerSettings($setting);
 		}
 
 		return true;

@@ -75,4 +75,9 @@ class SubChunkIteratorManager{
 		return true;
 	}
 
+	public function invalidate() : void{
+		$this->currentChunk = null;
+		$this->currentSubChunk = null;
+	}
+
 }

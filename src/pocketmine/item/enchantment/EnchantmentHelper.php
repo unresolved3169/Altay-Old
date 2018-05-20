@@ -38,7 +38,8 @@ use pocketmine\utils\Random;
 class EnchantmentHelper{
 
 	public static function canEnchantItem(Item $item, Enchantment $enchantment) : bool{
-		$slot = $enchantment->getSlot();
+		// TODO : Update
+		$slot = $enchantment->getPrimaryItemFlags();
 		switch($slot){
 			case Enchantment::SLOT_ALL:
 				return true;

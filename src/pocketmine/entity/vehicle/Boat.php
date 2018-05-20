@@ -48,7 +48,7 @@ class Boat extends Vehicle{
 	protected $gravity = 0.9;
 	protected $drag = 0.1;
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		$this->setHealth(4);
 		$this->setGenericFlag(self::DATA_FLAG_STACKABLE);
 		$this->setImmobile(false);
@@ -78,7 +78,7 @@ class Boat extends Vehicle{
 		$this->propertyManager->setInt(self::DATA_VARIANT, $boatType);
 	}
 
-	public function saveNBT(){
+	public function saveNBT() : void{
 		parent::saveNBT();
 
 		$this->namedtag->setInt(self::TAG_VARIANT, $this->getBoatType());
@@ -95,7 +95,7 @@ class Boat extends Vehicle{
 			return false;
 		}
 
-		$this->onGround = $this->isOnGround() and !$this->isInsideOfWater();
+		$this->onGround = $this->isOnGround() and !$this->isUnderwater();
 
 		if($this->getHealth() < $this->getMaxHealth() and $currentTick % 10 == 0 /* because of invincible normal 0/10 per tick*/)
 			$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_REGEN));
@@ -103,7 +103,7 @@ class Boat extends Vehicle{
 		return parent::onUpdate($currentTick);
 	}
 
-	public function attack(EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source) : void{
 		if($source instanceof EntityDamageByEntityEvent){
 			$damager = $source->getDamager();
 			if($damager instanceof Player and $damager->isCreative()){
@@ -111,7 +111,7 @@ class Boat extends Vehicle{
 			}
 		}
 
-		return parent::attack($source);
+		parent::attack($source);
 	}
 
 	public function isOnGround() : bool{
@@ -124,7 +124,7 @@ class Boat extends Vehicle{
 		return false;
 	}
 
-	protected function applyGravity(){
+	protected function applyGravity() : void{
 		if(!$this->onGround) parent::applyGravity();
 	}
 }

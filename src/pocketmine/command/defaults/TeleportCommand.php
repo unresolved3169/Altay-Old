@@ -166,7 +166,7 @@ class TeleportCommand extends VanillaCommand{
 
 			if(count($args) === 6 or (count($args) === 5 and $pos === 3)){
 				$yaw = (float) $args[$pos++];
-				$pitch = (float) $args[$pos++];
+				$pitch = (float) $args[$pos];
 			}
 
 			$target->teleport(new Vector3($x, $y, $z), $yaw, $pitch);

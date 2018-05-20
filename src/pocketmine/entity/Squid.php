@@ -42,7 +42,7 @@ class Squid extends WaterAnimal{
 
 	private $switchDirectionTicker = 0;
 
-	public function initEntity(){
+	public function initEntity() : void{
 		$this->setMaxHealth(10);
 		parent::initEntity();
 	}
@@ -51,7 +51,7 @@ class Squid extends WaterAnimal{
 		return "Squid";
 	}
 
-	public function attack(EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source) : void{
 		parent::attack($source);
 		if($source->isCancelled()){
 			return;
@@ -93,7 +93,7 @@ class Squid extends WaterAnimal{
 				$this->swimDirection->y = -0.5;
 			}
 
-			$inWater = $this->isInsideOfWater();
+			$inWater = $this->isUnderwater();
 			if(!$inWater){
 				$this->swimDirection = null;
 			}elseif($this->swimDirection !== null){
@@ -115,8 +115,8 @@ class Squid extends WaterAnimal{
 		return $hasUpdate;
 	}
 
-	protected function applyGravity(){
-		if(!$this->isInsideOfWater()){
+	protected function applyGravity() : void{
+		if(!$this->isUnderwater()){
 			parent::applyGravity();
 		}
 	}

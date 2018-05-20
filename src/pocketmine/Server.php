@@ -42,9 +42,6 @@ use pocketmine\event\level\LevelInitEvent;
 use pocketmine\event\player\PlayerDataSaveEvent;
 use pocketmine\event\server\QueryRegenerateEvent;
 use pocketmine\event\server\ServerCommandEvent;
-use pocketmine\form\element\Label;
-use pocketmine\form\FormIcon;
-use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\CraftingManager;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
@@ -94,10 +91,11 @@ use pocketmine\plugin\ScriptPluginLoader;
 use pocketmine\resourcepacks\ResourcePackManager;
 use pocketmine\scheduler\FileWriteTask;
 use pocketmine\scheduler\ServerScheduler;
+use pocketmine\snooze\SleeperHandler;
+use pocketmine\snooze\SleeperNotifier;
 use pocketmine\tile\Tile;
 use pocketmine\timings\Timings;
 use pocketmine\timings\TimingsHandler;
-use pocketmine\updater\AutoUpdater;
 use pocketmine\utils\Binary;
 use pocketmine\utils\Config;
 use pocketmine\utils\MainLogger;
@@ -120,6 +118,9 @@ class Server{
 	/** @var \Threaded */
 	private static $sleeper = null;
 
+	/** @var SleeperHandler */
+	private $tickSleeper;
+
 	/** @var BanList */
 	private $banByName = null;
 
@@ -135,15 +136,14 @@ class Server{
 	/** @var bool */
 	private $isRunning = true;
 
+	/** @var bool */
 	private $hasStopped = false;
 
 	/** @var PluginManager */
 	private $pluginManager = null;
 
+	/** @var float */
 	private $profilingTickRate = 20;
-
-	/** @var AutoUpdater */
-	private $updater = null;
 
 	/** @var ServerScheduler */
 	private $scheduler = null;
@@ -154,15 +154,21 @@ class Server{
 	 * @var int
 	 */
 	private $tickCounter = 0;
+	/** @var int */
 	private $nextTick = 0;
+	/** @var array */
 	private $tickAverage = [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20];
+	/** @var array */
 	private $useAverage = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+	/** @var int */
 	private $currentTPS = 20;
+	/** @var int */
 	private $currentUse = 0;
 
 	/** @var bool */
 	private $doTitleTick = true;
 
+	/** @var bool */
 	private $dispatchSignals = false;
 
 	/** @var MainLogger */
@@ -210,28 +216,42 @@ class Server{
 	/** @var Network */
 	private $network;
 
+	/** @var bool */
 	private $networkCompressionAsync = true;
+	/** @var int */
 	public $networkCompressionLevel = 7;
 
+	/** @var bool */
 	private $autoTickRate = true;
+	/** @var int */
 	private $autoTickRateLimit = 20;
+	/** @var bool */
 	private $alwaysTickPlayers = false;
+	/** @var int  */
 	private $baseTickRate = 1;
 
+	/** @var int */
 	private $autoSaveTicker = 0;
+	/** @var int */
 	private $autoSaveTicks = 6000;
 
 	/** @var BaseLang */
 	private $baseLang;
 
+	/** @var bool */
 	private $forceLanguage = false;
 
+	/** @var UUID */
 	private $serverID;
 
+	/** @var \ClassLoader */
 	private $autoloader;
+	/** @var string */
 	private $dataPath;
+	/** @var string */
 	private $pluginPath;
 
+	/** @var array */
 	private $uniquePlayers = [];
 
 	/** @var QueryHandler */
@@ -243,8 +263,10 @@ class Server{
 	/** @var Config */
 	private $properties;
 
+	/** @var mixed[] */
 	private $propertyCache = [];
 
+	/** @var mixed[] */
 	private $altayPropertyCache = [];
 
 	/** @var Config */
@@ -271,9 +293,6 @@ class Server{
 	private $netherLevel = null;
 	/** @var Level */
 	private $endLevel = null;
-
-	/** @var ServerSettingsForm */
-	protected $serverSettingsForm = null;
 
 	/** ALTAY CONFIG */
 
@@ -429,7 +448,8 @@ class Server{
 	 * @return string
 	 */
 	public function getIp() : string{
-		return $this->getConfigString("server-ip", "0.0.0.0");
+		$str = $this->getConfigString("server-ip");
+		return $str !== "" ? $str : "0.0.0.0";
 	}
 
 	/**
@@ -612,7 +632,7 @@ class Server{
 	}
 
 	/**
-	 * @return MainLogger
+	 * @return \AttachableThreadedLogger
 	 */
 	public function getLogger(){
 		return $this->logger;
@@ -637,13 +657,6 @@ class Server{
 	 */
 	public function getLevelMetadata(){
 		return $this->levelMetadata;
-	}
-
-	/**
-	 * @return AutoUpdater
-	 */
-	public function getUpdater(){
-		return $this->updater;
 	}
 
 	/**
@@ -1480,17 +1493,18 @@ class Server{
 	}
 
 	/**
-	 * @param \ClassLoader    $autoloader
-	 * @param \ThreadedLogger $logger
-	 * @param string          $dataPath
-	 * @param string          $pluginPath
+	 * @param \ClassLoader              $autoloader
+	 * @param \AttachableThreadedLogger $logger
+	 * @param string                    $dataPath
+	 * @param string                    $pluginPath
 	 */
-	public function __construct(\ClassLoader $autoloader, \ThreadedLogger $logger, string $dataPath, string $pluginPath){
+	public function __construct(\ClassLoader $autoloader, \AttachableThreadedLogger $logger, string $dataPath, string $pluginPath){
 		if(self::$instance !== null){
 			throw new \InvalidStateException("Only one server instance can exist at once");
 		}
 		self::$instance = $this;
 		self::$sleeper = new \Threaded;
+		$this->tickSleeper = new SleeperHandler();
 		$this->autoloader = $autoloader;
 		$this->logger = $logger;
 
@@ -1514,7 +1528,12 @@ class Server{
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
 
-			$this->console = new CommandReader();
+			$consoleNotifier = new SleeperNotifier();
+			$this->console = new CommandReader($consoleNotifier);
+			$this->tickSleeper->addNotifier($consoleNotifier, function() : void{
+				$this->checkConsole();
+			});
+			$this->console->start(PTHREADS_INHERIT_NONE);
 
 			$version = new VersionString($this->getPocketMineVersion());
 
@@ -1533,8 +1552,6 @@ class Server{
 			}
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
-
-			$this->setServerSettingsForm(new class("Altay Server Software", [new Label("Altay is a MC:BE Server Software\nYou can download it from github: https://github.com/TuranicTeam/Altay")], new FormIcon("https://avatars2.githubusercontent.com/u/31800317?s=400&v=4")) extends ServerSettingsForm{});
 
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
@@ -1610,11 +1627,11 @@ class Server{
 				$this->logger->warning("Invalid network compression level $this->networkCompressionLevel set, setting to default 7");
 				$this->networkCompressionLevel = 7;
 			}
-			$this->networkCompressionAsync = $this->getProperty("network.async-compression", true);
+			$this->networkCompressionAsync = (bool) $this->getProperty("network.async-compression", true);
 
 			$this->autoTickRate = (bool) $this->getProperty("level-settings.auto-tick-rate", true);
 			$this->autoTickRateLimit = (int) $this->getProperty("level-settings.auto-tick-rate-limit", 20);
-			$this->alwaysTickPlayers = (int) $this->getProperty("level-settings.always-tick-players", false);
+			$this->alwaysTickPlayers = (bool) $this->getProperty("level-settings.always-tick-players", false);
 			$this->baseTickRate = (int) $this->getProperty("level-settings.base-tick-rate", 1);
 
 			$this->doTitleTick = ((bool) $this->getProperty("console.title-tick", true)) && Terminal::hasFormattingCodes();
@@ -1627,11 +1644,10 @@ class Server{
 						$this,
 						$this->getConfigString("rcon.password", ""),
 						$this->getConfigInt("rcon.port", $this->getPort()),
-						($ip = $this->getIp()) != "" ? $ip : "0.0.0.0",
-						$this->getConfigInt("rcon.threads", 1),
-						$this->getConfigInt("rcon.clients-per-thread", 50)
+						$this->getIp(),
+						$this->getConfigInt("rcon.max-clients", 50)
 					);
-				}catch(\Throwable $e){
+				}catch(\Exception $e){
 					$this->getLogger()->critical("RCON can't be started: " . $e->getMessage());
 				}
 			}
@@ -1673,7 +1689,7 @@ class Server{
 				@cli_set_process_title($this->getName() . " " . $this->getPocketMineVersion());
 			}
 
-			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp() === "" ? "*" : $this->getIp(), $this->getPort()]));
+			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.networkStart", [$this->getIp(), $this->getPort()]));
 			define("BOOTUP_RANDOM", random_bytes(16));
 			$this->serverID = Utils::getMachineUniqueId($this->getIp() . $this->getPort());
 
@@ -1722,8 +1738,6 @@ class Server{
 			$this->queryRegenerateTask = new QueryRegenerateEvent($this, 5);
 
 			$this->pluginManager->loadPlugins($this->pluginPath);
-
-			$this->updater = new AutoUpdater($this, $this->getProperty("auto-updater.host", "update.pmmp.io"));
 
 			$this->enablePlugins(PluginLoadOrder::STARTUP);
 
@@ -2052,7 +2066,7 @@ class Server{
 
 	public function checkConsole(){
 		Timings::$serverCommandTimer->startTiming();
-		if(($line = $this->console->getLine()) !== null){
+		while(($line = $this->console->getLine()) !== null){
 			$this->pluginManager->callEvent($ev = new ServerCommandEvent($this->consoleSender, $line));
 			if(!$ev->isCancelled()){
 				$this->dispatchCommand($ev->getSender(), $ev->getCommand());
@@ -2160,9 +2174,8 @@ class Server{
 			HandlerList::unregisterAll();
 
 			if($this->scheduler instanceof ServerScheduler){
-				$this->getLogger()->debug("Stopping all tasks");
-				$this->scheduler->cancelAllTasks();
-				$this->scheduler->mainThreadHeartbeat(PHP_INT_MAX);
+				$this->getLogger()->debug("Shutting down task scheduler");
+				$this->scheduler->shutdown();
 			}
 
 			if($this->properties !== null and $this->properties->hasChanged()){
@@ -2214,7 +2227,7 @@ class Server{
 			$this->logger->info("[UPnP] Trying to port forward...");
 			try{
 				UPnP::PortForward($this->getPort());
-			}catch(\Throwable $e){
+			}catch(\Exception $e){
 				$this->logger->alert("UPnP portforward failed: " . $e->getMessage());
 			}
 		}
@@ -2301,9 +2314,6 @@ class Server{
 			}catch(\Throwable $exception){}
 		}
 
-		//$this->checkMemory();
-		//$dump .= "Memory Usage Tracking: \r\n" . chunk_split(base64_encode(gzdeflate(implode(";", $this->memoryStats), 9))) . "\r\n";
-
 		$this->forceShutdown();
 		$this->isRunning = false;
 		@Utils::kill(getmypid());
@@ -2314,18 +2324,18 @@ class Server{
 		return [];
 	}
 
+	public function getTickSleeper() : SleeperHandler{
+		return $this->tickSleeper;
+	}
+
 	private function tickProcessor(){
 		$this->nextTick = microtime(true);
+
 		while($this->isRunning){
 			$this->tick();
-			$next = $this->nextTick - 0.0001;
-			if($next > microtime(true)){
-				try{
-					@time_sleep_until($next);
-				}catch(\Throwable $e){
-					//Sometimes $next is less than the current time. High load?
-				}
-			}
+
+			//sleeps are self-correcting - if we undersleep 1ms on this tick, we'll sleep an extra ms on the next tick
+			$this->tickSleeper->sleepUntil($this->nextTick);
 		}
 	}
 
@@ -2554,15 +2564,8 @@ class Server{
 
 		++$this->tickCounter;
 
-		$this->checkConsole();
-
 		Timings::$connectionTimer->startTiming();
 		$this->network->processInterfaces();
-
-		if($this->rcon !== null){
-			$this->rcon->check();
-		}
-
 		Timings::$connectionTimer->stopTiming();
 
 		Timings::$schedulerTimer->startTiming();
@@ -2647,21 +2650,5 @@ class Server{
 	 */
 	public function __sleep(){
 		throw new \BadMethodCallException("Cannot serialize Server instance");
-	}
-
-	// ALTAY
-
-	/**
-	 * @return ServerSettingsForm
-	 */
-	public function getServerSettingsForm(): ServerSettingsForm{
-		return $this->serverSettingsForm;
-	}
-
-	/**
-	 * @param ServerSettingsForm $serverSettingsForm
-	 */
-	public function setServerSettingsForm(ServerSettingsForm $serverSettingsForm): void{
-		$this->serverSettingsForm = $serverSettingsForm;
 	}
 }

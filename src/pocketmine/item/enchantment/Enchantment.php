@@ -90,51 +90,29 @@ class Enchantment{
 	public static function init(){
 		self::$enchantments = new \SplFixedArray(256);
 
-		self::registerEnchantment(new ProtectionEnchantment(self::PROTECTION, "%enchantment.protect.all", self::RARITY_COMMON, self::SLOT_ARMOR, 4, 0.75, null, 1));
-		self::registerEnchantment(new ProtectionEnchantment(self::FIRE_PROTECTION, "%enchantment.protect.fire", self::RARITY_UNCOMMON, self::SLOT_ARMOR, 4, 1.25, [
+		self::registerEnchantment(new ProtectionEnchantment(self::PROTECTION, "%enchantment.protect.all", self::RARITY_COMMON, self::SLOT_ARMOR, self::SLOT_NONE, 4, 0.75, null));
+		self::registerEnchantment(new ProtectionEnchantment(self::FIRE_PROTECTION, "%enchantment.protect.fire", self::RARITY_UNCOMMON, self::SLOT_ARMOR, self::SLOT_NONE, 4, 1.25, [
 			EntityDamageEvent::CAUSE_FIRE,
 			EntityDamageEvent::CAUSE_FIRE_TICK,
 			EntityDamageEvent::CAUSE_LAVA
 			//TODO: check fireballs
-		], 2));
-		self::registerEnchantment(new ProtectionEnchantment(self::FEATHER_FALLING, "%enchantment.protect.fall", self::RARITY_UNCOMMON, self::SLOT_FEET, 4, 2.5, [
+		]));
+		self::registerEnchantment(new ProtectionEnchantment(self::FEATHER_FALLING, "%enchantment.protect.fall", self::RARITY_UNCOMMON, self::SLOT_FEET, self::SLOT_NONE, 4, 2.5, [
 			EntityDamageEvent::CAUSE_FALL
-		], 2));
-		self::registerEnchantment(new ProtectionEnchantment(self::BLAST_PROTECTION, "%enchantment.protect.explosion", self::RARITY_RARE, self::SLOT_ARMOR, 4, 1.5, [
+		]));
+		self::registerEnchantment(new ProtectionEnchantment(self::BLAST_PROTECTION, "%enchantment.protect.explosion", self::RARITY_RARE, self::SLOT_ARMOR, self::SLOT_NONE, 4, 1.5, [
 			EntityDamageEvent::CAUSE_BLOCK_EXPLOSION,
 			EntityDamageEvent::CAUSE_ENTITY_EXPLOSION
-		], 4));
-		self::registerEnchantment(new ProtectionEnchantment(self::PROJECTILE_PROTECTION, "%enchantment.protect.projectile", self::RARITY_UNCOMMON, self::SLOT_ARMOR, 4, 1.5, [
+		]));
+		self::registerEnchantment(new ProtectionEnchantment(self::PROJECTILE_PROTECTION, "%enchantment.protect.projectile", self::RARITY_UNCOMMON, self::SLOT_ARMOR, self::SLOT_NONE, 4, 1.5, [
 			EntityDamageEvent::CAUSE_PROJECTILE
-		], 2));
+		]));
 
-		self::registerEnchantment(new Enchantment(self::RESPIRATION, "%enchantment.oxygen", self::RARITY_RARE, self::SLOT_HEAD, 3, 4));
+		self::registerEnchantment(new Enchantment(self::RESPIRATION, "%enchantment.oxygen", self::RARITY_RARE, self::SLOT_HEAD, self::SLOT_NONE, 3));
 
-		self::registerEnchantment(new Enchantment(self::EFFICIENCY, "%enchantment.digging", self::RARITY_COMMON, self::SLOT_DIG | self::SLOT_SHEARS, 5, 1));
-		self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.untouching", self::RARITY_MYTHIC, self::SLOT_DIG | self::SLOT_SHEARS, 1, 8));
-		self::registerEnchantment(new Enchantment(self::UNBREAKING, "%enchantment.durability", self::RARITY_UNCOMMON, self::SLOT_ALL, 3, 2)); //TODO: item type flags need to be split up
-
-        //TODO: Implement this enchantments
-        self::registerEnchantment(new Enchantment(self::KNOCKBACK, "%enchantment.knockback", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_NONE, 2));
-        self::registerEnchantment(new Enchantment(self::POWER, "%enchantment.power", self::RARITY_UNCOMMON, self::SLOT_BOW | self::SLOT_NONE, 5));
-        self::registerEnchantment(new Enchantment(self::PUNCH, "%enchantment.puch", self::RARITY_UNCOMMON, self::SLOT_BOW, 2));
-        self::registerEnchantment(new Enchantment(self::AQUA_AFFINITY, "%enchantment.aqua_affinity", self::RARITY_UNCOMMON, self::SLOT_HEAD, 1));
-        self::registerEnchantment(new Enchantment(self::MENDING, "%enchantment.mending", self::RARITY_UNCOMMON, self::SLOT_ARMOR | self::SLOT_DIG | self::SLOT_CARROT_STICK | self::SLOT_ELYTRA | self::SLOT_FISHING_ROD | self::SLOT_FLINT_AND_STEEL, 1));
-        self::registerEnchantment(new Enchantment(self::SHARPNESS, "%enchantment.sharpness", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_AXE, 5));
-        self::registerEnchantment(new Enchantment(self::LOOTING, "%enchantment.looting", self::RARITY_UNCOMMON, self::SLOT_SWORD, 3));
-        self::registerEnchantment(new Enchantment(self::LUCK_OF_THE_SEA, "%enchantment.luck_of_the_sea", self::RARITY_UNCOMMON, self::SLOT_FISHING_ROD, 3));
-        self::registerEnchantment(new Enchantment(self::LURE, "%enchantment.lure", self::RARITY_UNCOMMON, self::SLOT_FISHING_ROD, 3));
-        self::registerEnchantment(new Enchantment(self::FIRE_ASPECT, "%enchantment.fire_aspect", self::RARITY_UNCOMMON, self::SLOT_SWORD, 2));
-        self::registerEnchantment(new Enchantment(self::FLAME, "%enchantment.flame", self::RARITY_UNCOMMON, self::SLOT_BOW, 1));
-        self::registerEnchantment(new Enchantment(self::FORTUNE, "%enchantment.fortune", self::RARITY_UNCOMMON, self::SLOT_DIG, 3));
-        self::registerEnchantment(new Enchantment(self::FROST_WALKER, "%enchantment.frost_walker", self::RARITY_UNCOMMON, self::SLOT_FEET, 2));
-        self::registerEnchantment(new Enchantment(self::INFINITY, "%enchantment.infinity", self::RARITY_UNCOMMON, self::SLOT_BOW, 1));
-        self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.silk_touch", self::RARITY_UNCOMMON, self::SLOT_DIG, 1));
-        self::registerEnchantment(new Enchantment(self::BANE_OF_ARTHROPODS, "%enchantment.bane_of_arthropods", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_AXE, 5));
-        self::registerEnchantment(new Enchantment(self::THORNS, "%enchantment.thorns", self::RARITY_UNCOMMON, self::SLOT_ARMOR, 3));
-        self::registerEnchantment(new Enchantment(self::SMITE, "%enchantment.smite", self::RARITY_UNCOMMON, self::SLOT_SWORD | self::SLOT_AXE, 5));
-        self::registerEnchantment(new Enchantment(self::DEPTH_STRIDER, "%enchantment.depth_strider", self::RARITY_UNCOMMON, self::SLOT_FEET, 3));
-
+		self::registerEnchantment(new Enchantment(self::EFFICIENCY, "%enchantment.digging", self::RARITY_COMMON, self::SLOT_DIG, self::SLOT_SHEARS, 5));
+		self::registerEnchantment(new Enchantment(self::SILK_TOUCH, "%enchantment.untouching", self::RARITY_MYTHIC, self::SLOT_DIG, self::SLOT_SHEARS, 1));
+		self::registerEnchantment(new Enchantment(self::UNBREAKING, "%enchantment.durability", self::RARITY_UNCOMMON, self::SLOT_DIG | self::SLOT_ARMOR | self::SLOT_FISHING_ROD | self::SLOT_BOW, self::SLOT_TOOL | self::SLOT_CARROT_STICK | self::SLOT_ELYTRA, 3));
 	}
 
 	/**
@@ -182,27 +160,27 @@ class Enchantment{
 	/** @var int */
 	private $rarity;
 	/** @var int */
-	private $slot;
+	private $primaryItemFlags;
+	/** @var int */
+	private $secondaryItemFlags;
 	/** @var int */
 	private $maxLevel;
-	/** @var int */
-	private $repairCost = 1;
 
-    /**
-     * @param int $id
-     * @param string $name
-     * @param int $rarity
-     * @param int $slot
-     * @param int $maxLevel
-     * @param int $repairCost
-     */
-	public function __construct(int $id, string $name, int $rarity, int $slot, int $maxLevel, int $repairCost = 1){
+	/**
+	 * @param int    $id
+	 * @param string $name
+	 * @param int    $rarity
+	 * @param int    $primaryItemFlags
+	 * @param int    $secondaryItemFlags
+	 * @param int    $maxLevel
+	 */
+	public function __construct(int $id, string $name, int $rarity, int $primaryItemFlags, int $secondaryItemFlags, int $maxLevel){
 		$this->id = $id;
 		$this->name = $name;
 		$this->rarity = $rarity;
-		$this->slot = $slot;
+		$this->primaryItemFlags = $primaryItemFlags;
+		$this->secondaryItemFlags = $secondaryItemFlags;
 		$this->maxLevel = $maxLevel;
-		$this->repairCost = $repairCost;
 	}
 
 	/**
@@ -230,21 +208,44 @@ class Enchantment{
 	}
 
 	/**
-	 * Returns an int with bitflags set to indicate what item types this enchantment can apply to.
+	 * Returns a bitset indicating what item types can have this item applied from an enchanting table.
+	 *
 	 * @return int
 	 */
-	public function getSlot() : int{
-		return $this->slot;
+	public function getPrimaryItemFlags() : int{
+		return $this->primaryItemFlags;
 	}
 
 	/**
-	 * Returns whether this enchantment can apply to the specified item type.
-	 * @param int $slot
+	 * Returns a bitset indicating what item types cannot have this item applied from an enchanting table, but can from
+	 * an anvil.
+	 *
+	 * @return int
+	 */
+	public function getSecondaryItemFlags() : int{
+		return $this->secondaryItemFlags;
+	}
+
+	/**
+	 * Returns whether this enchantment can apply to the item type from an enchanting table.
+	 *
+	 * @param int $flag
 	 *
 	 * @return bool
 	 */
-	public function hasSlot(int $slot) : bool{
-		return ($this->slot & $slot) > 0;
+	public function hasPrimaryItemType(int $flag) : bool{
+		return ($this->primaryItemFlags & $flag) !== 0;
+	}
+
+	/**
+	 * Returns whether this enchantment can apply to the item type from an anvil, if it is not a primary item.
+	 *
+	 * @param int $flag
+	 *
+	 * @return bool
+	 */
+	public function hasSecondaryItemType(int $flag) : bool{
+		return ($this->secondaryItemFlags & $flag) !== 0;
 	}
 
 	/**
@@ -255,20 +256,12 @@ class Enchantment{
 		return $this->maxLevel;
 	}
 
-    /**
-     * Returns the repair cost of enchantment.
-     * @return int
-     */
-    public function getRepairCost() : int{
-	    return $this->repairCost;
-    }
-
-    public function getMinEnchantability(int $enchLevel){
+	public function getMinEnchantability(int $enchLevel){
 		return 1 + $enchLevel * 10;
 	}
 
 	public function getMaxEnchantability(int $enchLevel){
-    	return $this->getMinEnchantability($enchLevel) + 5;
+		return $this->getMinEnchantability($enchLevel) + 5;
 	}
 
 	//TODO: methods for min/max XP cost bounds based on enchantment level (not needed yet - enchanting is client-side)

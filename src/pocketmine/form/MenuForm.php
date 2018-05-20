@@ -33,115 +33,122 @@ use pocketmine\utils\Utils;
  */
 abstract class MenuForm extends Form{
 
-    /** @var string */
-    protected $content;
-    /** @var MenuOption[] */
-    private $options;
+	/** @var string */
+	protected $content;
+	/** @var MenuOption[] */
+	private $options;
 
-    /** @var int|null */
-    private $selectedOption;
+	/** @var int|null */
+	private $selectedOption;
 
-    /**
-     * @param string       $title
-     * @param string       $text
-     * @param MenuOption[] $options
-     */
-    public function __construct(string $title, string $text, array $options){
-        assert(Utils::validateObjectArray($options, MenuOption::class));
+	/**
+	 * @param string       $title
+	 * @param string       $text
+	 * @param MenuOption[] $options
+	 */
+	public function __construct(string $title, string $text, array $options){
+		assert(Utils::validateObjectArray($options, MenuOption::class));
 
-        parent::__construct($title);
-        $this->content = $text;
-        $this->options = array_values($options);
-    }
+		parent::__construct($title);
+		$this->content = $text;
+		$this->options = array_values($options);
+	}
 
-    public function getType() : string{
-        return Form::TYPE_MENU;
-    }
+	public function getType() : string{
+		return Form::TYPE_MENU;
+	}
 
-    public function getOption(int $position) : ?MenuOption{
-        return $this->options[$position] ?? null;
-    }
+	/**
+	 * @return MenuOption[]
+	 */
+	public function getOptions() : array{
+		return $this->options;
+	}
 
-    /**
-     * Returns the index of the option selected by the user.
-     * @return int|null
-     */
-    public function getSelectedOptionIndex() : ?int{
-        return $this->selectedOption;
-    }
+	public function getOption(int $position) : ?MenuOption{
+		return $this->options[$position] ?? null;
+	}
 
-    /**
-     * Sets the selected option to the specified index or null. null = no selection.
-     * @param int $option
-     */
-    public function setSelectedOptionIndex(int $option) : void{
-        $this->selectedOption = $option;
-    }
+	/**
+	 * Returns the index of the option selected by the user.
+	 * @return int|null
+	 */
+	public function getSelectedOptionIndex() : ?int{
+		return $this->selectedOption;
+	}
 
-    /**
-     * Returns the menu option selected by the user.
-     *
-     * @return MenuOption
-     * @throws \InvalidStateException if no option is selected or if the selected option doesn't exist
-     */
-    public function getSelectedOption() : MenuOption{
-        $index = $this->getSelectedOptionIndex();
-        if($index === null){
-            throw new \InvalidStateException("No option selected (form closed or hasn't been submitted yet)");
-        }
+	/**
+	 * Sets the selected option to the specified index or null. null = no selection.
+	 * @param int $option
+	 */
+	public function setSelectedOptionIndex(int $option) : void{
+		$this->selectedOption = $option;
+	}
 
-        $option = $this->getOption($index);
+	/**
+	 * Returns the menu option selected by the user.
+	 *
+	 * @return MenuOption
+	 * @throws \InvalidStateException if no option is selected or if the selected option doesn't exist
+	 */
+	public function getSelectedOption() : MenuOption{
+		$index = $this->getSelectedOptionIndex();
+		if($index === null){
+			throw new \InvalidStateException("No option selected (form closed or hasn't been submitted yet)");
+		}
 
-        if($option !== null){
-            return $option;
-        }
+		$option = $this->getOption($index);
 
-        throw new \InvalidStateException("No option found at index $index");
-    }
+		if($option !== null){
+			return $option;
+		}
 
-    /**
-     * {@inheritdoc}
-     *
-     * {@link getSelectedOption} can be used to get the option selected by the user.
-     */
-    public function onSubmit(Player $player) : ?Form{
-        return null;
-    }
+		throw new \InvalidStateException("No option found at index $index");
+	}
 
-    /**
-     * Called when a player clicks the close button on this form without selecting an option.
-     * @param Player $player
-     * @return Form|null a form which will be opened immediately (before queued forms) as a response to this form, or null if not applicable.
-     */
-    public function onClose(Player $player) : ?Form{
-        return null;
-    }
+	/**
+	 * {@inheritdoc}
+	 *
+	 * {@link getSelectedOption} can be used to get the option selected by the user.
+	 */
+	public function onSubmit(Player $player) : ?Form{
+		return null;
+	}
 
-    public function clearResponseData() : void{
-        $this->selectedOption = null;
-    }
+	/**
+	 * Called when a player clicks the close button on this form without selecting an option.
+	 * @param Player $player
+	 * @return Form|null a form which will be opened immediately (before queued forms) as a response to this form, or null if not applicable.
+	 */
+	public function onClose(Player $player) : ?Form{
+		return null;
+	}
+
+	public function clearResponseData() : void{
+		$this->selectedOption = null;
+	}
 
 
-    final public function handleResponse(Player $player, $data) : ?Form{
-        if($data === null){
-            return $this->onClose($player);
-        }
+	final public function handleResponse(Player $player, $data) : ?Form{
+		if($data === null){
+			return $this->onClose($player);
+		}
 
-        if(is_int($data)){
-            if(!isset($this->options[$data])){
-                throw new \RuntimeException($player->getName() . " selected an option that doesn't seem to exist ($data)");
-            }
-            $this->setSelectedOptionIndex($data);
-            return $this->onSubmit($player);
-        }
+		if(is_int($data)){
+			if(!isset($this->options[$data])){
+				throw new \RuntimeException($player->getName() . " selected an option that doesn't seem to exist ($data)");
+			}
+			$this->setSelectedOptionIndex($data);
+			return $this->onSubmit($player);
+		}
 
-        throw new \UnexpectedValueException("Expected int or NULL, got " . gettype($data));
-    }
+		throw new \UnexpectedValueException("Expected int or NULL, got " . gettype($data));
+	}
 
-    public function serializeFormData() : array{
-        return [
-            "content" => $this->content,
-            "buttons" => $this->options //yes, this is intended (MCPE calls them buttons)
-        ];
-    }
+	public function serializeFormData() : array{
+		return [
+			"content" => $this->content,
+			"buttons" => $this->options //yes, this is intended (MCPE calls them buttons)
+		];
+	}
 }

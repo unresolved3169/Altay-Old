@@ -74,7 +74,7 @@ class FireworksRocket extends Projectile{
 		parent::__construct($level, $nbt, $shootingEntity);
 	}
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		$this->setGenericFlag(self::DATA_FLAG_AFFECTED_BY_GRAVITY, true);
 		$this->setGenericFlag(self::DATA_FLAG_HAS_COLLISION, true);
 		$this->propertyManager->setItem(self::DATA_DISPLAY_ITEM, $this->fireworksItem);
@@ -84,13 +84,13 @@ class FireworksRocket extends Projectile{
 		parent::initEntity();
 	}
 
-	public function spawnTo(Player $player){
+	public function spawnTo(Player $player) : void{
 		$this->setMotion($this->getDirectionVector());
 		$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_LAUNCH);
 		parent::spawnTo($player);
 	}
 
-	public function despawnFromAll(){
+	public function despawnFromAll() : void{
 		$this->broadcastEntityEvent(EntityEventPacket::FIREWORK_PARTICLES, 0);
 		parent::despawnFromAll();
 		$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_BLAST);
