@@ -40,10 +40,14 @@ class RedstoneTorch extends Torch{
 		return 7;
 	}
 
-	public function onRedstoneUpdate(int $power) : void{
-		if($power > 0){
+	public function onRedstoneUpdate() : void{
+		if($this->isTakingPower()){
 			$this->level->setBlock($this, BlockFactory::get(Block::UNLIT_REDSTONE_TORCH));
 		}
+	}
+
+	public function onNearbyBlockChange() : void{
+		$this->onRedstoneUpdate();
 	}
 
 	public function getPower() : int{
@@ -53,7 +57,7 @@ class RedstoneTorch extends Torch{
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null): bool{
 		$place = parent::place($item, $blockReplace, $blockClicked, $face, $clickVector, $player);
 		if($place){
-			$this->level->updateRedstone($this, $this->getPower());
+			$this->level->updateRedstone($this);
 		}
 
 		return $place;
@@ -62,7 +66,7 @@ class RedstoneTorch extends Torch{
 	public function onBreak(Item $item, Player $player = null) : bool{
 		$break = parent::onBreak($item, $player);
 		if($break){
-			$this->level->updateRedstone($this, 0);
+			$this->level->updateRedstone($this);
 		}
 
 		return $break;

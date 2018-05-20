@@ -36,9 +36,13 @@ class RedstoneTorchUnlit extends Torch{
 		return 0;
 	}
 
-	public function onRedstoneUpdate(int $power) : void{
-		if($power <= 0){
+	public function onRedstoneUpdate() : void{
+		if(!$this->isTakingPower()){
 			$this->level->setBlock($this, BlockFactory::get(Block::REDSTONE_TORCH));
 		}
+	}
+
+	public function onNearbyBlockChange() : void{
+		$this->onRedstoneUpdate();
 	}
 }

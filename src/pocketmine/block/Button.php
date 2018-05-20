@@ -63,10 +63,9 @@ abstract class Button extends Flowable{
 	private function updateRedstone(){
 		$this->meta ^= 0x08;
 		$this->level->setBlock($this, $this, true, false);
-		$power = $this->getPower();
 		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_REDSTONE_TRIGGER);
-		$this->level->updateRedstone($this, $power);
-		$this->level->updateRedstone($this->asVector3()->getSide(Vector3::getOppositeSide($this->isRedstoneSource() ? $this->meta ^ 0x08 : $this->meta)), $power);
+		$this->level->updateRedstone($this);
+		$this->level->updateRedstone($this->asVector3()->getSide(Vector3::getOppositeSide($this->isRedstoneSource() ? $this->meta ^ 0x08 : $this->meta)));
 	}
 
 	public function getPower() : int{

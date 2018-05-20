@@ -1124,7 +1124,7 @@ class Level implements ChunkManager, Metadatable{
 		}
 	}
 
-	public function updateRedstone(Vector3 $pos, int $power = 15, array $sides = null){
+	public function updateRedstone(Vector3 $pos, array $sides = null){
 		$pos = $pos->asVector3();
 		if($sides == null){
 			static $sides = [
@@ -1139,7 +1139,7 @@ class Level implements ChunkManager, Metadatable{
 
 		foreach($sides as $side){
 			$block = $this->getBlock($pos->getSide($side));
-			$block->onRedstoneUpdate($power);
+			$block->onRedstoneUpdate();
 		}
 	}
 

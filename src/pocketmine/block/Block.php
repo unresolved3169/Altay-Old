@@ -312,10 +312,8 @@ class Block extends Position implements BlockIds, Metadatable{
 
 	/**
 	 * Called when this block is updated by redstone source.
-	 *
-	 * @param int $power
 	 */
-	public function onRedstoneUpdate(int $power) : void{
+	public function onRedstoneUpdate() : void{
 
 	}
 
@@ -406,6 +404,29 @@ class Block extends Position implements BlockIds, Metadatable{
 
 	public function isRedstoneSource() : bool{
 		return $this->getPower() > 0;
+	}
+
+	public function isTakingPower() : bool{
+		if($this->isValid()){
+			static $sides = [
+				Vector3::SIDE_DOWN,
+				Vector3::SIDE_UP,
+				Vector3::SIDE_NORTH,
+				Vector3::SIDE_SOUTH,
+				Vector3::SIDE_WEST,
+				Vector3::SIDE_EAST
+			];
+			foreach($sides as $side){
+				$power = $this->getSide($side)->getPower();
+				if($power > 0){
+					return true;
+				}
+			}
+
+			// FIXME : Check buttons
+		}
+
+		return false;
 	}
 
 	/**
