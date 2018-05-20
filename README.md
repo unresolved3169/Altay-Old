@@ -52,6 +52,7 @@ Yes, you can.
  - [ ] Tiles
  	- [x] Beacon
  	- [x] Hopper
+ 	- [x] Jukebox
  	- [ ] Shulker Boxes
 	
 ***more...***
