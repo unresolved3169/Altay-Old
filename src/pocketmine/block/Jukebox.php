@@ -68,6 +68,7 @@ class Jukebox extends Solid{
 				if($item instanceof Record){
 					$jb->setRecordItem($item);
 					$jb->playDisc($player);
+					$player->getInventory()->removeItem($item);
 				}
 			}else{
 				$jb->dropDisc();
