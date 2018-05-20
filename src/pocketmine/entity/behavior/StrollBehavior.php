@@ -59,7 +59,7 @@ class StrollBehavior extends Behavior{
 	}
 
 	public function onTick(int $tick) : void{
-		$speedFactor = (float) ($this->speed*$this->speedMultiplier*0.7*($this->mob->isInsideOfWater() ? 0.3 : 1.0)); // 0.7 is a general mob base factor
+		$speedFactor = (float) ($this->speed*$this->speedMultiplier*0.7*($this->mob->isUnderwater() ? 0.3 : 1.0)); // 0.7 is a general mob base factor
 		$level = $this->mob->level;
 		$coordinates = $this->mob->asVector3();
 		$direction = $this->mob->getDirectionVector()->multiplyVector(new Vector3(1, 0, 1));

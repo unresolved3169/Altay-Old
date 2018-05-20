@@ -29,7 +29,7 @@ use pocketmine\entity\Entity;
 class FloatBehavior extends BehaviorTask{
 
 	public function onExecute() : void{
-		if($this->mob->isInsideOfWater()){
+		if($this->mob->isUnderwater()){
 			$this->mob->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_SWIMMER, true);
 			if($this->random->nextFloat() < 0.8){
 				$this->mob->jump();
