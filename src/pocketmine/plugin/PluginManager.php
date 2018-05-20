@@ -639,7 +639,7 @@ class PluginManager{
 
 									$parameters[] = new CommandParameter(
 										$pname,
-										isset($pdata["type"]) ? CommandParameter::convertString($pdata["type"]) : CommandParameter::ARG_TYPE_TEXT,
+										isset($pdata["type"]) ? CommandParameter::convertString($pdata["type"]) : CommandParameter::ARG_TYPE_STRING,
 										isset($pdata["optional"]) ? $pdata["optional"] : true,
 										$enum ?? ($pdata["postfix"] ?? null)
 									);

@@ -95,7 +95,7 @@ class Boat extends Vehicle{
 			return false;
 		}
 
-		$this->onGround = $this->isOnGround() and !$this->isInsideOfWater();
+		$this->onGround = $this->isOnGround() and !$this->isUnderwater();
 
 		if($this->getHealth() < $this->getMaxHealth() and $currentTick % 10 == 0 /* because of invincible normal 0/10 per tick*/)
 			$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_REGEN));

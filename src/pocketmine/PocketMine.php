@@ -78,7 +78,6 @@ namespace pocketmine {
 	use pocketmine\utils\Timezone;
 	use pocketmine\utils\Utils;
 	use pocketmine\wizard\SetupWizard;
-	use raklib\RakLib;
 
 	const NAME = "Altay";
 	const VERSION = "1.2";
