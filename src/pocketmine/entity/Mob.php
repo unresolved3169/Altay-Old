@@ -66,7 +66,7 @@ abstract class Mob extends Living{
 	 * @param int $diff
 	 * @return bool
 	 */
-	public function entityBaseTick(int $diff) : bool{
+	public function entityBaseTick(int $diff = 1) : bool{
 		$update = parent::entityBaseTick($diff);
 		foreach($this->behaviorTasks as $task){
 			$task->checkBehaviors();
@@ -99,7 +99,7 @@ abstract class Mob extends Living{
 	/**
 	 * @param float $spm
 	 */
-	public function moveForward(float $spm) : void{
+	public function moveForward(float $spm) : bool{
 		$sf = $this->getMovementSpeed() * $spm * 0.7;
 		$level = $this->level;
 		$dir = $this->getDirectionVector();
@@ -118,7 +118,7 @@ abstract class Mob extends Living{
 
 		if(!$collide and !$entityCollide){
 			$blockDown = $block->getSide(Vector3::SIDE_DOWN);
-			if (!$this->onGround && !$blockDown->isSolid()) return;
+			if (!$this->onGround && !$blockDown->isSolid()) return false;
 
 			$velocity = $dir->multiply($sf);
 			$entityVelocity = $this->getMotion();
@@ -126,19 +126,23 @@ abstract class Mob extends Living{
 
 			$m = $entityVelocity->length() < $velocity->length() ? $this->getMotion()->add($velocity->subtract($this->getMotion())) : $velocity;
 			$this->setMotion($m);
+			
+			return true;
 		}else{
 			if($this->canClimb() and !$entityCollide){
 				$this->setMotion(new Vector3(0,0.2,0));
+				return true;
 			}elseif(!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
 				if($this->onGround and $this->motionY === 0){
 					$this->server->getLogger()->debug("Jump Velocity: ".$this->getJumpVelocity());
 					$this->motionY += $this->getJumpVelocity(); // shortcut jump
-					$this->moveForward($spm);
+					return true;
 				}
 			}else{
 				$this->motionX = $this->motionZ = 0;
 			}
 		}
+		return false;
 	}
 
 	/**
