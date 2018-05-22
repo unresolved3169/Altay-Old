@@ -131,7 +131,7 @@ class EntityNavigator{
 		return $cache[$tile->__toString()] ?? null;
 	}
 	
-	public function getPathableY(int $y) : float{
+	public function getPathableY(float $y) : float{
 		$pos = $this->entity->asVector3();
 		for($i = 1; $i < 5; $i++){
 			$b = $this->level->getBlock($pos->getSide(Vector3::SIDE_DOWN, $i));
