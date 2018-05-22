@@ -42,11 +42,11 @@ class Jukebox extends Solid{
 	public function getName() : string{
 		return "Jukebox";
 	}
-	
+
 	public function getHardness() : float{
 		return 2.0;
 	}
-	
+
 	public function getToolType() : int{
 		return BlockToolType::TYPE_AXE;
 	}
@@ -68,6 +68,7 @@ class Jukebox extends Solid{
 				if($item instanceof Record){
 					$jb->setRecordItem($item);
 					$jb->playDisc($player);
+					$player->getInventory()->removeItem($item);
 				}
 			}else{
 				$jb->dropDisc();

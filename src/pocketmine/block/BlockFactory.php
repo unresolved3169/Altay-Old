@@ -172,9 +172,9 @@ class BlockFactory{
 		self::registerBlock(new Cake());
 		//TODO: REPEATER_BLOCK
 		//TODO: POWERED_REPEATER
-		//TODO: INVISIBLEBEDROCK
+		self::registerBlock(new InvisibleBedrock());
 		self::registerBlock(new Trapdoor());
-		//TODO: MONSTER_EGG
+		self::registerBlock(new MonsterEggBlock());
 		self::registerBlock(new StoneBricks());
 		self::registerBlock(new BrownMushroomBlock());
 		self::registerBlock(new RedMushroomBlock());
@@ -196,10 +196,10 @@ class BlockFactory{
 		self::registerBlock(new EnchantingTable());
 		self::registerBlock(new BrewingStand());
 		//TODO: CAULDRON_BLOCK
-		//TODO: END_PORTAL
+		self::registerBlock(new EndPortal());
 		self::registerBlock(new EndPortalFrame());
 		self::registerBlock(new EndStone());
-		//TODO: DRAGON_EGG
+		self::registerBlock(new DragonEgg());
 		self::registerBlock(new RedstoneLamp());
 		self::registerBlock(new LitRedstoneLamp());
 		//TODO: DROPPER
@@ -242,7 +242,7 @@ class BlockFactory{
 		self::registerBlock(new Wood2());
 		self::registerBlock(new WoodenStairs(Block::ACACIA_STAIRS, 0, "Acacia Stairs"));
 		self::registerBlock(new WoodenStairs(Block::DARK_OAK_STAIRS, 0, "Dark Oak Stairs"));
-		//TODO: SLIME
+		self::registerBlock(new SlimeBlock());
 
 		self::registerBlock(new IronTrapdoor());
 		self::registerBlock(new Prismarine());
@@ -440,7 +440,7 @@ class BlockFactory{
 	 * @return int
 	 */
 	public static function toStaticRuntimeId(int $id, int $meta = 0) : int{
-		if ($id === Block::AIR){
+		if($id === Block::AIR){
 			$meta = 0;
 		}
 
