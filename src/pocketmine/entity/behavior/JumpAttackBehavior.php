@@ -52,7 +52,7 @@ class JumpAttackBehavior extends Behavior{
 		return !$this->mob->isOnGround();
 	}
 
-	public function onTick(int $tick) : void{
+	public function onTick() : void{
 		$target = $this->mob->getTargetEntity();
 		$direction = $target->subtract($this->mob);
 		$distance = $this->mob->distance($target);

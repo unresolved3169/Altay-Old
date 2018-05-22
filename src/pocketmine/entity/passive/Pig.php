@@ -30,6 +30,7 @@ use pocketmine\entity\behavior\PanicBehavior;
 use pocketmine\entity\behavior\RandomLookAroundBehavior;
 use pocketmine\entity\behavior\TemptedBehavior;
 use pocketmine\entity\behavior\WanderBehavior;
+use pocketmine\entity\behavior\FloatBehavior;
 use pocketmine\entity\Rideable;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
@@ -51,18 +52,23 @@ class Pig extends Animal implements Rideable{
 		return "Pig";
 	}
 
-	public function getNormalBehaviors(): array{
+	public function getDefaultBehaviors(): array{
 		return [
-			new PanicBehavior($this, 60, 0.25, 1.25),
-			new TemptedBehavior($this, [
-				Item::POTATO,
-				Item::CARROT,
-				Item::BEETROOT,
-				Item::CARROT_ON_A_STICK
-			], 10, 1.2),
-			new RandomLookAroundBehavior($this),
-			new LookAtPlayerBehavior($this),
-			new WanderBehavior($this)
+			[
+			 new PanicBehavior($this, 60, 0.25, 1.25),
+			 new TemptedBehavior($this, [
+				 Item::POTATO,
+				 Item::CARROT,
+				 Item::BEETROOT,
+				 Item::CARROT_ON_A_STICK
+			 ], 10, 1.2),
+			 new RandomLookAroundBehavior($this),
+			 new LookAtPlayerBehavior($this),
+			 new WanderBehavior($this)
+			],
+			[
+			 new FloatBehavior($this)
+			]
 		];
 	}
 

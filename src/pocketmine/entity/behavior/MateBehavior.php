@@ -53,7 +53,7 @@ class MateBehavior extends Behavior{
 		return $this->targetMate->isAlive() and $this->targetMate->isInLove() and $this->spawnBabyDelay < 60;
 	}
 
-	public function onTick(int $tick) : void{
+	public function onTick() : void{
 		$this->mob->getNavigator()->tryMoveTo($this->targetMate, $this->speedMultiplier);
 
 		$this->spawnBabyDelay++;

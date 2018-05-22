@@ -29,6 +29,7 @@ use pocketmine\entity\behavior\LookAtPlayerBehavior;
 use pocketmine\entity\behavior\PanicBehavior;
 use pocketmine\entity\behavior\TemptedBehavior;
 use pocketmine\entity\behavior\WanderBehavior;
+use pocketmine\entity\behavior\FloatBehavior;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -65,16 +66,21 @@ class Rabbit extends Animal{
 		return "Rabbit";
 	}
 
-	protected function getNormalBehaviors(): array{
+	protected function getDefaultBehaviors(): array{
 		return [
-			new PanicBehavior($this, 60, $this->getMovementSpeed(), 2.2),
-			new TemptedBehavior($this, [
-				Item::CARROT,
-				Item::GOLDEN_CARROT,
-				Item::YELLOW_FLOWER
-			], 8.0, 1.0),
-			new WanderBehavior($this, 0.6),
-			new LookAtPlayerBehavior($this)
+		 [
+			 new PanicBehavior($this, 60, $this->getMovementSpeed(), 2.2),
+			 new TemptedBehavior($this, [
+				 Item::CARROT,
+				 Item::GOLDEN_CARROT,
+				 Item::YELLOW_FLOWER
+			 ], 8.0, 1.0),
+			 new WanderBehavior($this, 0.6),
+			 new LookAtPlayerBehavior($this)
+			],
+			[
+			 new FloatBehavior($this)
+			]
 		];
 	}
 

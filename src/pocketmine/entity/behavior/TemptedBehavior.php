@@ -27,6 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\entity\pathfinder\Path;
 
 class TemptedBehavior extends Behavior{
 
@@ -103,7 +104,7 @@ class TemptedBehavior extends Behavior{
 		return false;
 	}
 
-	public function onTick(int $tick): void{
+	public function onTick(): void{
 		if($this->temptingPlayer === null) return;
 		$distanceToPlayer = $this->mob->distance($this->temptingPlayer);
 

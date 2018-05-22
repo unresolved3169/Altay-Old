@@ -22,12 +22,13 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity\behavior;
+namespace pocketmine\entity\pathfinder;
 
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\block\Block;
+use pocketmine\block\Liquid;
 
 class EntityNavigator{
 
@@ -47,57 +48,66 @@ class EntityNavigator{
 		[-1, 1]
 	];
 
-	protected $currentY = 0;
-
 	public function __construct(Mob $entity){
 		$this->entity = $entity;
 		$this->level = $entity->getLevel();
 	}
-
-    public function navigate(Vector2 $from, Vector2 $to, int $maxAttempt = 3, array $blockCache) : array{
-        $this->level = $this->entity->getLevel(); //for level update
-        $attempt = 0;
-        $current = $from;
-        $path = [];
-        $this->currentY = $this->entity->y;
-
-        while($attempt++ < $maxAttempt){
-            $neighbors = $this->getNeighbors($current, $blockCache);
-            $currentG = PHP_INT_MAX;
-            $result = null;
-            foreach ($neighbors as $n){
-                $g = $this->calculateBaseDistance($n, $to) + $this->calculateBlockDistance($current, $n, $blockCache);
-
-                if(!in_array($n, $path)){
-                    if($g <= $currentG){
-                        $currentG = $g;
-                        $result = $n;
-                    }
-                }
-            }
-
-            if($result instanceof Vector2){
-                $current = $result;
-
-                $path[] = $current;
-
-                $this->currentY = $this->getBlockByPoint($current, $blockCache)->y;
-            }else{
-                //TODO: Fix this bug!
-                return $path; // empty path
-            }
-
-            if($current->floor()->equals($to->floor())){
-                return $path;
-            }
-        }
-
-        return $path;
-    }
-
-    public function calculateBaseDistance(Vector2 $from, Vector2 $to) : float{
-	    return abs($from->x - $to->x) + abs($from->y - $to->y);
-    }
+	
+	public function navigate(PathPoint $from, PathPoint $to, int $maxTick = 200, array $blockCache) : array{
+		$this->level = $this->entity->getLevel(); //for level update
+		$ticks = 0;
+		$from->fScore = $this->calculateGridDistance($from, $to);
+		$current = $from;
+		$path = [];
+		$open = [$from->__toString() => $from];
+		$currentY = $this->getPathableY($this->entity->y);
+		
+		while(!empty($open)){
+			$currentScore = PHP_INT_MAX;
+			$result = null;
+			
+			unset($open[$current->__toString()]);
+			
+			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
+				if(!in_array($n, $path) and !isset($open[$n->__toString()])){
+					$open[$n->__toString()] = $n;
+					
+					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
+					
+					$n->gScore = $g;
+					$n->fScore = $g + $this->calculateGridDistance($n, $to);
+					
+					if($n->fScore <= $currentScore){
+						$currentScore = $n->fScore;
+						$result = $n;
+					}
+				}
+			}
+			
+			if($result instanceof PathPoint){
+				$current = $result;
+				$path[] = $current;
+			}else{
+				$current = reset(usort($open, function($a,$b){
+					if($a->fScore == $b->fScore) return 0;
+					
+					return $a->fScore > $b->fScore ? 1 : -1;
+				}));
+			}
+			
+			$currentY = $this->getBlockByPoint($current, $blockCache)->y;
+			
+			if($current->floor()->equals($to->floor()) or $ticks++ >= $maxTick){
+				return $path;
+			}
+		}
+		
+		return $path;
+	}
+	
+	public function calculateGridDistance(Vector2 $from, Vector2 $to) : float{
+		return abs($from->x - $to->x) + abs($from->y - $to->y);
+	}
 
 	public function calculateBlockDistance(Vector2 $from, Vector2 $to, array $cache) : float{
 		$block1 = $this->getBlockByPoint($from, $cache);
@@ -120,14 +130,27 @@ class EntityNavigator{
 	public function getBlockByPoint(Vector2 $tile, array $cache) : ?Block{
 		return $cache[$tile->__toString()] ?? null;
 	}
+	
+	public function getPathableY(int $y) : float{
+		$pos = $this->entity->asVector3();
+		for($i = 1; $i < 5; $i++){
+			$b = $this->level->getBlock($pos->getSide(Vector3::SIDE_DOWN, $i));
+			if($b instanceof Liquid or $b->isSolid()){
+				return $y;
+			}else{
+				$y--;
+			}
+		}
+		return $y;
+	}
 
 	/**
 	 * @param Vector2 $tile
 	 * @param array $cache
 	 * @return Vector2[]
 	 */
-	public function getNeighbors(Vector2 $tile, array &$cache) : array{
-		$block = $this->level->getBlock(new Vector3($tile->x, $this->currentY, $tile->y));
+	public function getNeighbors(Vector2 $tile, array &$cache, int $startY) : array{
+		$block = $this->level->getBlock(new Vector3($tile->x, $startY, $tile->y));
 
 		if(!isset($cache[$tile->__toString()])){
 			$cache[$tile->__toString()] = $block;

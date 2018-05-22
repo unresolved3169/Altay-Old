@@ -31,6 +31,7 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\block\Water;
+use pocketmine\entity\pathfinder\Path;
 
 class FleeSunBehavior extends Behavior{
 
@@ -64,7 +65,7 @@ class FleeSunBehavior extends Behavior{
 		return $this->currentPath !== null and $this->currentPath->havePath();
 	}
 
-	public function onTick(int $tick) : void{
+	public function onTick() : void{
 		if($this->currentPath->havePath()){
 			if($next = $this->currentPath->getNextTile($this->mob)){
 				$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));

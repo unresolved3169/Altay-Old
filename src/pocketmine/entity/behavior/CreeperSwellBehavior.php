@@ -39,7 +39,7 @@ class CreeperSwellBehavior extends Behavior{
 		return $target === null ? false : ($this->mob->getGenericFlag(Entity::DATA_FLAG_IGNITED) || $this->mob->distance($target) < 3);
 	}
 
-	public function onTick(int $tick): void{
+	public function onTick(): void{
 		$target = $this->mob->getTargetEntity();
 		if($target == null or $this->mob->distance($target) > 7 or !$this->mob->canSeeEntity($target)){
 			// TODO $this->mob->prime(false);

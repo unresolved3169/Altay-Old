@@ -51,7 +51,7 @@ abstract class Behavior{
 		return $this->canStart();
 	}
 
-	public function onTick(int $tick) : void{}
+	public function onTick() : void{}
 
 	public function onEnd() : void{}
 

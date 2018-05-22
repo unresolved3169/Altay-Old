@@ -30,6 +30,7 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\level\particle\RedstoneParticle;
 use pocketmine\math\Vector3;
+use pocketmine\entity\pathfinder\Path;
 
 class MeleeAttackBehavior extends Behavior{
 
@@ -75,7 +76,7 @@ class MeleeAttackBehavior extends Behavior{
 		return $this->mob->getTargetEntityId() != null;
 	}
 
-	public function onTick(int $tick): void{
+	public function onTick(): void{
 		$target = $this->mob->getTargetEntity();
 		if($target == null) return;
 
@@ -88,7 +89,7 @@ class MeleeAttackBehavior extends Behavior{
 		$canSee = true;
 
 		if($canSee or $this->delay <= 0 or ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)){
-			$this->currentPath = Path::findPath($this->mob, $target, 50);
+			$this->currentPath = Path::findPath($this->mob, $target, 100);
 			$this->lastPlayerPos = $target->asVector3();
 
 			$this->delay = 4 + $this->random->nextBoundedInt(7);

@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity\behavior;
+namespace pocketmine\entity\pathfinder;
 
 use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
@@ -40,18 +40,20 @@ class Path{
 		$this->tiles = $tiles;
 	}
 
-	public static function findPath(Mob $mob, Vector3 $targetPos, int $maxAttempt = 3) : Path{
-		$from = new Vector2((int)$mob->x, (int)$mob->z);
-		$to = new Vector2((int)$targetPos->x, (int)$targetPos->z);
+	public static function findPath(Mob $mob, Vector3 $targetPos, int $maxAttempt = 200) : Path{
+		$from = new PathPoint($mob->x, $mob->z);
+		$to = new PathPoint($targetPos->x, $targetPos->z);
+	 
+		$cache = [];
 
-		return new Path($mob->getNavigator()->navigate($from, $to, $maxAttempt, []));
+		return new Path($mob->getNavigator()->navigate($from, $to, $maxAttempt, $cache));
 	}
 
 	public function havePath() : bool{
 		return !empty($this->tiles);
 	}
 
-	public function getNextTile(Entity $entity, bool $compressPath = false) : ?Vector2{
+	public function getNextTile(Entity $entity, bool $compressPath = false) : ?PathPoint{
 		if($this->havePath()){
 			$next = reset($this->tiles);
 

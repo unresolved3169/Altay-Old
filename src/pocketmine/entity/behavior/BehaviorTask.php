@@ -24,25 +24,53 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Mob;
-use pocketmine\utils\Random;
+class BehaviorTask{
 
-abstract class BehaviorTask{
+	/** @var Behavior[] */
+	protected $behaviors = [];
+	/** @var Behavior|null */
+	protected $currentBehavior = null;
 
-	/** @var Mob */
-	protected $mob;
-	/** @var Random */
-	protected $random;
-
-	public function getName() : string{
-		return (new \ReflectionClass($this))->getShortName();
+	public function __construct(array $behaviors){
+		$this->behaviors = $behaviors;
+	}
+	
+	public function setBehavior(Behavior $behavior, int $index = null) : void{
+		if($index === null){
+			$this->behaviors[] = $behavior;
+		}else{
+			$this->behaviors[$index] = $behavior;
+		}
+	}
+	
+	public function removeBehavior(int $index) : void{
+		unset($this->behaviors[$index]);
 	}
 
-	public function __construct(Mob $mob){
-		$this->mob = $mob;
-		$this->random = $mob->level->getRandom();
+	/**
+	 * Checks behaviors to execute
+	 */
+	public function checkBehaviors() : void{
+		foreach($this->behaviors as $index => $behavior){
+			if($behavior == $this->currentBehavior){
+				if($behavior->canContinue()){
+					$behavior->onTick();
+					break;
+				}
+				$behavior->onEnd();
+				$this->currentBehavior = null;
+			}
+			if($behavior->canStart()){
+				if($this->currentBehavior == null or (array_search($this->currentBehavior, $this->behaviors)) > $index){
+					if($this->currentBehavior != null){
+						$this->currentBehavior->onEnd();
+					}
+					$behavior->onStart();
+					$behavior->onTick();
+					$this->currentBehavior = $behavior;
+					break;
+				}
+			}
+		}
 	}
-
-	public abstract function onExecute() : void;
-
 }

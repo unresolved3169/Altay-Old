@@ -31,6 +31,7 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\utils\Random;
+use pocketmine\entity\pathfinder\Path;
 
 class WanderBehavior extends Behavior{
 
@@ -68,7 +69,7 @@ class WanderBehavior extends Behavior{
 		return $this->targetPos !== null;
 	}
 
-	public function onTick(int $tick) : void{
+	public function onTick() : void{
 		if(!$this->mob->getNavigator()->tryMoveTo($this->targetPos, $this->speedMultiplier)){
 			$this->targetPos = null;
 		}

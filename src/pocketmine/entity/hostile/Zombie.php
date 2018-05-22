@@ -33,6 +33,7 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 
 class Zombie extends Monster implements Ageable{
+	
 	public const NETWORK_ID = self::ZOMBIE;
 
 	public $width = 0.6;
@@ -80,25 +81,21 @@ class Zombie extends Monster implements Ageable{
 
 	protected function getNormalBehaviors() : array{
 		return [
-			new MeleeAttackBehavior($this, 1.0, 35),
-			new FleeSunBehavior($this),
-			new WanderBehavior($this),
-			new LookAtPlayerBehavior($this, 8.0),
-			new RandomLookAroundBehavior($this)
-		];
-	}
-
-	protected function getTargetBehaviors() : array{
-		return [
-			new HurtByTargetBehavior($this),
-			new FindAttackableTargetBehavior($this, 35)
-		];
-	}
-
-	protected function getBehaviorTasks() : array{
-		return [
-			new FloatBehavior($this),
-			new RestrictSunBehavior($this)
+		 [
+		  new MeleeAttackBehavior($this, 1.0, 35),
+		  new FleeSunBehavior($this),
+			 new WanderBehavior($this),
+			 new LookAtPlayerBehavior($this, 8.0),
+			 new RandomLookAroundBehavior($this)
+		 ],
+		 [
+		  new HurtByTargetBehavior($this),
+		  new FindAttackableTargetBehavior($this, 35)
+		 ],
+		 [
+			 new FloatBehavior($this),
+			 new RestrictSunBehavior($this)
+		 ]
 		];
 	}
 

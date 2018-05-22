@@ -51,7 +51,7 @@ class RandomLookAroundBehavior extends Behavior{
 		return $this->duration-- > 0 and abs($this->rotation) > 0;
 	}
 
-	public function onTick(int $tick) : void{
+	public function onTick() : void{
 		$this->mob->yaw += $this->signRotation($this->rotation) * 10;
 		$this->rotation -= 10;
 	}

@@ -26,9 +26,12 @@ namespace pocketmine\entity\hostile;
 
 use pocketmine\entity\behavior\LookAtPlayerBehavior;
 use pocketmine\entity\behavior\RandomLookAroundBehavior;
+use pocketmine\entity\behavior\FloatBehavior;
+use pocketmine\entity\behavior\FindAttackableTargetBehavior;
+use pocketmine\entity\behavior\HurtByTargetBehavior;
 use pocketmine\entity\behavior\WanderBehavior;
 use pocketmine\entity\Monster;
-use pocketmine\inventory\AltayEntityEquipment;
+use pocketmine\inventory\EntityEquipment;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\Player;
@@ -39,13 +42,13 @@ class Skeleton extends Monster{
 	public $width = 0.6;
 	public $height = 1.95;
 
-	/** @var AltayEntityEquipment */
+	/** @var EntityEquipment */
 	protected $equipment;
 
 	// speed 0.25
 	protected function initEntity(){
 		$this->setMaxHealth(20);
-		$this->equipment = new AltayEntityEquipment($this);
+		$this->equipment = new EntityEquipment($this);
 		$this->equipment->setItemInHand(ItemFactory::get(Item::BOW));
 		parent::initEntity();
 	}
@@ -59,18 +62,21 @@ class Skeleton extends Monster{
 		return $this->equipment;
 	}
 
-	protected function getNormalBehaviors() : array{
+	protected function getDefaultBehaviors() : array{
 		return [
-			//new MeleeAttackBehavior($this, 1.0, 16),
-			new LookAtPlayerBehavior($this, 8),
-			new RandomLookAroundBehavior($this),
-			new WanderBehavior($this)
-		];
-	}
-
-	protected function getTargetBehaviors(): array{
-		return [
-			// TODO
+		 [
+			 // ArrowAttackBehavior
+			 new LookAtPlayerBehavior($this, 8),
+			 new RandomLookAroundBehavior($this),
+			 new WanderBehavior($this)
+		 ],
+		 [
+		  new FloatBehavior($this)
+		 ],
+		 [
+		  new FindAttackableTargetBehavior($this, 8.0),
+		  new HurtByTargetBehavior($this, 8.0)
+		 ]
 		];
 	}
 

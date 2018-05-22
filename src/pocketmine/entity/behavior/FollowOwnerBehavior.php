@@ -29,6 +29,7 @@ use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\utils\MainLogger;
+use pocketmine\entity\pathfinder\Path;
 
 class FollowOwnerBehavior extends Behavior{
 
@@ -54,7 +55,7 @@ class FollowOwnerBehavior extends Behavior{
 		return true;
 	}
 
-	public function onTick(int $tick) : void{
+	public function onTick() : void{
 		/** @var Player $owner */
 		$owner = $this->mob->getOwningEntity();
 		if ($owner == null) return;

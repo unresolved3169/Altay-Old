@@ -25,22 +25,20 @@ declare(strict_types=1);
 namespace pocketmine\entity;
 
 use pocketmine\entity\behavior\{
-	Behavior, TargetBehavior
+	Behavior, BehaviorTask
 };
 use pocketmine\entity\behavior\EntityNavigator;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\utils\Utils;
+use pocketmine\entity\pathfinder\Path;
+use pocketmine\entity\pathfinder\EntityNavigator;
 
 abstract class Mob extends Living{
 
-	public $height = 0.6;
-	public $width = 1.8;
-
 	/** @var array */
-	protected $behaviors = [], $targetBehaviors = [], $behaviorTasks = [];
-	/** @var Behavior|null */
-	protected $currentBehavior = null, $currentTargetBehavior = null;
+	protected $behaviorTasks = [];
 	/** @var EntityNavigator */
 	protected $navigator;
 
@@ -53,104 +51,51 @@ abstract class Mob extends Living{
 		parent::initEntity();
 
 		$this->jumpVelocity = $this->jumpVelocity + ($this->width / 10) + $this->getAdditionalJumpVelocity(); // hmmmmmm
-		$this->behaviors = $this->getNormalBehaviors();
-		$this->targetBehaviors = $this->getTargetBehaviors();
 		$this->navigator = new EntityNavigator($this);
-	}
-
-	/**
-	 * @param array $behaviors
-	 * @param null|Behavior $currentBehavior
-	 * @return null|Behavior
-	 */
-	public function getReadyBehavior(array $behaviors, ?Behavior $currentBehavior = null): ?Behavior{
-		foreach($behaviors as $index => $behavior){
-			if($behavior == $currentBehavior){
-				if($behavior->canContinue()){
-					return $behavior;
-				}
-				$behavior->onEnd();
-				$currentBehavior = null;
-			}
-			if($behavior->canStart()){
-				if($currentBehavior == null or (array_search($currentBehavior, $behaviors)) > $index){
-					if($currentBehavior != null){
-						$currentBehavior->onEnd();
-					}
-					$behavior->onStart();
-					return $behavior;
-				}
+		
+		foreach($this->getDefaultBehaviors() as $behaviors){
+			if(is_array($behaviors)){
+				$this->addBehaviorTask($behaviors);
+			}else{
+				throw new \RuntimeExpection("Behaviors must be an array");
 			}
 		}
-		return null;
 	}
 
 	/**
-	 * @param int $tick
+	 * @param int $diff
 	 * @return bool
 	 */
-	public function onUpdate(int $tick): bool{
-		if($this->isAlive()){
-			$this->currentBehavior = $this->getReadyBehavior($this->behaviors, $this->currentBehavior);
-			if($this->currentBehavior instanceof Behavior){
-				$this->currentBehavior->onTick($tick);
-			}
-			$this->currentTargetBehavior = $this->getReadyBehavior($this->targetBehaviors, $this->currentTargetBehavior);
-			if($this->currentTargetBehavior instanceof TargetBehavior){
-				$this->currentTargetBehavior->onTick($tick);
-			}
-			foreach($this->getBehaviorTasks() as $task){
-				$task->onExecute();
-			}
+	public function entityBaseTick(int $diff) : bool{
+		$update = parent::entityBaseTick($diff);
+		foreach($this->behaviorTasks as $task){
+			$task->checkBehaviors();
 		}
-
-		return parent::onUpdate($tick);
+		
+		return $update;
 	}
-
+	
 	/**
-	 * @param int $index
-	 * @param Behavior $b
+	 * @return Behavior[][]
 	 */
-	public function setBehavior(int $index, Behavior $b) : void{
-		if($b instanceof TargetBehavior){
-			$this->targetBehaviors[$index] = $b;
-		}else {
-			$this->behaviors[$index] = $b;
+	protected function getDefaultBehaviors() : array{
+		return [];
+	}
+	
+	public function addBehaviorTask(array $behaviors) : void{
+		if(Utils::validateObjectArray($behaviors, Behavior::class)){
+			$this->behaviorTasks[] = new BehaviorTask($behaviors);
 		}
 	}
-
-	/**
-	 * @param int $key
-	 */
-	public function removeBehavior(int $key) : void{
-		unset($this->behaviors[$key]);
+	
+	public function getBehaviorTask(int $index) : ?BehaviorTask{
+		return $this->behaviorTasks[$index] ?? null;
 	}
-
-	/**
-	 * @param int $key
-	 */
-	public function removeTargetBehavior(int $key) : void{
-		unset($this->targetBehaviors[$key]);
+	
+	public function removeBehaviorTask(int $index) : void{
+	 unset($this->behaviorTasks[$index]);
 	}
-
-	/**
-	 * @return Behavior[]
-	 */
-	protected function getNormalBehaviors() : array{
-		return [];
-	}
-
-	protected function getBehaviorTasks() : array{
-		return [];
-	}
-
-	/**
-	 * @return array
-	 */
-	protected function getTargetBehaviors() : array{
-		return [];
-	}
-
+	
 	/**
 	 * @param float $spm
 	 */
@@ -173,7 +118,7 @@ abstract class Mob extends Living{
 
 		if(!$collide and !$entityCollide){
 			$blockDown = $block->getSide(Vector3::SIDE_DOWN);
-			//if (!$this->onGround && !$blockDown->isSolid()) return;
+			if (!$this->onGround && !$blockDown->isSolid()) return;
 
 			$velocity = $dir->multiply($sf);
 			$entityVelocity = $this->getMotion();
@@ -188,7 +133,7 @@ abstract class Mob extends Living{
 				if($this->onGround and $this->motionY === 0){
 					$this->server->getLogger()->debug("Jump Velocity: ".$this->getJumpVelocity());
 					$this->motionY += $this->getJumpVelocity(); // shortcut jump
-                    $this->moveForward($spm);
+					$this->moveForward($spm);
 				}
 			}else{
 				$this->motionX = $this->motionZ = 0;
@@ -207,8 +152,7 @@ abstract class Mob extends Living{
 		return 0.01;
 	}
 
-	public function hasEntityCollisionUpdate(): bool
-    {
-        return true;
-    }
+	public function hasEntityCollisionUpdate(): bool{
+		return true;
+ }
 }
