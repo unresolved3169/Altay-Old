@@ -71,7 +71,7 @@ abstract class Living extends Entity implements Damageable{
 
 	abstract public function getName() : string;
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		parent::initEntity();
 
 		$this->armorInventory = new ArmorInventory($this);
@@ -111,7 +111,7 @@ abstract class Living extends Entity implements Damageable{
 		}
 	}
 
-	protected function addAttributes(){
+	protected function addAttributes() : void{
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::HEALTH));
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::FOLLOW_RANGE));
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::KNOCKBACK_RESISTANCE));
@@ -120,7 +120,7 @@ abstract class Living extends Entity implements Damageable{
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::ABSORPTION));
 	}
 
-	public function setHealth(float $amount){
+	public function setHealth(float $amount) : void{
 		$wasAlive = $this->isAlive();
 		parent::setHealth($amount);
 		$this->attributeMap->getAttribute(Attribute::HEALTH)->setValue(ceil($this->getHealth()), true);
@@ -133,7 +133,7 @@ abstract class Living extends Entity implements Damageable{
 		return (int) $this->attributeMap->getAttribute(Attribute::HEALTH)->getMaxValue();
 	}
 
-	public function setMaxHealth(int $amount){
+	public function setMaxHealth(int $amount) : void{
 		$this->attributeMap->getAttribute(Attribute::HEALTH)->setMaxValue($amount);
 	}
 
@@ -141,11 +141,11 @@ abstract class Living extends Entity implements Damageable{
 		return $this->attributeMap->getAttribute(Attribute::ABSORPTION)->getValue();
 	}
 
-	public function setAbsorption(float $absorption){
+	public function setAbsorption(float $absorption) : void{
 		$this->attributeMap->getAttribute(Attribute::ABSORPTION)->setValue($absorption);
 	}
 
-	public function saveNBT(){
+	public function saveNBT() : void{
 		parent::saveNBT();
 		$this->namedtag->setFloat("Health", $this->getHealth(), true);
 
@@ -167,7 +167,6 @@ abstract class Living extends Entity implements Damageable{
 		}
 	}
 
-
 	public function hasLineOfSight(Entity $entity) : bool{
 		//TODO: head height
 		return true;
@@ -185,7 +184,7 @@ abstract class Living extends Entity implements Damageable{
 	/**
 	 * Removes all effects from the mob.
 	 */
-	public function removeAllEffects(){
+	public function removeAllEffects() : void{
 		foreach($this->effects as $effect){
 			$this->removeEffect($effect->getId());
 		}
@@ -196,7 +195,7 @@ abstract class Living extends Entity implements Damageable{
 	 *
 	 * @param int $effectId
 	 */
-	public function removeEffect(int $effectId){
+	public function removeEffect(int $effectId) : void{
 		if(isset($this->effects[$effectId])){
 			$effect = $this->effects[$effectId];
 			$this->server->getPluginManager()->callEvent($ev = new EntityEffectRemoveEvent($this, $effect));
@@ -220,7 +219,7 @@ abstract class Living extends Entity implements Damageable{
 	 *
 	 * @return EffectInstance|null
 	 */
-	public function getEffect(int $effectId){
+	public function getEffect(int $effectId) : ?EffectInstance{
 		return $this->effects[$effectId] ?? null;
 	}
 
@@ -291,7 +290,7 @@ abstract class Living extends Entity implements Damageable{
 	/**
 	 * Recalculates the mob's potion bubbles colour based on the active effects.
 	 */
-	protected function recalculateEffectColor(){
+	protected function recalculateEffectColor() : void{
 		/** @var Color[] $colors */
 		$colors = [];
 		$ambient = true;
@@ -322,7 +321,7 @@ abstract class Living extends Entity implements Damageable{
 	 * Sends the mob's potion effects to the specified player.
 	 * @param Player $player
 	 */
-	public function sendPotionEffects(Player $player){
+	public function sendPotionEffects(Player $player) : void{
 		foreach($this->effects as $effect){
 			$pk = new MobEffectPacket();
 			$pk->entityRuntimeId = $this->id;
@@ -373,13 +372,13 @@ abstract class Living extends Entity implements Damageable{
 	/**
 	 * Called when the entity jumps from the ground. This method adds upwards velocity to the entity.
 	 */
-	public function jump(){
+	public function jump() : void{
 		if($this->onGround){
 			$this->motionY = $this->getJumpVelocity(); //Y motion should already be 0 if we're jumping from the ground.
 		}
 	}
 
-	public function fall(float $fallDistance){
+	public function fall(float $fallDistance) : void{
 		$damage = ceil($fallDistance - 3 - ($this->hasEffect(Effect::JUMP) ? $this->getEffect(Effect::JUMP)->getEffectLevel() : 0));
 		if($damage > 0){
 			$ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_FALL, $damage);
@@ -426,7 +425,7 @@ abstract class Living extends Entity implements Damageable{
 		return $this->armorInventory;
 	}
 
-	public function setOnFire(int $seconds){
+	public function setOnFire(int $seconds) : void{
 		parent::setOnFire($seconds - (int) min($seconds, $seconds * $this->getHighestArmorEnchantmentLevel(Enchantment::FIRE_PROTECTION) * 0.15));
 	}
 
@@ -491,7 +490,7 @@ abstract class Living extends Entity implements Damageable{
 		$this->armorInventory->setContents($armor);
 	}
 
-	public function attack(EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source) : void{
 		if($this->attackTime > 0 or $this->noDamageTicks > 0){
 			$lastCause = $this->getLastDamageCause();
 			if($lastCause !== null and $lastCause->getDamage() >= $source->getDamage()){
@@ -641,7 +640,7 @@ abstract class Living extends Entity implements Damageable{
 		return $hasUpdate;
 	}
 
-	protected function doEffectsTick(int $tickDiff = 1){
+	protected function doEffectsTick(int $tickDiff = 1) : void{
 		foreach($this->effects as $instance){
 			$type = $instance->getType();
 			if($type->canTick($instance)){
@@ -658,7 +657,7 @@ abstract class Living extends Entity implements Damageable{
 	 * Ticks the entity's air supply when it cannot breathe.
 	 * @param int $tickDiff
 	 */
-	protected function doAirSupplyTick(int $tickDiff){
+	protected function doAirSupplyTick(int $tickDiff) : void{
 		if(($respirationLevel = $this->armorInventory->getHelmet()->getEnchantmentLevel(Enchantment::RESPIRATION)) <= 0 or
 			lcg_value() <= (1 / ($respirationLevel + 1))
 		){
@@ -678,7 +677,7 @@ abstract class Living extends Entity implements Damageable{
 	 * @return bool
 	 */
 	public function canBreathe() : bool{
-		return $this->hasEffect(Effect::WATER_BREATHING) or !$this->isInsideOfWater();
+		return $this->hasEffect(Effect::WATER_BREATHING) or !$this->isUnderwater();
 	}
 
 	/**
@@ -695,7 +694,7 @@ abstract class Living extends Entity implements Damageable{
 	 *
 	 * @param bool $value
 	 */
-	public function setBreathing(bool $value = true){
+	public function setBreathing(bool $value = true) : void{
 		$this->setGenericFlag(self::DATA_FLAG_BREATHING, $value);
 	}
 
@@ -713,7 +712,7 @@ abstract class Living extends Entity implements Damageable{
 	 * Sets the number of air ticks left in the entity's air supply.
 	 * @param int $ticks
 	 */
-	public function setAirSupplyTicks(int $ticks){
+	public function setAirSupplyTicks(int $ticks) : void{
 		$this->propertyManager->setShort(self::DATA_AIR, $ticks);
 	}
 
@@ -729,7 +728,7 @@ abstract class Living extends Entity implements Damageable{
 	 * Sets the maximum amount of air ticks the air supply can hold.
 	 * @param int $ticks
 	 */
-	public function setMaxAirSupplyTicks(int $ticks){
+	public function setMaxAirSupplyTicks(int $ticks) : void{
 		$this->propertyManager->setShort(self::DATA_MAX_AIR, $ticks);
 	}
 
@@ -737,7 +736,7 @@ abstract class Living extends Entity implements Damageable{
 	 * Called when the entity's air supply ticks reaches -20 or lower. The entity will usually take damage at this point
 	 * and then the supply is reset to 0, so this method will be called roughly every second.
 	 */
-	public function onAirExpired(){
+	public function onAirExpired() : void{
 		$ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_DROWNING, 2);
 		$this->attack($ev);
 	}
@@ -801,12 +800,9 @@ abstract class Living extends Entity implements Damageable{
 	 * @return Block|null
 	 */
 	public function getTargetBlock(int $maxDistance, array $transparent = []){
-		try{
-			$block = $this->getLineOfSight($maxDistance, 1, $transparent)[0];
-			if($block instanceof Block){
-				return $block;
-			}
-		}catch(\ArrayOutOfBoundsException $e){
+		$line = $this->getLineOfSight($maxDistance, 1, $transparent);
+		if(!empty($line)){
+			return array_shift($line);
 		}
 
 		return null;
@@ -850,7 +846,7 @@ abstract class Living extends Entity implements Damageable{
 		$this->attributeMap->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed);
 	}
 
-	public function close(){
+	public function close() : void{
 		if(!$this->closed){
 			if($this->armorInventory !== null){
 				$this->armorInventory->removeAllViewers(true);

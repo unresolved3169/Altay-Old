@@ -43,7 +43,7 @@ class Pig extends Animal implements Rideable{
 	public $width = 0.9;
 	public $height = 0.9;
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		$this->setMaxHealth(10);
 		parent::initEntity();
 	}

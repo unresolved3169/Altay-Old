@@ -44,7 +44,6 @@ use pocketmine\event\level\SpawnChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\biome\Biome;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\format\ChunkException;
 use pocketmine\level\format\EmptySubChunk;
@@ -326,24 +325,18 @@ class Level implements ChunkManager, Metadatable{
 		return -1;
 	}
 
-    public static function getDimensionFromString(string $str) : int{
-        switch(strtolower(trim($str))){
-            case "default":
-            case "overworld":
-            case "normal":
-                return Level::DIMENSION_OVERWORLD;
-
-            case "nether":
-            case "hell":
-                return Level::DIMENSION_NETHER;
-
-            case "end":
-            case "ender":
-                return Level::DIMENSION_END;
-        }
-
-        return Level::DIMENSION_OVERWORLD;
-    }
+	public static function getDimensionFromString(string $str) : int{
+		switch(strtolower(trim($str))){
+			case "nether":
+			case "hell":
+				return Level::DIMENSION_NETHER;
+			case "end":
+			case "ender":
+				return Level::DIMENSION_END;
+			default:
+				return Level::DIMENSION_OVERWORLD;
+		}
+	}
 
 	/**
 	 * Init the default level data
@@ -704,7 +697,7 @@ class Level implements ChunkManager, Metadatable{
 		if($this->stopTime){
 			return;
 		}else{
-			$this->time += 1;
+			++$this->time;
 		}
 	}
 
@@ -879,15 +872,6 @@ class Level implements ChunkManager, Metadatable{
 		$this->sleepTicks = $ticks;
 	}
 
-	public function sendBlockExtraData(int $x, int $y, int $z, int $id, int $data, array $targets = null){
-		$pk = new LevelEventPacket;
-		$pk->evid = LevelEventPacket::EVENT_SET_DATA;
-		$pk->position = new Vector3($x, $y, $z);
-		$pk->data = ($data << 8) | $id;
-
-		$this->server->broadcastPacket($targets ?? $this->getChunkPlayers($x >> 4, $z >> 4), $pk);
-	}
-
 	/**
 	 * @param Player[] $target
 	 * @param Block[]  $blocks
@@ -1023,7 +1007,7 @@ class Level implements ChunkManager, Metadatable{
 			Level::getXZ($index, $chunkX, $chunkZ);
 
 
-			if(!isset($this->chunks[$index]) or ($chunk = $this->getChunk($chunkX, $chunkZ, false)) === null){
+			if(($chunk = $this->chunks[$index] ?? null) === null){
 				unset($this->chunkTickList[$index]);
 				continue;
 			}elseif($loaders <= 0){
@@ -1142,13 +1126,12 @@ class Level implements ChunkManager, Metadatable{
 	 * @return Block[]
 	 */
 	public function getCollisionBlocks(AxisAlignedBB $bb, bool $targetFirst = false) : array{
-		$bbPlusOne = $bb->grow(1, 1, 1);
-		$minX = Math::floorFloat($bbPlusOne->minX);
-		$minY = Math::floorFloat($bbPlusOne->minY);
-		$minZ = Math::floorFloat($bbPlusOne->minZ);
-		$maxX = Math::ceilFloat($bbPlusOne->maxX);
-		$maxY = Math::ceilFloat($bbPlusOne->maxY);
-		$maxZ = Math::ceilFloat($bbPlusOne->maxZ);
+		$minX = Math::floorFloat($bb->minX - 1);
+		$minY = Math::floorFloat($bb->minY - 1);
+		$minZ = Math::floorFloat($bb->minZ - 1);
+		$maxX = Math::ceilFloat($bb->maxX + 1);
+		$maxY = Math::ceilFloat($bb->maxY + 1);
+		$maxZ = Math::ceilFloat($bb->maxZ + 1);
 
 		$collides = [];
 
@@ -1206,13 +1189,12 @@ class Level implements ChunkManager, Metadatable{
 	 * @return AxisAlignedBB[]
 	 */
 	public function getCollisionCubes(Entity $entity, AxisAlignedBB $bb, bool $entities = true) : array{
-		$bbPlusOne = $bb->grow(1, 1, 1);
-		$minX = Math::floorFloat($bbPlusOne->minX);
-		$minY = Math::floorFloat($bbPlusOne->minY);
-		$minZ = Math::floorFloat($bbPlusOne->minZ);
-		$maxX = Math::ceilFloat($bbPlusOne->maxX);
-		$maxY = Math::ceilFloat($bbPlusOne->maxY);
-		$maxZ = Math::ceilFloat($bbPlusOne->maxZ);
+		$minX = Math::floorFloat($bb->minX - 1);
+		$minY = Math::floorFloat($bb->minY - 1);
+		$minZ = Math::floorFloat($bb->minZ - 1);
+		$maxX = Math::ceilFloat($bb->maxX + 1);
+		$maxY = Math::ceilFloat($bb->maxY + 1);
+		$maxZ = Math::ceilFloat($bb->maxZ + 1);
 
 		$collides = [];
 
@@ -1341,7 +1323,7 @@ class Level implements ChunkManager, Metadatable{
 		return $this->getChunk($x >> 4, $z >> 4, false)->getFullBlock($x & 0x0f, $y, $z & 0x0f);
 	}
 
-	public function isInWorld(float $x, float $y, float $z) : bool{
+	public function isInWorld(int $x, int $y, int $z) : bool{
 		return (
 			$x <= INT32_MAX and $x >= INT32_MIN and
 			$y < $this->worldHeight and $y >= 0 and
@@ -1734,10 +1716,12 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		$drops = [];
-		$xpDrop = 0;
-
-		if($player !== null and !$player->isCreative()){
+		if($player === null or !$player->isCreative()){
 			$drops = array_merge(...array_map(function(Block $block) use ($item) : array{ return $block->getDrops($item); }, $affectedBlocks));
+		}
+
+		$xpDrop = 0;
+		if($player !== null and !$player->isCreative()){
 			$xpDrop = array_sum(array_map(function(Block $block) use ($item) : int{ return $block->getXpDropForTool($item); }, $affectedBlocks));
 		}
 
@@ -1784,12 +1768,15 @@ class Level implements ChunkManager, Metadatable{
 			$this->destroyBlockInternal($t, $item, $player, $createParticles);
 		}
 
-		$item->useOn($target);
-
-		$dropPos = $target->add(0.5, 0.5, 0.5);
+		$item->onDestroyBlock($target);
 
 		if(!empty($drops)){
-			$this->dropItems($dropPos, $drops);
+			$dropPos = $target->add(0.5, 0.5, 0.5);
+			foreach($drops as $drop){
+				if(!$drop->isNull()){
+					$this->dropItem($dropPos, $drop);
+				}
+			}
 		}
 
 		if($xpDrop > 0){
@@ -2193,34 +2180,6 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
-	 * Gets the raw block extra data
-	 *
-	 * @param int $x
-	 * @param int $y
-	 * @param int $z
-	 *
-	 * @return int 16-bit
-	 */
-	public function getBlockExtraDataAt(int $x, int $y, int $z) : int{
-		return $this->getChunk($x >> 4, $z >> 4, true)->getBlockExtraData($x & 0x0f, $y, $z & 0x0f);
-	}
-
-	/**
-	 * Sets the raw block metadata.
-	 *
-	 * @param int $x
-	 * @param int $y
-	 * @param int $z
-	 * @param int $id
-	 * @param int $data
-	 */
-	public function setBlockExtraDataAt(int $x, int $y, int $z, int $id, int $data){
-		$this->getChunk($x >> 4, $z >> 4, true)->setBlockExtraData($x & 0x0f, $y, $z & 0x0f, ($data << 8) | $id);
-
-		$this->sendBlockExtraData($x, $y, $z, $id, $data);
-	}
-
-	/**
 	 * Gets the raw block metadata
 	 *
 	 * @param int $x
@@ -2341,6 +2300,28 @@ class Level implements ChunkManager, Metadatable{
 	 */
 	public function setHeightMap(int $x, int $z, int $value){
 		$this->getChunk($x >> 4, $z >> 4, true)->setHeightMap($x & 0x0f, $z & 0x0f, $value);
+	}
+
+	/**
+	 * Return dimension of Level
+	 *
+	 * @return int
+	 */
+	public function getDimension() : int{
+		return $this->dimension;
+	}
+
+	/**
+	 * Sets dimension of Level
+	 *
+	 * @param int $dimension
+	 */
+	public function setDimension(int $dimension) : void{
+		if($dimension > 2 or $dimension < 0){
+			throw new \ArrayOutOfBoundsException("Dimension must be 0-2");
+		}
+
+		$this->dimension = $dimension;
 	}
 
 	/**
@@ -2612,6 +2593,25 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
+	 * @param Entity $entity
+	 *
+	 * @throws LevelException
+	 */
+	public function addEntity(Entity $entity){
+		if($entity->isClosed()){
+			throw new \InvalidArgumentException("Attempted to add a garbage closed Entity to Level");
+		}
+		if($entity->getLevel() !== $this){
+			throw new LevelException("Invalid Entity level");
+		}
+
+		if($entity instanceof Player){
+			$this->players[$entity->getId()] = $entity;
+		}
+		$this->entities[$entity->getId()] = $entity;
+	}
+
+	/**
 	 * Removes the entity from the level index
 	 *
 	 * @param Entity $entity
@@ -2630,25 +2630,6 @@ class Level implements ChunkManager, Metadatable{
 
 		unset($this->entities[$entity->getId()]);
 		unset($this->updateEntities[$entity->getId()]);
-	}
-
-	/**
-	 * @param Entity $entity
-	 *
-	 * @throws LevelException
-	 */
-	public function addEntity(Entity $entity){
-		if($entity->isClosed()){
-			throw new \InvalidArgumentException("Attempted to add a garbage closed Entity to Level");
-		}
-		if($entity->getLevel() !== $this){
-			throw new LevelException("Invalid Entity level");
-		}
-
-		if($entity instanceof Player){
-			$this->players[$entity->getId()] = $entity;
-		}
-		$this->entities[$entity->getId()] = $entity;
 	}
 
 	/**
@@ -2864,51 +2845,48 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
-	 * @param Vector3 $spawn default null
+	 * @param Vector3|null $spawn
 	 *
-	 * @return bool|Position
+	 * @return Position
 	 */
-	public function getSafeSpawn($spawn = null){
+	public function getSafeSpawn(?Vector3 $spawn = null) : Position{
 		if(!($spawn instanceof Vector3) or $spawn->y < 1){
 			$spawn = $this->getSpawnLocation();
 		}
-		if($spawn instanceof Vector3){
-			$max = $this->worldHeight;
-			$v = $spawn->floor();
-			$chunk = $this->getChunk($v->x >> 4, $v->z >> 4, false);
-			$x = (int) $v->x;
-			$z = (int) $v->z;
-			if($chunk !== null){
-				$y = (int) min($max - 2, $v->y);
-				$wasAir = ($chunk->getBlockId($x & 0x0f, $y - 1, $z & 0x0f) === 0);
-				for(; $y > 0; --$y){
-					if($this->isFullBlock($this->getBlockAt($x, $y, $z))){
-						if($wasAir){
-							$y++;
-							break;
-						}
-					}else{
-						$wasAir = true;
-					}
-				}
 
-				for(; $y >= 0 and $y < $max; ++$y){
-					if(!$this->isFullBlock($this->getBlockAt($x, $y + 1, $z))){
-						if(!$this->isFullBlock($this->getBlockAt($x, $y, $z))){
-							return new Position($spawn->x, $y === (int) $spawn->y ? $spawn->y : $y, $spawn->z, $this);
-						}
-					}else{
-						++$y;
+		$max = $this->worldHeight;
+		$v = $spawn->floor();
+		$chunk = $this->getChunk($v->x >> 4, $v->z >> 4, false);
+		$x = (int) $v->x;
+		$z = (int) $v->z;
+		if($chunk !== null){
+			$y = (int) min($max - 2, $v->y);
+			$wasAir = ($chunk->getBlockId($x & 0x0f, $y - 1, $z & 0x0f) === 0);
+			for(; $y > 0; --$y){
+				if($this->isFullBlock($this->getBlockAt($x, $y, $z))){
+					if($wasAir){
+						$y++;
+						break;
 					}
+				}else{
+					$wasAir = true;
 				}
-
-				$v->y = $y;
 			}
 
-			return new Position($spawn->x, $v->y, $spawn->z, $this);
+			for(; $y >= 0 and $y < $max; ++$y){
+				if(!$this->isFullBlock($this->getBlockAt($x, $y + 1, $z))){
+					if(!$this->isFullBlock($this->getBlockAt($x, $y, $z))){
+						return new Position($spawn->x, $y === (int) $spawn->y ? $spawn->y : $y, $spawn->z, $this);
+					}
+				}else{
+					++$y;
+				}
+			}
+
+			$v->y = $y;
 		}
 
-		return false;
+		return new Position($spawn->x, $v->y, $spawn->z, $this);
 	}
 
 	/**
@@ -3097,17 +3075,6 @@ class Level implements ChunkManager, Metadatable{
 		}
 	}
 
-	public static function getDimensionByBiomeId(int $biome) : int{
-		switch($biome){
-			case Biome::END:
-				return Level::DIMENSION_END;
-			case Biome::HELL:
-				return Level::DIMENSION_NETHER;
-			default:
-				return Level::DIMENSION_OVERWORLD;
-		}
-	}
-
 	public function setMetadata(string $metadataKey, MetadataValue $newMetadataValue){
 		$this->server->getLevelMetadata()->setMetadata($this, $metadataKey, $newMetadataValue);
 	}
@@ -3127,20 +3094,4 @@ class Level implements ChunkManager, Metadatable{
 	public function getRandom() : Random{
 	    return $this->random;
 	}
-
-    /**
-     * @return int
-     */
-    public function getDimension(): int
-    {
-        return $this->dimension;
-    }
-
-    /**
-     * @param int $dimension
-     */
-    public function setDimension(int $dimension): void
-    {
-        $this->dimension = $dimension;
-    }
 }

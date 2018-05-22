@@ -22,23 +22,15 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\event\server;
+namespace pocketmine\item;
 
-use pocketmine\updater\AutoUpdater;
+class RecordCat extends Record{
 
-/**
- * Called when the AutoUpdater receives notification of an available PocketMine-MP update.
- * Plugins may use this event to perform actions when an update notification is received.
- */
-class UpdateNotifyEvent extends ServerEvent{
-	/** @var AutoUpdater */
-	private $updater;
-
-	public function __construct(AutoUpdater $updater){
-		$this->updater = $updater;
+	public function __construct(){
+		parent::__construct(self::RECORD_CAT);
 	}
 
-	public function getUpdater() : AutoUpdater{
-		return $this->updater;
+	public function getSoundId() : string{
+		return "record.cat";
 	}
 }

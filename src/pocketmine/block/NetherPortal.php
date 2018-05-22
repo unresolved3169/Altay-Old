@@ -26,7 +26,6 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\item\Item;
-use pocketmine\level\biome\Biome;
 use pocketmine\level\Level;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -74,12 +73,11 @@ class NetherPortal extends Flowable{
 	public function onEntityCollide(Entity $entity) : void{
 		$server = Server::getInstance();
 		if($server->allowNether){
-			$level = $entity->getLevel()->getDimension() !== Level::DIMENSION_NETHER ? $server->getNetherLevel() : $server->getDefaultLevel();
 			if($entity instanceof Player and $entity->isSurvival()){
 				if(isset($this->time[$entity->getName()])){
 					$subtract = time() - $this->time[$entity->getName()];
 					if($subtract == 3){
-						$entity->teleport($level->getSafeSpawn($entity));
+						$entity->teleport(self::getTeleportLevel($entity, $server)->getSafeSpawn($entity));
 					}elseif($subtract > 3){
 						$this->time[$entity->getName()] = time();
 					}
@@ -87,7 +85,7 @@ class NetherPortal extends Flowable{
 					$this->time[$entity->getName()] = time();
 				}
 			}else{
-				$entity->teleport($level->getSafeSpawn($entity));
+				$entity->teleport(self::getTeleportLevel($entity, $server)->getSafeSpawn($entity));
 			}
 		}
 	}
@@ -103,5 +101,9 @@ class NetherPortal extends Flowable{
 		}
 
 		return $result;
+	}
+
+	private static function getTeleportLevel(Entity $entity, Server $server) : ?Level{
+		return $entity->getLevel()->getDimension() !== Level::DIMENSION_NETHER ? $server->getNetherLevel() : $server->getDefaultLevel();
 	}
 }

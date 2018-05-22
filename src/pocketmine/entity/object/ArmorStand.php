@@ -94,7 +94,7 @@ class ArmorStand extends Living{
 		parent::__construct($level, $nbt);
 	}
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		$this->setMaxHealth(6);
 		parent::initEntity();
 
@@ -212,12 +212,12 @@ class ArmorStand extends Living{
 		}
 	}
 
-	protected function applyGravity(){
+	protected function applyGravity() : void{
 		parent::applyGravity();
 		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_SOUND_ARMOR_STAND_FALL);
 	}
 
-	public function saveNBT(){
+	public function saveNBT() : void{
 		parent::saveNBT();
 
 		$this->namedtag->setTag(new ListTag(self::TAG_MAINHAND, [$this->equipment->getItemInHand()->nbtSerialize()], NBT::TAG_Compound));
@@ -236,7 +236,7 @@ class ArmorStand extends Living{
 		return array_merge($this->equipment->getContents(), $this->armorInventory->getContents(), [ItemFactory::get(Item::ARMOR_STAND)]);
 	}
 
-	public function attack(EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source) : void{
 		if($source instanceof EntityDamageByEntityEvent){
 			$damager = $source->getDamager();
 			if($damager instanceof Player){
