@@ -61,15 +61,17 @@ class EntityNavigator{
 		$path = [];
 		$open = [$from->__toString() => $from];
 		$currentY = $this->getPathableY($this->entity->y);
+		$closed = [];
 		
 		while(!empty($open)){
 			$currentScore = PHP_INT_MAX;
 			$result = null;
 			
 			unset($open[$current->__toString()]);
+			$closed[$current->__toString()] = $current;
 			
 			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
-				if(!in_array($n, $path) and !isset($open[$n->__toString()])){
+				if(!isset($closed[$n->__toString()]) and !isset($open[$n->__toString()])){
 					$open[$n->__toString()] = $n;
 					
 					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
