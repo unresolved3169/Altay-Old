@@ -31,7 +31,6 @@ use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\utils\Utils;
-use pocketmine\entity\pathfinder\Path;
 use pocketmine\entity\pathfinder\EntityNavigator;
 
 abstract class Mob extends Living{
@@ -56,7 +55,7 @@ abstract class Mob extends Living{
 			if(is_array($behaviors)){
 				$this->addBehaviorTask($behaviors);
 			}else{
-				throw new \RuntimeExpection("Behaviors must be an array");
+				throw new \RuntimeException("Behaviors must be an array");
 			}
 		}
 	}
@@ -94,9 +93,10 @@ abstract class Mob extends Living{
 	public function removeBehaviorTask(int $index) : void{
 	 unset($this->behaviorTasks[$index]);
 	}
-	
+
 	/**
 	 * @param float $spm
+	 * @return bool
 	 */
 	public function moveForward(float $spm) : bool{
 		$sf = $this->getMovementSpeed() * $spm * 0.7;

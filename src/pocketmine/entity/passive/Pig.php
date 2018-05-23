@@ -55,19 +55,19 @@ class Pig extends Animal implements Rideable{
 	public function getDefaultBehaviors(): array{
 		return [
 			[
-			 new PanicBehavior($this, 60, 0.25, 1.25),
-			 new TemptedBehavior($this, [
-				 Item::POTATO,
-				 Item::CARROT,
-				 Item::BEETROOT,
-				 Item::CARROT_ON_A_STICK
-			 ], 10, 1.2),
-			 new RandomLookAroundBehavior($this),
-			 new LookAtPlayerBehavior($this),
-			 new WanderBehavior($this)
+				new PanicBehavior($this, 60, 1.25),
+				new TemptedBehavior($this, [
+					Item::POTATO,
+					Item::CARROT,
+					Item::BEETROOT,
+					Item::CARROT_ON_A_STICK
+				], 10, 1.2),
+				new RandomLookAroundBehavior($this),
+				new LookAtPlayerBehavior($this),
+				new WanderBehavior($this)
 			],
 			[
-			 new FloatBehavior($this)
+				new FloatBehavior($this)
 			]
 		];
 	}

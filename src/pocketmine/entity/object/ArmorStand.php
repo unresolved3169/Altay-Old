@@ -29,7 +29,7 @@ use pocketmine\entity\EntityIds;
 use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\inventory\AltayEntityEquipment;
+use pocketmine\inventory\EntityEquipment;
 use pocketmine\inventory\utils\EquipmentSlot;
 use pocketmine\item\Armor;
 use pocketmine\item\Item;
@@ -53,7 +53,7 @@ class ArmorStand extends Living{
 	public const TAG_LAST_SIGNAL = "LastSignal";
 	public const TAG_POSE_INDEX = "PoseIndex";
 
-	/** @var AltayEntityEquipment */
+	/** @var EntityEquipment */
 	protected $equipment;
 
 	public $width = 0.5;
@@ -98,7 +98,7 @@ class ArmorStand extends Living{
 		$this->setMaxHealth(6);
 		parent::initEntity();
 
-		$this->equipment = new AltayEntityEquipment($this);
+		$this->equipment = new EntityEquipment($this);
 
 		/** @var ListTag $armor */
 		$armor = $this->namedtag->getTag(self::TAG_ARMOR);

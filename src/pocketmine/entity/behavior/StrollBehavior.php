@@ -24,13 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\block\Air;
-use pocketmine\block\Block;
 use pocketmine\entity\Mob;
-use pocketmine\level\Level;
-use pocketmine\math\AxisAlignedBB;
-use pocketmine\math\Vector3;
-use pocketmine\entity\pathfinder\Path;
 
 class StrollBehavior extends Behavior{
 

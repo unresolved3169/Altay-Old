@@ -52,7 +52,7 @@ class EntityNavigator{
 		$this->entity = $entity;
 		$this->level = $entity->getLevel();
 	}
-	
+
 	public function navigate(PathPoint $from, PathPoint $to, int $maxTick = 200, array $blockCache) : array{
 		$this->level = $this->entity->getLevel(); //for level update
 		$ticks = 0;
@@ -60,53 +60,54 @@ class EntityNavigator{
 		$current = $from;
 		$path = [];
 		$open = [$from->__toString() => $from];
-		$currentY = $this->getPathableY($this->entity->y);
+		$currentY = (int) $this->getPathableY($this->entity->y);
 		$closed = [];
-		
+
 		while(!empty($open)){
 			$currentScore = PHP_INT_MAX;
 			$result = null;
-			
+
 			unset($open[$current->__toString()]);
 			$closed[$current->__toString()] = $current;
-			
+
 			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
 				if(!isset($closed[$n->__toString()]) and !isset($open[$n->__toString()])){
 					$open[$n->__toString()] = $n;
-					
+
 					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
-					
+
 					$n->gScore = $g;
 					$n->fScore = $g + $this->calculateGridDistance($n, $to);
-					
+
 					if($n->fScore <= $currentScore){
 						$currentScore = $n->fScore;
 						$result = $n;
 					}
 				}
 			}
-			
+
 			if($result instanceof PathPoint){
 				$current = $result;
 				$path[] = $current;
 			}else{
-				$current = reset(usort($open, function($a,$b){
+				usort($open, function($a,$b){
 					if($a->fScore == $b->fScore) return 0;
-					
+
 					return $a->fScore > $b->fScore ? 1 : -1;
-				}));
+				});
+				$current = reset($open);
 			}
-			
+
 			$currentY = $this->getBlockByPoint($current, $blockCache)->y;
-			
+
 			if($current->floor()->equals($to->floor()) or $ticks++ >= $maxTick){
 				return $path;
 			}
 		}
-		
+
 		return $path;
 	}
-	
+
 	public function calculateGridDistance(Vector2 $from, Vector2 $to) : float{
 		return abs($from->x - $to->x) + abs($from->y - $to->y);
 	}
@@ -132,7 +133,7 @@ class EntityNavigator{
 	public function getBlockByPoint(Vector2 $tile, array $cache) : ?Block{
 		return $cache[$tile->__toString()] ?? null;
 	}
-	
+
 	public function getPathableY(float $y) : float{
 		$pos = $this->entity->asVector3();
 		for($i = 1; $i < 5; $i++){
@@ -149,6 +150,7 @@ class EntityNavigator{
 	/**
 	 * @param Vector2 $tile
 	 * @param array $cache
+	 * @param int $startY
 	 * @return Vector2[]
 	 */
 	public function getNeighbors(Vector2 $tile, array &$cache, int $startY) : array{

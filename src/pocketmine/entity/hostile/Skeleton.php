@@ -58,7 +58,7 @@ class Skeleton extends Monster{
 		$this->equipment->sendContents($player);
 	}
 
-	public function getEquipment() : AltayEntityEquipment{
+	public function getEquipment() : EntityEquipment{
 		return $this->equipment;
 	}
 

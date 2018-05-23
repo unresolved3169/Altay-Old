@@ -68,18 +68,18 @@ class Rabbit extends Animal{
 
 	protected function getDefaultBehaviors(): array{
 		return [
-		 [
-			 new PanicBehavior($this, 60, $this->getMovementSpeed(), 2.2),
-			 new TemptedBehavior($this, [
-				 Item::CARROT,
-				 Item::GOLDEN_CARROT,
-				 Item::YELLOW_FLOWER
-			 ], 8.0, 1.0),
-			 new WanderBehavior($this, 0.6),
-			 new LookAtPlayerBehavior($this)
+			[
+				new PanicBehavior($this, 60, 2.2),
+				new TemptedBehavior($this, [
+					Item::CARROT,
+					Item::GOLDEN_CARROT,
+					Item::YELLOW_FLOWER
+				], 8.0, 1.0),
+				new WanderBehavior($this, 0.6),
+				new LookAtPlayerBehavior($this)
 			],
 			[
-			 new FloatBehavior($this)
+				new FloatBehavior($this)
 			]
 		];
 	}

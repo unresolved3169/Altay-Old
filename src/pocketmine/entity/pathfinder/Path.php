@@ -29,7 +29,6 @@ use pocketmine\entity\Mob;
 use pocketmine\level\Level;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
-use pocketmine\math\VoxelRayTrace;
 
 class Path{
 

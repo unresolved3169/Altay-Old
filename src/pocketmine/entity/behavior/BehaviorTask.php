@@ -34,7 +34,7 @@ class BehaviorTask{
 	public function __construct(array $behaviors){
 		$this->behaviors = $behaviors;
 	}
-	
+
 	public function setBehavior(Behavior $behavior, int $index = null) : void{
 		if($index === null){
 			$this->behaviors[] = $behavior;
@@ -42,7 +42,7 @@ class BehaviorTask{
 			$this->behaviors[$index] = $behavior;
 		}
 	}
-	
+
 	public function removeBehavior(int $index) : void{
 		unset($this->behaviors[$index]);
 	}

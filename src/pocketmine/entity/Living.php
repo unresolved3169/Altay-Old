@@ -813,6 +813,7 @@ abstract class Living extends Entity implements Damageable{
 	 * their heads to turn.
 	 *
 	 * @param Vector3 $target
+	 * @param bool $onlyHead
 	 */
 	public function lookAt(Vector3 $target, bool $onlyHead = false) : void{
 		$horizontal = sqrt(($target->x - $this->x) ** 2 + ($target->z - $this->z) ** 2);

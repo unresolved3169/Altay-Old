@@ -28,7 +28,6 @@ use pocketmine\entity\Attribute;
 use pocketmine\entity\Mob;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\level\particle\RedstoneParticle;
 use pocketmine\math\Vector3;
 use pocketmine\entity\pathfinder\Path;
 
