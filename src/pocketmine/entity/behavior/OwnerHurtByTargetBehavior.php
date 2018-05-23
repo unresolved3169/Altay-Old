@@ -22,8 +22,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\behavior;
 
-abstract class Monster extends Mob{
+use pocketmine\event\entity\EntityDamageByEntityEvent;
 
+class OwnerHurtByTargetBehavior extends Behavior{
+
+	public function canStart() : bool{
+		$owner = $this->mob->getOwningEntity();
+
+		if($owner !== null){
+			$cause = $owner->getLastDamageCause();
+			if($cause instanceof EntityDamageByEntityEvent){
+				$this->mob->setTargetEntity($cause->getDamager());
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public function canContinue() : bool{
+		return false;
+	}
 }

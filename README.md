@@ -46,7 +46,7 @@ Yes, you can.
  - [ ] Others
  	- [x] Altay Configuration File
  	- [ ] Config Auto Updater
- 	- [ ] Entity Behaviors (MobAI)
+ 	- [x] Entity Behaviors (MobAI)
  	- [x] Level Dimensions
  	- [ ] Redstone
  - [ ] Tiles

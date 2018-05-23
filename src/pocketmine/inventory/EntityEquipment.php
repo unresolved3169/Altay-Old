@@ -31,7 +31,7 @@ use pocketmine\item\Item;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\Player;
 
-class AltayEntityEquipment extends BaseInventory{
+class EntityEquipment extends BaseInventory{
 
 	/** @var Living */
 	protected $holder;
@@ -46,7 +46,7 @@ class AltayEntityEquipment extends BaseInventory{
 	}
 
 	public function getName(): string{
-		return "Altay Entity Equipment";
+		return "Entity Equipment";
 	}
 
 	public function getDefaultSize() : int{

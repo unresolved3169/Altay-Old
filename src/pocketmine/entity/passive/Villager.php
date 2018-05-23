@@ -22,8 +22,13 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\passive;
 
+use pocketmine\entity\Ageable;
+use pocketmine\entity\Creature;
+use pocketmine\entity\Effect;
+use pocketmine\entity\EffectInstance;
+use pocketmine\entity\NPC;
 use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\TradeItems;
 use pocketmine\item\Item;
@@ -105,9 +110,9 @@ class Villager extends Creature implements NPC, Ageable{
 	}
 
 	public function updateTradeItems() : void{
-	    $this->offers = new CompoundTag("Offers", [
-	        new ListTag("Recipes", TradeItems::getItemsForVillager($this))
-        ]);
+		$this->offers = new CompoundTag("Offers", [
+			new ListTag("Recipes", TradeItems::getItemsForVillager($this))
+		]);
 	}
 
 	public function updateTradeTier() : void{

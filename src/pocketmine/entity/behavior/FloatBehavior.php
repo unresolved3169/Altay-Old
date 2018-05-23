@@ -22,8 +22,24 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\behavior;
 
-abstract class Monster extends Mob{
+use pocketmine\entity\Mob;
 
+class FloatBehavior extends Behavior{
+	
+	public function __construct(Mob $mob){
+		parent::__construct($mob);
+		$mob->setGenericFlag(Mob::DATA_FLAG_SWIMMER, true);
+	}
+
+	public function canStart() : bool{
+		if($this->mob->isUnderWater()){
+			if($this->random->nextFloat() < 0.8){
+				$this->mob->jump();
+				return true;
+			}
+		}
+		return false;
+	}
 }

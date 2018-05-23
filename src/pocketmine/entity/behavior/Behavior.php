@@ -22,8 +22,37 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\behavior;
 
-abstract class Monster extends Mob{
+use pocketmine\entity\Mob;
+use pocketmine\utils\Random;
+
+abstract class Behavior{
+
+	/** @var Mob */
+	protected $mob;
+	/** @var Random */
+	protected $random;
+
+	public function getName() : string{
+		return (new \ReflectionClass($this))->getShortName();
+	}
+
+	public function __construct(Mob $mob){
+		$this->mob = $mob;
+		$this->random = $mob->level->getRandom();
+	}
+
+	public abstract function canStart() : bool;
+
+	public function onStart() : void{}
+
+	public function canContinue() : bool{
+		return $this->canStart();
+	}
+
+	public function onTick() : void{}
+
+	public function onEnd() : void{}
 
 }
