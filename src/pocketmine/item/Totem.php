@@ -24,16 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
+class Totem extends Item{
+	public function __construct(int $meta = 0){
+		parent::__construct(self::TOTEM, $meta, "Totem of Undying");
+	}
 
-class Anvil extends ItemBlock{
-
-    public function __construct(int $meta = 0){
-        parent::__construct(Item::ANVIL, $meta);
-    }
-
-    public function getBlock() : Block{
-        return BlockFactory::get(Block::ANVIL, $this->meta << 2);
-    }
+	public function getMaxStackSize() : int{
+		return 1;
+	}
 }

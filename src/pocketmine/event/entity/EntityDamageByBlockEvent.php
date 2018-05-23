@@ -31,20 +31,19 @@ use pocketmine\entity\Entity;
  * Called when an entity takes damage from a block.
  */
 class EntityDamageByBlockEvent extends EntityDamageEvent{
-
 	/** @var Block */
 	private $damager;
 
-
 	/**
-	 * @param Block         $damager
-	 * @param Entity        $entity
-	 * @param int           $cause
-	 * @param float|float[] $damage
+	 * @param Block   $damager
+	 * @param Entity  $entity
+	 * @param int     $cause
+	 * @param float   $damage
+	 * @param float[] $modifiers
 	 */
-	public function __construct(Block $damager, Entity $entity, int $cause, $damage){
+	public function __construct(Block $damager, Entity $entity, int $cause, float $damage, array $modifiers = []){
 		$this->damager = $damager;
-		parent::__construct($entity, $cause, $damage);
+		parent::__construct($entity, $cause, $damage, $modifiers);
 	}
 
 	/**
@@ -53,6 +52,5 @@ class EntityDamageByBlockEvent extends EntityDamageEvent{
 	public function getDamager() : Block{
 		return $this->damager;
 	}
-
 
 }

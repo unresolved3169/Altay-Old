@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4bf3dc44e392672e94aad21b246a3ee8",
+    "content-hash": "1d5cf1c8d0f9a6d8e019a246e403c514",
     "packages": [
         {
             "name": "pocketmine/binaryutils",
@@ -127,12 +127,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/pmmp/Snooze.git",
-                "reference": "96c740826df04024d2b685aa5ba8b8d0bdc69439"
+                "reference": "b39f869b9f94de94eafc4f14aa650bd5b8cde436"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pmmp/Snooze/zipball/96c740826df04024d2b685aa5ba8b8d0bdc69439",
-                "reference": "96c740826df04024d2b685aa5ba8b8d0bdc69439",
+                "url": "https://api.github.com/repos/pmmp/Snooze/zipball/b39f869b9f94de94eafc4f14aa650bd5b8cde436",
+                "reference": "b39f869b9f94de94eafc4f14aa650bd5b8cde436",
                 "shasum": ""
             },
             "require": {
@@ -153,7 +153,7 @@
                 "source": "https://github.com/pmmp/Snooze/tree/master",
                 "issues": "https://github.com/pmmp/Snooze/issues"
             },
-            "time": "2018-05-09T12:39:21+00:00"
+            "time": "2018-05-20T11:03:22+00:00"
         },
         {
             "name": "pocketmine/spl",
