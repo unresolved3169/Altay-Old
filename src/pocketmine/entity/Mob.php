@@ -61,16 +61,17 @@ abstract class Mob extends Living{
 	}
 
 	/**
-	 * @param int $diff
+	 * @param int $tick
 	 * @return bool
 	 */
-	public function entityBaseTick(int $diff = 1) : bool{
-		$update = parent::entityBaseTick($diff);
+	public function onUpdate(int $tick) : bool{
+   if($this->closed or !$this->isAlive()) return false;
+   
 		foreach($this->behaviorTasks as $task){
 			$task->checkBehaviors();
 		}
 		
-		return $update;
+		return self::onUpdate($tick);
 	}
 	
 	/**

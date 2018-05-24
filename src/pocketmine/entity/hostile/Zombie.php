@@ -78,7 +78,7 @@ class Zombie extends Monster implements Ageable{
 		return $this->isBaby() ? 12 : 5;
 	}
 
-	protected function getNormalBehaviors() : array{
+	protected function getDefaultBehaviors() : array{
 		return [
 			[
 				new MeleeAttackBehavior($this, 1.0, 35),

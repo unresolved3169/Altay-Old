@@ -108,11 +108,11 @@ class EntityNavigator{
 		return $path;
 	}
 
-	public function calculateGridDistance(Vector2 $from, Vector2 $to) : float{
+	public function calculateGridDistance(PathPoint $from, PathPoint $to) : float{
 		return abs($from->x - $to->x) + abs($from->y - $to->y);
 	}
 
-	public function calculateBlockDistance(Vector2 $from, Vector2 $to, array $cache) : float{
+	public function calculateBlockDistance(PathPoint $from, PathPoint $to, array $cache) : float{
 		$block1 = $this->getBlockByPoint($from, $cache);
 		$block2 = $this->getBlockByPoint($to, $cache);
 
@@ -130,7 +130,7 @@ class EntityNavigator{
 		return $block1->distance($block2);
 	}
 
-	public function getBlockByPoint(Vector2 $tile, array $cache) : ?Block{
+	public function getBlockByPoint(PathPoint $tile, array $cache) : ?Block{
 		return $cache[$tile->__toString()] ?? null;
 	}
 
@@ -153,7 +153,7 @@ class EntityNavigator{
 	 * @param int $startY
 	 * @return Vector2[]
 	 */
-	public function getNeighbors(Vector2 $tile, array &$cache, int $startY) : array{
+	public function getNeighbors(PathPoint $tile, array &$cache, int $startY) : array{
 		$block = $this->level->getBlock(new Vector3($tile->x, $startY, $tile->y));
 
 		if(!isset($cache[$tile->__toString()])){
@@ -162,7 +162,7 @@ class EntityNavigator{
 
 		$list = [];
 		for ($index = 0; $index < count($this->neighbors); ++$index) {
-			$item = new Vector2($tile->x + $this->neighbors[$index][0], $tile->y + $this->neighbors[$index][1]);
+			$item = new PathPoint($tile->x + $this->neighbors[$index][0], $tile->y + $this->neighbors[$index][1]);
 			// Check for too high steps
 
 			$coord = new Vector3((int)$item->x, $block->y, (int)$item->y);
@@ -262,8 +262,8 @@ class EntityNavigator{
 		}
 	}
 
-	public function getTileFromPos(Vector3 $coord) : Vector2{
-		return new Vector2($coord->x, $coord->z);
+	public function getTileFromPos(Vector3 $coord) : PathPoint{
+		return new PathPoint($coord->x, $coord->z);
 	}
 
 	public function isObstructed(Vector3 $coord) : bool{
