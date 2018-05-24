@@ -148,7 +148,7 @@ class EntityNavigator{
 	}
 
 	/**
-	 * @param Vector2 $tile
+	 * @param PathPoint $tile
 	 * @param array $cache
 	 * @param int $startY
 	 * @return Vector2[]

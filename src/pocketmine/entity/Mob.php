@@ -50,7 +50,7 @@ abstract class Mob extends Living{
 
 		$this->jumpVelocity = $this->jumpVelocity + ($this->width / 10) + $this->getAdditionalJumpVelocity(); // hmmmmmm
 		$this->navigator = new EntityNavigator($this);
-		
+
 		foreach($this->getDefaultBehaviors() as $behaviors){
 			if(is_array($behaviors)){
 				$this->addBehaviorTask($behaviors);
@@ -65,34 +65,34 @@ abstract class Mob extends Living{
 	 * @return bool
 	 */
 	public function onUpdate(int $tick) : bool{
-   if($this->closed or !$this->isAlive()) return false;
-   
+		if($this->closed or !$this->isAlive()) return false;
+
 		foreach($this->behaviorTasks as $task){
 			$task->checkBehaviors();
 		}
-		
+
 		return self::onUpdate($tick);
 	}
-	
+
 	/**
 	 * @return Behavior[][]
 	 */
 	protected function getDefaultBehaviors() : array{
 		return [];
 	}
-	
+
 	public function addBehaviorTask(array $behaviors) : void{
 		if(Utils::validateObjectArray($behaviors, Behavior::class)){
 			$this->behaviorTasks[] = new BehaviorTask($behaviors);
 		}
 	}
-	
+
 	public function getBehaviorTask(int $index) : ?BehaviorTask{
 		return $this->behaviorTasks[$index] ?? null;
 	}
-	
+
 	public function removeBehaviorTask(int $index) : void{
-	 unset($this->behaviorTasks[$index]);
+		unset($this->behaviorTasks[$index]);
 	}
 
 	/**
@@ -126,7 +126,7 @@ abstract class Mob extends Living{
 
 			$m = $entityVelocity->length() < $velocity->length() ? $this->getMotion()->add($velocity->subtract($this->getMotion())) : $velocity;
 			$this->setMotion($m);
-			
+
 			return true;
 		}else{
 			if($this->canClimb() and !$entityCollide){
@@ -158,5 +158,5 @@ abstract class Mob extends Living{
 
 	public function hasEntityCollisionUpdate(): bool{
 		return true;
- }
+	}
 }
