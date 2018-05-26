@@ -1660,8 +1660,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(parent::setMotion($motion)){
 			$this->broadcastMotion();
 
-			if($this->motionY > 0){
-				$this->startAirTicks = (-log($this->gravity / ($this->gravity + $this->drag * $this->motionY)) / $this->drag) * 2 + 5;
+			if($this->motion->y > 0){
+				$this->startAirTicks = (-log($this->gravity / ($this->gravity + $this->drag * $this->motion->y)) / $this->drag) * 2 + 5;
 			}
 
 			return true;
@@ -1716,7 +1716,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		if($this->spawned){
 			$this->processMovement($tickDiff);
-			$this->motionX = $this->motionY = $this->motionZ = 0; //TODO: HACK! (Fixes player knockback being messed up)
+			$this->motion->x = $this->motion->y = $this->motion->z = 0; //TODO: HACK! (Fixes player knockback being messed up)
 
 			Timings::$timerEntityBaseTick->startTiming();
 			$this->entityBaseTick($tickDiff);
@@ -2011,7 +2011,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(($level = $this->server->getLevelByName($this->namedtag->getString("Level", "", true))) === null){
 			$this->setLevel($this->server->getDefaultLevel());
 			$this->namedtag->setString("Level", $this->level->getFolderName());
-			$spawnLocation = $this->level->getSpawnLocation();
+			$spawnLocation = $this->level->getSafeSpawn();
 			$this->namedtag->setTag(new ListTag("Pos", [
 				new DoubleTag("", $spawnLocation->x),
 				new DoubleTag("", $spawnLocation->y),

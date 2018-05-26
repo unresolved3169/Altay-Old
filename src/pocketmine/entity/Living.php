@@ -373,7 +373,7 @@ abstract class Living extends Entity implements Damageable{
 	 */
 	public function jump() : void{
 		if($this->onGround){
-			$this->motionY = $this->getJumpVelocity(); //Y motion should already be 0 if we're jumping from the ground.
+			$this->motion->y = $this->getJumpVelocity(); //Y motion should already be 0 if we're jumping from the ground.
 		}
 	}
 
@@ -561,23 +561,24 @@ abstract class Living extends Entity implements Damageable{
 		if($f <= 0){
 			return;
 		}
+		if(mt_rand() / mt_getrandmax() > $this->getAttributeMap()->getAttribute(Attribute::KNOCKBACK_RESISTANCE)->getValue()){
+			$f = 1 / $f;
 
-		$f = 1 / $f;
+			$motion = clone $this->motion;
 
-		$motion = new Vector3($this->motionX, $this->motionY, $this->motionZ);
+			$motion->x /= 2;
+			$motion->y /= 2;
+			$motion->z /= 2;
+			$motion->x += $x * $f * $base;
+			$motion->y += $base;
+			$motion->z += $z * $f * $base;
 
-		$motion->x /= 2;
-		$motion->y /= 2;
-		$motion->z /= 2;
-		$motion->x += $x * $f * $base;
-		$motion->y += $base;
-		$motion->z += $z * $f * $base;
+			if($motion->y > $base){
+				$motion->y = $base;
+			}
 
-		if($motion->y > $base){
-			$motion->y = $base;
+			$this->setMotion($motion);
 		}
-
-		$this->setMotion($motion);
 	}
 
 	protected function onDeathUpdate(int $tickDiff) : bool{
