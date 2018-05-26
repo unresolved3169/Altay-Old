@@ -1546,8 +1546,13 @@ class Server{
 			}
 			$this->config = new Config($this->dataPath . "pocketmine.yml", Config::YAML, []);
 
+			$lang = $this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE);
+			if(file_exists(\pocketmine\RESOURCE_PATH . "altay_$lang.yml")){
+				$content = file_get_contents(\pocketmine\RESOURCE_PATH . "altay_$lang.yml");
+			}else{
+				$content = file_get_contents(\pocketmine\RESOURCE_PATH . "altay_eng.yml");
+			}
 			if(!file_exists($this->dataPath . "altay.yml")){
-				$content = file_get_contents(\pocketmine\RESOURCE_PATH . "altay.yml");
 				@file_put_contents($this->dataPath . "altay.yml", $content);
 			}
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
