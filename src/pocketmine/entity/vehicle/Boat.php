@@ -24,22 +24,14 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\vehicle;
 
-use pocketmine\block\Liquid;
-use pocketmine\entity\Entity;
-use pocketmine\entity\EntityIds;
 use pocketmine\entity\Vehicle;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\math\Math;
 use pocketmine\math\Vector3;
-use pocketmine\Player;
 
 class Boat extends Vehicle{
-
-	public const NETWORK_ID = EntityIds::BOAT;
+	public const NETWORK_ID = self::BOAT;
 
 	public const TAG_VARIANT = "Variant";
 
@@ -61,14 +53,6 @@ class Boat extends Vehicle{
 
 	public function getRiderSeatPosition() : Vector3{
 		return new Vector3(0, -0.2, 0);
-	}
-
-	public function onMount(Entity $rider) : void{
-		$this->motion->y = 0.1; // HACK for gravity problem
-	}
-
-	public function onLeave(Entity $rider) : void{
-		$this->motion->y = 0;
 	}
 
 	public function getBoatType() : int{
@@ -103,30 +87,5 @@ class Boat extends Vehicle{
 		}
 
 		return parent::onUpdate($currentTick);
-	}
-
-	public function attack(EntityDamageEvent $source) : void{
-		if($source instanceof EntityDamageByEntityEvent){
-			$damager = $source->getDamager();
-			if($damager instanceof Player and $damager->isCreative()){
-				$source->setModifier($this->getHealth(), EntityDamageEvent::CAUSE_ENTITY_ATTACK);
-			}
-		}
-
-		parent::attack($source);
-	}
-
-	public function isOnGround() : bool{
-		$block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = (($this->y - 1) + $this->getEyeHeight())), Math::floorFloat($this->z));
-
-		if($block instanceof Liquid or $block->isSolid()){
-			return true;
-		}
-
-		return false;
-	}
-
-	protected function applyGravity() : void{
-		if(!$this->onGround) parent::applyGravity();
 	}
 }
