@@ -1546,7 +1546,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$entity->setRiddenByEntity($this);
 
 			if($send){
-				$this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3(0, $this->getMountedYOffset(), 0));
+				$this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, $this->getRiderSeatPosition());
 				$this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
 				$this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
 				$this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
@@ -1590,13 +1590,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->setRidingEntity(null);
 	}
 
-	public function getMountedYOffset() : float{
-		return $this->height * 0.75;
+	public function getRiderSeatPosition() : Vector3{
+		return new Vector3(0, $this->height * 0.75, 0);
 	}
 
 	public function updateRiderPosition() : void{
 		if($this->riddenByEntity !== null){
-			$this->riddenByEntity->setPosition($this->add(0, $this->getMountedYOffset(), 0)); // is it need @EmreTr1 ?
+			$this->riddenByEntity->setPosition($this->add($this->getRiderSeatPosition()));
 		}
 	}
 

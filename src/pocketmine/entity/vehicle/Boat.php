@@ -34,6 +34,7 @@ use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\Math;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Boat extends Vehicle{
@@ -58,16 +59,16 @@ class Boat extends Vehicle{
 		parent::initEntity();
 	}
 
-	public function getMountedYOffset() : float{
-		return 1.02001;
+	public function getRiderSeatPosition() : Vector3{
+		return new Vector3(0, -0.2, 0);
 	}
 
 	public function onMount(Entity $rider) : void{
-		$this->motionY = 0.1; // HACK for gravity problem
+		$this->motion->y = 0.1; // HACK for gravity problem
 	}
 
 	public function onLeave(Entity $rider) : void{
-		$this->motionY = 0;
+		$this->motion->y = 0;
 	}
 
 	public function getBoatType() : int{
@@ -97,8 +98,9 @@ class Boat extends Vehicle{
 
 		$this->onGround = $this->isOnGround() and !$this->isUnderwater();
 
-		if($this->getHealth() < $this->getMaxHealth() and $currentTick % 10 == 0 /* because of invincible normal 0/10 per tick*/)
+		if($this->getHealth() < $this->getMaxHealth() and $currentTick % 10 == 0 /* because of invincible normal 0/10 per tick*/){
 			$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_REGEN));
+		}
 
 		return parent::onUpdate($currentTick);
 	}
@@ -107,7 +109,7 @@ class Boat extends Vehicle{
 		if($source instanceof EntityDamageByEntityEvent){
 			$damager = $source->getDamager();
 			if($damager instanceof Player and $damager->isCreative()){
-				$source->setDamage($this->getHealth());
+				$source->setModifier($this->getHealth(), EntityDamageEvent::CAUSE_ENTITY_ATTACK);
 			}
 		}
 
