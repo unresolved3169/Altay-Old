@@ -41,8 +41,12 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 
 	/** @var BeaconInventory */
 	private $inventory;
-
-	protected $currentTick = 0;
+	
+	protected $minerals = [
+	 Block::IRON_BLOCK,
+	 Block::GOLD_BLOCK,
+	 Block::EMERALD_BLOCK,
+	 Block::DIAMOND_BLOCK];
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		if(!$nbt->hasTag(self::TAG_PRIMARY)){
@@ -102,13 +106,7 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 	}
 
 	public function onUpdate() : bool{
-		$levelTime = $this->level->getProvider()->getTime();
-		if($this->currentTick > $levelTime){
-			return true;
-		}
-
 		$pyramidLevels = $this->getPyramidLevels();
-		$this->currentTick = $levelTime + 80;
 
 		$duration = 180 + $pyramidLevels*40;
 		$range = 10 + $pyramidLevels*10;
@@ -137,12 +135,12 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 	}
 
 	private function getPyramidLevels() : int{
-		$allIron = true;
+		$allMineral = true;
 		for($i = 1; $i < 5; $i++){
 			for($x = -$i; $x < $i + 1; $x++){
 				for($z = -$i; $z < $i + 1; $z++){
-					$allIron = $allIron && $this->level->getBlockIdAt($this->x + $x, $this->y - $i, $this->z + $z) == Block::IRON_BLOCK;
-					if(!$allIron) return $i - 1;
+					$allMineral = $allMineral && in_array($this->level->getBlockIdAt($this->x + $x, $this->y - $i, $this->z + $z), $this->minerals);
+					if(!$allMineral) return $i - 1;
 				}
 			}
 		}
