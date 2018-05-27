@@ -24,16 +24,13 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
+class RecordCat extends Record{
 
-class Anvil extends ItemBlock{
+	public function __construct(){
+		parent::__construct(self::RECORD_CAT);
+	}
 
-    public function __construct(int $meta = 0){
-        parent::__construct(Item::ANVIL, $meta);
-    }
-
-    public function getBlock() : Block{
-        return BlockFactory::get(Block::ANVIL, $this->meta << 2);
-    }
+	public function getSoundId() : string{
+		return "record.cat";
+	}
 }

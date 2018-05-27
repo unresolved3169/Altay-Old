@@ -223,13 +223,15 @@ abstract class PluginBase implements Plugin{
 	/**
 	 * Returns all the resources packaged with the plugin
 	 *
-	 * @return string[]
+	 * @return \SplFileInfo[]
 	 */
 	public function getResources() : array{
 		$resources = [];
 		if(is_dir($this->file . "resources/")){
 			foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->file . "resources/")) as $resource){
-				$resources[] = $resource;
+				if($resource->isFile()){
+					$resources[] = $resource;
+				}
 			}
 		}
 

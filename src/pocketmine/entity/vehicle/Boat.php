@@ -24,21 +24,14 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\vehicle;
 
-use pocketmine\block\Liquid;
-use pocketmine\entity\Entity;
-use pocketmine\entity\EntityIds;
 use pocketmine\entity\Vehicle;
-use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\math\Math;
-use pocketmine\Player;
+use pocketmine\math\Vector3;
 
 class Boat extends Vehicle{
-
-	public const NETWORK_ID = EntityIds::BOAT;
+	public const NETWORK_ID = self::BOAT;
 
 	public const TAG_VARIANT = "Variant";
 
@@ -48,7 +41,7 @@ class Boat extends Vehicle{
 	protected $gravity = 0.9;
 	protected $drag = 0.1;
 
-	protected function initEntity(){
+	protected function initEntity() : void{
 		$this->setHealth(4);
 		$this->setGenericFlag(self::DATA_FLAG_STACKABLE);
 		$this->setImmobile(false);
@@ -58,16 +51,8 @@ class Boat extends Vehicle{
 		parent::initEntity();
 	}
 
-	public function getMountedYOffset() : float{
-		return 1.02001;
-	}
-
-	public function onMount(Entity $rider) : void{
-		$this->motionY = 0.1; // HACK for gravity problem
-	}
-
-	public function onLeave(Entity $rider) : void{
-		$this->motionY = 0;
+	public function getRiderSeatPosition() : Vector3{
+		return new Vector3(0, -0.2, 0);
 	}
 
 	public function getBoatType() : int{
@@ -78,7 +63,7 @@ class Boat extends Vehicle{
 		$this->propertyManager->setInt(self::DATA_VARIANT, $boatType);
 	}
 
-	public function saveNBT(){
+	public function saveNBT() : void{
 		parent::saveNBT();
 
 		$this->namedtag->setInt(self::TAG_VARIANT, $this->getBoatType());
@@ -95,36 +80,12 @@ class Boat extends Vehicle{
 			return false;
 		}
 
-		$this->onGround = $this->isOnGround() and !$this->isInsideOfWater();
+		$this->onGround = $this->isOnGround() and !$this->isUnderwater();
 
-		if($this->getHealth() < $this->getMaxHealth() and $currentTick % 10 == 0 /* because of invincible normal 0/10 per tick*/)
+		if($this->getHealth() < $this->getMaxHealth() and $currentTick % 10 == 0 /* because of invincible normal 0/10 per tick*/){
 			$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_REGEN));
+		}
 
 		return parent::onUpdate($currentTick);
-	}
-
-	public function attack(EntityDamageEvent $source){
-		if($source instanceof EntityDamageByEntityEvent){
-			$damager = $source->getDamager();
-			if($damager instanceof Player and $damager->isCreative()){
-				$source->setDamage($this->getHealth());
-			}
-		}
-
-		return parent::attack($source);
-	}
-
-	public function isOnGround() : bool{
-		$block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = (($this->y - 1) + $this->getEyeHeight())), Math::floorFloat($this->z));
-
-		if($block instanceof Liquid or $block->isSolid()){
-			return true;
-		}
-
-		return false;
-	}
-
-	protected function applyGravity(){
-		if(!$this->onGround) parent::applyGravity();
 	}
 }
