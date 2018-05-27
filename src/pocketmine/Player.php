@@ -2883,6 +2883,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk = new AnimatePacket();
 		$pk->entityRuntimeId = $this->getId();
 		$pk->action = $ev->getAnimationType();
+		$pk->float = $packet->float;
 		$this->server->broadcastPacket($this->getViewers(), $pk);
 
 		return true;
