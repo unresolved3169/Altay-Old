@@ -47,7 +47,7 @@ abstract class Button extends Flowable{
 
 	public function onActivate(Item $item, Player $player = null) : bool{
 		if(!$this->isRedstoneSource()){
-			$this->updateRedstone();
+			$this->updateButton();
 			$this->level->scheduleDelayedBlockUpdate($this, 30);
 		}
 
@@ -56,16 +56,16 @@ abstract class Button extends Flowable{
 
 	public function onScheduledUpdate() : void{
 		if($this->isRedstoneSource()){
-			$this->updateRedstone();
+			$this->updateButton();
 		}
 	}
 
-	private function updateRedstone(){
+	private function updateButton(){
 		$this->meta ^= 0x08;
 		$this->level->setBlock($this, $this, true, false);
 		$this->level->broadcastLevelEvent($this, LevelEventPacket::EVENT_REDSTONE_TRIGGER);
-		$this->level->updateRedstone($this);
-		$this->level->updateRedstone($this->asVector3()->getSide(Vector3::getOppositeSide($this->isRedstoneSource() ? $this->meta ^ 0x08 : $this->meta)));
+		$this->updateRedstone();
+		$this->getSide(Vector3::getOppositeSide($this->isRedstoneSource() ? $this->meta ^ 0x08 : $this->meta))->updateRedstone();
 	}
 
 	public function getPower() : int{

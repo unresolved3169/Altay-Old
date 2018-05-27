@@ -1115,25 +1115,6 @@ class Level implements ChunkManager, Metadatable{
 		}
 	}
 
-	public function updateRedstone(Vector3 $pos, array $sides = null){
-		$pos = $pos->asVector3();
-		if($sides == null){
-			static $sides = [
-				Vector3::SIDE_DOWN,
-				Vector3::SIDE_UP,
-				Vector3::SIDE_NORTH,
-				Vector3::SIDE_SOUTH,
-				Vector3::SIDE_WEST,
-				Vector3::SIDE_EAST
-			];
-		}
-
-		foreach($sides as $side){
-			$block = $this->getBlock($pos->getSide($side));
-			$block->onRedstoneUpdate();
-		}
-	}
-
 	/**
 	 * @param AxisAlignedBB $bb
 	 * @param bool          $targetFirst

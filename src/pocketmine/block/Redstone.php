@@ -56,7 +56,7 @@ class Redstone extends Solid{
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
 		$place = parent::place($item, $blockReplace, $blockClicked, $face, $clickVector, $player);
 		if($place){
-			$this->level->updateRedstone($this);
+			$this->updateRedstone();
 		}
 
 		return $place;
@@ -65,7 +65,7 @@ class Redstone extends Solid{
 	public function onBreak(Item $item, Player $player = null) : bool{
 		$break = parent::onBreak($item, $player);
 		if($break){
-			$this->level->updateRedstone($this);
+			$this->updateRedstone();
 		}
 
 		return $break;

@@ -27,6 +27,7 @@ declare(strict_types=1);
  */
 namespace pocketmine\block;
 
+use pocketmine\block\utils\RedstoneUtils;
 use pocketmine\entity\Entity;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
@@ -408,25 +409,27 @@ class Block extends Position implements BlockIds, Metadatable{
 
 	public function isTakingPower() : bool{
 		if($this->isValid()){
-			static $sides = [
-				Vector3::SIDE_DOWN,
-				Vector3::SIDE_UP,
-				Vector3::SIDE_NORTH,
-				Vector3::SIDE_SOUTH,
-				Vector3::SIDE_WEST,
-				Vector3::SIDE_EAST
-			];
-			foreach($sides as $side){
-				$power = $this->getSide($side)->getPower();
-				if($power > 0){
+			foreach($this->getAllSides() as $block){
+				if($block->getPower() > 0){
 					return true;
 				}
 			}
 
-			// FIXME : Check buttons
+			return RedstoneUtils::checkPower($this);
 		}
 
 		return false;
+	}
+
+	public function updateRedstone(array $blocks = null){
+		if($blocks == null){
+			$blocks = $this->getAllSides();
+		}
+
+		foreach($blocks as $block){
+			$block->onRedstoneUpdate();
+			RedstoneUtils::updateTakePowers($this, $block);
+		}
 	}
 
 	/**
