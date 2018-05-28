@@ -32,8 +32,10 @@ use pocketmine\item\Record;
 use pocketmine\network\mcpe\protocol\{
 	PlaySoundPacket, StopSoundPacket, TextPacket
 };
+use pocketmine\level\particle\{Particle, GenericParticle};
 
 class Jukebox extends Spawnable{
+	
 	public const TAG_RECORD_ITEM = "RecordItem";
 
 	/** @var Record|null */
@@ -69,8 +71,10 @@ class Jukebox extends Spawnable{
 			$pk->type = TextPacket::TYPE_JUKEBOX_POPUP;
 			$pk->needsTranslation = true;
 			$pk->message = "record.nowPlaying";
-			$pk->parameters = ["item.".str_replace(".", "_", $this->getRecordItem()->getSoundId()).".desc"]; // TODO
+			$pk->parameters = [ucwords(str_ireplace(["record", "."], ["", ""], $this->getRecordItem()->getSoundId()))];
 			$player->dataPacket($pk);
+			
+			$this->scheduleUpdate();
 		}
 	}
 
@@ -113,5 +117,15 @@ class Jukebox extends Spawnable{
 		if($this->namedtag->hasTag(self::TAG_RECORD_ITEM, CompoundTag::class)){
 			$nbt->setTag($this->namedtag->getTag(self::TAG_RECORD_ITEM));
 		}
+	}
+	
+	public function onUpdate() : bool{
+		if($this->hasRecordItem()){
+			if($this->server->getTick() % 30 === 0){
+				$this->level->addParticle(new GenericParticle($this->add(0.5,1.5,0.5), Particle::TYPE_NOTE)); // TODO: Note Particle color
+			}
+			return true;
+		}
+		return false;
 	}
 }
