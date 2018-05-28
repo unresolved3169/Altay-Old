@@ -103,9 +103,9 @@ class FireworksRocket extends Projectile{
 			$this->y += 0.4;
 			$this->updateMovement();
 
-			$f = sqrt($this->motionX * $this->motionX + $this->motionZ * $this->motionZ);
-			$this->yaw = atan2($this->motionX, $this->motionZ) * (180 / M_PI);
-			$this->pitch = atan2($this->motionY, $f) * (180 / M_PI);
+			$f = sqrt($this->motion->x * $this->motion->x + $this->motion->z * $this->motion->z);
+			$this->yaw = atan2($this->motion->x, $this->motion->z) * (180 / M_PI);
+			$this->pitch = atan2($this->motion->y, $f) * (180 / M_PI);
 
 			return parent::entityBaseTick($tickDiff);
 		}
