@@ -3446,6 +3446,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}else{
 				$this->formQueue[] = $form;
 			}
+			$this->sendFormRequestPacket($this->sentForm, $this->sentFormId); // temp fix
 			return;
 		}
 
@@ -3492,8 +3493,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return true;
 	}
 
-	private function sendFormRequestPacket(Form $form) : void{
-		$id = $this->formIdCounter++;
+	private function sendFormRequestPacket(Form $form, ?int = null) : void{
+		$id = $id === null ? $this->formIdCounter++ : $id;
 		$pk = new ModalFormRequestPacket();
 		$pk->formId = $id;
 		$pk->formData = json_encode($form);
