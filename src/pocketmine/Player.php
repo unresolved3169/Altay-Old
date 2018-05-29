@@ -3493,7 +3493,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return true;
 	}
 
-	private function sendFormRequestPacket(Form $form, ?int = null) : void{
+	private function sendFormRequestPacket(Form $form, ?int $id = null) : void{
 		$id = $id === null ? $this->formIdCounter++ : $id;
 		$pk = new ModalFormRequestPacket();
 		$pk->formId = $id;
