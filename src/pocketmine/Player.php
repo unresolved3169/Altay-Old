@@ -3435,18 +3435,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * Sends a Form to the player, or queue to send it if a form is already open.
 	 *
 	 * @param Form $form
+	 * @param bool $formOverwrite if true, the form will overwrite to old form.
 	 * @param bool $prepend if true, the form will be sent immediately after the current form is closed (if any), before other queued forms.
 	 */
-	public function sendForm(Form $form, bool $prepend = false) : void{
+	public function sendForm(Form $form, bool $formOverwrite = true, bool $prepend = false) : void{
 		$form->setInUse();
 
-		if($this->sentForm !== null){
+		if($this->sentForm !== null and !$formOverwrite){
 			if($prepend){
 				array_unshift($this->formQueue, $form);
 			}else{
 				$this->formQueue[] = $form;
 			}
-			$this->sendFormRequestPacket($this->sentForm, $this->sentFormId); // temp fix
 			return;
 		}
 
