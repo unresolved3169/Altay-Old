@@ -80,8 +80,8 @@ namespace pocketmine {
 	use pocketmine\wizard\SetupWizard;
 
 	const NAME = "Altay";
-	const VERSION = "1.2";
-	const API_VERSION = "3.0.1";
+	const VERSION = "1.7";
+	const API_VERSION = "3.0.0-ALPHA12";
 	const CODENAME = "TuranicPro";
 
 	const MIN_PHP_VERSION = "7.2.0";
