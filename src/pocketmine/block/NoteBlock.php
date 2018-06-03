@@ -28,6 +28,8 @@ use pocketmine\item\Item;
 use pocketmine\level\sound\NoteblockSound;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
+use pocketmine\tile\Tile;
+use pocketmine\tile\NoteBlock as TileNoteBlock;
 
 class Noteblock extends Solid{
 
@@ -48,11 +50,20 @@ class Noteblock extends Solid{
 	/**
 	 * @return int
 	 */
-	public function getStrength(){
-		if($this->meta < 24) $this->meta++;
-		else $this->meta = 0;
-		$this->getLevel()->setBlock($this, $this);
-		return $this->meta * 1;
+	public function calculateNote() : int{
+		$tile = $this->level->getTile($this);
+		
+		if(!($tile instanceof TileNoteBlock)){
+			$tile = Tile::createTile(Tile::NOTEBLOCK, $this->level, TileNoteBlock::createNBT($this));
+		}
+		
+		$note = $tile->getNote();
+		$nextNote = $note + 1;
+		if($nextNote > 24) $nextNote = 0;
+		
+		$tile->setNote($nextNote);
+		
+		return $note;
 	}
 
 	/**
@@ -142,7 +153,7 @@ class Noteblock extends Solid{
 	public function onActivate(Item $item, Player $player = null) : bool{
 		$up = $this->getSide(Vector3::SIDE_UP);
 		if($up->getId() == 0){
-			$this->getLevel()->addSound(new NoteblockSound($this, $this->getInstrument(), $this->getStrength()));
+			$this->getLevel()->addSound(new NoteblockSound($this, $this->getInstrument(), $this->calculateNote()));
 			return true;
 		}else{
 			return false;

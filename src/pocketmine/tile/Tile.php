@@ -64,6 +64,7 @@ abstract class Tile extends Position{
 	public const BEACON = "Beacon";
 	public const VIRTUAL = "Virtual";
 	public const JUKEBOX = "Jukebox";
+	public const NOTEBLOCK = "noteblock";
 
 	/** @var int */
 	public static $tileCount = 1;
@@ -101,6 +102,7 @@ abstract class Tile extends Position{
 		self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
 		self::registerTile(VirtualHolder::class, [self::VIRTUAL]);
 		self::registerTile(Jukebox::class, [self::JUKEBOX, "minecraft:jukebox"]);
+		self::registerTile(NoteBlock::class, [self::NOTEBLOCK, "minecraft:noteblock"]);
 	}
 
 	/**
