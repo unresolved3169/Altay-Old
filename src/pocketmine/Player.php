@@ -2805,22 +2805,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->toggleSneak(false);
 				return true;
 			case PlayerActionPacket::ACTION_START_GLIDE:
-				$ev = new PlayerToggleGlideEvent($this, true);
-				$this->server->getPluginManager()->callEvent($ev);
-				if($ev->isCancelled()){
-					$this->sendData($this);
-				}else{
-					$this->setGliding(true);
-				}
+				$this->toggleGlide(true);
 				break;
 			case PlayerActionPacket::ACTION_STOP_GLIDE:
-				$ev = new PlayerToggleGlideEvent($this, false);
-				$this->server->getPluginManager()->callEvent($ev);
-				if($ev->isCancelled()){
-					$this->sendData($this);
-				}else{
-					$this->setGliding(false);
-				}
+				$this->toggleGlide(false);
 				break;
 			case PlayerActionPacket::ACTION_CONTINUE_BREAK:
 				$block = $this->level->getBlock($pos);
@@ -2865,6 +2853,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->sendData($this);
 		}else{
 			$this->setSneaking($sneak);
+		}
+	}
+
+	public function toggleGlide(bool $glide) : void{
+		$ev = new PlayerToggleGlideEvent($this, $glide);
+		$this->server->getPluginManager()->callEvent($ev);
+		if($ev->isCancelled()){
+			$this->sendData($this);
+		}else{
+			$this->setGliding($glide);
 		}
 	}
 
