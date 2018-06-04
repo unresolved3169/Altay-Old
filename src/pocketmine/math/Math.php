@@ -35,8 +35,8 @@ abstract class Math{
 	}
 
 	public static function ceilFloat($n) : int{
-		$i = (int) ($n + 1);
-		return $n >= $i ? $i : $i - 1;
+		$i = (int) $n;
+		return $n <= $i ? $i : $i + 1;
 	}
 
 	/**

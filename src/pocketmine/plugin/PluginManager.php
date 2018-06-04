@@ -566,6 +566,7 @@ class PluginManager{
 				foreach($plugin->getDescription()->getPermissions() as $perm){
 					$this->addPermission($perm);
 				}
+				$plugin->getScheduler()->setEnabled(true);
 				$plugin->getPluginLoader()->enablePlugin($plugin);
 			}catch(\Throwable $e){
 				$this->server->getLogger()->logException($e);
@@ -679,10 +680,18 @@ class PluginManager{
 				$this->server->getLogger()->logException($e);
 			}
 
-			$this->server->getScheduler()->cancelTasks($plugin);
+			$plugin->getScheduler()->shutdown();
 			HandlerList::unregisterAll($plugin);
 			foreach($plugin->getDescription()->getPermissions() as $perm){
 				$this->removePermission($perm);
+			}
+		}
+	}
+
+	public function tickSchedulers(int $currentTick) : void{
+		foreach($this->plugins as $p){
+			if($p->isEnabled()){
+				$p->getScheduler()->mainThreadHeartbeat($currentTick);
 			}
 		}
 	}
@@ -769,7 +778,7 @@ class PluginManager{
 					$isHandler = count($parameters) === 1 && $parameters[0]->getClass() instanceof \ReflectionClass && is_subclass_of($parameters[0]->getClass()->getName(), Event::class);
 				}catch(\ReflectionException $e){
 					if(isset($tags["softDepend"]) && !isset($this->plugins[$tags["softDepend"]])){
-						MainLogger::getLogger()->debug("Not registering @softDepend listener " . get_class($listener) . "::" . $method->getName() . "(" . $parameters[0]->getType()->getName() . ") because plugin \"" . $tags["softDepend"] . "\" not found");
+						$this->server->getLogger()->debug("Not registering @softDepend listener " . get_class($listener) . "::" . $method->getName() . "(" . $parameters[0]->getType()->getName() . ") because plugin \"" . $tags["softDepend"] . "\" not found");
 						continue;
 					}
 

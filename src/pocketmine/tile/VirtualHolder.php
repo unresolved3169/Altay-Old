@@ -96,7 +96,7 @@ class VirtualHolder extends Spawnable implements InventoryHolder, Container, Nam
         return "Altay Virtual Inventory";
     }
 
-    public function addAdditionalSpawnData(CompoundTag $nbt): void{
+	protected  function addAdditionalSpawnData(CompoundTag $nbt): void{
         if($this->hasName()){
             $nbt->setTag($this->namedtag->getTag("CustomName"));
         }

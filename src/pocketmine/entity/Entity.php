@@ -579,6 +579,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->chunk->addEntity($this);
 		$this->level->addEntity($this);
 		$this->initEntity();
+		$this->propertyManager->clearDirtyProperties(); //Prevents resending properties that were set during construction
 		$this->lastUpdate = $this->server->getTick();
 		$this->server->getPluginManager()->callEvent(new EntitySpawnEvent($this));
 
@@ -1278,7 +1279,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 
 		if($this->onGround){
-			$friction *= $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($this->y) - 1, Math::floorFloat($this->z))->getFrictionFactor();
+			$friction *= $this->level->getBlockAt((int) floor($this->x), (int) floor($this->y - 1), (int) floor($this->z))->getFrictionFactor();
 		}
 
 		$this->motion->x *= $friction;
@@ -1290,9 +1291,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			return false;
 		}
 
-		$floorX = Math::floorFloat($x);
-		$floorY = Math::floorFloat($y);
-		$floorZ = Math::floorFloat($z);
+		$floorX = (int) floor($x);
+		$floorY = (int) floor($y);
+		$floorZ = (int) floor($z);
 
 		$diffX = $x - $floorX;
 		$diffY = $y - $floorY;
@@ -1680,7 +1681,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function isUnderwater() : bool{
-		$block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
+		$block = $this->level->getBlockAt((int) floor($this->x), (int) floor($y = ($this->y + $this->getEyeHeight())), (int) floor($this->z));
 
 		if($block instanceof Water){
 			$f = ($block->y + 1) - ($block->getFluidHeightPercent() - 0.1111111);
@@ -1691,7 +1692,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function isInsideOfSolid() : bool{
-		$block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
+		$block = $this->level->getBlockAt((int) floor($this->x), (int) floor($y = ($this->y + $this->getEyeHeight())), (int) floor($this->z));
 
 		return $block->isSolid() and !$block->isTransparent() and $block->collidesWithBB($this->getBoundingBox());
 	}
@@ -1900,12 +1901,12 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		if($this->blocksAround === null){
 			$inset = 0.001; //Offset against floating-point errors
 
-			$minX = Math::floorFloat($this->boundingBox->minX + $inset);
-			$minY = Math::floorFloat($this->boundingBox->minY + $inset);
-			$minZ = Math::floorFloat($this->boundingBox->minZ + $inset);
-			$maxX = Math::floorFloat($this->boundingBox->maxX - $inset);
-			$maxY = Math::floorFloat($this->boundingBox->maxY - $inset);
-			$maxZ = Math::floorFloat($this->boundingBox->maxZ - $inset);
+			$minX = (int) floor($this->boundingBox->minX + $inset);
+			$minY = (int) floor($this->boundingBox->minY + $inset);
+			$minZ = (int) floor($this->boundingBox->minZ + $inset);
+			$maxX = (int) floor($this->boundingBox->maxX - $inset);
+			$maxY = (int) floor($this->boundingBox->maxY - $inset);
+			$maxZ = (int) floor($this->boundingBox->maxZ - $inset);
 
 			$this->blocksAround = [];
 

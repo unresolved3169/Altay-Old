@@ -1723,7 +1723,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			Timings::$timerEntityBaseTick->stopTiming();
 
 			if(!$this->isSpectator() and $this->isAlive()){
+				Timings::$playerCheckNearEntitiesTimer->startTiming();
 				$this->checkNearEntities($tickDiff);
+				Timings::$playerCheckNearEntitiesTimer->stopTiming();
 
 				if($this->speed !== null){
 					if($this->onGround){
@@ -1931,7 +1933,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		if(!$packet->skipVerification){
-			$this->server->getScheduler()->scheduleAsyncTask(new VerifyLoginTask($this, $packet));
+			$this->server->getAsyncPool()->submitTask(new VerifyLoginTask($this, $packet));
 		}else{
 			$this->onVerifyCompleted($packet, null, true);
 		}
@@ -2308,7 +2310,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				if($action !== null){
 					$actions[] = $action;
 				}
-			}catch(\Throwable $e){
+			}catch(\Exception $e){
 				$this->server->getLogger()->debug("Unhandled inventory action from " . $this->getName() . ": " . $e->getMessage());
 				$this->sendAllInventories();
 				return false;
@@ -2791,40 +2793,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->jump();
 				return true;
 			case PlayerActionPacket::ACTION_START_SPRINT:
-				$ev = new PlayerToggleSprintEvent($this, true);
-				$this->server->getPluginManager()->callEvent($ev);
-				if($ev->isCancelled()){
-					$this->sendData($this);
-				}else{
-					$this->setSprinting(true);
-				}
+				$this->toggleSprint(true);
 				return true;
 			case PlayerActionPacket::ACTION_STOP_SPRINT:
-				$ev = new PlayerToggleSprintEvent($this, false);
-				$this->server->getPluginManager()->callEvent($ev);
-				if($ev->isCancelled()){
-					$this->sendData($this);
-				}else{
-					$this->setSprinting(false);
-				}
+				$this->toggleSprint(false);
 				return true;
 			case PlayerActionPacket::ACTION_START_SNEAK:
-				$ev = new PlayerToggleSneakEvent($this, true);
-				$this->server->getPluginManager()->callEvent($ev);
-				if($ev->isCancelled()){
-					$this->sendData($this);
-				}else{
-					$this->setSneaking(true);
-				}
+				$this->toggleSneak(true);
 				return true;
 			case PlayerActionPacket::ACTION_STOP_SNEAK:
-				$ev = new PlayerToggleSneakEvent($this, false);
-				$this->server->getPluginManager()->callEvent($ev);
-				if($ev->isCancelled()){
-					$this->sendData($this);
-				}else{
-					$this->setSneaking(false);
-				}
+				$this->toggleSneak(false);
 				return true;
 			case PlayerActionPacket::ACTION_START_GLIDE:
 				$ev = new PlayerToggleGlideEvent($this, true);
@@ -2868,6 +2846,26 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->setUsingItem(false);
 
 		return true;
+	}
+
+	public function toggleSprint(bool $sprint) : void{
+		$ev = new PlayerToggleSprintEvent($this, $sprint);
+		$this->server->getPluginManager()->callEvent($ev);
+		if($ev->isCancelled()){
+			$this->sendData($this);
+		}else{
+			$this->setSprinting($sprint);
+		}
+	}
+
+	public function toggleSneak(bool $sneak) : void{
+		$ev = new PlayerToggleSneakEvent($this, $sneak);
+		$this->server->getPluginManager()->callEvent($ev);
+		if($ev->isCancelled()){
+			$this->sendData($this);
+		}else{
+			$this->setSneaking($sneak);
+		}
 	}
 
 	public function handleAnimate(AnimatePacket $packet) : bool{

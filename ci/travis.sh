@@ -1,12 +1,16 @@
 #!/bin/bash
 
 PHP_BINARY="php"
+PM_WORKERS="auto"
 
-while getopts "p:" OPTION 2> /dev/null; do
+while getopts "p:t:" OPTION 2> /dev/null; do
 	case ${OPTION} in
 		p)
 			PHP_BINARY="$OPTARG"
 			;;
+		t)
+			PM_WORKERS="$OPTARG"
+            ;;
 	esac
 done
 
@@ -20,7 +24,7 @@ fi
 rm server.log 2> /dev/null
 mkdir -p ./plugins
 
-echo -e "\nversion\nms\nstop\n" | "$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2
+echo -e "\nversion\nms\nstop\n" | "$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2  --settings.async-workers="$PM_WORKERS"
 if ls plugins/Altay/Altay*.phar >/dev/null 2>&1; then
     echo Server phar created successfully.
 else

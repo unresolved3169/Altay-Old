@@ -113,7 +113,7 @@ class Jukebox extends Spawnable{
 		}
 	}
 
-	public function addAdditionalSpawnData(CompoundTag $nbt) : void{
+	protected  function addAdditionalSpawnData(CompoundTag $nbt) : void{
 		if($this->namedtag->hasTag(self::TAG_RECORD_ITEM, CompoundTag::class)){
 			$nbt->setTag($this->namedtag->getTag(self::TAG_RECORD_ITEM));
 		}

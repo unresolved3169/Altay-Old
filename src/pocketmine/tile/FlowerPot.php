@@ -25,69 +25,66 @@ namespace pocketmine\tile;
 
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\IntTag;
 
 class FlowerPot extends Spawnable{
-    public const TAG_ITEM = "item";
-    public const TAG_ITEM_DATA = "mData";
+	public const TAG_ITEM = "item";
+	public const TAG_ITEM_DATA = "mData";
 
-    public function __construct(Level $level, CompoundTag $nbt){
-        //TODO: check PC format
-        if(!$nbt->hasTag(self::TAG_ITEM, ShortTag::class)){
-            $nbt->setShort(self::TAG_ITEM, 0, true);
-        }
-        if(!$nbt->hasTag(self::TAG_ITEM_DATA, IntTag::class)){
-            $nbt->setInt(self::TAG_ITEM_DATA, 0, true);
-        }
-        parent::__construct($level, $nbt);
-    }
+	/** @var Item */
+	private $item;
 
-    public function canAddItem(Item $item) : bool{
-        if(!$this->isEmpty()){
-            return false;
-        }
-        switch($item->getId()){
-            /** @noinspection PhpMissingBreakStatementInspection */
-            case Item::TALL_GRASS:
-                if($item->getDamage() === 1){
-                    return false;
-                }
-            case Item::SAPLING:
-            case Item::DEAD_BUSH:
-            case Item::DANDELION:
-            case Item::RED_FLOWER:
-            case Item::BROWN_MUSHROOM:
-            case Item::RED_MUSHROOM:
-            case Item::CACTUS:
-                return true;
-            default:
-                return false;
-        }
-    }
+	protected function readSaveData(CompoundTag $nbt) : void{
+		$this->item = ItemFactory::get($nbt->getShort(self::TAG_ITEM, 0, true), $nbt->getInt(self::TAG_ITEM_DATA, 0, true), 1);
+	}
 
-    public function getItem() : Item{
-        return ItemFactory::get($this->namedtag->getShort(self::TAG_ITEM), $this->namedtag->getInt(self::TAG_ITEM_DATA), 1);
-    }
+	protected function writeSaveData(CompoundTag $nbt) : void{
+		$nbt->setShort(self::TAG_ITEM, $this->item->getId());
+		$nbt->setInt(self::TAG_ITEM_DATA, $this->item->getDamage());
+	}
 
-    public function setItem(Item $item){
-        $this->namedtag->setShort(self::TAG_ITEM, $item->getId());
-        $this->namedtag->setInt(self::TAG_ITEM_DATA, $item->getDamage());
-        $this->onChanged();
-    }
+	public function canAddItem(Item $item) : bool{
+		if(!$this->isEmpty()){
+			return false;
+		}
+		switch($item->getId()){
+			/** @noinspection PhpMissingBreakStatementInspection */
+			case Item::TALL_GRASS:
+				if($item->getDamage() === 1){
+					return false;
+				}
+			case Item::SAPLING:
+			case Item::DEAD_BUSH:
+			case Item::DANDELION:
+			case Item::RED_FLOWER:
+			case Item::BROWN_MUSHROOM:
+			case Item::RED_MUSHROOM:
+			case Item::CACTUS:
+				return true;
+			default:
+				return false;
+		}
+	}
 
-    public function removeItem(){
-        $this->setItem(ItemFactory::get(Item::AIR, 0, 0));
-    }
+	public function getItem() : Item{
+		return clone $this->item;
+	}
 
-    public function isEmpty() : bool{
-        return $this->getItem()->isNull();
-    }
+	public function setItem(Item $item){
+		$this->item = clone $item;
+		$this->onChanged();
+	}
 
-    public function addAdditionalSpawnData(CompoundTag $nbt) : void{
-        $nbt->setTag($this->namedtag->getTag(self::TAG_ITEM));
-        $nbt->setTag($this->namedtag->getTag(self::TAG_ITEM_DATA));
-    }
+	public function removeItem(){
+		$this->setItem(ItemFactory::get(Item::AIR, 0, 0));
+	}
+
+	public function isEmpty() : bool{
+		return $this->getItem()->isNull();
+	}
+
+	protected function addAdditionalSpawnData(CompoundTag $nbt) : void{
+		$nbt->setShort(self::TAG_ITEM, $this->item->getId());
+		$nbt->setInt(self::TAG_ITEM_DATA, $this->item->getDamage());
+	}
 }

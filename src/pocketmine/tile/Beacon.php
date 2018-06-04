@@ -41,12 +41,13 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 
 	/** @var BeaconInventory */
 	private $inventory;
-	
+
 	protected $minerals = [
-	 Block::IRON_BLOCK,
-	 Block::GOLD_BLOCK,
-	 Block::EMERALD_BLOCK,
-	 Block::DIAMOND_BLOCK];
+		Block::IRON_BLOCK,
+		Block::GOLD_BLOCK,
+		Block::EMERALD_BLOCK,
+		Block::DIAMOND_BLOCK
+	];
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		if(!$nbt->hasTag(self::TAG_PRIMARY)){
@@ -73,7 +74,7 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 		}
 	}
 
-	public function addAdditionalSpawnData(CompoundTag $nbt) : void{
+	protected  function addAdditionalSpawnData(CompoundTag $nbt) : void{
 		$nbt->setTag($this->namedtag->getTag(self::TAG_PRIMARY));
 		$nbt->setTag($this->namedtag->getTag(self::TAG_SECONDARY));
 

@@ -34,8 +34,8 @@ use pocketmine\level\Level;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\timings\Timings;
@@ -49,6 +49,7 @@ abstract class Tile extends Position{
 	public const TAG_Z = "z";
 
 	public const BANNER = "Banner";
+	public const BEACON = "Beacon";
 	public const BED = "Bed";
 	public const BREWING_STAND = "BrewingStand";
 	public const CHEST = "Chest";
@@ -58,13 +59,12 @@ abstract class Tile extends Position{
 	public const FURNACE = "Furnace";
 	public const HOPPER = "Hopper";
 	public const ITEM_FRAME = "ItemFrame";
+	public const JUKEBOX = "Jukebox";
 	public const MOB_SPAWNER = "MobSpawner";
+	public const NOTEBLOCK = "noteblock";
 	public const SIGN = "Sign";
 	public const SKULL = "Skull";
-	public const BEACON = "Beacon";
 	public const VIRTUAL = "Virtual";
-	public const JUKEBOX = "Jukebox";
-	public const NOTEBLOCK = "noteblock";
 
 	/** @var int */
 	public static $tileCount = 1;
@@ -80,8 +80,6 @@ abstract class Tile extends Position{
 	public $id;
 	/** @var bool */
 	public $closed = false;
-	/** @var CompoundTag */
-	public $namedtag;
 	/** @var Server */
 	protected $server;
 	/** @var TimingsHandler */
@@ -89,6 +87,7 @@ abstract class Tile extends Position{
 
 	public static function init(){
 		self::registerTile(Banner::class, [self::BANNER, "minecraft:banner"]);
+		self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
 		self::registerTile(Bed::class, [self::BED, "minecraft:bed"]);
 		self::registerTile(Chest::class, [self::CHEST, "minecraft:chest"]);
 		self::registerTile(EnchantTable::class, [self::ENCHANT_TABLE, "minecraft:enchanting_table"]);
@@ -97,12 +96,11 @@ abstract class Tile extends Position{
 		self::registerTile(Furnace::class, [self::FURNACE, "minecraft:furnace"]);
 		self::registerTile(Hopper::class, [self::HOPPER, "minecraft:hopper"]);
 		self::registerTile(ItemFrame::class, [self::ITEM_FRAME]); //this is an entity in PC
-		self::registerTile(Sign::class, [self::SIGN, "minecraft:sign"]);
-		self::registerTile(Skull::class, [self::SKULL, "minecraft:skull"]);
-		self::registerTile(Beacon::class, [self::BEACON, "minecraft:beacon"]);
-		self::registerTile(VirtualHolder::class, [self::VIRTUAL]);
 		self::registerTile(Jukebox::class, [self::JUKEBOX, "minecraft:jukebox"]);
 		self::registerTile(NoteBlock::class, [self::NOTEBLOCK, "minecraft:noteblock"]);
+		self::registerTile(Sign::class, [self::SIGN, "minecraft:sign"]);
+		self::registerTile(Skull::class, [self::SKULL, "minecraft:skull"]);
+		self::registerTile(VirtualHolder::class, [self::VIRTUAL]);
 	}
 
 	/**
@@ -166,12 +164,12 @@ abstract class Tile extends Position{
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->timings = Timings::getTileEntityTimings($this);
 
-		$this->namedtag = $nbt;
 		$this->server = $level->getServer();
 		$this->name = "";
 		$this->id = Tile::$tileCount++;
 
-		parent::__construct($this->namedtag->getInt(self::TAG_X), $this->namedtag->getInt(self::TAG_Y), $this->namedtag->getInt(self::TAG_Z), $level);
+		parent::__construct($nbt->getInt(self::TAG_X), $nbt->getInt(self::TAG_Y), $nbt->getInt(self::TAG_Z), $level);
+		$this->readSaveData($nbt);
 
 		$this->getLevel()->addTile($this);
 	}
@@ -180,26 +178,31 @@ abstract class Tile extends Position{
 		return $this->id;
 	}
 
-	public function saveNBT() : void{
-		$this->namedtag->setString(self::TAG_ID, static::getSaveId());
-		$this->namedtag->setInt(self::TAG_X, $this->x);
-		$this->namedtag->setInt(self::TAG_Y, $this->y);
-		$this->namedtag->setInt(self::TAG_Z, $this->z);
-	}
+	/**
+	 * Reads additional data from the CompoundTag on tile creation.
+	 *
+	 * @param CompoundTag $nbt
+	 */
+	abstract protected function readSaveData(CompoundTag $nbt) : void;
 
-	public function getNBT() : CompoundTag{
-		return $this->namedtag;
+	/**
+	 * Writes additional save data to a CompoundTag, not including generic things like ID and coordinates.
+	 *
+	 * @param CompoundTag $nbt
+	 */
+	abstract protected function writeSaveData(CompoundTag $nbt) : void;
+
+	public function saveNBT(CompoundTag $nbt) : void{
+		$nbt->setString(self::TAG_ID, static::getSaveId());
+		$nbt->setInt(self::TAG_X, $this->x);
+		$nbt->setInt(self::TAG_Y, $this->y);
+		$nbt->setInt(self::TAG_Z, $this->z);
+		$this->writeSaveData($nbt);
 	}
 
 	public function getCleanedNBT() : ?CompoundTag{
-		$this->saveNBT();
-		$tag = clone $this->namedtag;
-		$tag->removeTag(self::TAG_X, self::TAG_Y, self::TAG_Z, self::TAG_ID);
-		if($tag->getCount() > 0){
-			return $tag;
-		}else{
-			return null;
-		}
+		$this->writeSaveData($tag = new CompoundTag());
+		return $tag->getCount() > 0 ? $tag : null;
 	}
 
 	/**
@@ -224,7 +227,7 @@ abstract class Tile extends Position{
 
 		if($item !== null){
 			$customBlockData = $item->getCustomBlockData();
-			if($customBlockData != null){
+			if($customBlockData !== null){
 				foreach($customBlockData as $customBlockDataTag){
 					$nbt->setTag(clone $customBlockDataTag);
 				}
@@ -277,12 +280,10 @@ abstract class Tile extends Position{
 		if(!$this->closed){
 			$this->closed = true;
 
-			if(($level = $this->getLevel()) instanceof Level){
-				$level->removeTile($this);
+			if($this->isValid()){
+				$this->level->removeTile($this);
 				$this->setLevel(null);
 			}
-
-			$this->namedtag = null;
 		}
 	}
 
