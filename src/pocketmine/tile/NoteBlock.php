@@ -25,10 +25,9 @@ declare(strict_types=1);
 namespace pocketmine\tile;
 
 use pocketmine\level\Level;
-use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
-use pocketmine\Player;
 
 class NoteBlock extends Spawnable{
 	

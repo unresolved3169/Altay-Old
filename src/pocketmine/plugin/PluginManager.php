@@ -39,7 +39,6 @@ use pocketmine\permission\Permission;
 use pocketmine\Server;
 use pocketmine\timings\Timings;
 use pocketmine\timings\TimingsHandler;
-use pocketmine\utils\MainLogger;
 use pocketmine\utils\Utils;
 
 /**

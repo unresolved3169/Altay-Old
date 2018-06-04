@@ -28,8 +28,8 @@ use pocketmine\item\Item;
 use pocketmine\level\sound\NoteblockSound;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use pocketmine\tile\Tile;
 use pocketmine\tile\NoteBlock as TileNoteBlock;
+use pocketmine\tile\Tile;
 
 class Noteblock extends Solid{
 

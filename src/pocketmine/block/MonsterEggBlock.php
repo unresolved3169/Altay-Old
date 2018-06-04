@@ -24,10 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\entity\Entity;
-use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
-use pocketmine\Player;
 
 class MonsterEggBlock extends Solid{
 	protected $id = self::MONSTER_EGG;

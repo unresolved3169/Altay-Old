@@ -24,15 +24,17 @@ declare(strict_types=1);
 
 namespace pocketmine\tile;
 
-use pocketmine\level\Level;
-use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
-use pocketmine\item\Item;
 use pocketmine\item\Record;
+use pocketmine\item\Item;
+use pocketmine\level\Level;
+use pocketmine\level\particle\{
+	GenericParticle, Particle
+};
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\{
 	PlaySoundPacket, StopSoundPacket, TextPacket
 };
-use pocketmine\level\particle\{Particle, GenericParticle};
+use pocketmine\Player;
 
 class Jukebox extends Spawnable{
 	
