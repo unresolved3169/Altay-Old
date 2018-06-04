@@ -43,100 +43,100 @@ use pocketmine\Player;
 class VirtualHolder extends Spawnable implements InventoryHolder, Container, Nameable{
     use NameableTrait, ContainerTrait;
 
-    /** @var VirtualInventory */
-    protected $inventory;
-    /** @var Block */
-    protected $translateBlock;
-    /** @var Block */
-    protected $holderBlock;
-    /** @var int */
-    protected $size;
-    /** @var int */
-    protected $networkType;
+	/** @var VirtualInventory */
+	protected $inventory;
+	/** @var Block */
+	protected $translateBlock;
+	/** @var Block */
+	protected $holderBlock;
+	/** @var int */
+	protected $size;
+	/** @var int */
+	protected $networkType;
 
-    public function __construct(Level $level, CompoundTag $nbt, Block $block){
-        parent::__construct($level, $nbt);
+	public function __construct(Level $level, CompoundTag $nbt, Block $block){
+		parent::__construct($level, $nbt);
 
-        $this->holderBlock = $block;
-        $this->validBlock();
+		$this->holderBlock = $block;
+		$this->validBlock();
 
-        if(!$this->hasName()) $this->setName($this->getDefaultName());
+		$this->translateBlock = $this->getBlock();
+	}
 
-        $this->inventory = new VirtualInventory($this);
-        $this->loadItems();
+	protected function readSaveData(CompoundTag $nbt) : void{
+		$this->loadName($nbt);
 
-        $this->translateBlock = $this->getBlock();
-    }
+		if(!$this->hasName()){
+			$this->setName($this->getDefaultName());
+		}
 
-    public function translateBlocks(Player $player){
-        $player->level->sendBlocks([$player], [$this->translateBlock]);
-    }
+		$this->inventory = new VirtualInventory($this);
+		$this->loadItems($nbt);
+	}
 
-    public function spawnTo(Player $player) : bool{
-        $pk = new UpdateBlockPacket();
-        $pk->x = $this->x;
-        $pk->y = $this->y;
-        $pk->z = $this->z;
+	public function translateBlocks(Player $player){
+		$player->level->sendBlocks([$player], [$this->translateBlock]);
+	}
+
+	public function spawnTo(Player $player) : bool{
+		$pk = new UpdateBlockPacket();
+		$pk->x = $this->x;
+		$pk->y = $this->y;
+		$pk->z = $this->z;
 		$pk->blockRuntimeId = BlockFactory::toStaticRuntimeId($this->holderBlock->getId(), $this->holderBlock->getDamage());
-        $pk->flags = UpdateBlockPacket::FLAG_ALL;
-        $player->dataPacket($pk);
+		$pk->flags = UpdateBlockPacket::FLAG_ALL;
+		$player->dataPacket($pk);
 
-        return parent::spawnTo($player);
-    }
+		return parent::spawnTo($player);
+	}
 
-    public function getRealInventory(){
-        return $this->getInventory();
-    }
+	public function getRealInventory(){
+		return $this->getInventory();
+	}
 
-    public function getInventory(){
-        return $this->inventory;
-    }
+	public function getInventory(){
+		return $this->inventory;
+	}
 
-    public function getDefaultName(): string{
-        return "Altay Virtual Inventory";
-    }
+	public function getDefaultName(): string{
+		return "Altay Virtual Inventory";
+	}
 
-	protected  function addAdditionalSpawnData(CompoundTag $nbt): void{
-        if($this->hasName()){
-            $nbt->setTag($this->namedtag->getTag("CustomName"));
-        }
-    }
+	protected function writeSaveData(CompoundTag $nbt) : void{
+		$this->saveName($nbt);
+		$this->saveItems($nbt);
+	}
 
-    public function saveNBT() : void{
-        parent::saveNBT();
-        $this->saveItems();
-    }
+	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
+		$nbt->setTag(new ListTag("Items", [], NBT::TAG_Compound));
 
-    protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
-        $nbt->setTag(new ListTag("Items", [], NBT::TAG_Compound));
+		if($item !== null and $item->hasCustomName()){
+			$nbt->setString("CustomName", $item->getCustomName());
+		}
+	}
 
-        if($item !== null and $item->hasCustomName()){
-            $nbt->setString("CustomName", $item->getCustomName());
-        }
-    }
+	public function spawnToAll(){}
 
-    public function spawnToAll(){}
+	private function validBlock(){
+		$validBlocks = [
+			Chest::class => [27, WindowTypes::CONTAINER],
+			Hopper::class => [5, WindowTypes::HOPPER]
+		];
 
-    private function validBlock(){
-        $validBlocks = [
-            Chest::class => [27, WindowTypes::CONTAINER],
-            Hopper::class => [5, WindowTypes::HOPPER]
-        ];
+		$class = get_class($this->holderBlock);
+		if(isset($validBlocks[$class])){
+			$this->size = $validBlocks[$class][0];
+			$this->networkType = $validBlocks[$class][1];
+		}else{
+			throw new \InvalidArgumentException("$class is not valid block for virtual inventories.");
+		}
+	}
 
-        $class = get_class($this->holderBlock);
-        if(isset($validBlocks[$class])){
-            $this->size = $validBlocks[$class][0];
-            $this->networkType = $validBlocks[$class][1];
-        }else{
-            throw new \InvalidArgumentException("$class is not valid block for virtual inventories.");
-        }
-    }
+	public function getSize() : int{
+		return $this->size;
+	}
 
-    public function getSize() : int{
-        return $this->size;
-    }
-
-    public function getNetworkType() : int{
-        return $this->networkType;
-    }
+	public function getNetworkType() : int{
+		return $this->networkType;
+	}
 }

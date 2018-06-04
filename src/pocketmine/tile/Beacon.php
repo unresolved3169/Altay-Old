@@ -34,13 +34,18 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 
 class Beacon extends Spawnable implements Nameable, InventoryHolder{
-	use NameableTrait, ContainerTrait;
+	use NameableTrait {
+		addAdditionalSpawnData as addNameSpawnData;
+	}
+	use ContainerTrait;
 
 	public const TAG_PRIMARY = "primary";
 	public const TAG_SECONDARY = "secondary";
 
 	/** @var BeaconInventory */
 	private $inventory;
+	/** @var int */
+	private $primary, $secondary;
 
 	protected $minerals = [
 		Block::IRON_BLOCK,
@@ -50,19 +55,27 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 	];
 
 	public function __construct(Level $level, CompoundTag $nbt){
-		if(!$nbt->hasTag(self::TAG_PRIMARY)){
-			$nbt->setInt(self::TAG_PRIMARY, 0);
-		}
-		if(!$nbt->hasTag(self::TAG_SECONDARY)){
-			$nbt->setInt(self::TAG_SECONDARY, 0);
-		}
-
 		parent::__construct($level, $nbt);
 
-		$this->inventory = new BeaconInventory($this);
-		$this->loadItems();
-
 		$this->scheduleUpdate();
+	}
+
+	protected function readSaveData(CompoundTag $nbt): void{
+		$this->primary = $nbt->getInt(self::TAG_PRIMARY, 0);
+		$this->secondary = $nbt->getInt(self::TAG_SECONDARY, 0);
+
+		$this->loadName($nbt);
+
+		$this->inventory = new BeaconInventory($this);
+		$this->loadItems($nbt);
+	}
+
+	protected function writeSaveData(CompoundTag $nbt): void{
+		$nbt->setInt(self::TAG_PRIMARY, $this->primary);
+		$nbt->setInt(self::TAG_SECONDARY, $this->secondary);
+
+		$this->saveName($nbt);
+		$this->saveItems($nbt);
 	}
 
 	public function close() : void{
@@ -74,13 +87,11 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 		}
 	}
 
-	protected  function addAdditionalSpawnData(CompoundTag $nbt) : void{
-		$nbt->setTag($this->namedtag->getTag(self::TAG_PRIMARY));
-		$nbt->setTag($this->namedtag->getTag(self::TAG_SECONDARY));
+	protected function addAdditionalSpawnData(CompoundTag $nbt) : void{
+		$nbt->setInt(self::TAG_PRIMARY, $this->primary);
+		$nbt->setInt(self::TAG_SECONDARY, $this->secondary);
 
-		if($this->hasName()) {
-			$nbt->setTag($this->namedtag->getTag("CustomName"));
-		}
+		$this->addNameSpawnData($nbt);
 	}
 
 	public function getDefaultName() : string{
@@ -100,8 +111,8 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 			return false;
 		}
 
-		$this->namedtag->setInt(self::TAG_PRIMARY, $nbt->getInt(self::TAG_PRIMARY, 0));
-		$this->namedtag->setInt(self::TAG_SECONDARY, $nbt->getInt(self::TAG_SECONDARY, 0));
+		$this->primary = $nbt->getInt(self::TAG_PRIMARY);
+		$this->secondary = $nbt->getInt(self::TAG_SECONDARY);
 
 		return true;
 	}
@@ -112,20 +123,17 @@ class Beacon extends Spawnable implements Nameable, InventoryHolder{
 		$duration = 180 + $pyramidLevels*40;
 		$range = 10 + $pyramidLevels*10;
 
-		$prim = $this->namedtag->getInt(self::TAG_PRIMARY, 0);
-		$sec = $this->namedtag->getInt(self::TAG_SECONDARY, 0);
-
-		$effectPrim = Effect::getEffect($prim);
+		$effectPrim = Effect::getEffect($this->primary);
 
 		if($effectPrim != null && $pyramidLevels > 0){
-			$effectPrim = new EffectInstance($effectPrim, $duration, $pyramidLevels == 4 && $prim == $sec ? 1 : 0);
+			$effectPrim = new EffectInstance($effectPrim, $duration, $pyramidLevels == 4 && $this->primary == $this->secondary ? 1 : 0);
 
 			$players = array_filter($this->level->getPlayers(), function(Player $player) use($range) : bool{ return $player->spawned && $player->distance($this) <= $range; });
 			/** @var Player $player */
 			foreach($players as $player){
 				$player->addEffect($effectPrim);
 
-				if($pyramidLevels == 4 && $prim != $sec){
+				if($pyramidLevels == 4 && $this->primary != $this->secondary){
 					$regen = new EffectInstance(Effect::getEffect(Effect::REGENERATION), $duration);
 					$player->addEffect($regen);
 				}

@@ -28,7 +28,6 @@ use pocketmine\inventory\EnchantInventory;
 use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\EnchantTable as TileEnchantTable;
 use pocketmine\tile\Tile;
@@ -74,10 +73,6 @@ class EnchantingTable extends Transparent{
 
 		    $ench = $player->getLevel()->getTileAt($this->x, $this->y, $this->z);
 		    if($ench instanceof TileEnchantTable){
-                if($ench->namedtag->hasTag("Lock", StringTag::class) and $ench->namedtag->getString("Lock") !== $item->getCustomName()){
-                    return true;
-                }
-
                 $player->addWindow(new EnchantInventory($this));
             }
 		}

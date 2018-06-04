@@ -27,7 +27,6 @@ namespace pocketmine\block;
 use pocketmine\item\TieredTool;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
 use pocketmine\tile\Hopper as TileHopper;
 use pocketmine\tile\Tile;
@@ -71,7 +70,7 @@ class Hopper extends Transparent{
                 $hopper = Tile::createTile(Tile::CHEST, $this->getLevel(), TileHopper::createNBT($this));
             }
 
-            if($hopper->namedtag->hasTag("Lock", StringTag::class) and $hopper->namedtag->getString("Lock") !== $item->getCustomName()){
+            if($hopper->canOpenWith($item->getCustomName())){
                 return true;
             }
 

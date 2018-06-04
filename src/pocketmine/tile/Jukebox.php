@@ -26,7 +26,6 @@ namespace pocketmine\tile;
 
 use pocketmine\item\Record;
 use pocketmine\item\Item;
-use pocketmine\level\Level;
 use pocketmine\level\particle\{
 	GenericParticle, Particle
 };
@@ -42,14 +41,6 @@ class Jukebox extends Spawnable{
 
 	/** @var Record|null */
 	protected $recordItem = null;
-
-	public function __construct(Level $level, CompoundTag $nbt){
-		if($nbt->hasTag(self::TAG_RECORD_ITEM)){
-			$this->recordItem = Item::nbtDeserialize($nbt->getCompoundTag(self::TAG_RECORD_ITEM));
-		}
-
-		parent::__construct($level, $nbt);
-	}
 
 	public function setRecordItem(?Record $item) : void{
 		$this->recordItem = $item;
@@ -105,19 +96,23 @@ class Jukebox extends Spawnable{
 		return "Jukebox";
 	}
 
-	public function saveNBT() : void{
-		parent::saveNBT();
+	protected function readSaveData(CompoundTag $nbt) : void{
+		if($nbt->hasTag(self::TAG_RECORD_ITEM)){
+			$this->recordItem = Item::nbtDeserialize($nbt->getCompoundTag(self::TAG_RECORD_ITEM));
+		}
+	}
 
+	protected function writeSaveData(CompoundTag $nbt) : void{
 		if($this->recordItem !== null){
-			$this->namedtag->setTag($this->recordItem->nbtSerialize(-1, self::TAG_RECORD_ITEM));
+			$nbt->setTag($this->recordItem->nbtSerialize(-1, self::TAG_RECORD_ITEM));
 		}else{
-			$this->namedtag->removeTag(self::TAG_RECORD_ITEM);
+			$nbt->removeTag(self::TAG_RECORD_ITEM);
 		}
 	}
 
 	protected  function addAdditionalSpawnData(CompoundTag $nbt) : void{
-		if($this->namedtag->hasTag(self::TAG_RECORD_ITEM, CompoundTag::class)){
-			$nbt->setTag($this->namedtag->getTag(self::TAG_RECORD_ITEM));
+		if($this->recordItem != null){
+			$nbt->setTag($this->recordItem->nbtSerialize(-1, self::TAG_RECORD_ITEM));
 		}
 	}
 	
