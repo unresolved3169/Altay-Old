@@ -71,7 +71,7 @@ abstract class Mob extends Living{
 			$task->checkBehaviors();
 		}
 
-		return self::onUpdate($tick);
+		return parent::onUpdate($tick);
 	}
 
 	/**
