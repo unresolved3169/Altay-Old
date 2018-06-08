@@ -96,20 +96,19 @@ class FireworksRocket extends Projectile{
 		$this->level->broadcastLevelSoundEvent($this, LevelSoundEventPacket::SOUND_BLAST);
 	}
 
-	public function entityBaseTick(int $tickDiff = 1) : bool{
+	public function onUpdate(int $tick) : bool{
+   if($this->closed or !$this->isAlive()) return false;
+
 		if($this->lifeTime-- <= 0){
 			$this->flagForDespawn();
 		}else{
-			$this->y += 0.4;
-			$this->updateMovement();
+			$this->motion->y = 0.4;
 
 			$f = sqrt($this->motion->x * $this->motion->x + $this->motion->z * $this->motion->z);
 			$this->yaw = atan2($this->motion->x, $this->motion->z) * (180 / M_PI);
 			$this->pitch = atan2($this->motion->y, $f) * (180 / M_PI);
-
-			return parent::entityBaseTick($tickDiff);
 		}
 
-		return true;
+		return parent::onUpdate($tick);
 	}
 }
