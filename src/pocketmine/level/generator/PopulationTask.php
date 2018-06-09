@@ -140,7 +140,6 @@ class PopulationTask extends AsyncTask{
 		if($level !== null){
 			if(!$this->state){
 				$level->registerGenerator();
-				return;
 			}
 
 			$chunk = Chunk::fastDeserialize($this->chunk);
@@ -152,11 +151,11 @@ class PopulationTask extends AsyncTask{
 				$c = $this->{"chunk$i"};
 				if($c !== null){
 					$c = Chunk::fastDeserialize($c);
-					$level->generateChunkCallback($c->getX(), $c->getZ(), $c);
+					$level->generateChunkCallback($c->getX(), $c->getZ(), $this->state ? $c : null);
 				}
 			}
 
-			$level->generateChunkCallback($chunk->getX(), $chunk->getZ(), $chunk);
+			$level->generateChunkCallback($chunk->getX(), $chunk->getZ(), $this->state ? $chunk : null);
 		}
 	}
 }

@@ -937,8 +937,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 				$this->setNameTagVisible($this->namedtag->getByte("CustomNameVisible", 1) !== 0);
 			}
 		}
-
-		$this->scheduleUpdate();
 	}
 
 	protected function addAttributes() : void{
@@ -1433,11 +1431,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->lastUpdate = $currentTick;
 
-		if($this->needsDespawn){
-			$this->close();
-			return false;
-		}
-
 		if(!$this->isAlive()){
 			if($this->onDeathUpdate($tickDiff)){
 				$this->flagForDespawn();
@@ -1445,7 +1438,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 			return true;
 		}
-
 
 		$this->timings->startTiming();
 
@@ -1482,6 +1474,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	final public function scheduleUpdate() : void{
+		if($this->closed){
+			throw new \InvalidStateException("Cannot schedule update on garbage entity " . get_class($this));
+		}
 		$this->level->updateEntities[$this->id] = $this;
 	}
 
@@ -1705,7 +1700,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		Timings::$entityMoveTimer->startTiming();
 
-		$newBB = $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz);
+		$newBB = $this->boundingBox->offsetCopy($dx, $dy, $dz);
 
 		$list = $this->level->getCollisionCubes($this, $newBB, false);
 
@@ -1793,7 +1788,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 			assert(abs($dx) <= 20 and abs($dy) <= 20 and abs($dz) <= 20, "Movement distance is excessive: dx=$dx, dy=$dy, dz=$dz");
 
-			$list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz), false);
+			$list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->offsetCopy($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz), false);
 
 			foreach($list as $bb){
 				$dy = $bb->calculateYOffset($this->boundingBox, $dy);
@@ -1952,7 +1947,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	protected function checkEntityCollision() : void{
 		if($this->hasEntityCollisionUpdate()){
-			foreach($this->level->getCollidingEntities($this->getBoundingBox()->grow(0.3,0.3,0.3), $this) as $e){
+			foreach($this->level->getCollidingEntities($this->getBoundingBox()->expandedCopy(0.3,0.3,0.3), $this) as $e){
 				$this->applyEntityCollision($e);
 			}
 		}
@@ -2212,6 +2207,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 */
 	public function flagForDespawn() : void{
 		$this->needsDespawn = true;
+		$this->scheduleUpdate();
 	}
 
 	public function isFlaggedForDespawn() : bool{

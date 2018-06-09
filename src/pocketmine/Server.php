@@ -52,6 +52,7 @@ use pocketmine\level\biome\Biome;
 use pocketmine\level\format\io\LevelProvider;
 use pocketmine\level\format\io\LevelProviderManager;
 use pocketmine\level\generator\Generator;
+use pocketmine\level\generator\GeneratorManager;
 use pocketmine\level\Level;
 use pocketmine\level\LevelException;
 use pocketmine\metadata\EntityMetadataStore;
@@ -1115,7 +1116,7 @@ class Server{
 		}
 
 		if(!($generator !== null and class_exists($generator, true) and is_subclass_of($generator, Generator::class))){
-			$generator = Generator::getGenerator($this->getLevelType());
+			$generator = GeneratorManager::getGenerator($this->getLevelType());
 		}
 
 		if(($providerClass = LevelProviderManager::getProviderByName($this->getProperty("level-settings.default-format", "pmanvil"))) === null){
@@ -1619,7 +1620,7 @@ class Server{
 				$poolSize = (int) $poolSize;
 			}
 
-			$this->asyncPool = new AsyncPool($this, $poolSize);
+			$this->asyncPool = new AsyncPool($this, $poolSize, (int) max(-1, (int) $this->getProperty("memory.async-worker-hard-limit", 256)), $this->autoloader, $this->logger);
 
 			if($this->getProperty("network.batch-threshold", 256) >= 0){
 				Network::$BATCH_THRESHOLD = (int) $this->getProperty("network.batch-threshold", 256);
@@ -1753,31 +1754,24 @@ class Server{
 				$this->logger->debug($this->getLanguage()->translateString("pocketmine.debug.enable"));
 			}
 
-			Generator::registerDefaultGenerators();
+			GeneratorManager::registerDefaultGenerators();
 
 			foreach((array) $this->getProperty("worlds", []) as $name => $options){
 				if(!is_array($options)){
 					continue;
 				}
 				if(!$this->loadLevel($name)){
-					$seed = $options["seed"] ?? time();
-					if(is_string($seed) and !is_numeric($seed)){
-						$seed = Utils::javaStringHash($seed);
-					}elseif(!is_int($seed)){
-						$seed = (int) $seed;
-					}
-
 					if(isset($options["generator"])){
 						$generatorOptions = explode(":", $options["generator"]);
-						$generator = Generator::getGenerator(array_shift($generatorOptions));
+						$generator = GeneratorManager::getGenerator(array_shift($generatorOptions));
 						if(count($options) > 0){
 							$options["preset"] = implode(":", $generatorOptions);
 						}
 					}else{
-						$generator = Generator::getGenerator("default");
+						$generator = GeneratorManager::getGenerator("default");
 					}
 
-					$this->generateLevel($name, $seed, $generator, $options);
+					$this->generateLevel($name, Generator::convertSeed((string) ($options["seed"] ?? "")), $generator, $options);
 				}
 			}
 
@@ -1789,13 +1783,7 @@ class Server{
 					$this->setConfigString("level-name", "world");
 				}
 				if(!$this->loadLevel($default)){
-					$seed = getopt("", ["level-seed::"])["level-seed"] ?? $this->properties->get("level-seed", time());
-					if(!is_numeric($seed) or bccomp($seed, "9223372036854775807") > 0){
-						$seed = Utils::javaStringHash($seed);
-					}elseif(PHP_INT_SIZE === 8){
-						$seed = (int) $seed;
-					}
-					$this->generateLevel($default, $seed === 0 ? time() : $seed);
+					$this->generateLevel($default, Generator::convertSeed($this->getConfigString("level-seed")));
 				}
 
 				$this->setDefaultLevel($this->getLevelByName($default));
@@ -1808,7 +1796,7 @@ class Server{
 					$netherLevelName = "nether";
 				}
 				if(!$this->loadLevel($netherLevelName)){
-					$this->generateLevel($netherLevelName, time(), Generator::getGenerator("hell"));
+					$this->generateLevel($netherLevelName, time(), GeneratorManager::getGenerator("hell"));
 				}
 
 				$this->netherLevel = $this->getLevelByName($netherLevelName);
@@ -1820,7 +1808,7 @@ class Server{
 					$endLevel = "end";
 				}
 				if(!$this->loadLevel($endLevel)){
-					$this->generateLevel($endLevel, time(), Generator::getGenerator("end"));
+					$this->generateLevel($endLevel, time(), GeneratorManager::getGenerator("end"));
 				}
 
 				$this->endLevel = $this->getLevelByName($endLevel);

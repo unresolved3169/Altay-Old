@@ -265,6 +265,9 @@ abstract class Tile extends Position{
 	}
 
 	final public function scheduleUpdate() : void{
+		if($this->closed){
+			throw new \InvalidStateException("Cannot schedule update on garbage tile " . get_class($this));
+		}
 		$this->level->updateTiles[$this->id] = $this;
 	}
 

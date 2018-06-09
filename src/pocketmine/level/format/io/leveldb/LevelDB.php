@@ -29,12 +29,12 @@ use pocketmine\level\format\io\ChunkUtils;
 use pocketmine\level\format\io\exception\UnsupportedChunkFormatException;
 use pocketmine\level\format\SubChunk;
 use pocketmine\level\generator\Flat;
-use pocketmine\level\generator\Generator;
+use pocketmine\level\generator\GeneratorManager;
 use pocketmine\level\Level;
 use pocketmine\level\LevelException;
 use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\tag\{
-	ByteTag, CompoundTag, FloatTag, LongTag, StringTag, IntTag
+	ByteTag, CompoundTag, FloatTag, IntTag, LongTag, StringTag
 };
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\utils\Binary;
@@ -121,7 +121,7 @@ class LevelDB extends BaseLevelProvider{
 			if($this->levelData->hasTag("Generator", IntTag::class)){
 				switch($this->levelData->getInt("Generator")){ //Detect correct generator from MCPE data
 					case self::GENERATOR_FLAT:
-						$this->levelData->setString("generatorName", Generator::getGenerator("FLAT"));
+						$this->levelData->setString("generatorName", "flat");
 						if(($layers = $db->get(self::ENTRY_FLAT_WORLD_LAYERS)) !== false){ //Detect existing custom flat layers
 							$layers = trim($layers, "[]");
 						}else{
@@ -131,7 +131,7 @@ class LevelDB extends BaseLevelProvider{
 						break;
 					case self::GENERATOR_INFINITE:
 						//TODO: add a null generator which does not generate missing chunks (to allow importing back to MCPE and generating more normal terrain without PocketMine messing things up)
-						$this->levelData->setString("generatorName", Generator::getGenerator("DEFAULT"));
+						$this->levelData->setString("generatorName", "default");
 						$this->levelData->setString("generatorOptions", "");
 						break;
 					case self::GENERATOR_LIMITED:
@@ -140,8 +140,10 @@ class LevelDB extends BaseLevelProvider{
 						throw new LevelException("Unknown LevelDB world format type, this level cannot be loaded");
 				}
 			}else{
-				$this->levelData->setString("generatorName", Generator::getGenerator("DEFAULT"));
+				$this->levelData->setString("generatorName", "default");
 			}
+		}elseif(($generatorName = self::hackyFixForGeneratorClasspathInLevelDat($this->levelData->getString("generatorName"))) !== null){
+			$this->levelData->setString("generatorName", $generatorName);
 		}
 
 		if(!$this->levelData->hasTag("generatorOptions", StringTag::class)){
@@ -212,7 +214,7 @@ class LevelDB extends BaseLevelProvider{
 			//Additional PocketMine-MP fields
 			new CompoundTag("GameRules", []),
 			new ByteTag("hardcore", ($options["hardcore"] ?? false) === true ? 1 : 0),
-			new StringTag("generatorName", Generator::getGeneratorName($generator)),
+			new StringTag("generatorName", GeneratorManager::getGeneratorName($generator)),
 			new StringTag("generatorOptions", $options["preset"] ?? "")
 		]);
 

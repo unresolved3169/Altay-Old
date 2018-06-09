@@ -29,11 +29,21 @@ namespace pocketmine\math;
 
 abstract class Math{
 
+	/**
+	 * @param float $n
+	 *
+	 * @return int
+	 */
 	public static function floorFloat($n) : int{
 		$i = (int) $n;
 		return $n >= $i ? $i : $i - 1;
 	}
 
+	/**
+	 * @param float $n
+	 *
+	 * @return int
+	 */
 	public static function ceilFloat($n) : int{
 		$i = (int) $n;
 		return $n <= $i ? $i : $i + 1;

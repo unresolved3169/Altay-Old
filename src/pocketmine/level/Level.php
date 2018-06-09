@@ -52,6 +52,7 @@ use pocketmine\level\format\io\BaseLevelProvider;
 use pocketmine\level\format\io\ChunkRequestTask;
 use pocketmine\level\format\io\LevelProvider;
 use pocketmine\level\generator\Generator;
+use pocketmine\level\generator\GeneratorManager;
 use pocketmine\level\generator\GeneratorRegisterTask;
 use pocketmine\level\generator\GeneratorUnregisterTask;
 use pocketmine\level\generator\PopulationTask;
@@ -352,7 +353,7 @@ class Level implements ChunkManager, Metadatable{
 		$this->worldHeight = $this->provider->getWorldHeight();
 
 		$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.level.preparing", [$this->displayName]));
-		$this->generator = Generator::getGenerator($this->provider->getGenerator());
+		$this->generator = GeneratorManager::getGenerator($this->provider->getGenerator());
 		$this->dimension = self::getDimensionFromString($this->provider->getGenerator());
 
 		$this->folderName = $name;
@@ -766,6 +767,9 @@ class Level implements ChunkManager, Metadatable{
 		foreach($this->updateEntities as $id => $entity){
 			if($entity->isClosed() or !$entity->onUpdate($currentTick)){
 				unset($this->updateEntities[$id]);
+			}
+			if($entity->isFlaggedForDespawn()){
+				$entity->close();
 			}
 		}
 		Timings::$tickEntityTimer->stopTiming();
@@ -1204,7 +1208,7 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		if($entities){
-			foreach($this->getCollidingEntities($bb->grow(0.25, 0.25, 0.25), $entity) as $ent){
+			foreach($this->getCollidingEntities($bb->expandedCopy(0.25, 0.25, 0.25), $entity) as $ent){
 				$collides[] = clone $ent->boundingBox;
 			}
 		}
@@ -1872,7 +1876,7 @@ class Level implements ChunkManager, Metadatable{
 
 				if($player !== null){
 					if(($diff = $player->getNextPosition()->subtract($player->getPosition())) and $diff->lengthSquared() > 0.00001){
-						$bb = $player->getBoundingBox()->getOffsetBoundingBox($diff->x, $diff->y, $diff->z);
+						$bb = $player->getBoundingBox()->offsetCopy($diff->x, $diff->y, $diff->z);
 						if($collisionBox->intersectsWith($bb)){
 							return false; //Inside player BB
 						}
@@ -2376,32 +2380,38 @@ class Level implements ChunkManager, Metadatable{
 		return $result;
 	}
 
-	public function generateChunkCallback(int $x, int $z, Chunk $chunk){
+	public function generateChunkCallback(int $x, int $z, ?Chunk $chunk){
 		Timings::$generationCallbackTimer->startTiming();
 		if(isset($this->chunkPopulationQueue[$index = Level::chunkHash($x, $z)])){
-			$oldChunk = $this->getChunk($x, $z, false);
 			for($xx = -1; $xx <= 1; ++$xx){
 				for($zz = -1; $zz <= 1; ++$zz){
 					unset($this->chunkPopulationLock[Level::chunkHash($x + $xx, $z + $zz)]);
 				}
 			}
 			unset($this->chunkPopulationQueue[$index]);
-			$this->setChunk($x, $z, $chunk, false);
-			if(($oldChunk === null or !$oldChunk->isPopulated()) and $chunk->isPopulated()){
-				$this->server->getPluginManager()->callEvent(new ChunkPopulateEvent($this, $chunk));
 
-				foreach($this->getChunkLoaders($x, $z) as $loader){
-					$loader->onChunkPopulated($chunk);
+			if($chunk !== null){
+				$oldChunk = $this->getChunk($x, $z, false);
+				$this->setChunk($x, $z, $chunk, false);
+				if(($oldChunk === null or !$oldChunk->isPopulated()) and $chunk->isPopulated()){
+					$this->server->getPluginManager()->callEvent(new ChunkPopulateEvent($this, $chunk));
+
+					foreach($this->getChunkLoaders($x, $z) as $loader){
+						$loader->onChunkPopulated($chunk);
+					}
 				}
 			}
 		}elseif(isset($this->chunkPopulationLock[$index])){
 			unset($this->chunkPopulationLock[$index]);
-			$this->setChunk($x, $z, $chunk, false);
-		}else{
+			if($chunk !== null){
+				$this->setChunk($x, $z, $chunk, false);
+			}
+		}elseif($chunk !== null){
 			$this->setChunk($x, $z, $chunk, false);
 		}
 		Timings::$generationCallbackTimer->stopTiming();
 	}
+
 
 	/**
 	 * @param int        $chunkX
@@ -2558,8 +2568,9 @@ class Level implements ChunkManager, Metadatable{
 				if(!($chunk instanceof Chunk)){
 					throw new ChunkException("Invalid Chunk sent");
 				}
+				assert($chunk->getX() === $x and $chunk->getZ() === $z, "Chunk coordinate mismatch: expected $x $z, but chunk has coordinates " . $chunk->getX() . " " . $chunk->getZ() . ", did you forget to clone a chunk before setting?");
 
-				$this->server->getAsyncPool()->submitTask(new ChunkRequestTask($this, $chunk));
+				$this->server->getAsyncPool()->submitTask(new ChunkRequestTask($this, $x, $z, $chunk));
 
 				$this->timings->syncChunkSendPrepareTimer->stopTiming();
 			}

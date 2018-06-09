@@ -40,12 +40,7 @@ class AxisAlignedBB{
 	public $maxZ;
 
 	public function __construct(float $minX, float $minY, float $minZ, float $maxX, float $maxY, float $maxZ){
-		$this->minX = $minX;
-		$this->minY = $minY;
-		$this->minZ = $minZ;
-		$this->maxX = $maxX;
-		$this->maxY = $maxY;
-		$this->maxZ = $maxZ;
+		$this->setBounds($minX, $minY, $minZ, $maxX, $maxY, $maxZ);
 	}
 
 	public function setBounds(float $minX, float $minY, float $minZ, float $maxX, float $maxY, float $maxZ){
@@ -57,6 +52,16 @@ class AxisAlignedBB{
 		$this->maxZ = $maxZ;
 
 		return $this;
+	}
+
+	/**
+	 * Sets the bounding box's bounds from another AxisAlignedBB, and returns itself
+	 *
+	 * @param AxisAlignedBB $bb
+	 * @return $this
+	 */
+	public function setBB(AxisAlignedBB $bb){
+		return $this->setBounds($bb->minX, $bb->minY, $bb->minZ, $bb->maxX, $bb->maxY, $bb->maxZ);
 	}
 
 	/**
@@ -100,20 +105,8 @@ class AxisAlignedBB{
 	}
 
 	/**
-	 * Returns a new AxisAlignedBB with bounds outset by the specified X, Y and Z.
+	 * Outsets the bounds of this AxisAlignedBB by the specified X, Y and Z.
 	 *
-	 * @param float $x
-	 * @param float $y
-	 * @param float $z
-	 *
-	 * @return AxisAlignedBB
-	 */
-	public function grow(float $x, float $y, float $z) : AxisAlignedBB{
-		return new AxisAlignedBB($this->minX - $x, $this->minY - $y, $this->minZ - $z, $this->maxX + $x, $this->maxY + $y, $this->maxZ + $z);
-	}
-
-	/**
-	 * Performs the same operation as grow() but operates on itself instead of returning a new object.
 	 * @param float $x
 	 * @param float $y
 	 * @param float $z
@@ -132,7 +125,20 @@ class AxisAlignedBB{
 	}
 
 	/**
-	 * Performs the same operation as getOffsetBoundingBox(), but operates on itself instead of returning a new object.
+	 * Returns an expanded clone of this AxisAlignedBB.
+	 *
+	 * @param float $x
+	 * @param float $y
+	 * @param float $z
+	 *
+	 * @return AxisAlignedBB
+	 */
+	public function expandedCopy(float $x, float $y, float $z) : AxisAlignedBB{
+		return (clone $this)->expand($x, $y, $z);
+	}
+
+	/**
+	 * Shifts this AxisAlignedBB by the given X, Y and Z.
 	 *
 	 * @param float $x
 	 * @param float $y
@@ -152,7 +158,7 @@ class AxisAlignedBB{
 	}
 
 	/**
-	 * Returns a new AxisAlignedBB with bounds inset by the specified X, Y and Z.
+	 * Returns an offset clone of this AxisAlignedBB.
 	 *
 	 * @param float $x
 	 * @param float $y
@@ -160,12 +166,12 @@ class AxisAlignedBB{
 	 *
 	 * @return AxisAlignedBB
 	 */
-	public function shrink(float $x, float $y, float $z) : AxisAlignedBB{
-		return new AxisAlignedBB($this->minX + $x, $this->minY + $y, $this->minZ + $z, $this->maxX - $x, $this->maxY - $y, $this->maxZ - $z);
+	public function offsetCopy(float $x, float $y, float $z) : AxisAlignedBB{
+		return (clone $this)->offset($x, $y, $z);
 	}
 
 	/**
-	 * Performs the same operation as shrink(), but operates on itself instead of returning a new object.
+	 * Insets the bounds of this AxisAlignedBB by the specified X, Y and Z.
 	 *
 	 * @param float $x
 	 * @param float $y
@@ -185,23 +191,7 @@ class AxisAlignedBB{
 	}
 
 	/**
-	 * Sets the bounding box's bounds from another AxisAlignedBB, and returns itself
-	 *
-	 * @param AxisAlignedBB $bb
-	 * @return $this
-	 */
-	public function setBB(AxisAlignedBB $bb){
-		$this->minX = $bb->minX;
-		$this->minY = $bb->minY;
-		$this->minZ = $bb->minZ;
-		$this->maxX = $bb->maxX;
-		$this->maxY = $bb->maxY;
-		$this->maxZ = $bb->maxZ;
-		return $this;
-	}
-
-	/**
-	 * Returns a new AxisAlignedBB shifted by the specified X, Y and Z
+	 * Returns a contracted clone of this AxisAlignedBB.
 	 *
 	 * @param float $x
 	 * @param float $y
@@ -209,8 +199,8 @@ class AxisAlignedBB{
 	 *
 	 * @return AxisAlignedBB
 	 */
-	public function getOffsetBoundingBox(float $x, float $y, float $z) : AxisAlignedBB{
-		return new AxisAlignedBB($this->minX + $x, $this->minY + $y, $this->minZ + $z, $this->maxX + $x, $this->maxY + $y, $this->maxZ + $z);
+	public function contractedCopy(float $x, float $y, float $z) : AxisAlignedBB{
+		return (clone $this)->contract($x, $y, $z);
 	}
 
 	public function calculateXOffset(AxisAlignedBB $bb, float $x) : float{
