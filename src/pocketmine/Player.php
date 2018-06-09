@@ -355,7 +355,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	/** @var int */
 	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
+	/** @var bool */
 	protected $keepExperience = false;
+
+	/** @var int */
+	protected $lastInteract = 0;
 
 	/**
 	 * @return TranslationContainer|string
@@ -2382,6 +2386,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$type = $packet->trData->actionType;
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ACTION_CLICK_BLOCK:
+						if($this->lastInteract >= $this->lastUpdate){ // HACK!!?!?
+							return true;
+						}
+
+						$this->lastInteract = $this->lastUpdate + 2;
+
 						$this->setUsingItem(false);
 
 						if(!$this->canInteract($blockVector->add(0.5, 0.5, 0.5), 13) or $this->isSpectator()){
