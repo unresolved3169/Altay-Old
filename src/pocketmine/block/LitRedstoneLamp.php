@@ -34,4 +34,14 @@ class LitRedstoneLamp extends RedstoneLamp{
 	public function getLightLevel() : int{
 		return 15;
 	}
+
+	public function onRedstoneUpdate() : void{
+		if(!$this->isTakingPower()){
+			$this->level->setBlock($this, BlockFactory::get(Block::REDSTONE_LAMP));
+		}
+	}
+
+	public function onNearbyBlockChange() : void{
+		$this->onRedstoneUpdate();
+	}
 }

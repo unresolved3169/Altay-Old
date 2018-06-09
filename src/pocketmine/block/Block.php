@@ -27,6 +27,7 @@ declare(strict_types=1);
  */
 namespace pocketmine\block;
 
+use pocketmine\block\utils\RedstoneUtils;
 use pocketmine\entity\Entity;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
@@ -311,6 +312,13 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
+	 * Called when this block is updated by redstone source.
+	 */
+	public function onRedstoneUpdate() : void{
+
+	}
+
+	/**
 	 * Do actions when activated by Item. Returns if it has done anything
 	 *
 	 * @param Item        $item
@@ -363,6 +371,15 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
+	 * Returns the redstone power.
+	 *
+	 * @return int 0-15
+	 */
+	public function getPower() : int{
+		return 0;
+	}
+
+	/**
 	 * Returns whether this block will diffuse sky light passing through it vertically.
 	 * Diffusion means that full-strength sky light passing through this block will not be reduced, but will start being filtered below the block.
 	 * Examples of this behaviour include leaves and cobwebs.
@@ -384,6 +401,35 @@ class Block extends Position implements BlockIds, Metadatable{
 
 	public function isSolid() : bool{
 		return true;
+	}
+
+	public function isRedstoneSource() : bool{
+		return $this->getPower() > 0;
+	}
+
+	public function isTakingPower() : bool{
+		if($this->isValid()){
+			foreach($this->getAllSides() as $block){
+				if($block->getPower() > 0){
+					return true;
+				}
+			}
+
+			return RedstoneUtils::checkPower($this);
+		}
+
+		return false;
+	}
+
+	public function updateRedstone(array $blocks = null){
+		if($blocks == null){
+			$blocks = $this->getAllSides();
+		}
+
+		foreach($blocks as $block){
+			$block->onRedstoneUpdate();
+			RedstoneUtils::updateTakePowers($this, $block);
+		}
 	}
 
 	/**
