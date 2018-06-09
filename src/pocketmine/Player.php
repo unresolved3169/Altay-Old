@@ -3471,7 +3471,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->sendForm($form);
 			}
 		}else{
-			$this->server->getLogger()->debug("Form with id 5 not found");
+			$this->server->getLogger()->debug("Form with id $formId not found");
 			return false;
 		}
 
