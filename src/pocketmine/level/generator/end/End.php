@@ -38,13 +38,13 @@ class End extends Generator{
 
 	/** @var Populator[] */
 	private $populators = [];
-	/** @var ChunkManager */
-	private $level;
-	/** @var Random */
-	private $random;
+	/** @var int */
 	private $waterHeight = 0;
+	/** @var int */
 	private $emptyHeight = 32;
+	/** @var int */
 	private $emptyAmplitude = 1;
+	/** @var float */
 	private $density = 0.6;
 
 	/** @var Populator[] */
@@ -90,19 +90,18 @@ class End extends Generator{
 		return [];
 	}
 
-	public function init(ChunkManager $level, Random $random){
-		$this->level = $level;
-		$this->random = $random;
+	public function init(ChunkManager $level, Random $random) : void{
+		parent::init($level, $random);
 		$this->random->setSeed($this->level->getSeed());
 		$this->noiseBase = new Simplex($this->random, 4, 1 / 4, 1 / 64);
 		$this->random->setSeed($this->level->getSeed());
 		$this->populators[] = new EndPillar();
 	}
 
-	public function generateChunk($chunkX, $chunkZ){
+	public function generateChunk(int $chunkX, int $chunkZ) : void{
 		$this->random->setSeed(0xa6fe78dc ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 
-		$noise = Generator::getFastNoise3D($this->noiseBase, 16, 128, 16, 4, 8, 4, $chunkX * 16, 0, $chunkZ * 16);
+		$noise = $this->noiseBase->getFastNoise3D(16, 128, 16, 4, 8, 4, $chunkX * 16, 0, $chunkZ * 16);
 
 		$chunk = $this->level->getChunk($chunkX, $chunkZ);
 
@@ -142,7 +141,7 @@ class End extends Generator{
 		}
 	}
 
-	public function populateChunk($chunkX, $chunkZ){
+	public function populateChunk(int $chunkX, int $chunkZ) : void{
 		$this->random->setSeed(0xa6fe78dc ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 		foreach($this->populators as $populator){
 			$populator->populate($this->level, $chunkX, $chunkZ, $this->random);

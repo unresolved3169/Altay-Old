@@ -25,18 +25,13 @@ declare(strict_types=1);
 namespace pocketmine\level\generator;
 
 use pocketmine\block\Block;
-use pocketmine\level\ChunkManager;
 use pocketmine\level\format\Chunk;
 use pocketmine\math\Vector3;
-use pocketmine\utils\Random;
 
 class VoidGenerator extends Generator {
-    /** @var ChunkManager */
-    private $level;
     /** @var Chunk */
     private $chunk;
-    /** @var Random */
-    private $random;
+    /** @var array */
     private $options;
     /** @var Chunk */
     private $emptyChunk = null;
@@ -54,12 +49,7 @@ class VoidGenerator extends Generator {
         $this->options = $settings;
     }
 
-    public function init(ChunkManager $level, Random $random){
-        $this->level = $level;
-        $this->random = $random;
-    }
-
-    public function generateChunk($chunkX, $chunkZ){
+    public function generateChunk(int $chunkX, int $chunkZ) : void{
         if($this->emptyChunk === null){
             $this->chunk = clone $this->level->getChunk($chunkX, $chunkZ);
             $this->chunk->setGenerated();
@@ -89,9 +79,11 @@ class VoidGenerator extends Generator {
         $this->level->setChunk($chunkX, $chunkZ, $chunk);
     }
 
-    public function populateChunk($chunkX, $chunkZ){}
+    public function populateChunk(int $chunkX, int $chunkZ) : void{
 
-    public function getSpawn() : Vector3{
+	}
+
+	public function getSpawn() : Vector3{
         return new Vector3(128, 72, 128);
     }
 
