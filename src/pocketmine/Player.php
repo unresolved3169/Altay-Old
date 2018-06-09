@@ -348,10 +348,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	/** @var int */
 	protected $formIdCounter = 0;
-	/** @var int|null */
-	protected $sentFormId = null;
-	/** @var Form|null */
-	protected $sentForm = null;
 	/** @var Form[] */
 	protected $formQueue = [];
 	/** @var ServerSettingsForm */
@@ -3433,23 +3429,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/**
 	 * Sends a Form to the player, or queue to send it if a form is already open.
 	 *
-	 * @param Form $form
-	 * @param bool $formOverwrite if true, the form will overwrite to old form.
-	 * @param bool $prepend if true, the form will be sent immediately after the current form is closed (if any), before other queued forms.
+	 * @param Form     $form
+	 * @param int|null $id
 	 */
-	public function sendForm(Form $form, bool $formOverwrite = true, bool $prepend = false) : void{
+	public function sendForm(Form $form, ?int $id = null) : void{
 		$form->setInUse();
 
-		if($this->sentForm !== null and !$formOverwrite){
-			if($prepend){
-				array_unshift($this->formQueue, $form);
-			}else{
-				$this->formQueue[] = $form;
-			}
-			return;
-		}
-
-		$this->sendFormRequestPacket($form);
+		$id = $id ?? $this->formIdCounter++;
+		$this->formQueue[$id] = $form;
+		$this->sendFormRequestPacket($form, $id);
 	}
 
 	/**
@@ -3459,48 +3447,32 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * @return bool
 	 */
 	public function onFormSubmit(int $formId, $responseData) : bool{
-		if($formId !== $this->sentFormId){
-			$this->server->getLogger()->debug("Got unexpected response for form $formId, but waiting for response for $this->sentFormId");
+		if(isset($this->formQueue[$formId])){
+			/** @var Form $form */
+			$form = $this->formQueue[$formId];
+
+			try{
+				$form = $form->handleResponse($this, $responseData);
+			}catch(\Throwable $e){
+				$this->server->getLogger()->logException($e);
+			}
+
+			if($form !== null){
+				$this->sendForm($form);
+			}
+		}else{
+			$this->server->getLogger()->debug("Form with id 5 not found");
 			return false;
-		}
-
-		$form = null;
-
-		try{
-			$form = $this->sentForm->handleResponse($this, $responseData);
-		}catch(\Throwable $e){
-			$this->server->getLogger()->logException($e);
-		}
-
-		$this->sentFormId = null;
-		$this->sentForm = null;
-
-		try{
-			if($form !== null){
-				$form->setInUse(); //forms in the queue will already be marked as "in use", we only need to check here
-			}else{
-				$form = array_shift($this->formQueue);
-			}
-
-			if($form !== null){
-				$this->sendFormRequestPacket($form);
-			}
-		}catch(\Throwable $e){
-			$this->server->getLogger()->logException($e);
 		}
 
 		return true;
 	}
 
-	private function sendFormRequestPacket(Form $form, ?int $id = null) : void{
-		$id = $id === null ? $this->formIdCounter++ : $id;
+	private function sendFormRequestPacket(Form $form, int $id) : void{
 		$pk = new ModalFormRequestPacket();
 		$pk->formId = $id;
 		$pk->formData = json_encode($form);
-		if($this->dataPacket($pk)){
-			$this->sentFormId = $id;
-			$this->sentForm = $form;
-		}
+		$this->dataPacket($pk);
 	}
 
 	public function sendServerSettings(ServerSettingsForm $form){
@@ -3508,18 +3480,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk = new ServerSettingsResponsePacket();
 		$pk->formId = $id;
 		$pk->formData = json_encode($form);
-		if($this->dataPacket($pk)){
-			$this->sentFormId = $id;
-			$this->sentForm = $form;
-		}
-	}
-
-	public function setServerSettingsForm(ServerSettingsForm $form) : void{
-		$this->serverSettingsForm = $form;
+		$this->dataPacket($pk);
 	}
 
 	public function getServerSettingsForm() : ?ServerSettingsForm{
 		return $this->serverSettingsForm;
+	}
+
+	public function setServerSettingsForm(ServerSettingsForm $form) : void{
+		$this->serverSettingsForm = $form;
 	}
 
 	/**
