@@ -3448,6 +3448,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * @return bool
 	 */
 	public function onFormSubmit(int $formId, $responseData) : bool{
+		if(is_null($responseData)){
+			return false;
+		}
+
 		if(isset($this->formQueue[$formId])){
 			/** @var Form $form */
 			$form = $this->formQueue[$formId];
