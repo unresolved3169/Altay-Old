@@ -35,11 +35,28 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\utils\Random;
 
 class FireworksUtils{
-	public const SMALL_BALL = 0;
-	public const LARGE_BALL = 1;
-	public const STAR_SHAPED = 2;
-	public const CREEPER_SHAPED = 3;
-	public const BURST = 4;
+	public const COLOR_BLACK = 0;
+	public const COLOR_RED = 1;
+	public const COLOR_GREEN = 2;
+	public const COLOR_BROWN = 3;
+	public const COLOR_BLUE = 4;
+	public const COLOR_PURPLE = 5;
+	public const COLOR_CYAN = 6;
+	public const COLOR_LIGHT_GRAY = 7;
+	public const COLOR_GRAY = 8;
+	public const COLOR_PINK = 9;
+	public const COLOR_LIME = 10;
+	public const COLOR_YELLOW = 11;
+	public const COLOR_LIGHT_BLUE = 12;
+	public const COLOR_MAGENTA = 13;
+	public const COLOR_ORANGE = 14;
+	public const COLOR_WHITE = 15;
+
+	public const TYPE_SMALL_BALL = 0;
+	public const TYPE_LARGE_BALL = 1;
+	public const TYPE_STAR_SHAPED = 2;
+	public const TYPE_CREEPER_SHAPED = 3;
+	public const TYPE_BURST = 4;
 
 	public static function createNBT(int $flight = 1, array $explosionTags = []) : CompoundTag{
 		return new CompoundTag("", [
