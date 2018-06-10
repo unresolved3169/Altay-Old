@@ -25,63 +25,55 @@ declare(strict_types=1);
 namespace pocketmine\entity\utils;
 
 use pocketmine\entity\projectile\FireworksRocket;
-use pocketmine\item\FireworkRocket;
+use pocketmine\item\Fireworks;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
+use pocketmine\nbt\tag\ByteArrayTag;
+use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\utils\Random;
 
 class FireworksUtils{
+	public const SMALL_BALL = 0;
+	public const LARGE_BALL = 1;
+	public const STAR_SHAPED = 2;
+	public const CREEPER_SHAPED = 3;
+	public const BURST = 4;
 
-    public const SMALL_BALL = 0;
-    public const LARGE_BALL = 1;
-    public const STAR_SHAPED = 2;
-    public const CREEPER_SHAPED = 3;
-    public const BURST = 4;
+	public static function createNBT(int $flight = 1, array $explosionTags = []) : CompoundTag{
+		return new CompoundTag("", [
+			new CompoundTag("Fireworks", [
+				new ListTag("Explosions", $explosionTags, NBT::TAG_Compound),
+				new ByteTag("Flight", $flight)
+			])
+		]);
+	}
 
-    /**
-     * @param int $flight
-     * @param CompoundTag[] $explosionTags
-     * @return CompoundTag
-     */
-    public static function createNBT($flight = 1, array $explosionTags = []) : CompoundTag{
-        $tag = new CompoundTag();
+	public static function createExplosion(int $fireworkColor = 0, int $fireworkFade = 0, bool $fireworkFlicker = false, bool $fireworkTrail = false, int $fireworkType = -1) : CompoundTag{
+		return new CompoundTag("", [
+			new ByteArrayTag("FireworkColor", chr($fireworkColor)),
+			new ByteArrayTag("FireworkFade", chr($fireworkFade)),
+			new ByteTag("FireworkFlicker", $fireworkFlicker ? 1 : 0),
+			new ByteTag("FireworkTrail", $fireworkTrail ? 1 : 0),
+			new ByteTag("FireworkType", $fireworkType),
+		]);
+	}
 
-        $explosions = new ListTag("Explosions", $explosionTags, NBT::TAG_Compound);
+	public static function createEntityNBT(Vector3 $pos, ?Vector3 $motion = null, Fireworks $rocket, float $spread = 5.0, ?Random $random = null, ?float $yaw = null, ?float $pitch = null) : CompoundTag{
+		$random = $random ?? new Random();
+		$pos = $pos->add(0.5, 0, 0.5);
+		$yaw = $yaw ?? $random->nextBoundedInt(360);
+		$pitch = $pitch ?? -1 * (float) (90 + ($random->nextFloat() * $spread - $spread / 2));
+		$nbt = FireworksRocket::createBaseNBT($pos, $motion, $yaw, $pitch);
 
-        $fireworkTag = new CompoundTag("Fireworks");
-        $fireworkTag->setTag($explosions);
-        $fireworkTag->setByte("Flight", 1);
-        $tag->setTag($fireworkTag);
+		/** @var CompoundTag $tags */
+		$tags = $rocket->getNamedTagEntry("Fireworks");
+		if (!is_null($tags)){
+			$nbt->setTag($tags);
+		}
 
-        return $tag;
-    }
-
-    public static function createExplosion(int $fireworkColor = 0, int $fireworkFade = 0, bool $fireworkFlicker = false, bool $fireworkTrait = false, int $fireworkType = -1) : CompoundTag{
-        $expTag = new CompoundTag();
-        $expTag->setByteArray("FireworkColor", strval($fireworkColor));
-        $expTag->setByteArray("FireworkFade", strval($fireworkFade));
-        $expTag->setByte("FireworkFlicker", $fireworkFlicker ? 1 : 0);
-        $expTag->setByte("FireworkTrait", $fireworkTrait ? 1 : 0);
-        $expTag->setByte("FireworkType", $fireworkType);
-        return $expTag;
-    }
-
-    public static function createNBTforEntity(Vector3 $pos, ?Vector3 $motion = null, FireworkRocket $rocket, float $spread = 5.0, ?Random $random = null, ?float $yaw = null, ?float $pitch = null) : CompoundTag{
-        $random = $random ?? new Random();
-        $pos = $pos->add(0.5, 0, 0.5);
-        $yaw = $yaw ?? $random->nextBoundedInt(360);
-        $pitch = $pitch ?? -1 * (float) (90 + ($random->nextFloat() * $spread - $spread / 2));
-        $nbt = FireworksRocket::createBaseNBT($pos, $motion, $yaw, $pitch);
-
-        /** @var CompoundTag $tags */
-        $tags = $rocket->getNamedTagEntry("Fireworks");
-        if (!is_null($tags)){
-            $nbt->setTag($tags);
-        }
-
-        return $nbt;
-    }
+		return $nbt;
+	}
 
 }
