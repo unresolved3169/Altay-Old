@@ -32,7 +32,7 @@ developer:
   load-incompatible-api: true
 
 terminal:
-  # If console colors are disabled, set it to "false".
+  # コンソールに色文字を使用します。無効にする場合は"false"に設定してください。
   read-line: true
 
 server:
