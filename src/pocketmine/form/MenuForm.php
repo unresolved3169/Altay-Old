@@ -128,7 +128,6 @@ abstract class MenuForm extends Form{
 		$this->selectedOption = null;
 	}
 
-
 	final public function handleResponse(Player $player, $data) : ?Form{
 		if($data === null){
 			return $this->onClose($player);

@@ -29,21 +29,20 @@ namespace pocketmine\form\element;
  */
 class Label extends CustomFormElement{
 
-    public function getType() : string{
-        return "label";
-    }
+	public function getType() : string{
+		return "label";
+	}
 
-    public function getValue(){
-        return null;
-    }
+	public function getValue(){
+		return null;
+	}
 
-    public function setValue($value) : void{
-        assert($value === null);
-    }
+	public function setValue($value) : void{
+		assert($value === null);
+	}
 
-
-    public function serializeElementData() : array{
-        return [];
-    }
+	public function serializeElementData() : array{
+		return [];
+	}
 
 }
