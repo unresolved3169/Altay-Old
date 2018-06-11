@@ -67,6 +67,7 @@ use pocketmine\event\player\PlayerToggleFlightEvent;
 use pocketmine\event\player\PlayerToggleGlideEvent;
 use pocketmine\event\player\PlayerToggleSneakEvent;
 use pocketmine\event\player\PlayerToggleSprintEvent;
+use pocketmine\event\player\PlayerToggleSwimmingEvent;
 use pocketmine\event\player\PlayerTransferEvent;
 use pocketmine\event\player\PlayerInteractEntityEvent;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -163,6 +164,7 @@ use pocketmine\tile\ItemFrame;
 use pocketmine\timings\Timings;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
+use pocketmine\network\mcpe\protocol\types\CommandOriginData;
 
 /**
  * Main class that handles networking, recovery, and packet sending to the server part
@@ -2822,9 +2824,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_ACK:
 				break;
 			case PlayerActionPacket::ACTION_START_SWIMMING:
-				break; //TODO
+			 if(!$this->isSwimming()){
+			 	 $this->toggleSwimming(true);
+			 }
+				break;
 			case PlayerActionPacket::ACTION_STOP_SWIMMING:
-				//TODO: handle this when it doesn't spam every damn tick (yet another spam bug!!)
+			 if($this->isSwimming()){ // for spam issue
+			 	 $this->toggleSwimming(false);
+				}
 				break;
 			default:
 				$this->server->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->getName());
@@ -2863,6 +2870,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->sendData($this);
 		}else{
 			$this->setGliding($glide);
+		}
+	}
+	
+	public function toggleSwimming(bool $swimming) : void{
+		$ev = new PlayerToggleSwimmingEvent($this, $swimming);
+		$this->server->getPluginManager()->callEvent($ev);
+		if($ev->isCancelled()){
+			$this->sendData($this);
+		}else{
+			$this->setSwimming($swimming);
 		}
 	}
 
@@ -3034,8 +3051,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(!$this->spawned or !$this->isAlive()){
 			return false;
 		}
-
-		$this->resetCraftingGridType();
+		
+		if($packet->originData->type !== CommandOriginData::ORIGIN_PLAYER) return false;
 
 		$command = $packet->command;
 		if($command{0} != "/"){
@@ -3451,7 +3468,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(is_null($responseData)){
 			return false;
 		}
-
+		
 		if(isset($this->formQueue[$formId])){
 			/** @var Form $form */
 			$form = $this->formQueue[$formId];
