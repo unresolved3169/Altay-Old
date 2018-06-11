@@ -95,19 +95,32 @@ abstract class ModalForm extends Form{
         return null;
     }
 
-    public function clearResponseData() : void{
-        $this->choice = null;
-    }
+	/**
+	 * Called when a player closes the form
+	 * @param Player $player
+	 * @return Form|null a form which will be opened immediately (before queued forms) as a response to this form, or null if not applicable.
+	 */
+	public function onClose(Player $player) : ?Form{
+		return null;
+	}
+
+	public function clearResponseData() : void{
+		$this->choice = null;
+	}
 
 
-    final public function handleResponse(Player $player, $data) : ?Form{
-        if(!is_bool($data)){
-            throw new \UnexpectedValueException("Expected bool, got " . gettype($data));
-        }
+	final public function handleResponse(Player $player, $data) : ?Form{
+		if($data === null){
+			return $this->onClose($player);
+		}
 
-        $this->setChoice($data);
-        return $this->onSubmit($player);
-    }
+		if(is_bool($data)){
+			$this->setChoice($data);
+			return $this->onSubmit($player);
+		}
+
+		throw new \UnexpectedValueException("Expected bool, got " . gettype($data));
+	}
 
     public function serializeFormData() : array{
         return [
