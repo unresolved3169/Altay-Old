@@ -277,7 +277,7 @@ class BlockFactory{
 
 		self::registerBlock(new PurpurStairs());
 
-		//TODO: UNDYED_SHULKER_BOX
+		self::registerBlock(new UndyedShulkerBox());
 		self::registerBlock(new EndStoneBricks());
 		//TODO: FROSTED_ICE
 		self::registerBlock(new EndRod());
@@ -288,7 +288,7 @@ class BlockFactory{
 		self::registerBlock(new NetherBrick(Block::RED_NETHER_BRICK, 0, "Red Nether Bricks"));
 		self::registerBlock(new BoneBlock());
 
-		//TODO: SHULKER_BOX
+		self::registerBlock(new ShulkerBox());
 		self::registerBlock(new GlazedTerracotta(Block::PURPLE_GLAZED_TERRACOTTA, 0, "Purple Glazed Terracotta"));
 		self::registerBlock(new GlazedTerracotta(Block::WHITE_GLAZED_TERRACOTTA, 0, "White Glazed Terracotta"));
 		self::registerBlock(new GlazedTerracotta(Block::ORANGE_GLAZED_TERRACOTTA, 0, "Orange Glazed Terracotta"));
