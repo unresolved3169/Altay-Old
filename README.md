@@ -53,6 +53,6 @@ Yes, you can.
  	- [x] Beacon
  	- [x] Hopper
  	- [x] Jukebox
- 	- [ ] Shulker Boxes
+ 	- [x] Shulker Boxes
 	
 ***more...***
