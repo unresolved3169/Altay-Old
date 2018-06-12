@@ -72,7 +72,7 @@ class ShulkerBox extends Spawnable implements InventoryHolder, Container, Nameab
     	   $this->saveItems($nbt);
     }
 
-    public function addAdditionalSpawnData(CompoundTag $nbt){
+    public function addAdditionalSpawnData(CompoundTag $nbt): void{
         $nbt->setTag($this->namedtag->getTag(Container::TAG_ITEMS));
         if($this->hasName()){
             $nbt->setTag($this->namedtag->getTag("CustomName"));
