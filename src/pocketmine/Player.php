@@ -2824,13 +2824,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			case PlayerActionPacket::ACTION_DIMENSION_CHANGE_ACK:
 				break;
 			case PlayerActionPacket::ACTION_START_SWIMMING:
-			 if(!$this->isSwimming()){
-			 	 $this->toggleSwimming(true);
-			 }
+				if(!$this->isSwimming()){
+					$this->toggleSwimming(true);
+				}
 				break;
 			case PlayerActionPacket::ACTION_STOP_SWIMMING:
-			 if($this->isSwimming()){ // for spam issue
-			 	 $this->toggleSwimming(false);
+				if($this->isSwimming()){ // for spam issue
+					$this->toggleSwimming(false);
 				}
 				break;
 			default:
@@ -2872,7 +2872,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->setGliding($glide);
 		}
 	}
-	
+
 	public function toggleSwimming(bool $swimming) : void{
 		$ev = new PlayerToggleSwimmingEvent($this, $swimming);
 		$this->server->getPluginManager()->callEvent($ev);
@@ -3051,7 +3051,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(!$this->spawned or !$this->isAlive()){
 			return false;
 		}
-		
+
 		if($packet->originData->type !== CommandOriginData::ORIGIN_PLAYER) return false;
 
 		$command = $packet->command;
@@ -3465,10 +3465,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * @return bool
 	 */
 	public function onFormSubmit(int $formId, $responseData) : bool{
-		if(is_null($responseData)){
-			return false;
-		}
-		
 		if(isset($this->formQueue[$formId])){
 			/** @var Form $form */
 			$form = $this->formQueue[$formId];
