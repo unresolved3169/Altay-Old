@@ -27,6 +27,7 @@ namespace pocketmine\block;
 use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\Player;
 use pocketmine\tile\Tile;
 use pocketmine\tile\ShulkerBox as TileShulkerBox;
@@ -81,20 +82,22 @@ class ShulkerBox extends Transparent{
 		return true;
 	}
 
-	public function onBreak(Item $item, Player $player = null) : bool{
+	public function isAffectedBySilkTouch() : bool{
+		return false;
+	}
+
+	public function getDropsForCompatibleTool(Item $item) : array{
 		$t = $this->getLevel()->getTile($this);
 		if($t instanceof TileShulkerBox){
 			$item = Item::get(Item::SHULKER_BOX, $this->meta, 1);
-			$itemNBT = $item->getNamedTag();
+			$itemNBT = new CompoundTag();
 			$t->writeSaveData($itemNBT);
-			$item->setNamedTag($itemNBT);
-			$this->getLevel()->dropItem($this->asVector3(), $item);
-			$t->getInventory()->clearAll(); // dont drop the items
+			$item->setCustomBlockData($itemNBT);
+			$t->getInventory()->clearAll(false);
+			return [$item];
 		}
 
-		$this->getLevel()->setBlock($this, BlockFactory::get(Block::AIR), true, true);
-
-		return true;
+		return [];
 	}
 
 	public function getVariantBitmask(): int{
