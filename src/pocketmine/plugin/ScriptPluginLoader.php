@@ -58,6 +58,7 @@ class ScriptPluginLoader implements PluginLoader{
 				throw new \InvalidStateException("Projected dataFolder '" . $dataFolder . "' for " . $description->getName() . " exists and is not a directory");
 			}
 
+			/** @noinspection PhpIncludeInspection */
 			include_once($file);
 
 			$className = $description->getMain();

@@ -57,6 +57,7 @@ abstract class Thread extends \Thread{
 	 */
 	public function registerClassLoader(){
 		if($this->composerAutoloaderPath !== null){
+			/** @noinspection PhpIncludeInspection */
 			require $this->composerAutoloaderPath;
 		}
 		if($this->classLoader !== null){

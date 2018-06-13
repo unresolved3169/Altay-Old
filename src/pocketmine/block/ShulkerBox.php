@@ -24,12 +24,10 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\block\utils\{ColorBlockMetaHelper, PillarRotationHelper};
+use pocketmine\block\utils\ColorBlockMetaHelper;
 use pocketmine\item\Item;
 use pocketmine\math\Vector3;
-use pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
-use pocketmine\tile\Container;
 use pocketmine\tile\Tile;
 use pocketmine\tile\ShulkerBox as TileShulkerBox;
 
@@ -41,12 +39,16 @@ class ShulkerBox extends Transparent{
  		$this->meta = $meta;
  	}
 
- 	public function getToolType() : int{
-		return BlockToolType::TYPE_PICKAXE;
+	public function getHardness() : float{
+		return 6;
 	}
 
 	public function getName() : string{
 		return ColorBlockMetaHelper::getColorFromMeta($this->getVariant()) . " Shulker Box";
+	}
+
+	public function getToolType() : int{
+		return BlockToolType::TYPE_PICKAXE;
 	}
 
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
@@ -93,10 +95,6 @@ class ShulkerBox extends Transparent{
 		$this->getLevel()->setBlock($this, BlockFactory::get(Block::AIR), true, true);
 
 		return true;
-	}
-
-	public function getHardness() : float{
-		return 6;
 	}
 
 	public function getDropsForCompatibleTool(Item $item): array{

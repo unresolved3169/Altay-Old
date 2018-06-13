@@ -194,6 +194,7 @@ namespace pocketmine {
 	}
 
 	if(is_file(\pocketmine\COMPOSER_AUTOLOADER_PATH)){
+		/** @noinspection PhpIncludeInspection */
 		require_once(\pocketmine\COMPOSER_AUTOLOADER_PATH);
 	}else{
 		composer_error_die("Composer autoloader not found.");

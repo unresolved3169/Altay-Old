@@ -27,83 +27,56 @@ namespace pocketmine\tile;
 use pocketmine\inventory\ShulkerBoxInventory;
 use pocketmine\inventory\Inventory;
 use pocketmine\inventory\InventoryHolder;
-use pocketmine\item\Item;
-use pocketmine\level\Level;
-use pocketmine\math\Vector3;
-use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\nbt\tag\ListTag;
 
 class ShulkerBox extends Spawnable implements InventoryHolder, Container, Nameable {
-    use NameableTrait, ContainerTrait;
+	use NameableTrait, ContainerTrait;
 
-    protected $inventory;
+	/** @var ShulkerBoxInventory */
+	protected $inventory;
 
-    /**
-     * @return int
-     */
-    public function getSize(){
-        return 27;
-    }
+	/**
+	 * @return int
+	 */
+	public function getSize(){
+		return 27;
+	}
 
-    public function getDefaultName(): string{
-        return "Shulker Box";
-    }
+	public function getDefaultName(): string{
+		return "Shulker Box";
+	}
 
-    /**
-     * Get the object related inventory
-     *
-     * @return Inventory
-     */
-    public function getInventory(){
-        return $this->inventory;
-    }
+	/**
+	 * Get the object related inventory
+	 *
+	 * @return Inventory
+	 */
+	public function getInventory(){
+		return $this->inventory;
+	}
 
-    public function getRealInventory(){
-        return $this->inventory;
-    }
-    
-    public function readSaveData(CompoundTag $nbt) : void{
-    	   $this->inventory = new ShulkerBoxInventory($this);
-    	   $this->loadItems($nbt);
-    }
+	public function getRealInventory(){
+		return $this->inventory;
+	}
 
-    public function writeSaveData(CompoundTag $nbt) : void{
-    	   $this->saveItems($nbt);
-    }
+	public function readSaveData(CompoundTag $nbt) : void{
+		$this->loadName($nbt);
 
-    public function addAdditionalSpawnData(CompoundTag $nbt): void{
-        $nbt->setTag($this->namedtag->getTag(Container::TAG_ITEMS));
-        if($this->hasName()){
-            $nbt->setTag($this->namedtag->getTag("CustomName"));
-        }
-    }
+		$this->inventory = new ShulkerBoxInventory($this);
+		$this->loadItems($nbt);
+	}
 
-    /**
-     * @param CompoundTag $nbt
-     * @param Vector3 $pos
-     * @param null $face
-     * @param Item|null $item
-     * @param null $player
-     */
-    protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, $face = null, $item = null, $player = null){
-        $slots = [];
-        if($item !== null){
-            $items = $item->getNamedTag()->getTag(Container::TAG_ITEMS);
-            $slots = $items !== null ? $items->getAllValues() : [];
-        }
-        $nbt->setTag(new ListTag(Container::TAG_ITEMS, $slots, NBT::TAG_Compound));
+	public function writeSaveData(CompoundTag $nbt) : void{
+		$this->saveName($nbt);
+		$this->saveItems($nbt);
+	}
 
-        if ($item !== null and $item->hasCustomName()) {
-            $nbt->setString("CustomName", $item->getCustomName());
-        }
-    }
+	public function close() : void{
+		if(!$this->closed){
+			$this->inventory->removeAllViewers(true);
+			$this->inventory = null;
 
-    public function close(){
-        if($this->closed === false){
-            $this->inventory->removeAllViewers(true);
-            $this->inventory = null;
-            parent::close();
-        }
-    }
+			parent::close();
+		}
+	}
 }
