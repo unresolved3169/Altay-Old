@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\tile;
 
 use pocketmine\inventory\ShulkerBoxInventory;
-use pocketmine\inventory\Inventory;
 use pocketmine\inventory\InventoryHolder;
 use pocketmine\nbt\tag\CompoundTag;
 
@@ -42,19 +41,23 @@ class ShulkerBox extends Spawnable implements InventoryHolder, Container, Nameab
 		return 27;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getDefaultName(): string{
 		return "Shulker Box";
 	}
 
 	/**
-	 * Get the object related inventory
-	 *
-	 * @return Inventory
+	 * @return ShulkerBoxInventory
 	 */
 	public function getInventory(){
 		return $this->inventory;
 	}
 
+	/**
+	 * @return ShulkerBoxInventory
+	 */
 	public function getRealInventory(){
 		return $this->inventory;
 	}

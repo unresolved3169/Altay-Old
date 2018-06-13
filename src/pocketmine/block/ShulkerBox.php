@@ -32,12 +32,12 @@ use pocketmine\tile\Tile;
 use pocketmine\tile\ShulkerBox as TileShulkerBox;
 
 class ShulkerBox extends Transparent{
-	
+
 	protected $id = self::SHULKER_BOX;
-	
+
 	public function __construct(int $meta = 0){
- 		$this->meta = $meta;
- 	}
+		$this->meta = $meta;
+	}
 
 	public function getHardness() : float{
 		return 6;
@@ -59,10 +59,6 @@ class ShulkerBox extends Transparent{
 
 	public function onActivate(Item $item, Player $player = null) : bool{
 		if($player instanceof Player){
-			$top = $this->getSide(1);
-			if($top->isTransparent() !== true){
-				return true;
-			}
 
 			$t = $this->getLevel()->getTile($this);
 			$sb = null;
@@ -72,7 +68,10 @@ class ShulkerBox extends Transparent{
 				$sb = Tile::createTile(Tile::SHULKER_BOX, $this->getLevel(), TileShulkerBox::createNBT($this));
 			}
 
-			if(!($this->getSide(Vector3::SIDE_UP)->isTransparent()) or !$sb->canOpenWith($item->getCustomName())) {
+			if(
+				!($this->getSide(Vector3::SIDE_UP)->isTransparent()) or
+				!$sb->canOpenWith($item->getCustomName())
+			){
 				return true;
 			}
 
@@ -84,7 +83,7 @@ class ShulkerBox extends Transparent{
 
 	public function onBreak(Item $item, Player $player = null) : bool{
 		$t = $this->getLevel()->getTile($this);
-		if ($t instanceof TileShulkerBox) {
+		if($t instanceof TileShulkerBox){
 			$item = Item::get(Item::SHULKER_BOX, $this->meta, 1);
 			$itemNBT = $item->getNamedTag();
 			$t->writeSaveData($itemNBT);
@@ -92,13 +91,10 @@ class ShulkerBox extends Transparent{
 			$this->getLevel()->dropItem($this->asVector3(), $item);
 			$t->getInventory()->clearAll(); // dont drop the items
 		}
+
 		$this->getLevel()->setBlock($this, BlockFactory::get(Block::AIR), true, true);
 
 		return true;
-	}
-
-	public function getDropsForCompatibleTool(Item $item): array{
-		return [];
 	}
 
 	public function getVariantBitmask(): int{
