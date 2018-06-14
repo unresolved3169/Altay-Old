@@ -43,13 +43,16 @@ Yes, you can.
  	- [x] PlayerInteractEntityEvent
  - [x] Items
  	- [x] Elytra
+ 	- [ ] Fully Enchantments
  - [ ] Others
  	- [x] Altay Configuration File
  	- [ ] Config Auto Updater
  	- [ ] Entity Behaviors (MobAI)
  	- [x] Level Dimensions
  	- [ ] Redstone
- - [ ] Tiles
+ 	- [ ] Multi-core
+
+ - [x] Tiles
  	- [x] Beacon
  	- [x] Hopper
  	- [x] Jukebox
