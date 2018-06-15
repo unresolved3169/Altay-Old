@@ -25,7 +25,6 @@ Yes, you can.
  	- [x] Command Parameters
  	- [x] Forms
  	- [x] Villager Trade
- 	- [x] Virtual Inventory
  - [x] Blocks
  	- [x] Anvil
  	- [x] Enchantment Table
@@ -43,15 +42,14 @@ Yes, you can.
  	- [x] PlayerInteractEntityEvent
  - [x] Items
  	- [x] Elytra
- 	- [ ] Fully Enchantments
  - [ ] Others
  	- [x] Altay Configuration File
  	- [ ] Config Auto Updater
  	- [ ] Entity Behaviors (MobAI)
+ 	- [ ] Fully Enchantments
  	- [x] Level Dimensions
- 	- [ ] Redstone
  	- [ ] Multi-core
-
+ 	- [ ] Redstone
  - [x] Tiles
  	- [x] Beacon
  	- [x] Hopper
