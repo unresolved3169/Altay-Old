@@ -249,11 +249,11 @@ class Level implements ChunkManager, Metadatable{
 	/** @var string|Generator */
 	private $generator;
 
-	/** @var bool */
-	private $closed = false;
-
 	/** @var int */
 	protected $dimension = self::DIMENSION_OVERWORLD;
+
+	/** @var bool */
+	private $closed = false;
 
 	/** @var \Closure */
 	private $asyncPoolStartHook;
