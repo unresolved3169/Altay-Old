@@ -23,6 +23,9 @@ settings:
  #Set this approximately to your number of cores.
  #If set to auto, it'll try to detect the number of cores (or use 2)
  async-workers: auto
+ #Whether to allow running development builds. Dev builds might crash, break your plugins, corrupt your world and more.
+ #It is recommended to avoid using development builds where possible.
+ enable-dev-builds: false
 
 memory:
  #Global soft memory limit in megabytes. Set to 0 to disable
@@ -181,3 +184,9 @@ worlds:
  #world:
  # seed: 404
  # generator: FLAT:2;7,59x1,3x3,2;1;decoration(treecount=80 grasscount=45)
+
+plugins:
+ #Setting this to true will cause the legacy structure to be used where plugin data is placed inside the --plugins dir.
+ #False will place plugin data under plugin_data under --data.
+ #This option exists for backwards compatibility with existing installations.
+ legacy-data-dir: false

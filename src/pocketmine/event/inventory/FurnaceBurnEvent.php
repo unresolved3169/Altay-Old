@@ -75,7 +75,7 @@ class FurnaceBurnEvent extends BlockEvent implements Cancellable{
 	/**
 	 * @param int $burnTime
 	 */
-	public function setBurnTime(int $burnTime){
+	public function setBurnTime(int $burnTime) : void{
 		$this->burnTime = $burnTime;
 	}
 
@@ -89,7 +89,7 @@ class FurnaceBurnEvent extends BlockEvent implements Cancellable{
 	/**
 	 * @param bool $burning
 	 */
-	public function setBurning(bool $burning){
+	public function setBurning(bool $burning) : void{
 		$this->burning = $burning;
 	}
 }

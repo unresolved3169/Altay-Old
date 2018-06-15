@@ -61,7 +61,7 @@ class EntityRegainHealthEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @param float $amount
 	 */
-	public function setAmount(float $amount){
+	public function setAmount(float $amount) : void{
 		$this->amount = $amount;
 	}
 

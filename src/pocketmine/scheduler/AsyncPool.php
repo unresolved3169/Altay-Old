@@ -25,7 +25,12 @@ namespace pocketmine\scheduler;
 
 use pocketmine\Server;
 
+/**
+ * Manages general-purpose worker threads used for processing asynchronous tasks, and the tasks submitted to those
+ * workers.
+ */
 class AsyncPool{
+	private const WORKER_START_OPTIONS = PTHREADS_INHERIT_INI | PTHREADS_INHERIT_CONSTANTS;
 
 	/** @var Server */
 	private $server;
@@ -34,7 +39,7 @@ class AsyncPool{
 	private $classLoader;
 	/** @var \ThreadedLogger */
 	private $logger;
-
+	/** @var int */
 	protected $size;
 	/** @var int */
 	private $workerMemoryLimit;
@@ -51,38 +56,100 @@ class AsyncPool{
 	/** @var int[] */
 	private $workerUsage = [];
 
+	/** @var \Closure[] */
+	private $workerStartHooks = [];
+
 	public function __construct(Server $server, int $size, int $workerMemoryLimit, \ClassLoader $classLoader, \ThreadedLogger $logger){
 		$this->server = $server;
 		$this->size = $size;
 		$this->workerMemoryLimit = $workerMemoryLimit;
 		$this->classLoader = $classLoader;
 		$this->logger = $logger;
-
-		for($i = 0; $i < $this->size; ++$i){
-			$this->workerUsage[$i] = 0;
-			$this->workers[$i] = new AsyncWorker($this->logger, $i + 1, $this->workerMemoryLimit);
-			$this->workers[$i]->setClassLoader($this->classLoader);
-			$this->workers[$i]->start();
-		}
 	}
 
+	/**
+	 * Returns the maximum size of the pool. Note that there may be less active workers than this number.
+	 *
+	 * @return int
+	 */
 	public function getSize() : int{
 		return $this->size;
 	}
 
-	public function increaseSize(int $newSize){
+	/**
+	 * Increases the maximum size of the pool to the specified amount. This does not immediately start new workers.
+	 *
+	 * @param int $newSize
+	 */
+	public function increaseSize(int $newSize) : void{
 		if($newSize > $this->size){
-			for($i = $this->size; $i < $newSize; ++$i){
-				$this->workerUsage[$i] = 0;
-				$this->workers[$i] = new AsyncWorker($this->logger, $i + 1, $this->workerMemoryLimit);
-				$this->workers[$i]->setClassLoader($this->classLoader);
-				$this->workers[$i]->start();
-			}
 			$this->size = $newSize;
 		}
 	}
 
-	public function submitTaskToWorker(AsyncTask $task, int $worker){
+	/**
+	 * Registers a Closure callback to be fired whenever a new worker is started by the pool.
+	 * The signature should be `function(int $worker) : void`
+	 *
+	 * This function will call the hook for every already-running worker.
+	 *
+	 * @param \Closure $hook
+	 */
+	public function addWorkerStartHook(\Closure $hook) : void{
+		$this->workerStartHooks[spl_object_hash($hook)] = $hook;
+		foreach($this->workers as $i => $worker){
+			$hook($i);
+		}
+	}
+
+	/**
+	 * Removes a previously-registered callback listening for workers being started.
+	 *
+	 * @param \Closure $hook
+	 */
+	public function removeWorkerStartHook(\Closure $hook) : void{
+		unset($this->workerStartHooks[spl_object_hash($hook)]);
+	}
+
+	/**
+	 * Returns an array of IDs of currently running workers.
+	 *
+	 * @return int[]
+	 */
+	public function getRunningWorkers() : array{
+		return array_keys($this->workers);
+	}
+
+	/**
+	 * Fetches the worker with the specified ID, starting it if it does not exist, and firing any registered worker
+	 * start hooks.
+	 *
+	 * @param int $worker
+	 *
+	 * @return AsyncWorker
+	 */
+	private function getWorker(int $worker) : AsyncWorker{
+		if(!isset($this->workers[$worker])){
+			$this->workerUsage[$worker] = 0;
+			$this->workers[$worker] = new AsyncWorker($this->logger, $worker, $this->workerMemoryLimit);
+			$this->workers[$worker]->setClassLoader($this->classLoader);
+			$this->workers[$worker]->start(self::WORKER_START_OPTIONS);
+
+			foreach($this->workerStartHooks as $hook){
+				$hook($worker);
+			}
+		}
+
+		return $this->workers[$worker];
+	}
+
+	/**
+	 * Submits an AsyncTask to an arbitrary worker.
+	 *
+	 * @param AsyncTask $task
+	 * @param int       $worker
+	 */
+	public function submitTaskToWorker(AsyncTask $task, int $worker) : void{
 		if($worker < 0 or $worker >= $this->size){
 			throw new \InvalidArgumentException("Invalid worker $worker");
 		}
@@ -95,30 +162,58 @@ class AsyncPool{
 
 		$this->tasks[$task->getTaskId()] = $task;
 
-		$this->workers[$worker]->stack($task);
+		$this->getWorker($worker)->stack($task);
 		$this->workerUsage[$worker]++;
 		$this->taskWorkers[$task->getTaskId()] = $worker;
 	}
 
+	/**
+	 * Submits an AsyncTask to the worker with the least load. If all workers are busy and the pool is not full, a new
+	 * worker may be started.
+	 *
+	 * @param AsyncTask $task
+	 *
+	 * @return int
+	 */
 	public function submitTask(AsyncTask $task) : int{
 		if($task->getTaskId() !== null){
 			throw new \InvalidArgumentException("Cannot submit the same AsyncTask instance more than once");
 		}
 
-		$selectedWorker = mt_rand(0, $this->size - 1);
-		$selectedTasks = $this->workerUsage[$selectedWorker];
-		for($i = 0; $i < $this->size; ++$i){
-			if($this->workerUsage[$i] < $selectedTasks){
-				$selectedWorker = $i;
-				$selectedTasks = $this->workerUsage[$i];
+		$worker = null;
+		$minUsage = PHP_INT_MAX;
+		foreach($this->workerUsage as $i => $usage){
+			if($usage < $minUsage){
+				$worker = $i;
+				$minUsage = $usage;
+				if($usage === 0){
+					break;
+				}
+			}
+		}
+		if($worker === null or ($minUsage > 0 and count($this->workers) < $this->size)){
+			//select a worker to start on the fly
+			for($i = 0; $i < $this->size; ++$i){
+				if(!isset($this->workers[$i])){
+					$worker = $i;
+					break;
+				}
 			}
 		}
 
-		$this->submitTaskToWorker($task, $selectedWorker);
-		return $selectedWorker;
+		assert($worker !== null);
+
+		$this->submitTaskToWorker($task, $worker);
+		return $worker;
 	}
 
-	private function removeTask(AsyncTask $task, bool $force = false){
+	/**
+	 * Removes a completed or crashed task from the pool.
+	 *
+	 * @param AsyncTask $task
+	 * @param bool      $force
+	 */
+	private function removeTask(AsyncTask $task, bool $force = false) : void{
 		if(isset($this->taskWorkers[$task->getTaskId()])){
 			if(!$force and ($task->isRunning() or !$task->isGarbage())){
 				return;
@@ -130,7 +225,11 @@ class AsyncPool{
 		unset($this->taskWorkers[$task->getTaskId()]);
 	}
 
-	public function removeTasks(){
+	/**
+	 * Removes all tasks from the pool, cancelling where possible. This will block until all tasks have been
+	 * successfully deleted.
+	 */
+	public function removeTasks() : void{
 		foreach($this->workers as $worker){
 			/** @var AsyncTask $task */
 			while(($task = $worker->unstack()) !== null){
@@ -161,13 +260,21 @@ class AsyncPool{
 		$this->collectWorkers();
 	}
 
-	private function collectWorkers(){
+	/**
+	 * Collects garbage from running workers.
+	 */
+	private function collectWorkers() : void{
 		foreach($this->workers as $worker){
 			$worker->collect();
 		}
 	}
 
-	public function collectTasks(){
+	/**
+	 * Collects finished and/or crashed tasks from the workers, firing their on-completion hooks where appropriate.
+	 *
+	 * @throws \ReflectionException
+	 */
+	public function collectTasks() : void{
 		foreach($this->tasks as $task){
 			if(!$task->isGarbage()){
 				$task->checkProgressUpdates($this->server);
@@ -197,6 +304,9 @@ class AsyncPool{
 		$this->collectWorkers();
 	}
 
+	/**
+	 * Cancels all pending tasks and shuts down all the workers in the pool.
+	 */
 	public function shutdown() : void{
 		$this->collectTasks();
 		$this->removeTasks();

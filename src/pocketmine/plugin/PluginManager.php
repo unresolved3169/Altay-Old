@@ -1,38 +1,36 @@
 <?php
 
 /*
- *               _ _
- *         /\   | | |
- *        /  \  | | |_ __ _ _   _
- *       / /\ \ | | __/ _` | | | |
- *      / ____ \| | || (_| | |_| |
- *     /_/    \_|_|\__\__,_|\__, |
- *                           __/ |
- *                          |___/
+ *
+ *  ____            _        _   __  __ _                  __  __ ____
+ * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
+ * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
+ * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
+ * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author TuranicTeam
- * @link https://github.com/TuranicTeam/Altay
+ * @author PocketMine Team
+ * @link http://www.pocketmine.net/
  *
- */
+ *
+*/
 
 declare(strict_types=1);
 
 namespace pocketmine\plugin;
 
-use pocketmine\command\overload\CommandEnum;
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\PluginCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\event\Event;
 use pocketmine\event\EventPriority;
 use pocketmine\event\HandlerList;
 use pocketmine\event\Listener;
+use pocketmine\event\plugin\PluginDisableEvent;
+use pocketmine\event\plugin\PluginEnableEvent;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
 use pocketmine\permission\Permissible;
 use pocketmine\permission\Permission;
@@ -57,6 +55,11 @@ class PluginManager{
 	 * @var Plugin[]
 	 */
 	protected $plugins = [];
+
+	/**
+	 * @var Plugin[]
+	 */
+	protected $enabledPlugins = [];
 
 	/**
 	 * @var Permission[]
@@ -96,16 +99,28 @@ class PluginManager{
 	/** @var int */
 	private $eventCallDepth = 0;
 
+	/** @var string|null */
+	private $pluginDataDirectory;
+
 	/** @var TimingsHandler */
 	public static $pluginParentTimer;
 
 	/**
 	 * @param Server           $server
 	 * @param SimpleCommandMap $commandMap
+	 * @param null|string      $pluginDataDirectory
 	 */
-	public function __construct(Server $server, SimpleCommandMap $commandMap){
+	public function __construct(Server $server, SimpleCommandMap $commandMap, ?string $pluginDataDirectory){
 		$this->server = $server;
 		$this->commandMap = $commandMap;
+		$this->pluginDataDirectory = $pluginDataDirectory;
+		if($this->pluginDataDirectory !== null){
+			if(!file_exists($this->pluginDataDirectory)){
+				@mkdir($this->pluginDataDirectory, 0777, true);
+			}elseif(!is_dir($this->pluginDataDirectory)){
+				throw new \RuntimeException("Plugin data path $this->pluginDataDirectory exists and is not a directory");
+			}
+		}
 	}
 
 	/**
@@ -122,24 +137,10 @@ class PluginManager{
 	}
 
 	/**
-	 * @param string $loaderName A PluginLoader class name
-	 *
-	 * @return bool
+	 * @param PluginLoader $loader
 	 */
-	public function registerInterface(string $loaderName) : bool{
-		if($loaderName === FolderPluginLoader::class and !$this->server->folderPluginLoader){
-			return false;
-		}
-
-		if(is_subclass_of($loaderName, PluginLoader::class)){
-			$loader = new $loaderName($this->server);
-		}else{
-			return false;
-		}
-
-		$this->fileAssociations[$loaderName] = $loader;
-
-		return true;
+	public function registerInterface(PluginLoader $loader) : void{
+		$this->fileAssociations[get_class($loader)] = $loader;
 	}
 
 	/**
@@ -149,17 +150,25 @@ class PluginManager{
 		return $this->plugins;
 	}
 
+	private function getDataDirectory(string $pluginPath, string $pluginName) : string{
+		if($this->pluginDataDirectory !== null){
+			return $this->pluginDataDirectory . $pluginName;
+		}
+		return dirname($pluginPath) . DIRECTORY_SEPARATOR . $pluginName;
+	}
+
 	/**
 	 * @param string         $path
 	 * @param PluginLoader[] $loaders
 	 *
 	 * @return Plugin|null
 	 */
-	public function loadPlugin(string $path, array $loaders = null){
+	public function loadPlugin(string $path, array $loaders = null) : ?Plugin{
 		foreach($loaders ?? $this->fileAssociations as $loader){
-			if(preg_match($loader->getPluginFilters(), basename($path)) > 0){
+			if($loader->canLoadPlugin($path)){
 				$description = $loader->getPluginDescription($path);
 				if($description instanceof PluginDescription){
+					$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.plugin.load", [$description->getFullName()]));
 					try{
 						$description->checkRequiredExtensions();
 					}catch(PluginException $ex){
@@ -167,18 +176,41 @@ class PluginManager{
 						return null;
 					}
 
+					$dataFolder = $this->getDataDirectory($path, $description->getName());
+					if(file_exists($dataFolder) and !is_dir($dataFolder)){
+						$this->server->getLogger()->error("Projected dataFolder '" . $dataFolder . "' for " . $description->getName() . " exists and is not a directory");
+						return null;
+					}
+
+					$prefixed = $loader->getAccessProtocol() . $path;
+					$loader->loadPlugin($prefixed);
+
+					$mainClass = $description->getMain();
+					if(!class_exists($mainClass, true)){
+						$this->server->getLogger()->error("Main class for plugin " . $description->getName() . " not found");
+						return null;
+					}
+					if(!is_a($mainClass, Plugin::class, true)){
+						$this->server->getLogger()->error("Main class for plugin " . $description->getName() . " is not an instance of " . Plugin::class);
+						return null;
+					}
+
 					try{
-						if(($plugin = $loader->loadPlugin($path)) instanceof Plugin){
-							$this->plugins[$plugin->getDescription()->getName()] = $plugin;
+						/**
+						 * @var Plugin $plugin
+						 * @see Plugin::__construct()
+						 */
+						$plugin = new $mainClass($loader, $this->server, $description, $dataFolder, $prefixed);
+						$plugin->onLoad();
+						$this->plugins[$plugin->getDescription()->getName()] = $plugin;
 
-							$pluginCommands = $this->parseYamlCommands($plugin);
+						$pluginCommands = $this->parseYamlCommands($plugin);
 
-							if(count($pluginCommands) > 0){
-								$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
-							}
-
-							return $plugin;
+						if(count($pluginCommands) > 0){
+							$this->commandMap->registerAll($plugin->getDescription()->getName(), $pluginCommands);
 						}
+
+						return $plugin;
 					}catch(\Throwable $e){
 						$this->server->getLogger()->logException($e);
 						return null;
@@ -214,11 +246,14 @@ class PluginManager{
 				$loaders = $this->fileAssociations;
 			}
 			foreach($loaders as $loader){
-				foreach(new \RegexIterator(new \DirectoryIterator($directory), $loader->getPluginFilters()) as $file){
+				foreach(new \DirectoryIterator($directory) as $file){
 					if($file === "." or $file === ".."){
 						continue;
 					}
 					$file = $directory . $file;
+					if(!$loader->canLoadPlugin($file)){
+						continue;
+					}
 					try{
 						$description = $loader->getPluginDescription($file);
 						if($description instanceof PluginDescription){
@@ -434,7 +469,11 @@ class PluginManager{
 	 * @return Permission[]
 	 */
 	public function getDefaultPermissions(bool $op) : array{
-		return $op ? $this->defaultPermsOp : $this->defaultPerms;
+		if($op){
+			return $this->defaultPermsOp;
+		}else{
+			return $this->defaultPerms;
+		}
 	}
 
 	/**
@@ -537,7 +576,11 @@ class PluginManager{
 	 * @return Permissible[]
 	 */
 	public function getDefaultPermSubscriptions(bool $op) : array{
-		return $op ? $this->defSubsOp : $this->defSubs;
+		if($op){
+			return $this->defSubsOp;
+		}
+
+		return $this->defSubs;
 	}
 
 	/**
@@ -553,7 +596,11 @@ class PluginManager{
 	 * @return bool
 	 */
 	public function isPluginEnabled(Plugin $plugin) : bool{
-		return ($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])) ? $plugin->isEnabled() : false;
+		if($plugin instanceof Plugin and isset($this->plugins[$plugin->getDescription()->getName()])){
+			return $plugin->isEnabled();
+		}else{
+			return false;
+		}
 	}
 
 	/**
@@ -562,11 +609,17 @@ class PluginManager{
 	public function enablePlugin(Plugin $plugin){
 		if(!$plugin->isEnabled()){
 			try{
+				$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.plugin.enable", [$plugin->getDescription()->getFullName()]));
+
 				foreach($plugin->getDescription()->getPermissions() as $perm){
 					$this->addPermission($perm);
 				}
 				$plugin->getScheduler()->setEnabled(true);
-				$plugin->getPluginLoader()->enablePlugin($plugin);
+				$plugin->setEnabled(true);
+
+				$this->enabledPlugins[$plugin->getDescription()->getName()] = $plugin;
+
+				$this->server->getPluginManager()->callEvent(new PluginEnableEvent($plugin));
 			}catch(\Throwable $e){
 				$this->server->getLogger()->logException($e);
 				$this->disablePlugin($plugin);
@@ -624,37 +677,6 @@ class PluginManager{
 					$newCmd->setPermissionMessage($data["permission-message"]);
 				}
 
-				if(isset($data["overloads"]) and is_array($data["overloads"])){
-					foreach($data["overloads"] as $name => $value){
-						$parameters = [];
-						if(isset($value["parameters"]) and is_array($value["parameters"])){
-							foreach($value["parameters"] as $pname => $pdata){
-								$enum = null;
-								if(isset($pdata["enum"]) and is_array($pdata["enum"])){
-									foreach($pdata as $enumName => $enumValues){
-										if(is_array($enumValues)){
-											$enum = new CommandEnum($enumName, $enumValues);
-										}
-									}
-
-									$parameters[] = new CommandParameter(
-										$pname,
-										isset($pdata["type"]) ? CommandParameter::convertString($pdata["type"]) : CommandParameter::ARG_TYPE_STRING,
-										isset($pdata["optional"]) ? $pdata["optional"] : true,
-										$enum ?? ($pdata["postfix"] ?? null)
-									);
-								}
-							}
-						}
-
-						$newCmd->addOverload(new CommandOverload($name, $parameters));
-					}
-				}
-
-				if(isset($data["permission-level"])){
-					$newCmd->setPermissionLevel((int) $data["permission-level"]);
-				}
-
 				$pluginCmds[] = $newCmd;
 			}
 		}
@@ -673,12 +695,16 @@ class PluginManager{
 	 */
 	public function disablePlugin(Plugin $plugin){
 		if($plugin->isEnabled()){
+			$this->server->getLogger()->info($this->server->getLanguage()->translateString("pocketmine.plugin.disable", [$plugin->getDescription()->getFullName()]));
+			$this->callEvent(new PluginDisableEvent($plugin));
+
+			unset($this->enabledPlugins[$plugin->getDescription()->getName()]);
+
 			try{
-				$plugin->getPluginLoader()->disablePlugin($plugin);
+				$plugin->setEnabled(false);
 			}catch(\Throwable $e){
 				$this->server->getLogger()->logException($e);
 			}
-
 			$plugin->getScheduler()->shutdown();
 			HandlerList::unregisterAll($plugin);
 			foreach($plugin->getDescription()->getPermissions() as $perm){
@@ -688,16 +714,15 @@ class PluginManager{
 	}
 
 	public function tickSchedulers(int $currentTick) : void{
-		foreach($this->plugins as $p){
-			if($p->isEnabled()){
-				$p->getScheduler()->mainThreadHeartbeat($currentTick);
-			}
+		foreach($this->enabledPlugins as $p){
+			$p->getScheduler()->mainThreadHeartbeat($currentTick);
 		}
 	}
 
 	public function clearPlugins(){
 		$this->disablePlugins();
 		$this->plugins = [];
+		$this->enabledPlugins = [];
 		$this->fileAssociations = [];
 		$this->permissions = [];
 		$this->defaultPerms = [];
@@ -764,6 +789,9 @@ class PluginManager{
 		foreach($reflection->getMethods(\ReflectionMethod::IS_PUBLIC) as $method){
 			if(!$method->isStatic()){
 				$tags = Utils::parseDocComment((string) $method->getDocComment());
+				if(isset($tags["notHandler"])){
+					continue;
+				}
 
 				try{
 					$priority = isset($tags["priority"]) ? EventPriority::fromString($tags["priority"]) : EventPriority::NORMAL;

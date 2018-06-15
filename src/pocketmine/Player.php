@@ -173,11 +173,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public const OS_ANDROID = 1;
 	public const OS_IOS = 2;
-	public const OS_OSX = 3;
+	public const OS_MAC = 3;
 	public const OS_FIREOS = 4;
 	public const OS_GEARVR = 5;
 	public const OS_HOLOLENS = 6;
-	public const OS_WIN10 = 7;
+	public const OS_WINDOWS = 7;
 	public const OS_WIN32 = 8;
 	public const OS_DEDICATED = 9;
 	public const OS_ORBIS = 10;
@@ -1091,9 +1091,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->dataPacket($pk);
 	}
 
-	protected function orderChunks(){
+	protected function orderChunks() : void{
 		if(!$this->isConnected() or $this->viewDistance === -1){
-			return false;
+			return;
 		}
 
 		Timings::$playerChunkOrderTimer->startTiming();
@@ -1178,8 +1178,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->loadQueue = $newOrder;
 
 		Timings::$playerChunkOrderTimer->stopTiming();
-
-		return true;
 	}
 
 	/**
@@ -1533,7 +1531,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return false; //currently has no server-side movement
 	}
 
-	protected function checkNearEntities(int $tickDiff){
+	protected function checkNearEntities(){
 		foreach($this->level->getNearbyEntities($this->boundingBox->expandedCopy(1, 0.5, 1), $this) as $entity){
 			$entity->scheduleUpdate();
 
@@ -1725,7 +1723,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 			if(!$this->isSpectator() and $this->isAlive()){
 				Timings::$playerCheckNearEntitiesTimer->startTiming();
-				$this->checkNearEntities($tickDiff);
+				$this->checkNearEntities();
 				Timings::$playerCheckNearEntitiesTimer->stopTiming();
 
 				if($this->speed !== null){

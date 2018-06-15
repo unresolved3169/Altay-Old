@@ -93,7 +93,7 @@ class BlockBreakEvent extends BlockEvent implements Cancellable{
 	/**
 	 * @param bool $instaBreak
 	 */
-	public function setInstaBreak(bool $instaBreak){
+	public function setInstaBreak(bool $instaBreak) : void{
 		$this->instaBreak = $instaBreak;
 	}
 
@@ -108,7 +108,7 @@ class BlockBreakEvent extends BlockEvent implements Cancellable{
 	/**
 	 * @param Item[] $drops
 	 */
-	public function setDrops(array $drops){
+	public function setDrops(array $drops) : void{
 		$this->setDropsVariadic(...$drops);
 	}
 
@@ -117,7 +117,7 @@ class BlockBreakEvent extends BlockEvent implements Cancellable{
 	 *
 	 * @param Item ...$drops
 	 */
-	public function setDropsVariadic(Item ...$drops){
+	public function setDropsVariadic(Item ...$drops) : void{
 		$this->blockDrops = $drops;
 	}
 

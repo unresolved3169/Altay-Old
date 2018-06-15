@@ -24,7 +24,7 @@ fi
 rm server.log 2> /dev/null
 mkdir -p ./plugins
 
-echo -e "\nversion\nms\nstop\n" | "$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2  --settings.async-workers="$PM_WORKERS"
+echo -e "\nversion\nms\nstop\n" | "$PHP_BINARY" src/pocketmine/PocketMine.php --no-wizard --disable-ansi --disable-readline --debug.level=2  --settings.async-workers="$PM_WORKERS" --settings.enable-dev-builds=1
 if ls plugins/Altay/Altay*.phar >/dev/null 2>&1; then
     echo Server phar created successfully.
 else

@@ -349,13 +349,6 @@ class Server{
 	/**
 	 * @return string
 	 */
-	public function getCodename() : string{
-		return \pocketmine\CODENAME;
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getVersion() : string{
 		return ProtocolInfo::MINECRAFT_VERSION;
 	}
@@ -1085,8 +1078,6 @@ class Server{
 
 		$this->levels[$level->getId()] = $level;
 
-		$level->initLevel();
-
 		$this->getPluginManager()->callEvent(new LevelLoadEvent($level));
 
 		$level->setTickRate($this->baseTickRate);
@@ -1130,8 +1121,6 @@ class Server{
 
 			$level = new Level($this, $name, new $providerClass($path));
 			$this->levels[$level->getId()] = $level;
-
-			$level->initLevel();
 
 			$level->setTickRate($this->baseTickRate);
 		}catch(\Throwable $e){
@@ -1467,7 +1456,6 @@ class Server{
 		$about = [
 			date(DATE_RFC822),
 			$this->getPocketMineVersion(),
-			$this->getCodename(),
 			$this->getVersion(),
 			implode(", ", ProtocolInfo::ACCEPTED_PROTOCOLS),
 			Utils::getIP(),
@@ -1529,13 +1517,6 @@ class Server{
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
 
-			$consoleNotifier = new SleeperNotifier();
-			$this->console = new CommandReader($consoleNotifier);
-			$this->tickSleeper->addNotifier($consoleNotifier, function() : void{
-				$this->checkConsole();
-			});
-			$this->console->start(PTHREADS_INHERIT_NONE);
-
 			$version = new VersionString($this->getPocketMineVersion());
 
 			if(!file_exists($this->dataPath . "pocketmine.yml")){
@@ -1561,15 +1542,8 @@ class Server{
 
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
 
-			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
-				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
-			}
-
-			ini_set('assert.exception', '1');
-
-			if($this->logger instanceof MainLogger){
-				$this->logger->setLogDebug(\pocketmine\DEBUG > 1);
-			}
+			$this->forceLanguage = (bool) $this->getProperty("settings.force-language", false);
+			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
 
 			$this->properties = new Config($this->dataPath . "server.properties", Config::PROPERTIES, [
 				"motd" => \pocketmine\NAME . " Server",
@@ -1598,12 +1572,27 @@ class Server{
 				"xbox-auth" => true
 			]);
 
-			$this->forceLanguage = (bool) $this->getProperty("settings.force-language", false);
-			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
-
 			$this->about();
-
 			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
+
+			if(\pocketmine\IS_DEVELOPMENT_BUILD and !((bool) $this->getProperty("settings.enable-dev-builds", false))){
+				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error1", [\pocketmine\NAME]));
+				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error2"));
+				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error3"));
+				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error4", ["settings.enable-dev-builds"]));
+				$this->forceShutdown();
+				return;
+			}
+
+			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
+				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
+			}
+
+			ini_set('assert.exception', '1');
+
+			if($this->logger instanceof MainLogger){
+				$this->logger->setLogDebug(\pocketmine\DEBUG > 1);
+			}
 
 			$this->memoryManager = new MemoryManager($this);
 
@@ -1617,7 +1606,7 @@ class Server{
 					$poolSize = max(1, $processors);
 				}
 			}else{
-				$poolSize = (int) $poolSize;
+				$poolSize = max(1, (int) $poolSize);
 			}
 
 			$this->asyncPool = new AsyncPool($this, $poolSize, (int) max(-1, (int) $this->getProperty("memory.async-worker-hard-limit", 256)), $this->autoloader, $this->logger);
@@ -1641,6 +1630,13 @@ class Server{
 			$this->baseTickRate = (int) $this->getProperty("level-settings.base-tick-rate", 1);
 
 			$this->doTitleTick = ((bool) $this->getProperty("console.title-tick", true)) && Terminal::hasFormattingCodes();
+
+			$consoleNotifier = new SleeperNotifier();
+			$this->console = new CommandReader($consoleNotifier);
+			$this->tickSleeper->addNotifier($consoleNotifier, function() : void{
+				$this->checkConsole();
+			});
+			$this->console->start(PTHREADS_INHERIT_NONE);
 
 			if($this->getConfigBool("enable-rcon", false)){
 				try{
@@ -1707,7 +1703,6 @@ class Server{
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
 				$this->getName(),
 				($version->isDev() ? TextFormat::YELLOW : "") . $version->get(true) . TextFormat::RESET,
-				$this->getCodename(),
 				$this->getApiVersion()
 			]));
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));
@@ -1731,12 +1726,12 @@ class Server{
 
 			$this->resourceManager = new ResourcePackManager($this->getDataPath() . "resource_packs" . DIRECTORY_SEPARATOR, $this->logger);
 
-			$this->pluginManager = new PluginManager($this, $this->commandMap);
+			$this->pluginManager = new PluginManager($this, $this->commandMap, ((bool) $this->getProperty("plugins.legacy-data-dir", true)) ? null : $this->getDataPath() . "plugin_data" . DIRECTORY_SEPARATOR);
 			$this->pluginManager->subscribeToPermission(Server::BROADCAST_CHANNEL_ADMINISTRATIVE, $this->consoleSender);
 			$this->profilingTickRate = (float) $this->getProperty("settings.profile-report-trigger", 20);
-			$this->pluginManager->registerInterface(FolderPluginLoader::class);
-			$this->pluginManager->registerInterface(PharPluginLoader::class);
-			$this->pluginManager->registerInterface(ScriptPluginLoader::class);
+			$this->pluginManager->registerInterface(new FolderPluginLoader($this->autoloader));
+			$this->pluginManager->registerInterface(new PharPluginLoader($this->autoloader));
+			$this->pluginManager->registerInterface(new ScriptPluginLoader());
 
 			register_shutdown_function([$this, "crashDump"]);
 
@@ -2114,9 +2109,9 @@ class Server{
 			$this->getNetwork()->blockAddress($entry->getName(), -1);
 		}
 
-		$this->pluginManager->registerInterface(FolderPluginLoader::class);
-		$this->pluginManager->registerInterface(PharPluginLoader::class);
-		$this->pluginManager->registerInterface(ScriptPluginLoader::class);
+		$this->pluginManager->registerInterface(new FolderPluginLoader($this->autoloader));
+		$this->pluginManager->registerInterface(new PharPluginLoader($this->autoloader));
+		$this->pluginManager->registerInterface(new ScriptPluginLoader());
 		$this->pluginManager->loadPlugins($this->pluginPath);
 		$this->enablePlugins(PluginLoadOrder::STARTUP);
 		$this->enablePlugins(PluginLoadOrder::POSTWORLD);
@@ -2124,7 +2119,7 @@ class Server{
 	}
 
 	/**
-	 * Shutdowns the server correctly
+	 * Shuts the server down correctly
 	 */
 	public function shutdown(){
 		$this->isRunning = false;
@@ -2175,9 +2170,11 @@ class Server{
 				$this->properties->save();
 			}
 
-			$this->getLogger()->debug("Closing console");
-			$this->console->shutdown();
-			$this->console->notify();
+			if($this->console instanceof CommandReader){
+				$this->getLogger()->debug("Closing console");
+				$this->console->shutdown();
+				$this->console->notify();
+			}
 
 			if($this->network instanceof Network){
 				$this->getLogger()->debug("Stopping network interfaces");
@@ -2405,7 +2402,7 @@ class Server{
 		$p->dataPacket($pk);
 	}
 
-	private function checkTickUpdates($currentTick, $tickTime){
+	private function checkTickUpdates(int $currentTick, float $tickTime){
 		foreach($this->players as $p){
 			if(!$p->loggedIn and ($tickTime - $p->creationTime) >= 10){
 				$p->close("", "Login timeout");

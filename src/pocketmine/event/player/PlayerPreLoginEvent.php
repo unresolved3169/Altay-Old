@@ -46,7 +46,7 @@ class PlayerPreLoginEvent extends PlayerEvent implements Cancellable{
 	/**
 	 * @param string $kickMessage
 	 */
-	public function setKickMessage(string $kickMessage){
+	public function setKickMessage(string $kickMessage) : void{
 		$this->kickMessage = $kickMessage;
 	}
 

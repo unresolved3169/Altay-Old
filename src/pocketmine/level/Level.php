@@ -255,6 +255,9 @@ class Level implements ChunkManager, Metadatable{
 	/** @var int */
 	protected $dimension = self::DIMENSION_OVERWORLD;
 
+	/** @var \Closure */
+	private $asyncPoolStartHook;
+
 	public static function chunkHash(int $x, int $z) : int{
 		return (($x & 0xFFFFFFFF) << 32) | ($z & 0xFFFFFFFF);
 	}
@@ -384,6 +387,10 @@ class Level implements ChunkManager, Metadatable{
 		$this->temporalPosition = new Position(0, 0, 0, $this);
 		$this->temporalVector = new Vector3(0, 0, 0);
 		$this->tickRate = 1;
+
+		$this->server->getAsyncPool()->addWorkerStartHook($this->asyncPoolStartHook = function(int $worker) : void{
+			$this->registerGeneratorToWorker($worker);
+		});
 	}
 
 	public function getTickRate() : int{
@@ -398,21 +405,14 @@ class Level implements ChunkManager, Metadatable{
 		$this->tickRate = $tickRate;
 	}
 
-	public function initLevel(){
-		$this->registerGenerator();
-	}
-
-	public function registerGenerator(){
-		$pool = $this->server->getAsyncPool();
-		for($i = 0, $size = $pool->getSize(); $i < $size; ++$i){
-			$pool->submitTaskToWorker(new GeneratorRegisterTask($this, $this->generator, $this->provider->getGeneratorOptions()), $i);
-
-		}
+	public function registerGeneratorToWorker(int $worker) : void{
+		$this->server->getAsyncPool()->submitTaskToWorker(new GeneratorRegisterTask($this, $this->generator, $this->provider->getGeneratorOptions()), $worker);
 	}
 
 	public function unregisterGenerator(){
 		$pool = $this->server->getAsyncPool();
-		for($i = 0, $size = $pool->getSize(); $i < $size; ++$i){
+		$pool->removeWorkerStartHook($this->asyncPoolStartHook);
+		foreach($pool->getRunningWorkers() as $i){
 			$pool->submitTaskToWorker(new GeneratorUnregisterTask($this), $i);
 		}
 	}
@@ -872,7 +872,7 @@ class Level implements ChunkManager, Metadatable{
 	 * @param int      $flags
 	 * @param bool     $optimizeRebuilds
 	 */
-	public function sendBlocks(array $target, array $blocks, $flags = UpdateBlockPacket::FLAG_NONE, bool $optimizeRebuilds = false){
+	public function sendBlocks(array $target, array $blocks, int $flags = UpdateBlockPacket::FLAG_NONE, bool $optimizeRebuilds = false){
 		$packets = [];
 		if($optimizeRebuilds){
 			$chunks = [];
@@ -2125,7 +2125,7 @@ class Level implements ChunkManager, Metadatable{
 	 *
 	 * @return Entity[]
 	 */
-	public function getChunkEntities($X, $Z) : array{
+	public function getChunkEntities(int $X, int $Z) : array{
 		return ($chunk = $this->getChunk($X, $Z)) !== null ? $chunk->getEntities() : [];
 	}
 
@@ -2137,7 +2137,7 @@ class Level implements ChunkManager, Metadatable{
 	 *
 	 * @return Tile[]
 	 */
-	public function getChunkTiles($X, $Z) : array{
+	public function getChunkTiles(int $X, int $Z) : array{
 		return ($chunk = $this->getChunk($X, $Z)) !== null ? $chunk->getTiles() : [];
 	}
 

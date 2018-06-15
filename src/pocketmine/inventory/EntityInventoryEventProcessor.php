@@ -21,8 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\biome;
+namespace pocketmine\inventory;
 
-abstract class NormalBiome extends Biome{
+use pocketmine\entity\Entity;
+use pocketmine\event\entity\EntityInventoryChangeEvent;
+use pocketmine\item\Item;
+use pocketmine\Server;
 
+class EntityInventoryEventProcessor implements InventoryEventProcessor{
+	/** @var Entity */
+	private $entity;
+
+	public function __construct(Entity $entity){
+		$this->entity = $entity;
+	}
+
+	public function onSlotChange(Inventory $inventory, int $slot, Item $oldItem, Item $newItem) : ?Item{
+		Server::getInstance()->getPluginManager()->callEvent($ev = new EntityInventoryChangeEvent($this->entity, $oldItem, $newItem, $slot));
+		if($ev->isCancelled()){
+			return null;
+		}
+
+		return $ev->getNewItem();
+	}
 }

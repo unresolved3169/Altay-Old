@@ -25,49 +25,6 @@ declare(strict_types=1);
 namespace {
 	const INT32_MIN = -0x80000000;
 	const INT32_MAX = 0x7fffffff;
-
-	function safe_var_dump(){
-		static $cnt = 0;
-		foreach(func_get_args() as $var){
-			switch(true){
-				case is_array($var):
-					echo str_repeat("  ", $cnt) . "array(" . count($var) . ") {" . PHP_EOL;
-					foreach($var as $key => $value){
-						echo str_repeat("  ", $cnt + 1) . "[" . (is_int($key) ? $key : '"' . $key . '"') . "]=>" . PHP_EOL;
-						++$cnt;
-						safe_var_dump($value);
-						--$cnt;
-					}
-					echo str_repeat("  ", $cnt) . "}" . PHP_EOL;
-					break;
-				case is_int($var):
-					echo str_repeat("  ", $cnt) . "int(" . $var . ")" . PHP_EOL;
-					break;
-				case is_float($var):
-					echo str_repeat("  ", $cnt) . "float(" . $var . ")" . PHP_EOL;
-					break;
-				case is_bool($var):
-					echo str_repeat("  ", $cnt) . "bool(" . ($var === true ? "true" : "false") . ")" . PHP_EOL;
-					break;
-				case is_string($var):
-					echo str_repeat("  ", $cnt) . "string(" . strlen($var) . ") \"$var\"" . PHP_EOL;
-					break;
-				case is_resource($var):
-					echo str_repeat("  ", $cnt) . "resource() of type (" . get_resource_type($var) . ")" . PHP_EOL;
-					break;
-				case is_object($var):
-					echo str_repeat("  ", $cnt) . "object(" . get_class($var) . ")" . PHP_EOL;
-					break;
-				case is_null($var):
-					echo str_repeat("  ", $cnt) . "NULL" . PHP_EOL;
-					break;
-			}
-		}
-	}
-
-	function dummy(){
-
-	}
 }
 
 namespace pocketmine {
@@ -81,8 +38,8 @@ namespace pocketmine {
 
 	const NAME = "Altay";
 	const VERSION = "1.7";
-	const API_VERSION = "3.0.0-ALPHA12";
-	const CODENAME = "TuranicPro";
+	const API_VERSION = "3.0.0";
+	const IS_DEVELOPMENT_BUILD = true;
 
 	const MIN_PHP_VERSION = "7.2.0";
 
@@ -120,12 +77,18 @@ namespace pocketmine {
 	$extensions = [
 		"bcmath" => "BC Math",
 		"curl" => "cURL",
+		"ctype" => "ctype",
+		"date" => "Date",
+		"hash" => "Hash",
 		"json" => "JSON",
 		"mbstring" => "Multibyte String",
 		"openssl" => "OpenSSL",
+		"pcre" => "PCRE",
 		"phar" => "Phar",
 		"pthreads" => "pthreads",
+		"reflection" => "Reflection",
 		"sockets" => "Sockets",
+		"spl" => "SPL",
 		"yaml" => "YAML",
 		"zip" => "Zip",
 		"zlib" => "Zlib"
@@ -143,8 +106,8 @@ namespace pocketmine {
 		if(substr_count($pthreads_version, ".") < 2){
 			$pthreads_version = "0.$pthreads_version";
 		}
-		if(version_compare($pthreads_version, "3.1.7-dev") < 0){
-			critical_error("pthreads >= 3.1.7-dev is required, while you have $pthreads_version.");
+		if(version_compare($pthreads_version, "3.1.7dev") < 0){
+			critical_error("pthreads >= 3.1.7dev is required, while you have $pthreads_version.");
 			++$errors;
 		}
 	}
@@ -169,16 +132,6 @@ namespace pocketmine {
 
 	error_reporting(-1);
 
-	function error_handler($severity, $message, $file, $line){
-		if(error_reporting() & $severity){
-			throw new \ErrorException($message, 0, $severity, $file, $line);
-		}else{ //stfu operator
-			return true;
-		}
-	}
-
-	set_error_handler('\pocketmine\error_handler');
-
 	if(\Phar::running(true) !== ""){
 		@define('pocketmine\PATH', \Phar::running(true) . "/");
 	}else{
@@ -187,18 +140,16 @@ namespace pocketmine {
 
 	define('pocketmine\COMPOSER_AUTOLOADER_PATH', \pocketmine\PATH . 'vendor/autoload.php');
 
-	function composer_error_die($message){
-		critical_error($message);
-		critical_error("Please install/update Composer dependencies or use provided builds.");
-		exit(1);
-	}
-
 	if(is_file(\pocketmine\COMPOSER_AUTOLOADER_PATH)){
 		/** @noinspection PhpIncludeInspection */
 		require_once(\pocketmine\COMPOSER_AUTOLOADER_PATH);
 	}else{
-		composer_error_die("Composer autoloader not found.");
+		critical_error("Composer autoloader not found.");
+		critical_error("Please install/update Composer dependencies or use provided builds.");
+		exit(1);
 	}
+
+	set_error_handler([Utils::class, 'errorExceptionHandler']);
 
 	/*
      * We now use the Composer autoloader, but this autoloader is still for loading plugins.

@@ -26,12 +26,12 @@ namespace pocketmine\inventory;
 use pocketmine\entity\Human;
 use pocketmine\event\player\PlayerItemHeldEvent;
 use pocketmine\item\Item;
+use pocketmine\network\mcpe\protocol\InventoryContentPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
-use pocketmine\network\mcpe\protocol\InventoryContentPacket;
 use pocketmine\Player;
 
-class PlayerInventory extends EntityInventory{
+class PlayerInventory extends BaseInventory{
 
 	/** @var Human */
 	protected $holder;
@@ -43,7 +43,8 @@ class PlayerInventory extends EntityInventory{
 	 * @param Human $player
 	 */
 	public function __construct(Human $player){
-		parent::__construct($player);
+		$this->holder = $player;
+		parent::__construct();
 	}
 
 	public function getName() : string{
@@ -210,5 +211,4 @@ class PlayerInventory extends EntityInventory{
 	public function getHolder(){
 		return $this->holder;
 	}
-
 }

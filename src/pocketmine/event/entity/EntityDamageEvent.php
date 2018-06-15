@@ -157,7 +157,7 @@ class EntityDamageEvent extends EntityEvent implements Cancellable{
 	 * @param float $damage
 	 * @param int   $type
 	 */
-	public function setModifier(float $damage, int $type){
+	public function setModifier(float $damage, int $type) : void{
 		$this->modifiers[$type] = $damage;
 	}
 

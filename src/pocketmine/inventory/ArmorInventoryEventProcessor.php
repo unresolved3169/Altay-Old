@@ -22,32 +22,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\event\entity;
+namespace pocketmine\inventory;
 
 use pocketmine\entity\Entity;
-use pocketmine\event\Cancellable;
+use pocketmine\event\entity\EntityArmorChangeEvent;
+use pocketmine\item\Item;
+use pocketmine\Server;
 
-class EntityCombustEvent extends EntityEvent implements Cancellable{
-	protected $duration;
+class ArmorInventoryEventProcessor implements InventoryEventProcessor{
+	/** @var Entity */
+	private $entity;
 
-	/**
-	 * @param Entity $combustee
-	 * @param int    $duration
-	 */
-	public function __construct(Entity $combustee, int $duration){
-		$this->entity = $combustee;
-		$this->duration = $duration;
+	public function __construct(Entity $entity){
+		$this->entity = $entity;
 	}
 
-	/**
-	 * Returns the duration in seconds the entity will burn for.
-	 * @return int
-	 */
-	public function getDuration() : int{
-		return $this->duration;
-	}
+	public function onSlotChange(Inventory $inventory, int $slot, Item $oldItem, Item $newItem) : ?Item{
+		Server::getInstance()->getPluginManager()->callEvent($ev = new EntityArmorChangeEvent($this->entity, $oldItem, $newItem, $slot));
+		if($ev->isCancelled()){
+			return null;
+		}
 
-	public function setDuration(int $duration) : void{
-		$this->duration = $duration;
+		return $ev->getNewItem();
 	}
 }

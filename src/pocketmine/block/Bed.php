@@ -83,7 +83,7 @@ class Bed extends Transparent{
 
 		$this->getLevel()->setBlock($this, $this, false, false);
 
-		if(($other = $this->getOtherHalf()) !== null and !$other->isOccupied()){
+		if(($other = $this->getOtherHalf()) !== null and $other->isOccupied() !== $occupied){
 			$other->setOccupied($occupied);
 		}
 	}

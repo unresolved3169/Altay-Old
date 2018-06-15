@@ -67,7 +67,7 @@ class PlayerExhaustEvent extends EntityEvent implements Cancellable{
 		return $this->amount;
 	}
 
-	public function setAmount(float $amount){
+	public function setAmount(float $amount) : void{
 		$this->amount = $amount;
 	}
 
