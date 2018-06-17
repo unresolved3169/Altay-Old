@@ -1921,11 +1921,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$maxZ = (int) floor($this->boundingBox->maxZ - $inset);
 
 			$this->blocksAround = [];
-			
-			$blockDown = $this->level->getBlock($this->add(0,-1,0));
-			if($blockDown->hasEntityCollision()){
-				$this->blocksAround[] = $blockDown;
-			}
 
 			for($z = $minZ; $z <= $maxZ; ++$z){
 				for($x = $minX; $x <= $maxX; ++$x){
