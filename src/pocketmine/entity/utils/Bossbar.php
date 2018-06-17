@@ -34,7 +34,7 @@ use pocketmine\network\mcpe\protocol\{
 use pocketmine\Player;
 
 /*
- * This a Helper class for simple Bossbar create
+ * This a Helper class for create a simple Bossbar
  * Note: This not a entity
  */
 class Bossbar extends Vector3{
@@ -47,8 +47,10 @@ class Bossbar extends Vector3{
 	protected $entityId;
 	/** @var array */
 	protected $metadata = [];
+	/** @var array */
+	protected $viewers = [];
 	
-	public function __construct(){
+	public function __construct(string $title = "Altay Bossbar API", float $hp = 1, float $maxHp = 1){
 		parent::__construct(0,0,0);
 		
 		$flags = (
@@ -57,28 +59,40 @@ class Bossbar extends Vector3{
 			);
 		$this->metadata = [
 		Entity::DATA_FLAGS => [Entity::DATA_TYPE_LONG, $flags],
-		Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, "Altay"]];
+		Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title]];
+		
+		$this->setHealthPercent($hp, $maxHp);
 		
 		$this->entityId = Entity::$entityCount++;
 	}
 	
-	public function setTitle(string $t){
+	public function setTitle(string $t, bool $update = true){
 		$this->setMetadata(Entity::DATA_NAMETAG, Entity::DATA_TYPE_STRING, $t);
+		if($update){
+		 $this->updateForAll();
+		}
 	}
 	
 	public function getTitle() : string{
 		return $this->getMetadata(Entity::DATA_NAMETAG);
 	}
 	
-	public function setHealthPercent(float $hp, float $maxHp = null){
-		if($maxHp !== null)
+	public function setHealthPercent(float ?$hp = null, float ?$maxHp = null, bool $update = true){
+		if($maxHp !== null){
 			$this->maxHealthPercent = $maxHp;
-		
-		if($hp > $this->maxHealthPercent){
-		    $this->maxHealthPercent = $hp;
 		}
 		
-		$this->healthPercent = $hp;
+		if($hp !== null){
+		 if($hp > $this->maxHealthPercent){
+		  $this->maxHealthPercent = $hp;
+		 }
+		 
+		 $this->healthPercent = $hp;
+		}
+		
+		if($update){
+		 $this->updateForAll();
+		}
 	}
 	
 	public function getHealthPercent() : float{
@@ -89,7 +103,7 @@ class Bossbar extends Vector3{
 		return $this->maxHealthPercent;
 	}
 	
-	public function showTo(Player $player){
+	public function showTo(Player $player, bool $isViewer = true){
 		$pk = new AddEntityPacket;
 		$pk->entityRuntimeId = $this->entityId;
 		$pk->type = EntityIds::SHULKER;
@@ -109,6 +123,10 @@ class Bossbar extends Vector3{
 		$pk2->color = 0;
 		
 		$player->dataPacket($pk2);
+		
+		if($isViewer){
+		 $this->viewers[$player->getLoaderId()] = $player;
+		}
 	}
 	
 	public function hideFrom(Player $player){
@@ -122,6 +140,10 @@ class Bossbar extends Vector3{
 		$pk2->entityUniqueId = $this->entityId;
 		
 		$player->dataPacket($pk2);
+		
+		if(isset($this->viewers[$player->getLoaderId()])){
+		 unset($this->viewers[$player->getLoaderId()]);
+		}
 	}
 	
 	public function updateFor(Player $player){
@@ -142,6 +164,12 @@ class Bossbar extends Vector3{
 		$player->dataPacket($mpk);
 	}
 	
+	public function updateForAll() : void{
+	 foreach($this->viewers as $player){
+	  $this->updateFor($player);
+	 }
+	}
+	
 	protected function getHealthPacket() : UpdateAttributesPacket{
 		$attr = Attribute::getAttribute(Attribute::HEALTH);
 		$attr->setMaxValue($this->maxHealthPercent);
@@ -158,11 +186,15 @@ class Bossbar extends Vector3{
 		$this->metadata[$key] = [$dtype, $value];
 	}
 
-    /**
-     * @param int $key
-     * @return mixed
-     */
-    public function getMetadata(int $key){
+ /**
+  * @param int $key
+  * @return mixed
+  */
+ public function getMetadata(int $key){
 		return isset($this->metadata[$key]) ? $this->metadata[$key][1] : null;
+	}
+	
+	public function getViewers() : array{
+	 return $this->viewers;
 	}
 }
