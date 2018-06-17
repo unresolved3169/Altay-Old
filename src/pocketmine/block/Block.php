@@ -652,6 +652,20 @@ class Block extends Position implements BlockIds, Metadatable{
 	public function onEntityCollide(Entity $entity) : void{
 
 	}
+	
+	/**
+	 * @param float $fallDistance
+	 */
+	public function onEntityFallenUpon(Entity $entity, float $fallDistance) : void{
+		
+	}
+	
+	/**
+	 * @param Entity $entity
+	 */
+	public function onEntityCollideUpon(Entity $entity) : void{
+		
+	}
 
 	/**
 	 * @return AxisAlignedBB[]

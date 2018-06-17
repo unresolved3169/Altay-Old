@@ -85,6 +85,7 @@ use pocketmine\tile\Container;
 use pocketmine\tile\Tile;
 use pocketmine\timings\Timings;
 use pocketmine\utils\ReversePriorityQueue;
+use pocketmine\utils\Random;
 
 #include <rules/Level.h>
 
@@ -257,6 +258,9 @@ class Level implements ChunkManager, Metadatable{
 
 	/** @var \Closure */
 	private $asyncPoolStartHook;
+	
+	/** @var Random */
+	public $random;
 
 	public static function chunkHash(int $x, int $z) : int{
 		return (($x & 0xFFFFFFFF) << 32) | ($z & 0xFFFFFFFF);
@@ -384,6 +388,7 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		$this->timings = new LevelTimings($this);
+		$this->random = new Random();
 		$this->temporalPosition = new Position(0, 0, 0, $this);
 		$this->temporalVector = new Vector3(0, 0, 0);
 		$this->tickRate = 1;

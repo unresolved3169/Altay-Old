@@ -28,6 +28,8 @@ use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\utils\Random;
+use pocketmine\entity\{Entity, Living};
 
 class Farmland extends Transparent{
 
@@ -111,5 +113,14 @@ class Farmland extends Transparent{
 
 	public function isAffectedBySilkTouch() : bool{
 		return false;
+	}
+	
+	public function onEntityFallenUpon(Entity $entity, float $fallDistance) : void{
+		if($entity instanceof Living){
+			if($this->level->random->nextFloat() < ($fallDistance - 0.5)){
+				//TODO: Add MobGrifeing game rule check
+				$this->level->setBlock($this, BlockFactory::get(Block::DIRT), true);
+			}
+		}
 	}
 }

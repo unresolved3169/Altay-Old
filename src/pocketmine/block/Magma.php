@@ -27,6 +27,7 @@ use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\TieredTool;
+use pocketmine\Server;
 
 class Magma extends Solid{
 
@@ -60,10 +61,12 @@ class Magma extends Solid{
 		return true;
 	}
 
-	public function onEntityCollide(Entity $entity) : void{
-		if(!$entity->isSneaking()){
-			$ev = new EntityDamageByBlockEvent($this, $entity, EntityDamageEvent::CAUSE_FIRE, 1);
-			$entity->attack($ev);
+	public function onEntityCollideUpon(Entity $entity) : void{
+		if(Server::getInstance()->getTick() % 10 === 0){ // half-second
+			if(!$entity->isSneaking()){
+				$ev = new EntityDamageByBlockEvent($this, $entity, EntityDamageEvent::CAUSE_FIRE, 1);
+				$entity->attack($ev);
+		 }
 		}
 	}
 

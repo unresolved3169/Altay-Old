@@ -1070,7 +1070,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
-		//TODO: check vehicles
+		if($this->ridingEntity instanceof Entity and !$this->ridingEntity->isAlive()){
+		 $this->ridingEntity = null;
+		}
 
 		$this->justCreated = false;
 
@@ -1101,6 +1103,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 				$this->noDamageTicks = 0;
 			}
 		}
+		
+		if($this->isUnderwater()) $this->resetFallDistance();
 
 		$this->age += $tickDiff;
 		$this->ticksLived += $tickDiff;
@@ -1534,10 +1538,14 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function updateFallState(float $distanceThisTick, bool $onGround) : void{
-		if($this instanceof Player) return;
+		$block = $this->level->getBlock($this->subtract(0,0.20000000298023224,0));
 		if($onGround){
 			if($this->fallDistance > 0){
-				$this->fall($this->fallDistance);
+				if($block->isSolid()){
+					$block->onEntityFallenUpon($this, $this->fallDistance);
+				}else{
+					$this->fall($this->fallDistance);
+				}
 				$this->resetFallDistance();
 			}
 		}elseif($distanceThisTick < 0){
@@ -1949,6 +1957,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		foreach($this->getBlocksAround() as $block){
 			$block->onEntityCollide($this);
 			$block->addVelocityToEntity($this, $vector);
+		}
+		
+		$down = $this->level->getBlock($this->getSide(Vector3::SIDE_DOWN));
+		if($down->hasEntityCollision()){
+		 $down->onEntityCollideUpon($this);
 		}
 
 		if($vector->lengthSquared() > 0){
