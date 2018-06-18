@@ -152,10 +152,11 @@ class Bossbar extends Vector3{
 		$pk->eventType = BossEventPacket::TYPE_TITLE;
 		$pk->healthPercent = $this->getHealthPercent();
 		$pk->title = $this->getTitle();
+		$pk2 = clone $pk;
 		
 		$player->dataPacket($pk);
-		$pk->eventType = BossEventPacket::TYPE_HEALTH_PERCENT;
-		$player->dataPacket($pk);
+		$pk2->eventType = BossEventPacket::TYPE_HEALTH_PERCENT;
+		$player->dataPacket($pk2);
 		$player->dataPacket($this->getHealthPacket());
 		$mpk = new SetEntityDataPacket;
 		$mpk->entityRuntimeId = $this->entityId;
