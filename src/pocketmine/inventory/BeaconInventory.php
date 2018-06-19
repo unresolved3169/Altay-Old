@@ -43,20 +43,4 @@ class BeaconInventory extends ContainerInventory{
     public function getNetworkType() : int{
         return WindowTypes::BEACON;
     }
-
-    public function onClose(Player $who) : void{
-        parent::onClose($who);
-
-        $inv = $who->getInventory();
-        for($i = 0, $size = $this->getSize(); $i < $size; ++$i){
-            $item = $this->getItem($i);
-            if(!$item->isNull()){
-                if($inv->canAddItem($item)){
-                    $inv->addItem($item);
-                }else{
-                    $who->dropItem($item);
-                }
-            }
-        }
-    }
 }
