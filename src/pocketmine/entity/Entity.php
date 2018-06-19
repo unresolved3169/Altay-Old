@@ -721,7 +721,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$attr->setValue($value ? ($attr->getValue() * 1.3) : ($attr->getValue() / 1.3), false, true);
 		}
 	}
-	
+
 	public function isSwimming() : bool{
 		return $this->getGenericFlag(self::DATA_FLAG_SWIMMING);
 	}
@@ -1071,7 +1071,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
 		if($this->ridingEntity instanceof Entity and !$this->ridingEntity->isAlive()){
-		 $this->ridingEntity = null;
+			$this->ridingEntity = null;
 		}
 
 		$this->justCreated = false;
@@ -1103,7 +1103,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 				$this->noDamageTicks = 0;
 			}
 		}
-		
+
 		if($this->isGliding()) $this->resetFallDistance();
 
 		$this->age += $tickDiff;
@@ -1541,10 +1541,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$block = $this->level->getBlock($this->subtract(0,0.20000000298023224,0));
 		if($onGround){
 			if($this->fallDistance > 0){
-			 if($block->isSolid()){
-			  $block->onEntityFallenUpon($this, $this->fallDistance);
+				if($block->isSolid()){
+					$block->onEntityFallenUpon($this, $this->fallDistance);
 				}
-				
+
 				$this->fall($this->fallDistance);
 				$this->resetFallDistance();
 			}
@@ -1658,9 +1658,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * @param float $fallDistance
 	 */
 	public function fall(float $fallDistance) : void{
-	 if($this->riddenByEntity instanceof Entity){
-	  $this->riddenByEntity->fall($fallDistance);
-	 }
+		if($this->riddenByEntity instanceof Entity){
+			$this->riddenByEntity->fall($fallDistance);
+		}
 	}
 
 	public function getEyeHeight() : float{
@@ -1955,10 +1955,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$block->onEntityCollide($this);
 			$block->addVelocityToEntity($this, $vector);
 		}
-		
+
 		$down = $this->level->getBlock($this->getSide(Vector3::SIDE_DOWN));
 		if($down->hasEntityCollision()){
-		 $down->onEntityCollideUpon($this);
+			$down->onEntityCollideUpon($this);
 		}
 
 		if($vector->lengthSquared() > 0){

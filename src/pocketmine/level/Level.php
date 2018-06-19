@@ -258,7 +258,7 @@ class Level implements ChunkManager, Metadatable{
 
 	/** @var \Closure */
 	private $asyncPoolStartHook;
-	
+
 	/** @var Random */
 	public $random;
 
