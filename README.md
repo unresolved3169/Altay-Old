@@ -25,6 +25,7 @@ Yes, you can.
  	- [x] Command Parameters
  	- [x] Forms
  	- [x] Villager Trade
+ 	- [ ] Maps
  - [x] Blocks
  	- [x] Anvil
  	- [x] Enchantment Table
