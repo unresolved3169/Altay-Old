@@ -1104,7 +1104,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			}
 		}
 		
-		if($this->isUnderwater()) $this->resetFallDistance();
+		if($this->isGliding()) $this->resetFallDistance();
 
 		$this->age += $tickDiff;
 		$this->ticksLived += $tickDiff;
@@ -1541,11 +1541,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$block = $this->level->getBlock($this->subtract(0,0.20000000298023224,0));
 		if($onGround){
 			if($this->fallDistance > 0){
-				if($block->isSolid()){
-					$block->onEntityFallenUpon($this, $this->fallDistance);
-				}else{
-					$this->fall($this->fallDistance);
+			 if($block->isSolid()){
+			  $block->onEntityFallenUpon($this, $this->fallDistance);
 				}
+				
+				$this->fall($this->fallDistance);
 				$this->resetFallDistance();
 			}
 		}elseif($distanceThisTick < 0){
@@ -1658,7 +1658,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * @param float $fallDistance
 	 */
 	public function fall(float $fallDistance) : void{
-
+	 if($this->riddenByEntity instanceof Entity){
+	  $this->riddenByEntity->fall($fallDistance);
+	 }
 	}
 
 	public function getEyeHeight() : float{
