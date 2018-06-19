@@ -206,11 +206,11 @@ class NetworkInventoryAction{
 						return null;
 
 					case self::SOURCE_TYPE_CONTAINER_DROP_CONTENTS:
-						//$window = $player->getLastOpenContainerInventory();
+						$window = $player->getLastOpenContainerInventory();
 
-						//if($window === null){
+						if($window === null){
 						    $window = $player->getCraftingGrid();
-                        //}
+						}
 
 						//DROP_CONTENTS doesn't bother telling us what slot the item is in, so we find it ourselves
 						$inventorySlot = $window->first($this->oldItem, true);
@@ -253,8 +253,8 @@ class NetworkInventoryAction{
 						/** @var TradeInventory $window */
 						$window = $player->getWindowByType(TradeInventory::class);
 						return new TradeAction($this->oldItem, $this->newItem, $window, (abs($this->windowId) - 23) === 0);
-                    case self::SOURCE_TYPE_BEACON:
-                        return new SlotChangeAction($player->getWindowByType(BeaconInventory::class), 0, $this->oldItem, $this->newItem);
+					case self::SOURCE_TYPE_BEACON:
+					 return new SlotChangeAction($player->getWindowByType(BeaconInventory::class), 0, $this->oldItem, $this->newItem);
 				}
 
 				//TODO: more stuff
