@@ -78,6 +78,7 @@ use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\ContainerInventory;
 use pocketmine\inventory\CraftingGrid;
 use pocketmine\inventory\PlayerCursorInventory;
+use pocketmine\inventory\PlayerOffHandInventory;
 use pocketmine\inventory\transaction\action\InventoryAction;
 use pocketmine\inventory\transaction\CraftingTransaction;
 use pocketmine\inventory\transaction\TransactionValidationException;
@@ -269,6 +270,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $permanentWindows = [];
 	/** @var PlayerCursorInventory */
 	protected $cursorInventory;
+	/** @var PlayerOffHandInventory */
+	protected $offHandInventory;
 	/** @var CraftingGrid */
 	protected $craftingGrid = null;
 	/** @var CraftingTransaction|null */
@@ -3574,6 +3577,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->windows = [];
 				$this->windowIndex = [];
 				$this->cursorInventory = null;
+				$this->offHandInventory = null;
 				$this->craftingGrid = null;
 
 				if($this->constructed){
@@ -3967,12 +3971,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->addWindow($this->cursorInventory, ContainerIds::CURSOR, true);
 
 		$this->craftingGrid = new CraftingGrid($this, CraftingGrid::SIZE_SMALL);
+		
+		$this->offHandInventory = new PlayerOffHandInventory($this);
+		$this->addWindow($this->offHandInventory, ContainerIds::OFFHAND, true);
 
 		//TODO: more windows
 	}
 
 	public function getCursorInventory() : PlayerCursorInventory{
 		return $this->cursorInventory;
+	}
+	
+	public function getOffHandInventory() : PlayerOffHandInventory{
+		return $this->offHandInventory;
 	}
 
 	public function getCraftingGrid() : CraftingGrid{
