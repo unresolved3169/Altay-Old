@@ -1851,6 +1851,34 @@ class Server{
 		return count($recipients);
 	}
 
+    /**
+     * @param string     $title
+     * @param Player[] $recipients
+     * @param float      $health
+     * @param float      $maxHealth
+     *
+     * @return int
+     */
+    public function broadcastBossBar(string $title, array $recipients = null, float $health = 0, float $maxHealth = 1) : int{
+        if(!is_array($recipients)){
+            /** @var Player[] $recipients */
+            $recipients = [];
+
+            foreach($this->pluginManager->getPermissionSubscriptions(self::BROADCAST_CHANNEL_USERS) as $permissible){
+                if($permissible instanceof Player and $permissible->hasPermission(self::BROADCAST_CHANNEL_USERS)){
+                    $recipients[spl_object_hash($permissible)] = $permissible; // do not send messages directly, or some might be repeated
+                }
+            }
+        }
+
+        /** @var Player[] $recipients */
+        foreach($recipients as $recipient){
+            $recipient->sendBossBar($title, $health, $maxHealth);
+        }
+
+        return count($recipients);
+    }
+
 	/**
 	 * @param string   $tip
 	 * @param Player[] $recipients
