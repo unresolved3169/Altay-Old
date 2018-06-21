@@ -71,7 +71,7 @@ abstract class Mob extends Living{
 			$task->checkBehaviors();
 		}
 
-		return self::onUpdate($tick);
+		return parent::onUpdate($tick);
 	}
 
 	/**
@@ -106,7 +106,8 @@ abstract class Mob extends Living{
 		$dir->y = 0;
 
 		$boundingBox = (clone $this->getBoundingBox())->offsetBy($dir->multiply($sf));
-		$entityCollide = count($this->level->getCollidingEntities($boundingBox, $this)) > 0;
+		//$entityCollide = count($this->level->getCollidingEntities($boundingBox, $this)) > 0;
+    $entityCollide = false; // TODO: entity turunu saptama ozelligi eklenecek cunku ItemEntity gibi varliklar mobun hareket etmesini engelleyebiliyor
 
 		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
 

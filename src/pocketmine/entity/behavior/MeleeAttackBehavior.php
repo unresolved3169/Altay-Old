@@ -30,6 +30,7 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\math\Vector3;
 use pocketmine\entity\pathfinder\Path;
+use pocketmine\level\particle\RedstoneParticle;
 
 class MeleeAttackBehavior extends Behavior{
 
@@ -106,11 +107,10 @@ class MeleeAttackBehavior extends Behavior{
 
 		// Movement
 		if($this->currentPath->havePath()){
-			$next = $this->currentPath->getNextTile($this->mob, true);
+			$next = $this->currentPath->getNextTile($this->mob);
 			if($next !== null){
 				$this->mob->lookAt($pos = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
 				$this->mob->moveForward($this->speedMultiplier);
-				//$this->mob->level->addParticle(new RedstoneParticle($pos->add(0,0.5,0)));
 			} // else something is really wrong
 		}else{
 			$this->mob->resetMotion();

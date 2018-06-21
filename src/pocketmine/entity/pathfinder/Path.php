@@ -29,10 +29,11 @@ use pocketmine\entity\Mob;
 use pocketmine\level\Level;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
+use pocketmine\level\particle\RedstoneParticle;
 
 class Path{
 
-	/* @var Vector2[] */
+	/* @var PathPoint[] */
 	protected $tiles = [];
 
 	public function __construct(array $tiles = []){
@@ -40,8 +41,8 @@ class Path{
 	}
 
 	public static function findPath(Mob $mob, Vector3 $targetPos, int $maxAttempt = 200) : Path{
-		$from = new PathPoint($mob->x, $mob->z);
-		$to = new PathPoint($targetPos->x, $targetPos->z);
+		$from = new PathPoint((int) $mob->x, (int) $mob->z);
+		$to = new PathPoint((int) $targetPos->x, (int) $targetPos->z);
 	 
 		$cache = [];
 
@@ -56,7 +57,7 @@ class Path{
 		if($this->havePath()){
 			$next = reset($this->tiles);
 
-			if((int) $next->x === floor($entity->x) and (int) $next->y === floor($entity->z)){
+			if((int) $next->x == (int) $entity->x and (int) $next->y == (int) $entity->z){
 				array_shift($this->tiles);
 
 				return $this->getNextTile($entity);

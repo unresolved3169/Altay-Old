@@ -29,6 +29,7 @@ use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\block\Block;
 use pocketmine\block\Liquid;
+use pocketmine\level\particle\HappyVillagerParticle;
 
 class EntityNavigator{
 
@@ -53,60 +54,79 @@ class EntityNavigator{
 		$this->level = $entity->getLevel();
 	}
 
-	public function navigate(PathPoint $from, PathPoint $to, int $maxTick = 200, array $blockCache) : array{
+	public function navigate(PathPoint $from, PathPoint $to, int $maxTick = 200, array &$blockCache) : array{
 		$this->level = $this->entity->getLevel(); //for level update
 		$ticks = 0;
 		$from->fScore = $this->calculateGridDistance($from, $to);
-		$current = $from;
+		$last = $from;
 		$path = [];
 		$open = [$from->__toString() => $from];
 		$currentY = (int) $this->getPathableY($this->entity->y);
 		$closed = [];
+   $highScore = $from;
 
 		while(!empty($open)){
-			$currentScore = PHP_INT_MAX;
-			$result = null;
+			$current = $last;
+     if($last != $highScore){
+      uasort($open, function($a,$b){
+					if($a->fScore == $b->fScore) return 0;
+
+					return $a->fScore > $b->fScore ? 1 : -1;
+				});
+       $current = reset($open);
+       $currentY = $this->getBlockByPoint($current, $blockCache)->y;
+     }
+
+     $last = null;
+
+     if($current->equals($to)){
+      return $this->initPath($path, $current);
+     }
+     if($ticks++ > $maxTick){
+      return $this->initPath($path, $highScore);
+     }
 
 			unset($open[$current->__toString()]);
 			$closed[$current->__toString()] = $current;
 
 			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
-				if(!isset($closed[$n->__toString()]) and !isset($open[$n->__toString()])){
-					$open[$n->__toString()] = $n;
-
+				if(!isset($closed[$n->__toString()])){
 					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
+					
+					if(isset($open[$n->__toString()])){
+             continue;
+					    $og = $open[$n->__toString()];
+					    if($g >= $og->gScore) continue;
+					}
+         $open[$n->__toString()] = $n;
+         $path[$n->__toString()] = $current;
 
 					$n->gScore = $g;
 					$n->fScore = $g + $this->calculateGridDistance($n, $to);
 
-					if($n->fScore <= $currentScore){
-						$currentScore = $n->fScore;
-						$result = $n;
+					if($n->fScore <= $highScore->fScore){
+						$highScore = $n;
+						$last = $n;
 					}
 				}
 			}
-
-			if($result instanceof PathPoint){
-				$current = $result;
-				$path[] = $current;
-			}else{
-				usort($open, function($a,$b){
-					if($a->fScore == $b->fScore) return 0;
-
-					return $a->fScore > $b->fScore ? 1 : -1;
-				});
-				$current = reset($open);
-			}
-
-			$currentY = $this->getBlockByPoint($current, $blockCache)->y;
-
-			if($current->floor()->equals($to->floor()) or $ticks++ >= $maxTick){
-				return $path;
-			}
-		}
+     if($last !== null){
+			 $currentY = $this->getBlockByPoint($last, $blockCache)->y;
+     }
+   }
 
 		return $path;
 	}
+
+  public function initPath(array $path, PathPoint $current){
+   $totalPath = [$current];
+   while(isset($path[$current->__toString()])){
+    $current = $path[$current->__toString()];
+    array_unshift($totalPath, $current);
+   }
+   unset($totalPath[0]);
+   return $totalPath;
+ }
 
 	public function calculateGridDistance(PathPoint $from, PathPoint $to) : float{
 		return abs($from->x - $to->x) + abs($from->y - $to->y);
@@ -122,7 +142,7 @@ class EntityNavigator{
 			$block1 = $block1->asVector3();
 			$block2 = $block2->asVector3();
 		}
-
+   
 		if($this->entity->canClimb()){
 			$block1->y = $block2->y = 0;
 		}
@@ -234,29 +254,19 @@ class EntityNavigator{
 				}
 			}
 
-			$list[] = $item;
+			$list[$index] = $item;
 		}
-
-		$this->checkDiagonals($block, $list);
-
+    $this->checkDiagonals($list);
 		return $list;
 	}
 
-	public function checkDiagonals(Block $block, array &$list){ // TODO: Improve this
-		$pos = $block->asVector3();
-
-		$checkDiagonals = [
-			Vector3::SIDE_NORTH => [Vector3::SIDE_EAST, Vector3::SIDE_WEST],
-			Vector3::SIDE_SOUTH => [Vector3::SIDE_EAST, Vector3::SIDE_WEST],
-			Vector3::SIDE_EAST => [Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH],
-			Vector3::SIDE_WEST => [Vector3::SIDE_NORTH, Vector3::SIDE_SOUTH]
-		];
+	public function checkDiagonals(array &$list){
+		$checkDiagonals = [0 => [4,5], 1 => [5,6], 2 => [6,7], 3 => [4,7]];
 
 		foreach($checkDiagonals as $index => $diagonal){
-			$posNew = $pos->getSide($index);
-			if(!in_array($this->getTileFromPos($posNew), $list)){
+			if(!isset($list[$index])){
 				foreach($diagonal as $dia){
-					unset($list[array_search($this->getTileFromPos($posNew->getSide($dia)), $list)]);
+					unset($list[$dia]);
 				}
 			}
 		}
