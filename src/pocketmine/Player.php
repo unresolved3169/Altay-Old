@@ -38,6 +38,7 @@ use pocketmine\entity\Living;
 use pocketmine\entity\object\ItemEntity;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\Skin;
+use pocketmine\entity\utils\Bossbar;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -361,6 +362,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/** @var int */
 	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
 	protected $keepExperience = false;
+
+    /** @var null|Bossbar */
+    private $bossbar = null;
 
 	/**
 	 * @return TranslationContainer|string
@@ -3411,6 +3415,23 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 		$this->dataPacket($pk);
 	}
+	
+    public function getBossBar(): Bossbar{
+        return $this->bossbar;
+    }
+
+    public function removeBossBar(){
+        if($this->bossbar == null) return;
+        $this->bossbar->hideFrom($this);
+        $this->bossbar = null;
+    }
+
+    public function sendBossBar(string $title, float $health = 0, float $maxHealth = 1){
+        $this->removeBossBar(); // TODO: Allow multiple bossbars, and a way to remove them
+        $bossbar = new Bossbar($title, $health, $maxHealth);
+        $bossbar->showTo($this);
+        $this->bossbar = $bossbar;
+    }
 
 	/**
 	 * Sends a popup message to the player
