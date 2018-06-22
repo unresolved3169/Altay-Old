@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7bb019c986746a2ac03d933e8a3570dc",
+    "content-hash": "a5114093030cf65b6d28b9baf28b4259",
     "packages": [
         {
             "name": "pocketmine/binaryutils",
@@ -186,13 +186,47 @@
                 "source": "https://github.com/pmmp/SPL/tree/0.3.1"
             },
             "time": "2018-06-09T17:30:36+00:00"
+        },
+        {
+            "name": "turanicteam/math",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/TuranicTeam/Math.git",
+                "reference": "0e7b252627e2a6439276ecdfabc0f687256a254a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/TuranicTeam/Math/zipball/0e7b252627e2a6439276ecdfabc0f687256a254a",
+                "reference": "0e7b252627e2a6439276ecdfabc0f687256a254a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.2.0",
+                "php-64bit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "pocketmine\\math\\": "src/"
+                }
+            },
+            "license": [
+                "LGPL-3.0"
+            ],
+            "description": "PHP library containing math related code used in Altay",
+            "support": {
+                "source": "https://github.com/TuranicTeam/Math/tree/master"
+            },
+            "time": "2018-06-22T12:13:19+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "ext-pthreads": 20
+        "ext-pthreads": 20,
+        "turanicteam/math": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
