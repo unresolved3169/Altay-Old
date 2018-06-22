@@ -29,6 +29,7 @@ use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\block\Block;
 use pocketmine\block\Liquid;
+use pocketmine\level\particle\HappyVillagerParticle;
 
 class EntityNavigator{
 
@@ -53,14 +54,15 @@ class EntityNavigator{
 		$this->level = $entity->getLevel();
 	}
 
-	public function navigate(PathPoint $from, PathPoint $to, int $maxTick = 200, array &$blockCache) : array{
+	public function navigate(PathPoint $from, PathPoint $to, float $followRange = 16.0) : array{
+    $blockCache = [];
 		$this->level = $this->entity->getLevel(); //for level update
 		$ticks = 0;
 		$from->fScore = $this->calculateGridDistance($from, $to);
 		$last = $from;
 		$path = [];
 		$open = [$from->__toString() => $from];
-		$currentY = (int) $this->getPathableY($this->entity->y);
+		$currentY = (int) $this->entity->y;
 		$closed = [];
 		$highScore = $from;
 
@@ -77,11 +79,12 @@ class EntityNavigator{
 			}
 
 			$last = null;
+     //$this->entity->level->addParticle(new HappyVillagerParticle(new Vector3($current->x + 0.5, $currentY + 1.5, $current->y + 0.5)));
 
 			if($current->equals($to)){
 				return $this->initPath($path, $current);
 			}
-			if($ticks++ > $maxTick){
+			if($ticks++ > 50){
 				return $this->initPath($path, $highScore);
 			}
 
@@ -89,7 +92,8 @@ class EntityNavigator{
 			$closed[$current->__toString()] = $current;
 
 			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
-				if(!isset($closed[$n->__toString()])){
+			  $blockPos = $this->getBlockByPoint($n, $blockCache);
+				if(!isset($closed[$n->__toString()]) and $blockPos->distanceSquared($this->entity) <= $followRange){
 					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
 
 					if(isset($open[$n->__toString()])){
@@ -113,7 +117,7 @@ class EntityNavigator{
 			}
 		}
 
-		return $path;
+		return [];
 	}
 
 	public function initPath(array $path, PathPoint $current){
@@ -150,19 +154,6 @@ class EntityNavigator{
 
 	public function getBlockByPoint(PathPoint $tile, array $cache) : ?Block{
 		return $cache[$tile->__toString()] ?? null;
-	}
-
-	public function getPathableY(float $y) : float{
-		$pos = $this->entity->asVector3();
-		for($i = 1; $i < 5; $i++){
-			$b = $this->level->getBlock($pos->getSide(Vector3::SIDE_DOWN, $i));
-			if($b instanceof Liquid or $b->isSolid()){
-				return $y;
-			}else{
-				$y--;
-			}
-		}
-		return $y;
 	}
 
 	/**
@@ -270,10 +261,6 @@ class EntityNavigator{
 		}
 	}
 
-	public function getTileFromPos(Vector3 $coord) : PathPoint{
-		return new PathPoint($coord->x, $coord->z);
-	}
-
 	public function isObstructed(Vector3 $coord) : bool{
 		for($i = 1; $i < $this->entity->height; $i++)
 			if($this->isBlocked($coord->add(0, $i, 0))) return true;
@@ -286,8 +273,8 @@ class EntityNavigator{
 		return $block->isSolid();
 	}
 
-	public function tryMoveTo(Vector3 $pos, float $speed): bool{
-		$path = Path::findPath($this->entity, $pos, 1);
+	public function tryMoveTo(Vector3 $pos, float $speed, float $range): bool{
+		$path = Path::findPath($this->entity, $pos, $range);
 
 		if($path->havePath() and $next = $path->getNextTile($this->entity)){
 			$this->entity->lookAt(new Vector3($next->x + 0.5, $this->entity->y, $next->y + 0.5));

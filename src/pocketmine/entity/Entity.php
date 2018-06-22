@@ -1252,7 +1252,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$pk->position = $this->getOffsetPosition($this);
 			$pk->yaw = $this->yaw;
 			$pk->pitch = $this->pitch;
-			$pk->headYaw = $this->headYaw ?? $this->yaw; //TODO
+			$pk->headYaw = $this->headYaw ?? $this->yaw;
+			$pk->onGround = $this->onGround;
 			$pk->teleported = $teleport;
 
 			$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
@@ -1273,7 +1274,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * @param Entity $entity
 	 */
 	protected function applyEntityCollision(Entity $entity) : void{
-		if($entity->hasEntityCollisionUpdate() and !$this->isRiding() and !$entity->isRiding()){
+		if($entity->canBePushed() and !$this->isRiding() and !$entity->isRiding()){
 			if(!($entity instanceof Player and $entity->isSpectator()) and !($this instanceof Player and $this->isSpectator())){
 				$d0 = $entity->x - $this->x;
 				$d1 = $entity->z - $this->z;
@@ -1556,7 +1557,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		);
 	}
 
-	public function hasEntityCollisionUpdate() : bool{
+	public function canBePushed() : bool{
 		return false;
 	}
 
@@ -2002,7 +2003,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function checkEntityCollision() : void{
-		if($this->hasEntityCollisionUpdate()){
+		if($this->canBePushed()){
 			foreach($this->level->getCollidingEntities($this->getBoundingBox()->expandedCopy(0.3,0.3,0.3), $this) as $e){
 				$this->applyEntityCollision($e);
 			}

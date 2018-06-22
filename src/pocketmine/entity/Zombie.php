@@ -1,42 +1,57 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\entity\Ageable;
+use pocketmine\entity\behavior\{
+	FindAttackableTargetBehavior, FleeSunBehavior, FloatBehavior, HurtByTargetBehavior, LookAtPlayerBehavior, MeleeAttackBehavior, RandomLookAroundBehavior, RestrictSunBehavior, WanderBehavior
+};
+use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 
-class Zombie extends Monster{
+class Zombie extends Monster implements Ageable{
 	public const NETWORK_ID = self::ZOMBIE;
 
 	public $width = 0.6;
 	public $height = 1.8;
 
-	public function getName() : string{
+	protected function initEntity() : void{
+		parent::initEntity();
+		$this->setMovementSpeed($this->isBaby() ? 0.345 : 0.23);
+		if($this->isBaby()){
+			$this->height *= 0.5;
+			$this->setScale(0.5);
+		}
+	}
+
+	public function getName(): string{
 		return "Zombie";
 	}
 
-	public function getDrops() : array{
+	public function getDrops(): array{
 		$drops = [
 			ItemFactory::get(Item::ROTTEN_FLESH, 0, mt_rand(0, 2))
 		];
@@ -58,8 +73,32 @@ class Zombie extends Monster{
 		return $drops;
 	}
 
-	public function getXpDropAmount() : int{
-		//TODO: check for equipment and whether it's a baby
-		return 5;
+	public function getXpDropAmount(): int{
+		//TODO: check for equipment
+		return $this->isBaby() ? 12 : 5;
+	}
+
+	protected function getDefaultBehaviors() : array{
+		return [
+			[
+				new MeleeAttackBehavior($this, 1.0, 35),
+				new FleeSunBehavior($this),
+				new WanderBehavior($this),
+				new LookAtPlayerBehavior($this, 8.0),
+				new RandomLookAroundBehavior($this)
+			],
+			[
+				new HurtByTargetBehavior($this),
+				new FindAttackableTargetBehavior($this, 35)
+			],
+			[
+				new FloatBehavior($this),
+				new RestrictSunBehavior($this)
+			]
+		];
+	}
+
+	public function isBaby() : bool{
+		return $this->getGenericFlag(self::DATA_FLAG_BABY);
 	}
 }

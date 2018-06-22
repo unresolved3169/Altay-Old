@@ -59,7 +59,7 @@ class MeleeAttackBehavior extends Behavior{
 		$target = $this->mob->getTargetEntity();
 		if($target == null) return false;
 
-		$this->currentPath = Path::findPath($this->mob, $target);
+		$this->currentPath = Path::findPath($this->mob, $target, $this->followRange);
 
 		if(!$this->currentPath->havePath()) return false;
 
@@ -89,7 +89,7 @@ class MeleeAttackBehavior extends Behavior{
 		$canSee = true;
 
 		if($canSee or $this->delay <= 0 or ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)){
-			$this->currentPath = Path::findPath($this->mob, $target, 100);
+			$this->currentPath = Path::findPath($this->mob, $target, $this->followRange);
 			$this->lastPlayerPos = $target->asVector3();
 
 			$this->delay = 4 + $this->random->nextBoundedInt(7);

@@ -40,7 +40,7 @@ abstract class Behavior{
 
 	public function __construct(Mob $mob){
 		$this->mob = $mob;
-		$this->random = $mob->level->getRandom();
+		$this->random = $mob->level->random;
 	}
 
 	public abstract function canStart() : bool;

@@ -36,7 +36,7 @@ use pocketmine\entity\pathfinder\Path;
 class WanderBehavior extends Behavior{
 
 	/** @var float */
-	protected $speedMultiplier = 1.0;
+	protected $speedMultiplier = 1.0, $followRange = 16.0;
 	/** @var int */
 	protected $chance = 120;
 
@@ -55,7 +55,7 @@ class WanderBehavior extends Behavior{
 
 			if($pos === null) return false;
 
-			$path = Path::findPath($this->mob, $pos);
+			$path = Path::findPath($this->mob, $pos, $this->followRange = $this->mob->distance($pos) + 2);
 
 			$this->targetPos = $pos;
 
@@ -70,7 +70,7 @@ class WanderBehavior extends Behavior{
 	}
 
 	public function onTick() : void{
-		if(!$this->mob->getNavigator()->tryMoveTo($this->targetPos, $this->speedMultiplier)){
+		if(!$this->mob->getNavigator()->tryMoveTo($this->targetPos, $this->speedMultiplier, $this->followRange)){
 			$this->targetPos = null;
 		}
 	}

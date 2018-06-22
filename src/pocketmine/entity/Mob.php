@@ -46,8 +46,7 @@ abstract class Mob extends Living{
 
 	protected function initEntity() : void{
 		parent::initEntity();
-
-		$this->jumpVelocity = $this->jumpVelocity + ($this->width / 10) + $this->getAdditionalJumpVelocity(); // hmmmmmm
+		
 		$this->navigator = new EntityNavigator($this);
 
 		foreach($this->getDefaultBehaviors() as $behaviors){
@@ -60,13 +59,13 @@ abstract class Mob extends Living{
 	}
 
 	public function onUpdate(int $tick) : bool{
-		if($this->closed or !$this->isAlive()) return false;
-
-		foreach($this->behaviorTasks as $task){
-			$task->checkBehaviors();
-		}
-
-		return parent::onUpdate($tick);
+	      if($this->closed or !$this->isAlive()) return false;
+	      
+	      foreach($this->behaviorTasks as $task){
+			   $task->checkBehaviors();
+		    }
+	      
+	      return parent::onUpdate($tick) and $hasBehaviorUpdate;
 	}
 
 	/**
@@ -95,8 +94,6 @@ abstract class Mob extends Living{
 		$dir = $this->getDirectionVector();
 		$dir->y = 0;
 
-		$entityCollide = false; // TODO: entity turunu saptama ozelligi eklenecek cunku ItemEntity gibi varliklar mobun hareket etmesini engelleyebiliyor
-
 		$coord = $this->add($dir->multiply($sf)->add($dir->multiply($this->width * 0.5)));
 
 		$block = $this->level->getBlock($coord);
@@ -105,27 +102,24 @@ abstract class Mob extends Living{
 
 		$collide = $block->isSolid() || ($this->height >= 1 and $blockUp->isSolid());
 
-		if(!$collide and !$entityCollide){
+		if(!$collide){
 			$blockDown = $block->getSide(Vector3::SIDE_DOWN);
 			if (!$this->onGround && !$blockDown->isSolid()) return false;
-
+     
 			$velocity = $dir->multiply($sf);
 			$entityVelocity = $this->getMotion();
 			$entityVelocity->y = 0;
 
 			$m = $entityVelocity->length() < $velocity->length() ? $this->getMotion()->add($velocity->subtract($this->getMotion())) : $velocity;
-			$this->setMotion($m);
-
+			$this->motion = $m;
 			return true;
 		}else{
-			if($this->canClimb() and !$entityCollide){
-				$this->setMotion(new Vector3(0,0.2,0));
+			if($this->canClimb()){
+				$this->motion->y = 0.02;
 				return true;
-			}elseif(!$entityCollide and !$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
-				if($this->onGround and $this->motion->y === 0){
-					$this->motion->y += $this->getJumpVelocity(); // shortcut jump
-					return true;
-				}
+			}elseif(!$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
+				$this->motion->y = $this->getJumpVelocity();
+				return true;
 			}else{
 				$this->motion->x = $this->motion->z = 0;
 			}
@@ -137,11 +131,7 @@ abstract class Mob extends Living{
 		return $this->navigator;
 	}
 
-	public function getAdditionalJumpVelocity() : float{
-		return 0.01;
-	}
-
-	public function hasEntityCollisionUpdate(): bool{
+	public function canBePushed(): bool{
 		return true;
 	}
 }
