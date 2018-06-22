@@ -46,7 +46,7 @@ Yes, you can.
  - [ ] Others
  	- [x] Altay Configuration File
  	- [ ] Config Auto Updater
- 	- [ ] Entity Behaviors (MobAI)
+ 	- [x] Entity Behaviors (MobAI)
  	- [ ] Fully Enchantments
  	- [x] Level Dimensions
  	- [ ] Multi-core

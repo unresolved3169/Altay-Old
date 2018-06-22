@@ -409,6 +409,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public $temporalVector;
 
 	/** @var float */
+	public $lastHeadYaw;
+	/** @var float */
 	public $lastYaw;
 	/** @var float */
 	public $lastPitch;
@@ -651,6 +653,14 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->recalculateBoundingBox();
 
 		$this->propertyManager->setFloat(self::DATA_SCALE, $value);
+	}
+
+	public function isInLove() : bool{
+		return $this->getDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_RIDING);
+	}
+
+	public function setInLove(bool $value) : void{
+		$this->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_INLOVE, $value);
 	}
 
 	public function isRiding() : bool{
@@ -953,6 +963,29 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	}
 
+	public function canSeeEntity(Entity $target) : bool{
+		$entityPos = $this->asVector3()->add(0, ($this instanceof Human ? $this->eyeHeight : $this->height), 0);
+		$targetPos = $target->asVector3()->add(0, ($target instanceof Human ? $this->eyeHeight : $target->height), 0);
+		$distance = $entityPos->distance($targetPos);
+
+		$rayPos = $entityPos;
+		$direction = $targetPos->subtract($entityPos)->normalize();
+
+		if($distance < $direction->length()){
+			return true;
+		}
+
+		do{
+			if($this->level->getBlock($rayPos)->isSolid()){
+				return false;
+			}
+
+			$rayPos = $rayPos->add($direction);
+		}while ($distance > $entityPos->distance($rayPos));
+
+		return true;
+	}
+
 	/**
 	 * @param EntityDamageEvent $source
 	 */
@@ -1048,9 +1081,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	/**
-	 * @param EntityDamageEvent $type
+	 * @param EntityDamageEvent|null $type
 	 */
-	public function setLastDamageCause(EntityDamageEvent $type) : void{
+	public function setLastDamageCause(?EntityDamageEvent $type) : void{
 		$this->lastDamageCause = $type;
 	}
 
@@ -1219,7 +1252,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$pk->position = $this->getOffsetPosition($this);
 			$pk->yaw = $this->yaw;
 			$pk->pitch = $this->pitch;
-			$pk->headYaw = $this->yaw; //TODO
+			$pk->headYaw = $this->headYaw ?? $this->yaw; //TODO
 			$pk->teleported = $teleport;
 
 			$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
@@ -1240,7 +1273,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * @param Entity $entity
 	 */
 	protected function applyEntityCollision(Entity $entity) : void{
-		if(!$this->isRiding() and !$entity->isRiding()){
+		if($entity->hasEntityCollisionUpdate() and !$this->isRiding() and !$entity->isRiding()){
 			if(!($entity instanceof Player and $entity->isSpectator()) and !($this instanceof Player and $this->isSpectator())){
 				$d0 = $entity->x - $this->x;
 				$d1 = $entity->z - $this->z;
@@ -1478,8 +1511,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$hasUpdate = $this->entityBaseTick($tickDiff);
 		Timings::$timerEntityBaseTick->stopTiming();
 
-
-
 		$this->timings->stopTiming();
 
 		//if($this->isStatic())
@@ -1619,7 +1650,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		if(!$this->ridingEntity->isAlive()){
 			$this->ridingEntity = null;
 		}else{
-			$this->motion->x = $this->motion->y = $this->motion->z = 0;
+			$this->resetMotion();
 
 			$this->ridingEntity->updateRiderPosition();
 			$this->entityRiderYawDelta += $this->ridingEntity->yaw -  $this->ridingEntity->lastYaw;
@@ -2010,8 +2041,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return true;
 	}
 
-	public function setRotation(float $yaw, float $pitch) : void{
+	public function setRotation(float $yaw, float $pitch, ?float $headYaw = null) : void{
 		$this->yaw = $yaw;
+		$this->headYaw = $headYaw ?? $yaw;
 		$this->pitch = $pitch;
 		$this->scheduleUpdate();
 	}
@@ -2082,6 +2114,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		}
 
 		return true;
+	}
+
+	public function resetMotion() : void{
+		$this->motion->setComponents(0, 0, 0);
 	}
 
 	public function isOnGround() : bool{

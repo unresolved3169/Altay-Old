@@ -29,7 +29,6 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\entity\Attribute;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
 use pocketmine\entity\Entity;
@@ -1722,7 +1721,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		if($this->spawned){
 			$this->processMovement($tickDiff);
-			$this->motion->x = $this->motion->y = $this->motion->z = 0; //TODO: HACK! (Fixes player knockback being messed up)
+			$this->resetMotion(); //TODO: HACK! (Fixes player knockback being messed up)
 
 			Timings::$timerEntityBaseTick->startTiming();
 			$this->entityBaseTick($tickDiff);
@@ -4201,25 +4200,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	public function isLoaderActive() : bool{
 		return $this->isConnected();
-	}
-
-	/**
-	 * Sets the movement speed of player
-	 * 1 = default 0 = immobile
-	 *
-	 * @param float $speed
-	 */
-	public function setMovementSpeed(float $speed) : void{
-		$this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed, true);
-	}
-
-	/**
-	 * Returns the movement speed of player
-	 *
-	 * @return float
-	 */
-	public function getMovementSpeed() : float{
-		return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
 	}
 
 	public function getDeviceModel() : string{

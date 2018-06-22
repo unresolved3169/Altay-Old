@@ -41,6 +41,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\MobEffectPacket;
@@ -120,6 +121,14 @@ abstract class Living extends Entity implements Damageable{
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::MOVEMENT_SPEED));
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::ATTACK_DAMAGE));
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::ABSORPTION));
+	}
+
+	public function setMovementSpeed(float $speed) : void{
+		$this->attributeMap->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed, true);
+	}
+
+	public function getMovementSpeed() : float{
+		return $this->attributeMap->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
 	}
 
 	public function setHealth(float $amount) : void{
@@ -545,6 +554,11 @@ abstract class Living extends Entity implements Damageable{
 				$deltaX = $this->x - $e->x;
 				$deltaZ = $this->z - $e->z;
 				$this->knockBack($e, $source->getBaseDamage(), $deltaX, $deltaZ, $source->getKnockBack());
+
+				$pk = new AnimatePacket();
+				$pk->action = 1;
+				$pk->entityRuntimeId = $e->getId();
+				$this->server->broadcastPacket($this->level->getPlayers(), $pk);
 			}
 		}
 
@@ -815,8 +829,9 @@ abstract class Living extends Entity implements Damageable{
 	 * their heads to turn.
 	 *
 	 * @param Vector3 $target
+	 * @param bool $onlyHead
 	 */
-	public function lookAt(Vector3 $target) : void{
+	public function lookAt(Vector3 $target, bool $onlyHead = false) : void{
 		$horizontal = sqrt(($target->x - $this->x) ** 2 + ($target->z - $this->z) ** 2);
 		$vertical = $target->y - $this->y;
 		$this->pitch = -atan2($vertical, $horizontal) / M_PI * 180; //negative is up, positive is down
@@ -826,6 +841,11 @@ abstract class Living extends Entity implements Damageable{
 		$this->yaw = atan2($zDist, $xDist) / M_PI * 180 - 90;
 		if($this->yaw < 0){
 			$this->yaw += 360.0;
+		}
+
+		if($onlyHead){
+			$this->headYaw = $this->yaw;
+			$this->yaw = $this->lastYaw;
 		}
 	}
 

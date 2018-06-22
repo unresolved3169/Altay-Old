@@ -155,4 +155,7 @@ class Vector2{
 		return "Vector2(x=" . $this->x . ",y=" . $this->y . ")";
 	}
 
+	public function equals(Vector2 $v) : bool{
+		return $this->x == $v->x and $this->y == $v->y;
+	}
 }
