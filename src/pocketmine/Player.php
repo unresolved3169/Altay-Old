@@ -360,11 +360,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $serverSettingsForm = null;
 
 	/** @var int */
-	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
-	protected $keepExperience = false;
+	private $bossbarIdCounter = 0;
+	/** @var Bossbar[] */
+	private $bossbars = [];
 
-    /** @var null|Bossbar */
-    private $bossbar = null;
+	/** @var int */
+	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
+
+	/** @var bool */
+	protected $keepExperience = false;
 
 	/**
 	 * @return TranslationContainer|string
@@ -3292,6 +3296,52 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	/**
+	 * Returns bossbar with id
+	 *
+	 * @param int $id
+	 * @return null|Bossbar
+	 */
+	public function getBossbar(int $id) : ?Bossbar{
+		return $this->bossbars[$id] ?? null;
+	}
+
+	/**
+	 * Removes a bossbar with id
+	 *
+	 * @param int $id
+	 * @return bool
+	 */
+	public function removeBossbar(int $id) : bool{
+		if(!isset($this->bossbars[$id])){
+			return false;
+		}
+
+		$this->bossbars[$id]->hideFrom($this);
+		unset($this->bossbars[$id]);
+
+		return true;
+	}
+
+	/**
+	 * Adds a bossbar to the player.
+	 *
+	 * @param string $title
+	 * @param float $health
+	 * @param float $maxHealth
+	 * @param int|null $id
+	 * @return int
+	 */
+	public function addBossbar(string $title, float $health = 0, float $maxHealth = 1, int $id = null) : int{
+		$bossbar = new Bossbar($title, $health, $maxHealth);
+		$bossbar->showTo($this);
+
+		$id = $id ?? $this->bossbarIdCounter++;
+		$this->bossbars[$id] = $bossbar;
+
+		return $id;
+	}
+
+	/**
 	 * Adds a title text to the user's screen, with an optional subtitle.
 	 *
 	 * @param string $title
@@ -3415,23 +3465,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 		$this->dataPacket($pk);
 	}
-	
-    public function getBossBar(): Bossbar{
-        return $this->bossbar;
-    }
-
-    public function removeBossBar(){
-        if($this->bossbar == null) return;
-        $this->bossbar->hideFrom($this);
-        $this->bossbar = null;
-    }
-
-    public function sendBossBar(string $title, float $health = 0, float $maxHealth = 1){
-        $this->removeBossBar(); // TODO: Allow multiple bossbars, and a way to remove them
-        $bossbar = new Bossbar($title, $health, $maxHealth);
-        $bossbar->showTo($this);
-        $this->bossbar = $bossbar;
-    }
 
 	/**
 	 * Sends a popup message to the player
@@ -3992,7 +4025,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->addWindow($this->cursorInventory, ContainerIds::CURSOR, true);
 
 		$this->craftingGrid = new CraftingGrid($this, CraftingGrid::SIZE_SMALL);
-		
+
 		$this->offHandInventory = new PlayerOffHandInventory($this);
 		$this->addWindow($this->offHandInventory, ContainerIds::OFFHAND, true);
 
@@ -4002,7 +4035,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function getCursorInventory() : PlayerCursorInventory{
 		return $this->cursorInventory;
 	}
-	
+
 	public function getOffHandInventory() : PlayerOffHandInventory{
 		return $this->offHandInventory;
 	}
