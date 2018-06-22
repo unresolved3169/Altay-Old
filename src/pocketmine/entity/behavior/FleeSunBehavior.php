@@ -75,9 +75,7 @@ class FleeSunBehavior extends Behavior{
 	}
 
 	public function onEnd() : void{
-		$motion = $this->mob->getMotion();
-		$motion->x = $motion->z = 0;
-		$this->mob->setMotion($motion);
+		$this->mob->setMotion($this->mob->getMotion()->multiply(0, 1.0, 0.0));
 		$this->currentPath = null;
 	}
 

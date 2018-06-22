@@ -44,9 +44,7 @@ class SittingBehavior extends Behavior{
 		$shouldStart = $owner == null || ((!($this->mob->distance($owner) < 144.0) || $this->getLastAttackSource() == null) && $this->mob->getGenericFlag(Entity::DATA_FLAG_SITTING));
 		if(!$shouldStart) return false;
 
-		$motion = $this->mob->getMotion();
-		$motion->x = $motion->z = 0;
-		$this->mob->setMotion($motion);
+		$this->mob->setMotion($this->mob->getMotion()->multiply(0, 1.0, 0.0));
 
 		return true;
 	}
