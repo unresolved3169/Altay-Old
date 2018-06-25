@@ -34,9 +34,7 @@ use pocketmine\level\particle\HappyVillagerParticle;
 class EntityNavigator{
 
 	/** @var Mob */
-	protected $entity;
-	/** @var \pocketmine\level\Level */
-	protected $level;
+	protected $mob;
 
 	protected $neighbors = [
 		[0, -1],
@@ -49,14 +47,12 @@ class EntityNavigator{
 		[-1, 1]
 	];
 
-	public function __construct(Mob $entity){
-		$this->entity = $entity;
-		$this->level = $entity->getLevel();
+	public function __construct(Mob $mob){
+		$this->mob = $mob;
 	}
 
 	public function navigate(PathPoint $from, PathPoint $to, float $followRange = 16.0) : array{
-    $blockCache = [];
-		$this->level = $this->entity->getLevel(); //for level update
+	 $blockCache = [];
 		$ticks = 0;
 		$from->fScore = $this->calculateGridDistance($from, $to);
 		$last = $from;
@@ -92,7 +88,7 @@ class EntityNavigator{
 
 			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
 			  $blockPos = $this->getBlockByPoint($n, $blockCache);
-				if(!isset($closed[$n->__toString()]) and $blockPos->distanceSquared($this->entity) <= $followRange){
+				if(!isset($closed[$n->__toString()]) and $blockPos->distanceSquared($this->mob) <= $followRange){
 					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
 
 					if(isset($open[$n->__toString()])){
@@ -120,9 +116,9 @@ class EntityNavigator{
 	}
 
   public function getPathableY() : int{
-   $last = floor($this->entity->y);
+   $last = floor($this->mob->y);
    for($i = 1; $i < 3; $i++){
-    if($this->level->getBlock($this->entity->add(0,-$i,0))->isSolid()){
+    if($this->mob->level->getBlock($this->mob->add(0,-$i,0))->isSolid()){
      break;
     }
     $last--;
@@ -155,7 +151,7 @@ class EntityNavigator{
 			$block2 = $block2->asVector3();
 		}
 
-		if($this->entity->canClimb()){
+		if($this->mob->canClimb()){
 			$block1->y = $block2->y = 0;
 		}
 
@@ -173,7 +169,7 @@ class EntityNavigator{
 	 * @return Vector2[]
 	 */
 	public function getNeighbors(PathPoint $tile, array &$cache, int $startY) : array{
-		$block = $this->level->getBlock(new Vector3($tile->x, $startY, $tile->y));
+		$block = $this->mob->level->getBlock(new Vector3($tile->x, $startY, $tile->y));
 
 		if(!isset($cache[$tile->__toString()])){
 			$cache[$tile->__toString()] = $block;
@@ -185,13 +181,13 @@ class EntityNavigator{
 			// Check for too high steps
 
 			$coord = new Vector3((int)$item->x, $block->y, (int)$item->y);
-			if ($this->level->getBlock($coord)->isSolid()) {
-				if ($this->entity->canClimb()) {
-					$blockUp = $this->level->getBlock($coord->getSide(Vector3::SIDE_UP));
+			if ($this->mob->level->getBlock($coord)->isSolid()) {
+				if ($this->mob->canClimb()) {
+					$blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
 					$canMove = false;
 					for ($i = 0; $i < 10; $i++) {
 						if ($this->isBlocked($blockUp->asVector3())) {
-							$blockUp = $this->level->getBlock($blockUp->getSide(Vector3::SIDE_UP));
+							$blockUp = $this->mob->level->getBlock($blockUp->getSide(Vector3::SIDE_UP));
 							continue;
 						}
 
@@ -203,7 +199,7 @@ class EntityNavigator{
 
 					$cache[$item->__toString()] = $blockUp;
 				} else {
-					$blockUp = $this->level->getBlock($coord->getSide(Vector3::SIDE_UP));
+					$blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
 					if ($blockUp->isSolid()) {
 						// Can't jump
 						continue;
@@ -214,14 +210,14 @@ class EntityNavigator{
 					$cache[$item->__toString()] = $blockUp;
 				}
 			} else {
-				$blockDown = $this->level->getBlock($coord->add(0, -1, 0));
+				$blockDown = $this->mob->level->getBlock($coord->add(0, -1, 0));
 				if (!$blockDown->isSolid()) {
-					if ($this->entity->canClimb()) {
+					if ($this->mob->canClimb()) {
 						$canClimb = false;
-						$blockDown = $this->level->getBlock($blockDown->getSide(Vector3::SIDE_DOWN));
+						$blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_DOWN));
 						for ($i = 0; $i < 10; $i++) {
 							if (!$blockDown->isSolid()) {
-								$blockDown = $this->level->getBlock($blockDown->add(0, -1, 0));
+								$blockDown = $this->mob->level->getBlock($blockDown->add(0, -1, 0));
 								continue;
 							}
 
@@ -231,13 +227,13 @@ class EntityNavigator{
 
 						if (!$canClimb) continue;
 
-						$blockDown = $this->level->getBlock($blockDown->getSide(Vector3::SIDE_UP));
+						$blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_UP));
 
 						if ($this->isObstructed($blockDown)) continue;
 
 						$cache[$item->__toString()] = $blockDown;
 					} else {
-						if (!$this->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()) {
+						if (!$this->mob->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()) {
 							// Will fall
 							continue;
 						}
@@ -249,7 +245,7 @@ class EntityNavigator{
 				} else {
 					if ($this->isObstructed($coord)) continue;
 
-					$cache[$item->__toString()] = $this->level->getBlock($coord);
+					$cache[$item->__toString()] = $this->mob->level->getBlock($coord);
 				}
 			}
 
@@ -272,23 +268,23 @@ class EntityNavigator{
 	}
 
 	public function isObstructed(Vector3 $coord) : bool{
-		for($i = 1; $i < $this->entity->height; $i++)
+		for($i = 1; $i < $this->mob->height; $i++)
 			if($this->isBlocked($coord->add(0, $i, 0))) return true;
 
 		return false;
 	}
 
 	public function isBlocked(Vector3 $coord) : bool{
-		$block = $this->level->getBlock($coord);
+		$block = $this->mob->level->getBlock($coord);
 		return $block->isSolid();
 	}
 
 	public function tryMoveTo(Vector3 $pos, float $speed, float $range): bool{
-		$path = Path::findPath($this->entity, $pos, $range);
+		$path = Path::findPath($this->mob, $pos, $range);
 
-		if($path->havePath() and $next = $path->getNextTile($this->entity)){
-			$this->entity->lookAt(new Vector3($next->x + 0.5, $this->entity->y, $next->y + 0.5));
-			$this->entity->moveForward($speed);
+		if($path->havePath() and $next = $path->getNextTile($this->mob)){
+			$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+			$this->mob->moveForward($speed);
 
 			return true;
 		}
