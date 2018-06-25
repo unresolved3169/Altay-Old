@@ -62,7 +62,7 @@ class EntityNavigator{
 		$last = $from;
 		$path = [];
 		$open = [$from->__toString() => $from];
-		$currentY = (int) $this->entity->y;
+		$currentY = $this->getPathableY();
 		$closed = [];
 		$highScore = $from;
 
@@ -79,7 +79,6 @@ class EntityNavigator{
 			}
 
 			$last = null;
-     //$this->entity->level->addParticle(new HappyVillagerParticle(new Vector3($current->x + 0.5, $currentY + 1.5, $current->y + 0.5)));
 
 			if($current->equals($to)){
 				return $this->initPath($path, $current);
@@ -120,6 +119,17 @@ class EntityNavigator{
 		return [];
 	}
 
+  public function getPathableY() : int{
+   $last = floor($this->entity->y);
+   for($i = 1; $i < 3; $i++){
+    if($this->level->getBlock($this->entity->add(0,-$i,0))->isSolid()){
+     break;
+    }
+    $last--;
+   }
+   return (int) $last;
+  }
+
 	public function initPath(array $path, PathPoint $current){
 		$totalPath = [$current];
 		while(isset($path[$current->__toString()])){
@@ -149,7 +159,7 @@ class EntityNavigator{
 			$block1->y = $block2->y = 0;
 		}
 
-		return $block1->distance($block2);
+		return $block1->distanceSquared($block2);
 	}
 
 	public function getBlockByPoint(PathPoint $tile, array $cache) : ?Block{
