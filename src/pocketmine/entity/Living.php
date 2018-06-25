@@ -555,10 +555,7 @@ abstract class Living extends Entity implements Damageable{
 				$deltaZ = $this->z - $e->z;
 				$this->knockBack($e, $source->getBaseDamage(), $deltaX, $deltaZ, $source->getKnockBack());
 
-				$pk = new AnimatePacket();
-				$pk->action = 1;
-				$pk->entityRuntimeId = $e->getId();
-				$this->server->broadcastPacket($this->level->getPlayers(), $pk);
+				$e->broadcastEntityEvent(EntityEventPacket::ARM_SWING);
 			}
 		}
 
@@ -832,6 +829,7 @@ abstract class Living extends Entity implements Damageable{
 	 * @param bool $onlyHead
 	 */
 	public function lookAt(Vector3 $target, bool $onlyHead = false) : void{
+    $oldYaw = $this->yaw;
 		$horizontal = sqrt(($target->x - $this->x) ** 2 + ($target->z - $this->z) ** 2);
 		$vertical = $target->y - $this->y;
 		$this->pitch = -atan2($vertical, $horizontal) / M_PI * 180; //negative is up, positive is down
@@ -845,8 +843,10 @@ abstract class Living extends Entity implements Damageable{
 
 		if($onlyHead){
 			$this->headYaw = $this->yaw;
-			$this->yaw = $this->lastYaw;
-		}
+			$this->yaw = $oldYaw;
+		}else{
+     $this->headYaw = $this->yaw;
+    }
 	}
 
 	protected function sendSpawnPacket(Player $player) : void{

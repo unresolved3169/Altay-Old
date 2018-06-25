@@ -37,7 +37,6 @@ class FloatBehavior extends Behavior{
 		if($this->mob->isUnderWater()){
 			if($this->random->nextFloat() < 0.8){
 				$this->mob->jump();
-				return true;
 			}
 		}
 		return false;

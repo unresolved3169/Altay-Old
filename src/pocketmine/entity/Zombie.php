@@ -81,6 +81,8 @@ class Zombie extends Monster implements Ageable{
 	protected function getDefaultBehaviors() : array{
 		return [
 			[
+       new FloatBehavior($this),
+				new RestrictSunBehavior($this),
 				new MeleeAttackBehavior($this, 1.0, 35),
 				new FleeSunBehavior($this),
 				new WanderBehavior($this),
@@ -90,10 +92,6 @@ class Zombie extends Monster implements Ageable{
 			[
 				new HurtByTargetBehavior($this),
 				new FindAttackableTargetBehavior($this, 35)
-			],
-			[
-				new FloatBehavior($this),
-				new RestrictSunBehavior($this)
 			]
 		];
 	}

@@ -110,7 +110,7 @@ abstract class Mob extends Living{
 			$entityVelocity = $this->getMotion();
 			$entityVelocity->y = 0;
 
-			$m = $entityVelocity->length() < $velocity->length() ? $this->getMotion()->add($velocity->subtract($this->getMotion())) : $velocity;
+			$m = $entityVelocity->length() < $velocity->length() ? $this->getMotion()->add($velocity->subtract($this->getMotion())) : $this->getMotion();
 			$this->motion = $m;
 			return true;
 		}else{

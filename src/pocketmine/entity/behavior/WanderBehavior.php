@@ -81,14 +81,12 @@ class WanderBehavior extends Behavior{
 	}
 
 	public function findRandomTargetBlock(Entity $entity, int $dxz, int $dy) : ?Block{
-		$random = new Random();
-
-		$currentWeight = 0;
+		$currentWeight = PHP_INT_MIN;
 		$currentBlock = null;
 		for($i = 0; $i < 10; $i++){
-			$x = $random->nextBoundedInt(2 * $dxz + 1) - $dxz;
-			$y = $random->nextBoundedInt(2 * $dy + 1) - $dy;
-			$z = $random->nextBoundedInt(2 * $dxz + 1) - $dxz;
+			$x = $this->random->nextBoundedInt(2 * $dxz + 1) - $dxz;
+			$y = $this->random->nextBoundedInt(2 * $dy + 1) - $dy;
+			$z = $this->random->nextBoundedInt(2 * $dxz + 1) - $dxz;
 
 			$blockCoords = new Vector3($x,$y,$z);
 			$block = $entity->level->getBlock($this->mob->asVector3()->add($blockCoords));
@@ -112,7 +110,7 @@ class WanderBehavior extends Behavior{
 
 			return (int) (max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec)) - 0.5);
 		}else{
-			return (int) max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));
+			return (int) 0.5 - max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));
 		}
 	}
 
