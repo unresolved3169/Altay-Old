@@ -135,7 +135,7 @@ class BlockBreakEvent extends BlockEvent implements Cancellable{
 	 *
 	 * @param int $amount
 	 */
-	public function setXpDrops(int $amount) : void{
+	public function setXpDropAmount(int $amount) : void{
 		if($amount < 0){
 			throw new \InvalidArgumentException("Amount must be at least zero");
 		}

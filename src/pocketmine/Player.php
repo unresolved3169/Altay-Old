@@ -87,6 +87,8 @@ use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
 use pocketmine\item\Durable;
+use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\MeleeWeaponEnchantment;
 use pocketmine\item\WritableBook;
 use pocketmine\item\WrittenBook;
 use pocketmine\item\Item;
@@ -2557,6 +2559,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						$ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $heldItem->getAttackPoints());
+
+						$meleeEnchantmentDamage = 0;
+						/** @var EnchantmentInstance[] $meleeEnchantments */
+						$meleeEnchantments = [];
+						foreach($heldItem->getEnchantments() as $enchantment){
+							$type = $enchantment->getType();
+							if($type instanceof MeleeWeaponEnchantment and $type->isApplicableTo($target)){
+								$meleeEnchantmentDamage += $type->getDamageBonus($enchantment->getLevel());
+								$meleeEnchantments[] = $enchantment;
+							}
+						}
+						$ev->setModifier($meleeEnchantmentDamage, EntityDamageEvent::MODIFIER_WEAPON_ENCHANTMENTS);
+
 						if($cancelled){
 							$ev->setCancelled();
 						}
@@ -2584,11 +2599,21 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							}
 						}
 
-						if($heldItem->onAttackEntity($target) and $this->isSurvival()){ //always fire the hook, even if we are survival
-							$this->inventory->setItemInHand($heldItem);
+						foreach($meleeEnchantments as $enchantment){
+							$type = $enchantment->getType();
+							assert($type instanceof MeleeWeaponEnchantment);
+							$type->onPostAttack($this, $target, $enchantment->getLevel());
 						}
 
-						$this->exhaust(0.3, PlayerExhaustEvent::CAUSE_ATTACK);
+						if($this->isAlive()){
+							//reactive damage like thorns might cause us to be killed by attacking another mob, which
+							//would mean we'd already have dropped the inventory by the time we reached here
+							if($heldItem->onAttackEntity($target) and $this->isSurvival()){ //always fire the hook, even if we are survival
+								$this->inventory->setItemInHand($heldItem);
+							}
+
+							$this->exhaust(0.3, PlayerExhaustEvent::CAUSE_ATTACK);
+						}
 
 						return true;
 					default:

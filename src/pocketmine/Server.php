@@ -104,7 +104,6 @@ use pocketmine\utils\Terminal;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\Utils;
 use pocketmine\utils\UUID;
-use pocketmine\utils\VersionString;
 
 /**
  * The class that manages everything
@@ -357,7 +356,7 @@ class Server{
 	 * @return string
 	 */
 	public function getApiVersion() : string{
-		return \pocketmine\API_VERSION;
+		return \pocketmine\BASE_VERSION;
 	}
 
 	/**
@@ -1452,35 +1451,6 @@ class Server{
 		}, $microseconds);
 	}
 
-	public function about() : void{
-		$about = [
-			date(DATE_RFC822),
-			$this->getPocketMineVersion(),
-			$this->getVersion(),
-			implode(", ", ProtocolInfo::ACCEPTED_PROTOCOLS),
-			Utils::getIP(),
-			$this->getPort(),
-			$this->getMotd(),
-			$this->getOnlineMode() ? "true" : "false",
-			extension_loaded("OpenSSL") ? "true" : "false",
-			$this->getApiVersion(),
-			$this->getLanguage()->getName() . " (".$this->getLanguage()->getLang().")",
-			\Phar::running(true) === "" ? "src" : "phar"
-		];
-
-		$yazi = base64_decode("wqdi4pSM4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSA4pSQICDCp2ItLSBMb2FkZWQ6IFByb3BlcnRpZXMgYW5kIENvbmZpZ3VyYXRpb24gLS0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgIF8gXyAgICAgICAgICAgICAgICAgICAgICAgICAgwqdi4pSCICDCpzZEYXRlOiDCp2Z7JTB9CsKnYuKUgnt9ICAgICAgICAgICAgICAvXCAgIHwgfCB8ICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2VmVyc2lvbjogwqdmeyUxfSDCpzZDb2RlbmFtZTogwqdmeyUyfQrCp2LilIJ7fSAgICAgICAgICAgICAvICBcICB8IHwgfF8gX18gXyBfICAgXyAgICAgICAgICAgICDCp2LilIIgIMKnNk1DQkU6IMKnZnslM30gwqc2UHJvdG9jb2w6IMKnZnslNH0Kwqdi4pSCe30gICAgICAgICAgICAvIC9cIFwgfCB8IF9fLyBfYCB8IHwgfCB8ICAgICAgICAgICAgwqdi4pSCICDCpzZFeHRlcm5hbCBJUDogwqdmeyU1fSDCpzZQb3J0OiDCp2Z7JTZ9CsKnYuKUgnt9ICAgICAgICAgICAvIF9fX18gXHwgfCB8fCAoX3wgfCB8X3wgfCAgICAgICAgICAgIMKnYuKUgiAgwqc2TU9URDogwqdmeyU3fQrCp2LilIJ7fSAgICAgICAgICAvXy8gICAgXF9cX3xcX19cX18sX3xcX18sIHwgICAgICAgICAgICDCp2LilIIgIMKnNk9ubGluZU1vZGU6IMKnZnslOH0Kwqdi4pSCe30gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIF9fLyB8ICAgICAgICAgICAgwqdi4pSCICDCpzZTU0wgRXh0ZW5zaW9uOiDCp2Z7JTl9CsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHxfX18vICAgICAgICAgICAgIMKnYuKUgiAgwqdiLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCsKnYuKUgnt9ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIMKnYuKUgiAgwqc2QVBJIFZlcnNpb246IMKnZnslMTB9CsKnYuKUgsKnYSAgICAgwqc5U3VwcG9ydDogwqdmZ2l0aHViLmNvbS9UdXJhbmljVGVhbS9BbHRheSAgICAgICDCp2LilIIgIMKnNkxhbmd1YWdlOiDCp2Z7JTExfQrCp2LilIJ7fSAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDCp2LilIIgIMKnNlBhY2thZ2U6IMKnZnslMTJ9CsKnYuKUlOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUmCAgwqdiLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t");
-
-		foreach($about as $index => $value){
-			$yazi = str_ireplace("{%$index}", $value, $yazi);
-		}
-
-		$randColor = "123456789abcdef";
-		$randColor = $randColor{mt_rand(0, 14)};
-		$yazi = str_replace("{}", TextFormat::ESCAPE.$randColor, $yazi);
-
-		$this->logger->info("\n".$yazi);
-	}
-
 	/**
 	 * @param \ClassLoader              $autoloader
 	 * @param \AttachableThreadedLogger $logger
@@ -1517,18 +1487,21 @@ class Server{
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
 
-			$version = new VersionString($this->getPocketMineVersion());
-
 			if(!file_exists($this->dataPath . "pocketmine.yml")){
 				$content = file_get_contents(\pocketmine\RESOURCE_PATH . "pocketmine.yml");
-				if($version->isDev()){
+				if(\pocketmine\IS_DEVELOPMENT_BUILD){
 					$content = str_replace("preferred-channel: stable", "preferred-channel: beta", $content);
 				}
 				@file_put_contents($this->dataPath . "pocketmine.yml", $content);
 			}
 			$this->config = new Config($this->dataPath . "pocketmine.yml", Config::YAML, []);
 
-			$lang = $this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE);
+			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
+
+			$this->forceLanguage = (bool) $this->getProperty("settings.force-language", false);
+			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
+			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $lang = $this->getLanguage()->getLang()]));
+
 			if(file_exists(\pocketmine\RESOURCE_PATH . "altay_$lang.yml")){
 				$content = file_get_contents(\pocketmine\RESOURCE_PATH . "altay_$lang.yml");
 			}else{
@@ -1540,11 +1513,35 @@ class Server{
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
 
-			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
+			if(\pocketmine\IS_DEVELOPMENT_BUILD){
+				if(!((bool) $this->getProperty("settings.enable-dev-builds", false))){
+					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error1", [\pocketmine\NAME]));
+					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error2"));
+					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error3"));
+					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error4", ["settings.enable-dev-builds"]));
+					$this->forceShutdown();
 
-			$this->forceLanguage = (bool) $this->getProperty("settings.force-language", false);
-			$this->baseLang = new BaseLang($this->getProperty("settings.language", BaseLang::FALLBACK_LANGUAGE));
+					return;
+				}
 
+				$this->logger->warning(str_repeat("-", 40));
+				$this->logger->warning($this->baseLang->translateString("pocketmine.server.devBuild.warning1", [\pocketmine\NAME]));
+				$this->logger->warning($this->baseLang->translateString("pocketmine.server.devBuild.warning2"));
+				$this->logger->warning($this->baseLang->translateString("pocketmine.server.devBuild.warning3"));
+				$this->logger->warning(str_repeat("-", 40));
+			}
+
+			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
+				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
+			}
+
+			ini_set('assert.exception', '1');
+
+			if($this->logger instanceof MainLogger){
+				$this->logger->setLogDebug(\pocketmine\DEBUG > 1);
+			}
+
+			$this->logger->info("Loading server properties...");
 			$this->properties = new Config($this->dataPath . "server.properties", Config::PROPERTIES, [
 				"motd" => \pocketmine\NAME . " Server",
 				"server-port" => 19132,
@@ -1571,28 +1568,6 @@ class Server{
 				"view-distance" => 8,
 				"xbox-auth" => true
 			]);
-
-			$this->about();
-			$this->logger->info($this->getLanguage()->translateString("language.selected", [$this->getLanguage()->getName(), $this->getLanguage()->getLang()]));
-
-			if(\pocketmine\IS_DEVELOPMENT_BUILD and !((bool) $this->getProperty("settings.enable-dev-builds", false))){
-				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error1", [\pocketmine\NAME]));
-				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error2"));
-				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error3"));
-				$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error4", ["settings.enable-dev-builds"]));
-				$this->forceShutdown();
-				return;
-			}
-
-			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
-				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
-			}
-
-			ini_set('assert.exception', '1');
-
-			if($this->logger instanceof MainLogger){
-				$this->logger->setLogDebug(\pocketmine\DEBUG > 1);
-			}
 
 			$this->memoryManager = new MemoryManager($this);
 
@@ -1702,8 +1677,7 @@ class Server{
 
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
 				$this->getName(),
-				($version->isDev() ? TextFormat::YELLOW : "") . $version->get(true) . TextFormat::RESET,
-				$this->getApiVersion()
+				(\pocketmine\IS_DEVELOPMENT_BUILD ? TextFormat::YELLOW : "") . $this->getPocketMineVersion() . TextFormat::RESET
 			]));
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));
 
@@ -2298,7 +2272,7 @@ class Server{
 		$this->logger->logException($e, $trace);
 
 		$lastError = [
-			"type" => \get_class($e),
+			"type" => get_class($e),
 			"message" => $errstr,
 			"fullFile" => $e->getFile(),
 			"file" => $errfile,

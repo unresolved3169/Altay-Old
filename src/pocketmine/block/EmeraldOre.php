@@ -58,7 +58,6 @@ class EmeraldOre extends Solid{
 		];
 	}
 
-
 	public function getXpDropAmount() : int{
 		return mt_rand(3, 7);
 	}

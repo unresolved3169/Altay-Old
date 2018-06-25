@@ -61,6 +61,8 @@ class CrashDump{
 		$this->generalData();
 		$this->pluginsData();
 
+		$this->extraData();
+
 		$this->encodeData();
 
 		fclose($this->fp);
@@ -111,6 +113,33 @@ class CrashDump{
 				];
 				$this->addLine($d->getName() . " " . $d->getVersion() . " by " . implode(", ", $d->getAuthors()) . " for API(s) " . implode(", ", $d->getCompatibleApis()));
 			}
+		}
+	}
+
+	private function extraData(){
+		global $argv;
+
+		if($this->server->getProperty("auto-report.send-settings", true) !== false){
+			$this->data["parameters"] = (array) $argv;
+			$this->data["server.properties"] = @file_get_contents($this->server->getDataPath() . "server.properties");
+			$this->data["server.properties"] = preg_replace("#^rcon\\.password=(.*)$#m", "rcon.password=******", $this->data["server.properties"]);
+			$this->data["pocketmine.yml"] = @file_get_contents($this->server->getDataPath() . "pocketmine.yml");
+		}else{
+			$this->data["pocketmine.yml"] = "";
+			$this->data["server.properties"] = "";
+			$this->data["parameters"] = [];
+		}
+		$extensions = [];
+		foreach(get_loaded_extensions() as $ext){
+			$extensions[$ext] = phpversion($ext);
+		}
+		$this->data["extensions"] = $extensions;
+
+		if($this->server->getProperty("auto-report.send-phpinfo", true) !== false){
+			ob_start();
+			phpinfo();
+			$this->data["phpinfo"] = ob_get_contents();
+			ob_end_clean();
 		}
 	}
 
@@ -183,6 +212,14 @@ class CrashDump{
 		$this->addLine("Code:");
 		$this->data["code"] = [];
 
+		if($this->server->getProperty("auto-report.send-code", true) !== false){
+			$file = @file($error["fullFile"], FILE_IGNORE_NEW_LINES);
+			for($l = max(0, $error["line"] - 10); $l < $error["line"] + 10; ++$l){
+				$this->addLine("[" . ($l + 1) . "] " . @$file[$l]);
+				$this->data["code"][$l + 1] = @$file[$l];
+			}
+		}
+
 		$this->addLine();
 		$this->addLine("Backtrace:");
 		foreach(($this->data["trace"] = $error["trace"]) as $line){
@@ -192,13 +229,13 @@ class CrashDump{
 	}
 
 	private function generalData(){
-		$version = new VersionString();
+		$version = new VersionString(\pocketmine\BASE_VERSION, \pocketmine\IS_DEVELOPMENT_BUILD, \pocketmine\BUILD_NUMBER);
 		$this->data["general"] = [];
 		$this->data["general"]["name"] = $this->server->getName();
-		$this->data["general"]["version"] = $version->get(false);
+		$this->data["general"]["version"] = $version->getFullVersion(false);
 		$this->data["general"]["build"] = $version->getBuild();
 		$this->data["general"]["protocol"] = ProtocolInfo::CURRENT_PROTOCOL;
-		$this->data["general"]["api"] = \pocketmine\API_VERSION;
+		$this->data["general"]["api"] = \pocketmine\BASE_VERSION;
 		$this->data["general"]["git"] = \pocketmine\GIT_COMMIT;
 		$this->data["general"]["raklib"] = RakLib::VERSION;
 		$this->data["general"]["uname"] = php_uname("a");
@@ -206,7 +243,7 @@ class CrashDump{
 		$this->data["general"]["zend"] = zend_version();
 		$this->data["general"]["php_os"] = PHP_OS;
 		$this->data["general"]["os"] = Utils::getOS();
-		$this->addLine($this->server->getName() . " version: " . $version->get(false) . " #" . $version->getBuild() . " [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "; API " . API_VERSION . "]");
+		$this->addLine($this->server->getName() . " version: " . $version->getFullVersion(true) . " [Protocol " . ProtocolInfo::CURRENT_PROTOCOL . "]");
 		$this->addLine("Git commit: " . GIT_COMMIT);
 		$this->addLine("uname -a: " . php_uname("a"));
 		$this->addLine("PHP Version: " . phpversion());
