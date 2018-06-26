@@ -48,7 +48,7 @@ class MeleeAttackBehavior extends Behavior{
 	/** @var Vector3 */
 	protected $lastPlayerPos;
 
-	public function __construct(Mob $mob, float $speedMultiplier, float $followRange){
+	public function __construct(Mob $mob, float $speedMultiplier, float $followRange = 16.0){
 		parent::__construct($mob);
 
 		$this->speedMultiplier = $speedMultiplier;
@@ -57,7 +57,7 @@ class MeleeAttackBehavior extends Behavior{
 
 	public function canStart(): bool{
 		$target = $this->mob->getTargetEntity();
-		if($target == null) return false;
+		if($target === null) return false;
 
 		$this->currentPath = Path::findPath($this->mob, $target, $this->followRange);
 
@@ -73,7 +73,7 @@ class MeleeAttackBehavior extends Behavior{
 	}
 
 	public function canContinue(): bool{
-		return $this->mob->getTargetEntityId() != null;
+		return $this->mob->getTargetEntityId() !== null;
 	}
 
 	public function onTick(): void{

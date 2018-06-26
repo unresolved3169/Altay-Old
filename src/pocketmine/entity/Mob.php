@@ -58,14 +58,12 @@ abstract class Mob extends Living{
 		}
 	}
 
-	public function onUpdate(int $tick) : bool{
-	      if($this->closed or !$this->isAlive()) return false;
-	      
+	public function entityBaseTick(int $diff = 1) : bool{
 	      foreach($this->behaviorTasks as $task){
 			   $task->checkBehaviors();
 		    }
 	      
-	      return parent::onUpdate($tick);
+	      return parent::entityBaseTick($diff);
 	}
 
 	/**
@@ -111,14 +109,14 @@ abstract class Mob extends Living{
 			$entityVelocity->y = 0;
 
 			$m = $entityVelocity->length() < $velocity->length() ? $this->getMotion()->add($velocity->subtract($this->getMotion())) : $this->getMotion();
-			$this->motion = $m;
+			$this->setMotion($m);
 			return true;
 		}else{
 			if($this->canClimb()){
-				$this->motion->y = 0.02;
+				$this->setMotion(new Vector3(0,0.2,0));
 				return true;
 			}elseif(!$blockUp->isSolid() and !($this->height > 1 and $blockUpUp->isSolid())){
-				$this->motion->y = $this->getJumpVelocity();
+				$this->motionY = $this->getJumpVelocity();
 				return true;
 			}else{
 				$this->motion->x = $this->motion->z = 0;

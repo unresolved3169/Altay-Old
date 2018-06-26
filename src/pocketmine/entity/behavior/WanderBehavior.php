@@ -55,7 +55,7 @@ class WanderBehavior extends Behavior{
 
 			if($pos === null) return false;
 
-			$path = Path::findPath($this->mob, $pos, $this->followRange = $this->mob->distance($pos) + 2);
+			$path = Path::findPath($this->mob, $pos, $this->followRange = $this->mob->distanceSquared($pos) + 2);
 
 			$this->targetPos = $pos;
 

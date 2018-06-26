@@ -48,4 +48,9 @@ class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 
 		return null;
 	}
+	
+	public function onEnd() : void{
+	    parent::onEnd();
+	    $this->mob->setLastDamageCause(null);
+	}
 }

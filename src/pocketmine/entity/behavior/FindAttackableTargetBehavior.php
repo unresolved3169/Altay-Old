@@ -26,6 +26,7 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
 use pocketmine\Player;
+use pocketmine\math\Vector3;
 
 class FindAttackableTargetBehavior extends Behavior{
 
@@ -33,31 +34,23 @@ class FindAttackableTargetBehavior extends Behavior{
 	protected $targetDistance = 16.0;
 	/** @var int */
 	protected $targetUnseenTicks = 0;
+	/** @var string */
+	protected $targetClass;
 
-	public function __construct(Mob $mob, float $targetDistance = 16.0){
+	public function __construct(Mob $mob, float $targetDistance = 16.0, string $targetClass = Player::class){
 		parent::__construct($mob);
 
 		$this->targetDistance = $targetDistance;
+		$this->targetClass = $targetClass;
 	}
 
 	public function canStart() : bool{
 		if($this->random->nextBoundedInt(10) === 0){
-			/** @var Player $player */
-			$player = null;
-			// TODO : DAHA OPTIMIZE ET
-			foreach($this->mob->level->getPlayers() as $p){
-				if($p->isAlive() and $p->isSurvival(true) and $this->mob->distance($p) < $this->getTargetDistance($p)) {
-					if($player === null or $p->distance($this->mob) < $player->distance($this->mob)){
-						$player = $p;
-					}
-				}
-			}
+     $player = $this->mob->level->getNearestEntity($this->mob, $this->targetDistance ** 2, $this->targetClass);
 
 			$this->mob->setTargetEntity($player);
-
-			if($player instanceof Player){
-				return true;
-			}
+			
+			return true;
 		}
 
 		return false;
@@ -81,7 +74,7 @@ class FindAttackableTargetBehavior extends Behavior{
 		if($target === null or !$target->isAlive() or ($target instanceof Player and !$target->isSurvival(true))) return false;
 
 		if($target instanceof Player){
-			if($this->mob->distance($target) > $this->getTargetDistance($target)) return false;
+			if($this->mob->distanceSquared($target) > $this->getTargetDistance($target)) return false;
 
 			if(true){ // wtf ??!?!
 				$this->targetUnseenTicks = 0;
@@ -91,7 +84,7 @@ class FindAttackableTargetBehavior extends Behavior{
 
 			$this->mob->setTargetEntity($target);
 		}else{
-			if($this->mob->distance($target) > $this->targetDistance){
+			if($this->mob->distanceSquared($target) > $this->targetDistance){
 				return false;
 			}
 		}

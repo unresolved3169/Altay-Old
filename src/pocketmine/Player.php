@@ -417,6 +417,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->xuid !== "";
 	}
 
+  public function canBePushed() : bool{
+   return true;
+  }
+
 	/**
 	 * If the player is logged into Xbox Live, returns their Xbox user ID (XUID) as a string. Returns an empty string if
 	 * the player is not logged into Xbox Live.

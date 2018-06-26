@@ -1725,6 +1725,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public function onCollideWithPlayer(Player $player) : void{
 
 	}
+	
+	public function onCollideWithEntity(Entity $entity) : void{
+	    $entity->applyEntityCollision($this);
+	}
 
 	public function isUnderwater() : bool{
 		$block = $this->level->getBlockAt((int) floor($this->x), (int) floor($y = ($this->y + $this->getEyeHeight())), (int) floor($this->z));
@@ -2003,11 +2007,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	}
 
 	protected function checkEntityCollision() : void{
-		if($this->canBePushed()){
-			foreach($this->level->getCollidingEntities($this->getBoundingBox()->expandedCopy(0.3,0.3,0.3), $this) as $e){
-				$this->applyEntityCollision($e);
-			}
-		}
+	    if($this->canBePushed()){
+	        foreach($this->level->getCollidingEntities($this->getBoundingBox()->expandedCopy(0.2,0,0.2), $this) as $e){
+	            $this->onCollideWithEntity($e);
+		       }
+		   }
 	}
 
 	public function getPosition() : Position{
