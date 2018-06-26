@@ -39,8 +39,8 @@ class Path{
 	}
 
 	public static function findPath(Mob $mob, Vector3 $targetPos, float $followRange = 16.0) : Path{
-		$from = (new PathPoint($mob->x, $mob->z))->floor();
-		$to = (new PathPoint($targetPos->x, $targetPos->z))->floor();
+		$from = new PathPoint(floor($mob->x), floor($mob->z));
+		$to = new PathPoint(floor($targetPos->x), floor($targetPos->z));
 
 		return new Path($mob->getNavigator()->navigate($from, $to, $followRange));
 	}
