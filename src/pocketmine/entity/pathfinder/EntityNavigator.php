@@ -28,8 +28,6 @@ use pocketmine\entity\Mob;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\block\Block;
-use pocketmine\block\Liquid;
-use pocketmine\level\particle\HappyVillagerParticle;
 
 class EntityNavigator{
 
@@ -52,12 +50,12 @@ class EntityNavigator{
 	}
 
 	public function navigate(PathPoint $from, PathPoint $to, float $followRange = 16.0) : array{
-	 $blockCache = [];
+		$blockCache = [];
 		$ticks = 0;
 		$from->fScore = $this->calculateGridDistance($from, $to);
 		$last = $from;
 		$path = [];
-		$open = [$from->__toString() => $from];
+		$open = [$from->getHashCode() => $from];
 		$currentY = $this->getPathableY();
 		$closed = [];
 		$highScore = $from;
@@ -83,20 +81,20 @@ class EntityNavigator{
 				return $this->initPath($path, $highScore);
 			}
 
-			unset($open[$current->__toString()]);
-			$closed[$current->__toString()] = $current;
+			unset($open[$current->getHashCode()]);
+			$closed[$current->getHashCode()] = $current;
 
 			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
-			  $blockPos = $this->getBlockByPoint($n, $blockCache);
-				if(!isset($closed[$n->__toString()]) and $blockPos->distanceSquared($this->mob) <= $followRange){
+				$blockPos = $this->getBlockByPoint($n, $blockCache);
+				if(!isset($closed[$n->getHashCode()]) and $blockPos->distanceSquared($this->mob) <= $followRange){
 					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
 
-					if(isset($open[$n->__toString()])){
-						$og = $open[$n->__toString()];
+					if(isset($open[$n->getHashCode()])){
+						$og = $open[$n->getHashCode()];
 						if($g >= $og->gScore) continue;
 					}
-					$open[$n->__toString()] = $n;
-					$path[$n->__toString()] = $current;
+					$open[$n->getHashCode()] = $n;
+					$path[$n->getHashCode()] = $current;
 
 					$n->gScore = $g;
 					$n->fScore = $g + $this->calculateGridDistance($n, $to);
@@ -115,21 +113,21 @@ class EntityNavigator{
 		return [];
 	}
 
-  public function getPathableY() : int{
-   $last = floor($this->mob->y);
-   for($i = 1; $i < 3; $i++){
-    if($this->mob->level->getBlock($this->mob->add(0,-$i,0))->isSolid()){
-     break;
-    }
-    $last--;
-   }
-   return (int) $last;
-  }
+	public function getPathableY() : int{
+		$last = (int) floor($this->mob->y);
+		for($i = 1; $i < 3; $i++){
+			if($this->mob->level->getBlock($this->mob->add(0 , -$i,0))->isSolid()){
+				break;
+			}
+			$last--;
+		}
+		return $last;
+	}
 
 	public function initPath(array $path, PathPoint $current){
 		$totalPath = [$current];
-		while(isset($path[$current->__toString()])){
-			$current = $path[$current->__toString()];
+		while(isset($path[$current->getHashCode()])){
+			$current = $path[$current->getHashCode()];
 			array_unshift($totalPath, $current);
 		}
 		unset($totalPath[0]);
@@ -159,7 +157,7 @@ class EntityNavigator{
 	}
 
 	public function getBlockByPoint(PathPoint $tile, array $cache) : ?Block{
-		return $cache[$tile->__toString()] ?? null;
+		return $cache[$tile->getHashCode()] ?? null;
 	}
 
 	/**
@@ -171,8 +169,8 @@ class EntityNavigator{
 	public function getNeighbors(PathPoint $tile, array &$cache, int $startY) : array{
 		$block = $this->mob->level->getBlock(new Vector3($tile->x, $startY, $tile->y));
 
-		if(!isset($cache[$tile->__toString()])){
-			$cache[$tile->__toString()] = $block;
+		if(!isset($cache[$tile->getHashCode()])){
+			$cache[$tile->getHashCode()] = $block;
 		}
 
 		$list = [];
@@ -185,8 +183,8 @@ class EntityNavigator{
 				if ($this->mob->canClimb()) {
 					$blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
 					$canMove = false;
-					for ($i = 0; $i < 10; $i++) {
-						if ($this->isBlocked($blockUp->asVector3())) {
+					for($i = 0; $i < 10; $i++){
+						if($this->isBlocked($blockUp->asVector3())){
 							$blockUp = $this->mob->level->getBlock($blockUp->getSide(Vector3::SIDE_UP));
 							continue;
 						}
@@ -195,24 +193,24 @@ class EntityNavigator{
 						break;
 					}
 
-					if (!$canMove or $this->isObstructed($blockUp)) continue;
+					if(!$canMove or $this->isObstructed($blockUp)) continue;
 
-					$cache[$item->__toString()] = $blockUp;
-				} else {
+					$cache[$item->getHashCode()] = $blockUp;
+				}else{
 					$blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
-					if ($blockUp->isSolid()) {
+					if($blockUp->isSolid()){
 						// Can't jump
 						continue;
 					}
 
-					if ($this->isObstructed($blockUp)) continue;
+					if($this->isObstructed($blockUp)) continue;
 
-					$cache[$item->__toString()] = $blockUp;
+					$cache[$item->getHashCode()] = $blockUp;
 				}
-			} else {
+			}else{
 				$blockDown = $this->mob->level->getBlock($coord->add(0, -1, 0));
-				if (!$blockDown->isSolid()) {
-					if ($this->mob->canClimb()) {
+				if(!$blockDown->isSolid()){
+					if($this->mob->canClimb()){
 						$canClimb = false;
 						$blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_DOWN));
 						for ($i = 0; $i < 10; $i++) {
@@ -225,37 +223,38 @@ class EntityNavigator{
 							break;
 						}
 
-						if (!$canClimb) continue;
+						if(!$canClimb) continue;
 
 						$blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_UP));
 
-						if ($this->isObstructed($blockDown)) continue;
+						if($this->isObstructed($blockDown)) continue;
 
-						$cache[$item->__toString()] = $blockDown;
-					} else {
-						if (!$this->mob->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()) {
+						$cache[$item->getHashCode()] = $blockDown;
+					}else{
+						if(!$this->mob->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()){
 							// Will fall
 							continue;
 						}
 
 						if ($this->isObstructed($blockDown)) continue;
 
-						$cache[$item->__toString()] = $blockDown;
+						$cache[$item->getHashCode()] = $blockDown;
 					}
-				} else {
-					if ($this->isObstructed($coord)) continue;
+				}else{
+					if($this->isObstructed($coord)) continue;
 
-					$cache[$item->__toString()] = $this->mob->level->getBlock($coord);
+					$cache[$item->getHashCode()] = $this->mob->level->getBlock($coord);
 				}
 			}
 
 			$list[$index] = $item;
 		}
+
 		$this->checkDiagonals($list);
 		return $list;
 	}
 
-	public function checkDiagonals(array &$list){
+	public function checkDiagonals(array &$list) : void{
 		$checkDiagonals = [0 => [4,5], 1 => [5,6], 2 => [6,7], 3 => [4,7]];
 
 		foreach($checkDiagonals as $index => $diagonal){

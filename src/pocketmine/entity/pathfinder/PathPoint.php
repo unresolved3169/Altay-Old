@@ -30,4 +30,8 @@ class PathPoint extends Vector2{
 
 	/** @var int */
 	public $fScore = 0, $gScore = 0;
+
+	public function getHashCode() : int{
+		return ($this->x * 397) ^ $this->y;
+	}
 }

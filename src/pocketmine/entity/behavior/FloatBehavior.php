@@ -39,6 +39,7 @@ class FloatBehavior extends Behavior{
 				$this->mob->jump();
 			}
 		}
+
 		return false;
 	}
 }

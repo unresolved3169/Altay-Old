@@ -24,11 +24,9 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
-use pocketmine\entity\Ageable;
 use pocketmine\entity\behavior\{
 	FindAttackableTargetBehavior, FleeSunBehavior, FloatBehavior, HurtByTargetBehavior, LookAtPlayerBehavior, MeleeAttackBehavior, RandomLookAroundBehavior, RestrictSunBehavior, WanderBehavior
 };
-use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 
@@ -81,7 +79,7 @@ class Zombie extends Monster implements Ageable{
 	protected function getDefaultBehaviors() : array{
 		return [
 			[
-       new FloatBehavior($this),
+				new FloatBehavior($this),
 				new RestrictSunBehavior($this),
 				new MeleeAttackBehavior($this, 1.0, 35),
 				new FleeSunBehavior($this),
