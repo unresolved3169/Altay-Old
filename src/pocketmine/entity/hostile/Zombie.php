@@ -22,11 +22,19 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\hostile;
 
-use pocketmine\entity\behavior\{
-	FindAttackableTargetBehavior, FleeSunBehavior, FloatBehavior, HurtByTargetBehavior, LookAtPlayerBehavior, MeleeAttackBehavior, RandomLookAroundBehavior, RestrictSunBehavior, WanderBehavior
-};
+use pocketmine\entity\Ageable;
+use pocketmine\entity\behavior\FindAttackableTargetBehavior;
+use pocketmine\entity\behavior\FleeSunBehavior;
+use pocketmine\entity\behavior\FloatBehavior;
+use pocketmine\entity\behavior\HurtByTargetBehavior;
+use pocketmine\entity\behavior\LookAtPlayerBehavior;
+use pocketmine\entity\behavior\MeleeAttackBehavior;
+use pocketmine\entity\behavior\RandomLookAroundBehavior;
+use pocketmine\entity\behavior\RestrictSunBehavior;
+use pocketmine\entity\behavior\WanderBehavior;
+use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 
@@ -38,7 +46,7 @@ class Zombie extends Monster implements Ageable{
 
 	protected function initEntity() : void{
 		parent::initEntity();
-		$this->setMovementSpeed($this->isBaby() ? 0.345 : 0.23);
+		$this->setDefaultMovementSpeed($this->isBaby() ? 0.345 : 0.23);
 		if($this->isBaby()){
 			$this->height *= 0.5;
 			$this->setScale(0.5);
@@ -71,7 +79,7 @@ class Zombie extends Monster implements Ageable{
 		return $drops;
 	}
 
-	public function getXpDropAmount(): int{
+	public function getXpDropAmount() : int{
 		//TODO: check for equipment
 		return $this->isBaby() ? 12 : 5;
 	}

@@ -132,4 +132,8 @@ abstract class Mob extends Living{
 	public function canBePushed(): bool{
 		return true;
 	}
+
+	public function setDefaultMovementSpeed(float $value) : void{
+		$this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setDefaultValue($value);
+	}
 }
