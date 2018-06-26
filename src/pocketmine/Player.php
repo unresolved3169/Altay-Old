@@ -2208,7 +2208,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		foreach(explode("\n", $message) as $messagePart){
 			$messagePart = trim($messagePart);
 			if($messagePart !== "" and strlen($messagePart) <= 255 and $this->messageCounter-- > 0){
-				$this->server->getPluginManager()->callEvent($ev = new PlayerChatEvent($this, $messagePart));
+				$this->server->getPluginManager()->callEvent($ev = new PlayerChatEvent($this, utf8_encode($messagePart)));
 				if(!$ev->isCancelled()){
 					$this->server->broadcastMessage($this->getServer()->getLanguage()->translateString($ev->getFormat(), [$ev->getPlayer()->getDisplayName(), $ev->getMessage()]), $ev->getRecipients());
 				}
