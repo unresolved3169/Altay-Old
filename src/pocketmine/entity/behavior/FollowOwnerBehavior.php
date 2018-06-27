@@ -32,59 +32,60 @@ use pocketmine\utils\MainLogger;
 use pocketmine\entity\pathfinder\Path;
 
 class FollowOwnerBehavior extends Behavior{
-    
-	/** @var float */
-	protected $speedMultiplier;
-	protected $followDelay = 0;
 
-	// TODO : Mob change to Wolf
-	public function __construct(Mob $mob, float $speedMultiplier){
-		parent::__construct($mob);
-		
-		$this->speedMultiplier = $speedMultiplier;
-	}
+    /** @var float */
+    protected $speedMultiplier;
+    protected $followDelay = 0;
 
-	public  function canStart(): bool{
-		if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
-		if($this->mob->getOwningEntity() === null or $this->mob->isLeashed() or $this->mob->isSitting()) return false;
+    // TODO : Mob change to Wolf
+    public function __construct(Mob $mob, float $speedMultiplier){
+        parent::__construct($mob);
 
-		return true;
-	}
-	public function onStart() : void{
-	    $this->mob->getNavigator()->tryMoveTo($this->mob->getOwningEntity(), $this->speedMultiplier);
-	}
+        $this->speedMultiplier = $speedMultiplier;
+    }
 
-	public function onTick() : void{
-		/** @var Player $owner */
-		$owner = $this->mob->getOwningEntity();
-		if ($owner == null) return;
+    public function canStart(): bool{
+        if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
+        if($this->mob->getOwningEntity() === null or $this->mob->isLeashed() or $this->mob->isSitting()) return false;
 
-		$distanceToPlayer = $this->mob->distance($owner);
+        return true;
+    }
 
-		if($distanceToPlayer < 1.75){
-			$this->mob->resetMotion();
-			$this->mob->getNavigator()->clearPath();
-			$this->mob->setLookPosition($owner);
-			return;
-		}
-		
-		if(--$this->followDelay < 0){
-		    $this->followDelay = 10;
-		    $m = 2 - $distanceToPlayer;
-		    $m = ($m <= 0) ? 1 : $m / 2.0;
-		    $this->mob->getNavigator()->tryMoveTo($owner, $this->speedMultiplier * $m);
-		    if($distanceToPlayer > 145){
-		        $this->mob->setPosition($owner);
-		        $this->mob->getNavigator()->clearPath();
-		    }
-		}
+    public function onStart() : void{
+        $this->mob->getNavigator()->tryMoveTo($this->mob->getOwningEntity(), $this->speedMultiplier);
+    }
 
-		$this->mob->setLookPosition($owner);
-	}
+    public function onTick() : void{
+        /** @var Player $owner */
+        $owner = $this->mob->getOwningEntity();
+        if ($owner == null) return;
 
-	public function onEnd(): void{
-		$this->mob->resetMotion();
-		$this->mob->pitch = 0;
-		$this->mob->getNavigator()->clearPath();
-	}
+        $distanceToPlayer = $this->mob->distance($owner);
+
+        if($distanceToPlayer < 1.75){
+            $this->mob->resetMotion();
+            $this->mob->getNavigator()->clearPath();
+            $this->mob->setLookPosition($owner);
+            return;
+        }
+
+        if(--$this->followDelay < 0){
+            $this->followDelay = 10;
+            $m = 2 - $distanceToPlayer;
+            $m = ($m <= 0) ? 1 : $m / 2.0;
+            $this->mob->getNavigator()->tryMoveTo($owner, $this->speedMultiplier * $m);
+            if($distanceToPlayer > 145){
+                $this->mob->setPosition($owner);
+                $this->mob->getNavigator()->clearPath();
+            }
+        }
+
+        $this->mob->setLookPosition($owner);
+    }
+
+    public function onEnd(): void{
+        $this->mob->resetMotion();
+        $this->mob->pitch = 0;
+        $this->mob->getNavigator()->clearPath();
+    }
 }

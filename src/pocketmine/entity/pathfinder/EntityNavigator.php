@@ -28,326 +28,327 @@ use pocketmine\entity\Mob;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\block\Block;
-use pocketmine\block\Liquid;
-use pocketmine\level\particle\HappyVillagerParticle;
 
 class EntityNavigator{
 
-	/** @var Mob */
-	protected $mob;
+    /** @var Mob */
+    protected $mob;
 
-	protected $neighbors = [
-		[0, -1],
-		[1, 0],
-		[0, 1],
-		[-1, 0],
-		[-1, -1],
-		[1, -1],
-		[1, 1],
-		[-1, 1]
-	];
-	
-	protected $currentPath;
-	protected $avoidsWater = false, $avoidsSun = false;
-  protected $speedMultiplier = 1.0;
+    protected $neighbors = [
+        [0, -1],
+        [1, 0],
+        [0, 1],
+        [-1, 0],
+        [-1, -1],
+        [1, -1],
+        [1, 1],
+        [-1, 1]
+    ];
 
-	public function __construct(Mob $mob){
-		$this->mob = $mob;
-	}
+    /** @var Path */
+    protected $currentPath;
+    /** @var bool */
+    protected $avoidsWater = false, $avoidsSun = false;
+    /** @var float */
+    protected $speedMultiplier = 1.0;
 
-	public function navigate(PathPoint $from, PathPoint $to, ?float $followRange = null) : array{
-	    if($followRange === null){
-	        $followRange = $this->mob->getFollowRange();
-	    }
-	 $blockCache = [];
-		$ticks = 0;
-		$from->fScore = $this->calculateGridDistance($from, $to);
-		$last = $from;
-		$path = [];
-		$open = [$from->getHashCode() => $from];
-		$currentY = $this->getPathableY();
-		$closed = [];
-		$highScore = $from;
-
-		while(!empty($open)){
-			$current = $last;
-			if($last !== $highScore){
-				uasort($open, function($a,$b){
-					if($a->fScore == $b->fScore) return 0;
-
-					return $a->fScore > $b->fScore ? 1 : -1;
-				});
-				$current = reset($open);
-				$currentY = $this->getBlockByPoint($current, $blockCache)->y;
-			}
-
-			$last = null;
-
-			if($current->equals($to)){
-				return $this->initPath($path, $current);
-			}
-			if($ticks++ > 50){
-				return $this->initPath($path, $highScore);
-			}
-
-			unset($open[$current->getHashCode()]);
-			$closed[$current->getHashCode()] = $current;
-
-			foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
-			  $blockPos = $this->getBlockByPoint($n, $blockCache);
-				if(!isset($closed[$n->getHashCode()]) and $blockPos->distanceSquared($this->mob) <= $followRange){
-					$g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
-
-					if(isset($open[$n->getHashCode()])){
-						$og = $open[$n->getHashCode()];
-						if($g >= $og->gScore) continue;
-					}
-					$open[$n->getHashCode()] = $n;
-					$path[$n->getHashCode()] = $current;
-
-					$n->gScore = $g;
-					$n->fScore = $g + $this->calculateGridDistance($n, $to);
-
-					if($n->fScore <= $highScore->fScore){
-						$highScore = $n;
-						$last = $n;
-					}
-				}
-			}
-			if($last !== null){
-				$currentY = $this->getBlockByPoint($last, $blockCache)->y;
-			}
-		}
-
-		return [];
-	}
-
-  public function getPathableY() : int{
-   $last = floor($this->mob->y);
-   for($i = 1; $i < 3; $i++){
-    if($this->mob->level->getBlock($this->mob->add(0,-$i,0))->isSolid()){
-     break;
+    public function __construct(Mob $mob){
+        $this->mob = $mob;
     }
-    $last--;
-   }
-   return (int) $last;
-  }
 
-	public function initPath(array $path, PathPoint $current){
-		$totalPath = [$current];
-		while(isset($path[$current->getHashCode()])){
-			$current = $path[$current->getHashCode()];
-			array_unshift($totalPath, $current);
-		}
-		unset($totalPath[0]);
-		return $totalPath;
-	}
+    public function navigate(PathPoint $from, PathPoint $to, ?float $followRange = null) : array{
+        if($followRange === null){
+            $followRange = $this->mob->getFollowRange();
+        }
+        $blockCache = [];
+        $ticks = 0;
+        $from->fScore = $this->calculateGridDistance($from, $to);
+        $last = $from;
+        $path = [];
+        $open = [$from->getHashCode() => $from];
+        $currentY = $this->getPathableY();
+        $closed = [];
+        $highScore = $from;
 
-	public function calculateGridDistance(PathPoint $from, PathPoint $to) : float{
-		return abs($from->x - $to->x) + abs($from->y - $to->y);
-	}
+        while(!empty($open)){
+            $current = $last;
+            if($last !== $highScore){
+                uasort($open, function($a,$b){
+                    if($a->fScore == $b->fScore) return 0;
 
-	public function calculateBlockDistance(PathPoint $from, PathPoint $to, array $cache) : float{
-		$block1 = $this->getBlockByPoint($from, $cache);
-		$block2 = $this->getBlockByPoint($to, $cache);
+                    return $a->fScore > $b->fScore ? 1 : -1;
+                });
+                $current = reset($open);
+                $currentY = $this->getBlockByPoint($current, $blockCache)->y;
+            }
 
-		if($block1 === null or $block2 === null){
-			return 0;
-		}else{
-			$block1 = $block1->asVector3();
-			$block2 = $block2->asVector3();
-		}
+            $last = null;
 
-		if($this->mob->canClimb()){
-			$block1->y = $block2->y = 0;
-		}
+            if($current->equals($to)){
+                return $this->initPath($path, $current);
+            }
+            if($ticks++ > 50){
+                return $this->initPath($path, $highScore);
+            }
 
-		return $block1->distanceSquared($block2);
-	}
+            unset($open[$current->getHashCode()]);
+            $closed[$current->getHashCode()] = $current;
 
-	public function getBlockByPoint(PathPoint $tile, array $cache) : ?Block{
-		return $cache[$tile->getHashCode()] ?? null;
-	}
+            foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
+                $blockPos = $this->getBlockByPoint($n, $blockCache);
+                if(!isset($closed[$n->getHashCode()]) and $blockPos->distanceSquared($this->mob) <= $followRange){
+                    $g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
 
-	/**
-	 * @param PathPoint $tile
-	 * @param array $cache
-	 * @param int $startY
-	 * @return Vector2[]
-	 */
-	public function getNeighbors(PathPoint $tile, array &$cache, int $startY) : array{
-		$block = $this->mob->level->getBlock(new Vector3($tile->x, $startY, $tile->y));
+                    if(isset($open[$n->getHashCode()])){
+                        $og = $open[$n->getHashCode()];
+                        if($g >= $og->gScore) continue;
+                    }
+                    $open[$n->getHashCode()] = $n;
+                    $path[$n->getHashCode()] = $current;
 
-		if(!isset($cache[$tile->getHashCode()])){
-			$cache[$tile->getHashCode()] = $block;
-		}
+                    $n->gScore = $g;
+                    $n->fScore = $g + $this->calculateGridDistance($n, $to);
 
-		$list = [];
-		for ($index = 0; $index < count($this->neighbors); ++$index) {
-			$item = new PathPoint($tile->x + $this->neighbors[$index][0], $tile->y + $this->neighbors[$index][1]);
-			// Check for too high steps
+                    if($n->fScore <= $highScore->fScore){
+                        $highScore = $n;
+                        $last = $n;
+                    }
+                }
+            }
+            if($last !== null){
+                $currentY = $this->getBlockByPoint($last, $blockCache)->y;
+            }
+        }
 
-			$coord = new Vector3((int)$item->x, $block->y, (int)$item->y);
-			if ($this->mob->level->getBlock($coord)->isSolid()) {
-				if ($this->mob->canClimb()) {
-					$blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
-					$canMove = false;
-					for ($i = 0; $i < 10; $i++) {
-						if ($this->isBlocked($blockUp->asVector3())) {
-							$blockUp = $this->mob->level->getBlock($blockUp->getSide(Vector3::SIDE_UP));
-							continue;
-						}
+        return [];
+    }
 
-						$canMove = true;
-						break;
-					}
+    public function getPathableY() : int{
+        $last = floor($this->mob->y);
+        for($i = 1; $i < 3; $i++){
+            if($this->mob->level->getBlock($this->mob->add(0,-$i,0))->isSolid()){
+                break;
+            }
+            $last--;
+        }
+        return (int) $last;
+    }
 
-					if (!$canMove or $this->isObstructed($blockUp)) continue;
+    public function initPath(array $path, PathPoint $current){
+        $totalPath = [$current];
+        while(isset($path[$current->getHashCode()])){
+            $current = $path[$current->getHashCode()];
+            array_unshift($totalPath, $current);
+        }
+        unset($totalPath[0]);
+        return $totalPath;
+    }
 
-					$cache[$item->getHashCode()] = $blockUp;
-				} else {
-					$blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
-					if ($blockUp->isSolid()) {
-						// Can't jump
-						continue;
-					}
+    public function calculateGridDistance(PathPoint $from, PathPoint $to) : float{
+        return abs($from->x - $to->x) + abs($from->y - $to->y);
+    }
 
-					if ($this->isObstructed($blockUp)) continue;
+    public function calculateBlockDistance(PathPoint $from, PathPoint $to, array $cache) : float{
+        $block1 = $this->getBlockByPoint($from, $cache);
+        $block2 = $this->getBlockByPoint($to, $cache);
 
-					$cache[$item->getHashCode()] = $blockUp;
-				}
-			} else {
-				$blockDown = $this->mob->level->getBlock($coord->add(0, -1, 0));
-				if (!$blockDown->isSolid()) {
-					if ($this->mob->canClimb()) {
-						$canClimb = false;
-						$blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_DOWN));
-						for ($i = 0; $i < 10; $i++) {
-							if (!$blockDown->isSolid()) {
-								$blockDown = $this->mob->level->getBlock($blockDown->add(0, -1, 0));
-								continue;
-							}
+        if($block1 === null or $block2 === null){
+            return 0;
+        }else{
+            $block1 = $block1->asVector3();
+            $block2 = $block2->asVector3();
+        }
 
-							$canClimb = true;
-							break;
-						}
+        if($this->mob->canClimb()){
+            $block1->y = $block2->y = 0;
+        }
 
-						if (!$canClimb) continue;
+        return $block1->distanceSquared($block2);
+    }
 
-						$blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_UP));
+    public function getBlockByPoint(PathPoint $tile, array $cache) : ?Block{
+        return $cache[$tile->getHashCode()] ?? null;
+    }
 
-						if ($this->isObstructed($blockDown)) continue;
+    /**
+     * @param PathPoint $tile
+     * @param array $cache
+     * @param int $startY
+     * @return Vector2[]
+     */
+    public function getNeighbors(PathPoint $tile, array &$cache, int $startY) : array{
+        $block = $this->mob->level->getBlock(new Vector3($tile->x, $startY, $tile->y));
 
-						$cache[$item->getHashCode()] = $blockDown;
-					} else {
-						if (!$this->mob->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()) {
-							// Will fall
-							continue;
-						}
+        if(!isset($cache[$tile->getHashCode()])){
+            $cache[$tile->getHashCode()] = $block;
+        }
 
-						if ($this->isObstructed($blockDown)) continue;
+        $list = [];
+        for ($index = 0; $index < count($this->neighbors); ++$index) {
+            $item = new PathPoint($tile->x + $this->neighbors[$index][0], $tile->y + $this->neighbors[$index][1]);
+            // Check for too high steps
 
-						$cache[$item->getHashCode()] = $blockDown;
-					}
-				} else {
-					if ($this->isObstructed($coord)) continue;
+            $coord = new Vector3((int)$item->x, $block->y, (int)$item->y);
+            if ($this->mob->level->getBlock($coord)->isSolid()) {
+                if ($this->mob->canClimb()) {
+                    $blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
+                    $canMove = false;
+                    for ($i = 0; $i < 10; $i++) {
+                        if ($this->isBlocked($blockUp->asVector3())) {
+                            $blockUp = $this->mob->level->getBlock($blockUp->getSide(Vector3::SIDE_UP));
+                            continue;
+                        }
 
-					$cache[$item->getHashCode()] = $this->mob->level->getBlock($coord);
-				}
-			}
-			$item->height = $cache[$item->getHashCode()]->y;
-			$list[$index] = $item;
-		}
-		$this->checkDiagonals($list);
-		return $list;
-	}
+                        $canMove = true;
+                        break;
+                    }
 
-	public function checkDiagonals(array &$list) : void{
-		$checkDiagonals = [0 => [4,5], 1 => [5,6], 2 => [6,7], 3 => [4,7]];
+                    if (!$canMove or $this->isObstructed($blockUp)) continue;
 
-		foreach($checkDiagonals as $index => $diagonal){
-			if(!isset($list[$index])){
-				foreach($diagonal as $dia){
-					unset($list[$dia]);
-				}
-			}
-		}
-	}
+                    $cache[$item->getHashCode()] = $blockUp;
+                } else {
+                    $blockUp = $this->mob->level->getBlock($coord->getSide(Vector3::SIDE_UP));
+                    if ($blockUp->isSolid()) {
+                        // Can't jump
+                        continue;
+                    }
 
-	public function isObstructed(Vector3 $coord) : bool{
-		for($i = 1; $i < $this->mob->height; $i++)
-			if($this->isBlocked($coord->add(0, $i, 0))) return true;
+                    if ($this->isObstructed($blockUp)) continue;
 
-		return false;
-	}
+                    $cache[$item->getHashCode()] = $blockUp;
+                }
+            } else {
+                $blockDown = $this->mob->level->getBlock($coord->add(0, -1, 0));
+                if (!$blockDown->isSolid()) {
+                    if ($this->mob->canClimb()) {
+                        $canClimb = false;
+                        $blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_DOWN));
+                        for ($i = 0; $i < 10; $i++) {
+                            if (!$blockDown->isSolid()) {
+                                $blockDown = $this->mob->level->getBlock($blockDown->add(0, -1, 0));
+                                continue;
+                            }
 
-	public function isBlocked(Vector3 $coord) : bool{
-		$block = $this->mob->level->getBlock($coord);
-		return $block->isSolid();
-	}
-	
-	public function setPath(Path $path) : void{
-	    $this->currentPath = $path;
-	}
-	
-	public function getPath() : ?Path{
-	    return $this->currentPath;
-	}
-	
-	public function havePath() : bool{
-	    return $this->currentPath !== null and $this->currentPath->havePath();
-	}
-	
-	public function clearPath() : void{
-	    $this->currentPath = null;
-	}
-	
-	public function setAvoidsWater(bool $value) : void{
-	    $this->avoidsWater = $value;
-	}
-	
-	public function setAvoidsSun(bool $value) : void{
-	    $this->avoidsSun = $value;
-	}
-	
-	public function isAvoidsWater() : bool{
-	    return $this->avoidsWater;
-	}
-	
-	public function isAvoidsSun() : bool{
-	    return $this->avoidsSun;
-	}
-	
-	public function isSameDestination(Vector3 $point) : bool{
-	    return $this->currentPath === null ? false : $this->currentPath->getFinalVector()->equals($point);
-	}
+                            $canClimb = true;
+                            break;
+                        }
 
-	public function tryMoveTo(Vector3 $pos, float $speed, ?float $followRange = null): bool{
-	    if(!$this->isSameDestination($pos->floor())){
-	        $this->speedMultiplier = $speed;
-	        $this->setPath($this->findPath($pos, $followRange));
-          return true;
-	    }
-     return false;
-	}
-	
-	public function findPath(Vector3 $pos, ?float $followRange = null) : Path{
-	    return new Path($this->navigate(new PathPoint(floor($this->mob->x), floor($this->mob->z)), new PathPoint(floor($pos->x), floor($pos->z)), $followRange));
-	}
-	
-	public function onNavigateUpdate(int $tick) : void{
-	    if($this->currentPath !== null){
-	        $next = $this->currentPath->getNextTile($this->mob);
-	        if($next !== null){
-	            $this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-	            $moved = $this->mob->moveForward($this->speedMultiplier);
-	            if(!$moved){
-	                $this->clearPath();
-	            }
-	        }else{
-	            $this->clearPath();
-	        }
-	    }
-	}
+                        if (!$canClimb) continue;
+
+                        $blockDown = $this->mob->level->getBlock($blockDown->getSide(Vector3::SIDE_UP));
+
+                        if ($this->isObstructed($blockDown)) continue;
+
+                        $cache[$item->getHashCode()] = $blockDown;
+                    } else {
+                        if (!$this->mob->level->getBlock($coord->getSide(Vector3::SIDE_DOWN, 2))->isSolid()) {
+                            // Will fall
+                            continue;
+                        }
+
+                        if ($this->isObstructed($blockDown)) continue;
+
+                        $cache[$item->getHashCode()] = $blockDown;
+                    }
+                } else {
+                    if ($this->isObstructed($coord)) continue;
+
+                    $cache[$item->getHashCode()] = $this->mob->level->getBlock($coord);
+                }
+            }
+            $item->height = $cache[$item->getHashCode()]->y;
+            $list[$index] = $item;
+        }
+        $this->checkDiagonals($list);
+        return $list;
+    }
+
+    public function checkDiagonals(array &$list) : void{
+        $checkDiagonals = [0 => [4,5], 1 => [5,6], 2 => [6,7], 3 => [4,7]];
+
+        foreach($checkDiagonals as $index => $diagonal){
+            if(!isset($list[$index])){
+                foreach($diagonal as $dia){
+                    unset($list[$dia]);
+                }
+            }
+        }
+    }
+
+    public function isObstructed(Vector3 $coord) : bool{
+        for($i = 1; $i < $this->mob->height; $i++)
+            if($this->isBlocked($coord->add(0, $i, 0))) return true;
+
+        return false;
+    }
+
+    public function isBlocked(Vector3 $coord) : bool{
+        $block = $this->mob->level->getBlock($coord);
+        return $block->isSolid();
+    }
+
+    public function setPath(Path $path) : void{
+        $this->currentPath = $path;
+    }
+
+    public function getPath() : ?Path{
+        return $this->currentPath;
+    }
+
+    public function havePath() : bool{
+        return $this->currentPath !== null and $this->currentPath->havePath();
+    }
+
+    public function clearPath() : void{
+        $this->currentPath = null;
+    }
+
+    public function setAvoidsWater(bool $value) : void{
+        $this->avoidsWater = $value;
+    }
+
+    public function setAvoidsSun(bool $value) : void{
+        $this->avoidsSun = $value;
+    }
+
+    public function isAvoidsWater() : bool{
+        return $this->avoidsWater;
+    }
+
+    public function isAvoidsSun() : bool{
+        return $this->avoidsSun;
+    }
+
+    public function isSameDestination(Vector3 $point) : bool{
+        return $this->currentPath === null ? false : $this->currentPath->getFinalVector()->equals($point);
+    }
+
+    public function tryMoveTo(Vector3 $pos, float $speed, ?float $followRange = null): bool{
+        if(!$this->isSameDestination($pos->floor())){
+            $this->speedMultiplier = $speed;
+            $this->setPath($this->findPath($pos, $followRange));
+            return true;
+        }
+        return false;
+    }
+
+    public function findPath(Vector3 $pos, ?float $followRange = null) : Path{
+        return new Path($this->navigate(new PathPoint(floor($this->mob->x), floor($this->mob->z)), new PathPoint(floor($pos->x), floor($pos->z)), $followRange));
+    }
+
+    public function onNavigateUpdate(int $tick) : void{
+        if($this->currentPath !== null){
+            $next = $this->currentPath->getNextTile($this->mob);
+            if($next !== null){
+                $this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+                $moved = $this->mob->moveForward($this->speedMultiplier);
+                if(!$moved){
+                    $this->clearPath();
+                }
+            }else{
+                $this->clearPath();
+            }
+        }
+    }
 
 }

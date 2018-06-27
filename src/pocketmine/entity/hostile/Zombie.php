@@ -91,7 +91,7 @@ class Zombie extends Monster implements Ageable{
 		$this->behaviorPool = new BehaviorPool(
 			[
 				new FloatBehavior($this),
-				new MeleeAttackBehavior($this, 1.0, 35),
+				new MeleeAttackBehavior($this, 1.0),
 				new FleeSunBehavior($this),
 				new WanderBehavior($this),
 				new LookAtPlayerBehavior($this, 8.0),
