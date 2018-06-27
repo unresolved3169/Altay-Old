@@ -38,13 +38,6 @@ class Path{
 		$this->tiles = $tiles;
 	}
 
-	public static function findPath(Mob $mob, Vector3 $targetPos, float $followRange = 16.0) : Path{
-		$from = new PathPoint(floor($mob->x), floor($mob->z));
-		$to = new PathPoint(floor($targetPos->x), floor($targetPos->z));
-
-		return new Path($mob->getNavigator()->navigate($from, $to, $followRange));
-	}
-
 	public function havePath() : bool{
 		return !empty($this->tiles);
 	}
@@ -72,6 +65,14 @@ class Path{
 			return $next;
 		}
 		return null;
+	}
+	
+	public function getFinalVector() : Vector3{
+	    if(!$this->havePath()){
+	        return new Vector3(0,0,0);
+	    }
+	    $end = end($this->tiles);
+	    return new Vector3($end->x, $end->height, $end->y);
 	}
 
 	public function isClearBetweenPoints(Level $level, Vector3 $from, Vector3 $to) : bool{

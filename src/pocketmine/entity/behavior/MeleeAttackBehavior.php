@@ -36,40 +36,33 @@ class MeleeAttackBehavior extends Behavior{
 
 	/** @var float */
 	protected $speedMultiplier;
-	/** @var float */
-	protected $followRange;
 
 	/** @var int */
 	protected $attackCooldown;
 	/** @var int */
 	protected $delay;
-	/** @var Path */
-	protected $currentPath;
 	/** @var Vector3 */
 	protected $lastPlayerPos;
 
-	public function __construct(Mob $mob, float $speedMultiplier, float $followRange = 16.0){
+	public function __construct(Mob $mob, float $speedMultiplier){
 		parent::__construct($mob);
 
 		$this->speedMultiplier = $speedMultiplier;
-		$this->followRange = $followRange;
 	}
 
 	public function canStart(): bool{
 		$target = $this->mob->getTargetEntity();
 		if($target === null) return false;
 
-		$this->currentPath = Path::findPath($this->mob, $target, $this->followRange);
-
-		if(!$this->currentPath->havePath()) return false;
-
 		$this->lastPlayerPos = $target->asVector3();
 
-		return true;
+    $path = $this->mob->getNavigator()->findPath($target, $this->speedMultiplier);
+		return $path->havePath();
 	}
 
 	public function onStart(): void{
 		$this->delay = 0;
+    $this->mob->getNavigator()->tryMoveTo($this->mob->getTargetEntity(), $this->speedMultiplier);
 	}
 
 	public function canContinue(): bool{
@@ -84,12 +77,11 @@ class MeleeAttackBehavior extends Behavior{
 
 		--$this->delay;
 
-		$deltaDistance = $this->lastPlayerPos->distance($target);
+		$deltaDistance = $this->lastPlayerPos->distanceSquared($target);
 
 		$canSee = true;
 
-		if($canSee or $this->delay <= 0 or ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)){
-			$this->currentPath = Path::findPath($this->mob, $target, $this->followRange);
+		if($this->delay <= 0 and ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)){
 			$this->lastPlayerPos = $target->asVector3();
 
 			$this->delay = 4 + $this->random->nextBoundedInt(7);
@@ -100,27 +92,16 @@ class MeleeAttackBehavior extends Behavior{
 				$this->delay += 5;
 			}
 
-			if(!$this->currentPath->havePath()){
+			if(!$this->mob->getNavigator()->tryMoveTo($target, $this->speedMultiplier)){
 				$this->delay += 15;
 			}
 		}
 
-		// Movement
-		if($this->currentPath->havePath()){
-			$next = $this->currentPath->getNextTile($this->mob);
-			if($next !== null){
-				$this->mob->lookAt($pos = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-				$this->mob->moveForward($this->speedMultiplier);
-			} // else something is really wrong
-		}else{
-			$this->mob->resetMotion();
-		}
-
-		$this->mob->lookAt($target, true);
+		$this->mob->setLookPosition($target);
 
 		$this->attackCooldown = max($this->attackCooldown - 1, 0);
 		if($this->attackCooldown <= 0 && $distanceToPlayer < $this->getAttackReach()){
-			$damage = $this->mob->getAttributeMap()->getAttribute(Attribute::ATTACK_DAMAGE)->getValue();
+			$damage = $this->mob->getAttackDamage();
 			$target->attack(new EntityDamageByEntityEvent($this->mob, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage));
 			$this->attackCooldown = 20;
 		}
@@ -134,7 +115,7 @@ class MeleeAttackBehavior extends Behavior{
 		$this->mob->resetMotion();
 		$this->mob->pitch = 0;
 		$this->attackCooldown = $this->delay = 0;
-		$this->currentPath = null;
+   $this->mob->getNavigator()->clearPath();
 	}
 
 }

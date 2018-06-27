@@ -32,27 +32,26 @@ use pocketmine\utils\MainLogger;
 use pocketmine\entity\pathfinder\Path;
 
 class FollowOwnerBehavior extends Behavior{
-
-	/** @var float */
-	protected $lookDistance;
+    
 	/** @var float */
 	protected $speedMultiplier;
-	/** @var Path */
-	protected $currentPath;
+	protected $followDelay = 0;
 
 	// TODO : Mob change to Wolf
-	public function __construct(Mob $mob, float $lookDistance, float $speedMultiplier){
+	public function __construct(Mob $mob, float $speedMultiplier){
 		parent::__construct($mob);
-
-		$this->lookDistance = $lookDistance;
+		
 		$this->speedMultiplier = $speedMultiplier;
 	}
 
 	public  function canStart(): bool{
 		if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
-		if($this->mob->getOwningEntity() === null) return false;
+		if($this->mob->getOwningEntity() === null or $this->mob->isLeashed() or $this->mob->isSitting()) return false;
 
 		return true;
+	}
+	public function onStart() : void{
+	    $this->mob->getNavigator()->tryMoveTo($this->mob->getOwningEntity(), $this->speedMultiplier);
 	}
 
 	public function onTick() : void{
@@ -64,43 +63,28 @@ class FollowOwnerBehavior extends Behavior{
 
 		if($distanceToPlayer < 1.75){
 			$this->mob->resetMotion();
-			$this->mob->lookAt($owner);
+			$this->mob->getNavigator()->clearPath();
+			$this->mob->setLookPosition($owner);
 			return;
 		}
-
-		if($this->currentPath == null || !$this->currentPath->havePath()){
-			MainLogger::getLogger()->debug("Search new solution");
-			$this->currentPath = $this->currentPath->findPath($this->mob, $owner);
+		
+		if(--$this->followDelay < 0){
+		    $this->followDelay = 10;
+		    $m = 2 - $distanceToPlayer;
+		    $m = ($m <= 0) ? 1 : $m / 2.0;
+		    $this->mob->getNavigator()->tryMoveTo($owner, $this->speedMultiplier * $m);
+		    if($distanceToPlayer > 145){
+		        $this->mob->setPosition($owner);
+		        $this->mob->getNavigator()->clearPath();
+		    }
 		}
 
-		if($this->currentPath->havePath()){
-			$next = $this->currentPath->getNextTile($this->mob);
-			if ($next === null) return;
-
-			$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-
-			if($distanceToPlayer < 1.75){
-				$this->mob->resetMotion();
-				$this->currentPath = null;
-			}else{
-
-				$m = 2 - $distanceToPlayer;
-				$m = ($m <= 0) ? 1 : $m / 2.0;
-
-				$this->mob->moveForward($this->speedMultiplier * $m);
-			}
-		}else{
-			MainLogger::getLogger()->debug("Found no path solution");
-			$this->mob->resetMotion();
-			$this->currentPath = null;
-		}
-
-		$this->mob->lookAt($owner);
+		$this->mob->setLookPosition($owner);
 	}
 
 	public function onEnd(): void{
 		$this->mob->resetMotion();
 		$this->mob->pitch = 0;
-		$this->currentPath = null;
+		$this->mob->getNavigator()->clearPath();
 	}
 }

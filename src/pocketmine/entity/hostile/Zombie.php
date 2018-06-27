@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\hostile;
+namespace pocketmine\entity\hostile;
 
 use pocketmine\entity\Ageable;
 use pocketmine\entity\behavior\FindAttackableTargetBehavior;
@@ -34,6 +34,7 @@ use pocketmine\entity\behavior\MeleeAttackBehavior;
 use pocketmine\entity\behavior\RandomLookAroundBehavior;
 use pocketmine\entity\behavior\RestrictSunBehavior;
 use pocketmine\entity\behavior\WanderBehavior;
+use pocketmine\entity\behavior\BehaviorPool;
 use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
@@ -46,7 +47,9 @@ class Zombie extends Monster implements Ageable{
 
 	protected function initEntity() : void{
 		parent::initEntity();
-		$this->setDefaultMovementSpeed($this->isBaby() ? 0.345 : 0.23);
+		$this->setMovementSpeed($this->isBaby() ? 0.345 : 0.23);
+    $this->setFollowRange(35);
+    $this->setAttackDamage(3);
 		if($this->isBaby()){
 			$this->height *= 0.5;
 			$this->setScale(0.5);
@@ -84,8 +87,8 @@ class Zombie extends Monster implements Ageable{
 		return $this->isBaby() ? 12 : 5;
 	}
 
-	protected function getDefaultBehaviors() : array{
-		return [
+	protected function addBehaviors() : void{
+		$this->behaviorPool = new BehaviorPool(
 			[
 				new FloatBehavior($this),
 				new RestrictSunBehavior($this),
@@ -94,12 +97,11 @@ class Zombie extends Monster implements Ageable{
 				new WanderBehavior($this),
 				new LookAtPlayerBehavior($this, 8.0),
 				new RandomLookAroundBehavior($this)
-			],
-			[
+			]);
+			$this->targetBehaviorPool = new BehaviorPool([
 				new HurtByTargetBehavior($this),
 				new FindAttackableTargetBehavior($this, 35)
-			]
-		];
+			]);
 	}
 
 	public function isBaby() : bool{

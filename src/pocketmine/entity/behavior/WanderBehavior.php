@@ -55,29 +55,28 @@ class WanderBehavior extends Behavior{
 
 			if($pos === null) return false;
 
-			$path = Path::findPath($this->mob, $pos, $this->followRange = $this->mob->distanceSquared($pos) + 2);
+		  $this->followRange = $this->mob->distanceSquared($pos) + 2;
 
 			$this->targetPos = $pos;
 
-			return $path->havePath();
+			return true;
 		}
 
 		return false;
 	}
 
 	public function canContinue() : bool{
-		return $this->targetPos !== null;
+		return $this->mob->getNavigator()->havePath();
 	}
 
-	public function onTick() : void{
-		if(!$this->mob->getNavigator()->tryMoveTo($this->targetPos, $this->speedMultiplier, $this->followRange)){
-			$this->targetPos = null;
-		}
-	}
+	public function onStart() : void{
+		$this->mob->getNavigator()->tryMoveTo($this->targetPos, $this->speedMultiplier, $this->followRange);
+  }
 
 	public function onEnd() : void{
 		$this->mob->setMotion($this->mob->getMotion()->multiply(0, 1.0, 0.0));
 		$this->targetPos = null;
+   $this->mob->getNavigator()->clearPath();
 	}
 
 	public function findRandomTargetBlock(Entity $entity, int $dxz, int $dy) : ?Block{
@@ -112,55 +111,5 @@ class WanderBehavior extends Behavior{
 		}else{
 			return (int) 0.5 - max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));
 		}
-	}
-
-	/**
-	 * @param mixed $targetPos
-	 * @return WanderBehavior
-	 */
-	public function setTargetPos($targetPos)
-	{
-		$this->targetPos = $targetPos;
-		return $this;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getChance(): int
-	{
-		return $this->chance;
-	}
-
-	/**
-	 * @param int $chance
-	 */
-	public function setChance(int $chance): void
-	{
-		$this->chance = $chance;
-	}
-
-	/**
-	 * @return float
-	 */
-	public function getSpeedMultiplier(): float
-	{
-		return $this->speedMultiplier;
-	}
-
-	/**
-	 * @param float $speedMultiplier
-	 */
-	public function setSpeedMultiplier(float $speedMultiplier): void
-	{
-		$this->speedMultiplier = $speedMultiplier;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getTargetPos()
-	{
-		return $this->targetPos;
 	}
 }

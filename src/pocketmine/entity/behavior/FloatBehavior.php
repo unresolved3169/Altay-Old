@@ -33,13 +33,15 @@ class FloatBehavior extends Behavior{
 		$mob->setGenericFlag(Mob::DATA_FLAG_SWIMMER, true);
 	}
 
-	public function canStart() : bool{
+ public function canStart() : bool{
+  return $this->mob->isUnderWater();
+ }
+
+	public function onTick() : void{
 		if($this->mob->isUnderWater()){
 			if($this->random->nextFloat() < 0.8){
-				$this->mob->jump();
+				$this->mob->setMotion($this->mob->getMotion()->add(0,0.39,0));
 			}
 		}
-
-		return false;
 	}
 }

@@ -22,7 +22,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\passive;
+namespace pocketmine\entity\passive;
 
 use pocketmine\entity\Ageable;
 use pocketmine\entity\Creature;

@@ -30,23 +30,19 @@ use pocketmine\Player;
 use pocketmine\entity\pathfinder\Path;
 
 class TemptedBehavior extends Behavior{
-
-	/** @var float */
-	protected $lookDistance;
+    
 	/** @var float */
 	protected $speedMultiplier;
 	/** @var int[] */
 	protected $temptItems;
 	/** @var int */
-	protected $coolDown;
+	protected $coolDown = 0;
 	/** @var Player */
 	protected $temptingPlayer;
 	/** @var Vector3 */
 	protected $lastPlayerPos;
 	/** @var Vector3 */
 	protected $originalPos;
-	/** @var Path */
-	protected $currentPath = null;
 
 	/**
 	 * TemptedBehavior constructor.
@@ -55,12 +51,10 @@ class TemptedBehavior extends Behavior{
 	 * @param float  $lookDistance
 	 * @param float  $speedMultiplier
 	 */
-	public function __construct(Mob $mob, array $temptItemIds, float $lookDistance, float $speedMultiplier){
+	public function __construct(Mob $mob, array $temptItemIds, float $speedMultiplier){
 		parent::__construct($mob);
 
 		$this->temptItems = $temptItemIds;
-		$this->speedMultiplier = $speedMultiplier;
-		$this->lookDistance = $lookDistance;
 		$this->speedMultiplier = $speedMultiplier;
 	}
 
@@ -71,9 +65,9 @@ class TemptedBehavior extends Behavior{
 		}
 
 		/** @var Player|null $player */
-		$player = $this->mob->level->getNearestEntity($this->mob, $this->lookDistance, Player::class);
+		$player = $this->mob->level->getNearestEntity($this->mob, $this->mob->getFollowRange(), Player::class);
 		if($player === null) return false;
-		$player = $this->containTempItems($player) ? $player : null;
+		$player = $this->containsTempItems($player) ? $player : null;
 
 		if($player === null) return false;
 
@@ -86,7 +80,7 @@ class TemptedBehavior extends Behavior{
 		return true;
 	}
 
-	public function containTempItems(Player $player) : bool{
+	public function containsTempItems(Player $player) : bool{
 		$handItem = $player->getInventory()->getItemInHand();
 		foreach($this->temptItems as $temptItem){
 			if($temptItem == $handItem->getId()){
@@ -110,47 +104,22 @@ class TemptedBehavior extends Behavior{
 
 		if($distanceToPlayer < 1.75){
 			$this->mob->resetMotion();
-			$this->mob->lookAt($this->temptingPlayer);
+			$this->mob->setLookPosition($this->temptingPlayer);
 
-			$this->currentPath = null;
+			$this->mob->getNavigator()->clearPath();
 
 			return;
 		}
-
-		$haveNoPath = ($this->currentPath == null || !$this->currentPath->havePath());
+		
 		$deltaDistance = $this->lastPlayerPos->distance($this->temptingPlayer);
-		if($haveNoPath || $deltaDistance > 1){
-			$this->currentPath = Path::findPath($this->mob, $this->temptingPlayer);
-			$this->lastPlayerPos = $this->temptingPlayer->asVector3();
+		if(!$this->mob->getNavigator()->havePath() || $deltaDistance > 1){
+		    $m = 2 - $distanceToPlayer;
+		    $m = ($m <= 0) ? 1 : $m / 2.0;
+		    $this->mob->getNavigator()->tryMoveTo($this->temptingPlayer, $this->speedMultiplier * $m);
+		    $this->lastPlayerPos = $this->temptingPlayer->asVector3();
 		}
 
-		if($this->currentPath->havePath()){
-			$next = $this->currentPath->getNextTile($this->mob);
-			if($next === null){
-				$this->currentPath = null;
-				return;
-			}
-
-			$this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-
-			if($distanceToPlayer < 1.75){
-				// if within x m stop following (walking)
-				$this->mob->resetMotion();
-				$this->currentPath = null;
-			}else{
-				// else find path to player
-
-				$m = 2 - $distanceToPlayer;
-				$m = ($m <= 0) ? 1 : $m / 2.0;
-
-				$this->mob->moveForward($this->speedMultiplier * $m);
-			}
-		}else{
-			$this->mob->resetMotion();
-			$this->currentPath = null;
-		}
-
-		$this->mob->lookAt($this->temptingPlayer);
+		$this->mob->setLookPosition($this->temptingPlayer);
 	}
 
 	public function onEnd(): void{
@@ -158,6 +127,6 @@ class TemptedBehavior extends Behavior{
 		$this->mob->resetMotion();
 		$this->temptingPlayer = null;
 		$this->mob->pitch = 0;
-		$this->currentPath = null;
+		$this->mob->getNavigator()->clearPath();
 	}
 }

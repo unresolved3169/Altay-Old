@@ -24,14 +24,14 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-class BehaviorTask{
+class BehaviorPool{
 
 	/** @var Behavior[] */
 	protected $behaviors = [];
 	/** @var Behavior|null */
 	protected $currentBehavior = null;
 
-	public function __construct(array $behaviors){
+	public function __construct(array $behaviors = []){
 		$this->behaviors = $behaviors;
 	}
 
@@ -50,7 +50,10 @@ class BehaviorTask{
 	/**
 	 * Checks behaviors to execute
 	 */
-	public function checkBehaviors() : void{
+	public function checkBehaviors(int $tick) : void{
+	    if($tick % 3 !== 0){
+	        return;
+	    }
 		foreach($this->behaviors as $index => $behavior){
 			if($behavior == $this->currentBehavior){
 				if($behavior->canContinue()){
@@ -59,6 +62,7 @@ class BehaviorTask{
 				}
 				$behavior->onEnd();
 				$this->currentBehavior = null;
+       continue;
 			}
 			if($behavior->canStart()){
 				if($this->currentBehavior == null or (array_search($this->currentBehavior, $this->behaviors)) > $index){

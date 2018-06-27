@@ -59,7 +59,7 @@ class HorseEatBlockBehavior extends Behavior{
 		$this->duration = 40;
 
 		$this->mob->setMotion($this->mob->getMotion()->multiply(0, 1.0, 0.0));
-		// TODO : Horse->setEating(true)
+		$this->mob->setEating(true);
 
 		return true;
 	}
@@ -71,7 +71,7 @@ class HorseEatBlockBehavior extends Behavior{
 	public function onEnd() : void{
 		$direction = $this->mob->getDirectionVector()->normalize();
 
-		$coord = $this->mob->add($direction->x, 0, $direction->z);;
+		$coord = $this->mob->add($direction->x, 0, $direction->z);
 
 		$broken = $this->mob->level->getBlock($coord);
 		if($broken instanceof TallGrass){
@@ -82,7 +82,7 @@ class HorseEatBlockBehavior extends Behavior{
 		}
 
 		$this->mob->level->addParticle(new DestroyBlockParticle($this->mob, $broken));
-		// TODO : Horse->setEating(false)
+		$this->mob->setEating(false);
 	}
 
 }

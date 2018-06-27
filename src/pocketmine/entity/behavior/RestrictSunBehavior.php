@@ -29,15 +29,14 @@ use pocketmine\level\Level;
 class RestrictSunBehavior extends Behavior{
 
 	public function canStart() : bool{
-		if($this->isSunny() and !$this->mob->isOnFire() and $this->mob->level->getHighestBlockAt((int) $this->mob->x, (int) $this->mob->z) < $this->mob->y){
-			$this->mob->setOnFire(3);
-		}
-
-		return false;
+	    if($this->isSunny() and $this->mob->level->canSeeSky($this->mob->floor())){
+	        $this->mob->setOnFire(5);
+	    }
+	    return false;
 	}
 
 	public function isSunny() : bool{
-		$time = $this->mob->level->getTime();
-		return $time < Level::TIME_NOON or $time < Level::TIME_NIGHT or $time > Level::TIME_SUNRISE;
+		$degree = $this->mob->level->getSunAngleDegrees();
+		return $degree > 15 and $degree < 165;
 	}
 }

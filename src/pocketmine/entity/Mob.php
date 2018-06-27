@@ -25,7 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\entity;
 
 use pocketmine\entity\behavior\Behavior;
-use pocketmine\entity\behavior\BehaviorTask;
+use pocketmine\entity\behavior\BehaviorPool;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -35,9 +35,11 @@ use pocketmine\entity\pathfinder\EntityNavigator;
 abstract class Mob extends Living{
 
 	/** @var array */
-	protected $behaviorTasks = [];
+	protected $behaviorPool;
+	protected $targetBehaviorPool;
 	/** @var EntityNavigator */
 	protected $navigator;
+	protected $lookPosition;
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		parent::__construct($level, $nbt);
@@ -47,44 +49,51 @@ abstract class Mob extends Living{
 	protected function initEntity() : void{
 		parent::initEntity();
 		
+		$this->targetBehaviorPool = new BehaviorPool();
+		$this->behaviorPool = new BehaviorPool();
 		$this->navigator = new EntityNavigator($this);
 
-		foreach($this->getDefaultBehaviors() as $behaviors){
-			if(is_array($behaviors)){
-				$this->addBehaviorTask($behaviors);
-			}else{
-				throw new \RuntimeException("Behaviors must be an array");
-			}
-		}
+		$this->addBehaviors();
 	}
 
-	public function entityBaseTick(int $diff = 1) : bool{
-	      foreach($this->behaviorTasks as $task){
-			   $task->checkBehaviors();
-		    }
-	      
-	      return parent::entityBaseTick($diff);
+	public function onUpdate(int $tick) : bool{
+	    if($this->closed) return false;
+	    
+	    $this->onBehaviorUpdate($tick);
+		   
+		   return parent::onUpdate($tick);
+	}
+	
+	protected function onBehaviorUpdate(int $tick) : void{
+	    $this->targetBehaviorPool->checkBehaviors($tick);
+	    $this->behaviorPool->checkBehaviors($tick);
+	    
+	    $this->navigator->onNavigateUpdate($tick);
+	    
+      if($this->getLookPosition() !== null){
+	     $this->lookAt($this->getLookPosition(), true);
+       $this->lookPosition = null;
+      }
+	}
+	
+	public function getLookPosition() : ?Vector3{
+	    return $this->lookPosition;
+	}
+	
+	public function setLookPosition(?Vector3 $pos) : void{
+	    $this->lookPosition = $pos;
 	}
 
-	/**
-	 * @return Behavior[][]
-	 */
-	protected function getDefaultBehaviors() : array{
-		return [];
+	protected function addBehaviors() : void{
+	    
 	}
 
-	public function addBehaviorTask(array $behaviors) : void{
-		if(Utils::validateObjectArray($behaviors, Behavior::class)){
-			$this->behaviorTasks[] = new BehaviorTask($behaviors);
-		}
+	public function getBehaviorPool() : BehaviorPool{
+		return $this->behaviorPool;
 	}
-
-	public function getBehaviorTask(int $index) : ?BehaviorTask{
-		return $this->behaviorTasks[$index] ?? null;
-	}
-
-	public function removeBehaviorTask(int $index) : void{
-		unset($this->behaviorTasks[$index]);
+	
+	public function getTargetBehaviorPool() : BehaviorPool{
+		return $this->targetBehaviorPool;
 	}
 
 	public function moveForward(float $spm) : bool{
@@ -135,5 +144,10 @@ abstract class Mob extends Living{
 
 	public function setDefaultMovementSpeed(float $value) : void{
 		$this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setDefaultValue($value);
+	}
+	
+	// TODO: Add this to a interface
+	public function onRangedAttackToTarget(Entity $target, float $power) : void{
+	    
 	}
 }

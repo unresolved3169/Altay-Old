@@ -21,7 +21,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\passive;
+namespace pocketmine\entity\passive;
 
 use pocketmine\entity\WaterAnimal;
 use pocketmine\event\entity\EntityDamageByEntityEvent;

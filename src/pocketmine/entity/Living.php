@@ -129,6 +129,22 @@ abstract class Living extends Entity implements Damageable{
 	public function getMovementSpeed() : float{
 		return $this->attributeMap->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
 	}
+	
+	public function setAttackDamage(float $damage) : void{
+		$this->attributeMap->getAttribute(Attribute::ATTACK_DAMAGE)->setValue($damage, true);
+	}
+
+	public function getAttackDamage() : float{
+		return $this->attributeMap->getAttribute(Attribute::ATTACK_DAMAGE)->getValue();
+	}
+	
+	public function setFollowRange(float $range) : void{
+		$this->attributeMap->getAttribute(Attribute::FOLLOW_RANGE)->setValue($range, true);
+	}
+
+	public function getFollowRange() : float{
+		return $this->attributeMap->getAttribute(Attribute::FOLLOW_RANGE)->getValue();
+	}
 
 	public function setHealth(float $amount) : void{
 		$wasAlive = $this->isAlive();
