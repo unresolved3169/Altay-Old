@@ -51,9 +51,6 @@ class BehaviorPool{
 	 * Checks behaviors to execute
 	 */
 	public function checkBehaviors(int $tick) : void{
-	    if($tick % 3 !== 0){
-	        return;
-	    }
 		foreach($this->behaviors as $index => $behavior){
 			if($behavior == $this->currentBehavior){
 				if($behavior->canContinue()){

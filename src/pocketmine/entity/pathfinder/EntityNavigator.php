@@ -49,6 +49,7 @@ class EntityNavigator{
 	
 	protected $currentPath;
 	protected $avoidsWater = false, $avoidsSun = false;
+  protected $speedMultiplier = 1.0;
 
 	public function __construct(Mob $mob){
 		$this->mob = $mob;
@@ -81,12 +82,11 @@ class EntityNavigator{
 			}
 
 			$last = null;
-     //$this->mob->level->addParticle(new HappyVillagerParticle(new Vector3($current->x + 0.5, $currentY + 1.5, $current->y + 0.5)));
 
 			if($current->equals($to)){
 				return $this->initPath($path, $current);
 			}
-			if($ticks++ > 100){
+			if($ticks++ > 50){
 				return $this->initPath($path, $highScore);
 			}
 

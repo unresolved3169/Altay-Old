@@ -90,7 +90,7 @@ class WanderBehavior extends Behavior{
 			$blockCoords = new Vector3($x,$y,$z);
 			$block = $entity->level->getBlock($this->mob->asVector3()->add($blockCoords));
 			$blockDown = $block->getSide(0);
-			if($blockDown->isSolid()){
+			if(!$block->isSolid() and $blockDown->isSolid()){
 				$weight = $this->calculateBlockWeight($entity, $block, $blockDown);
 				if($weight > $currentWeight){
 					$currentWeight = $weight;

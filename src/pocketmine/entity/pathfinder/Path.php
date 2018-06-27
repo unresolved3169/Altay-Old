@@ -46,7 +46,7 @@ class Path{
 		if($this->havePath()){
 			$next = reset($this->tiles);
 
-			if((int) $next->x == (int) $entity->x and (int) $next->y == (int) $entity->z){
+			if($next->x == (int) floor($entity->x) and $next->y == (int) floor($entity->z)){
 				array_shift($this->tiles);
 
 				return $this->getNextTile($entity);

@@ -56,7 +56,7 @@ class MeleeAttackBehavior extends Behavior{
 
 		$this->lastPlayerPos = $target->asVector3();
 
-    $path = $this->mob->getNavigator()->findPath($target, $this->speedMultiplier);
+    $path = $this->mob->getNavigator()->findPath($target);
 		return $path->havePath();
 	}
 
@@ -81,7 +81,7 @@ class MeleeAttackBehavior extends Behavior{
 
 		$canSee = true;
 
-		if($this->delay <= 0 and ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)){
+		if($this->delay <= 0 or $canSee or ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)){
 			$this->lastPlayerPos = $target->asVector3();
 
 			$this->delay = 4 + $this->random->nextBoundedInt(7);
