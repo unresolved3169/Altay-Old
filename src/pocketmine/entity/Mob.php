@@ -65,10 +65,8 @@ abstract class Mob extends Living{
     }
 
     protected function onBehaviorUpdate(int $tick) : void{
-        if($tick % 3 === 0){
-            $this->targetBehaviorPool->checkBehaviors($tick);
-            $this->behaviorPool->checkBehaviors($tick);
-        }
+        $this->targetBehaviorPool->onUpdate($tick);
+        $this->behaviorPool->onUpdate($tick);
 
         $this->navigator->onNavigateUpdate($tick);
 

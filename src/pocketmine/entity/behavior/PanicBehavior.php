@@ -26,6 +26,8 @@ namespace pocketmine\entity\behavior;
 
 class PanicBehavior extends StrollBehavior{
 
+  protected $mutexBits = 1;
+
 	public function canStart() : bool{
 		return $this->mob->getLastDamageCause() !== null;
 	}

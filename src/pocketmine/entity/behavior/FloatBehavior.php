@@ -31,6 +31,7 @@ class FloatBehavior extends Behavior{
 	public function __construct(Mob $mob){
 		parent::__construct($mob);
 		$mob->setGenericFlag(Mob::DATA_FLAG_SWIMMER, true);
+    $this->mutexBits = 4;
 	}
 
  public function canStart() : bool{

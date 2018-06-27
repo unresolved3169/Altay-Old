@@ -33,6 +33,7 @@ class SittingBehavior extends Behavior{
 	// TODO : Change to Wolf
 	public function __construct(Mob $mob){
 		parent::__construct($mob);
+   $this->mutexBits = 1;
 	}
 
 	public function canStart(): bool{

@@ -36,6 +36,7 @@ class JumpAttackBehavior extends Behavior{
 		parent::__construct($mob);
 
 		$this->leapHeight = $leapHeight;
+    $this->mutexBits = 5;
 	}
 
 	public function canStart() : bool{

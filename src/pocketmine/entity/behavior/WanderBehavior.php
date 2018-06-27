@@ -47,6 +47,7 @@ class WanderBehavior extends Behavior{
 
 		$this->speedMultiplier = $speedMultiplier;
 		$this->chance = $chance;
+    $this->mutexBits = 1;
 	}
 
 	public function canStart() : bool{

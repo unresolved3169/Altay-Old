@@ -32,6 +32,7 @@ class CreeperSwellBehavior extends Behavior{
 	// TODO : Mob Change to Creeper
 	public function __construct(Mob $mob){
 		parent::__construct($mob);
+    $this->mutexBits = 1;
 	}
 
 	public  function canStart() : bool{

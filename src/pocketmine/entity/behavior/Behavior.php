@@ -33,6 +33,8 @@ abstract class Behavior{
 	protected $mob;
 	/** @var Random */
 	protected $random;
+	/** @var int */
+	protected $mutexBits = 0;
 
 	public function getName() : string{
 		return (new \ReflectionClass($this))->getShortName();
@@ -54,5 +56,12 @@ abstract class Behavior{
 	public function onTick() : void{}
 
 	public function onEnd() : void{}
-
+	
+	public function setMutexBits(int $bit) : void{
+	    $this->mutexBits = $bit;
+	}
+	
+	public function getMutexBits() : int{
+	    return $this->mutexBits;
+	}
 }

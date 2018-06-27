@@ -38,6 +38,7 @@ class MateBehavior extends Behavior{
 		parent::__construct($mob);
 
 		$this->speedMultiplier = $speedMultiplier;
+    $this->mutexBits = 3;
 	}
 
 	public function canStart() : bool{

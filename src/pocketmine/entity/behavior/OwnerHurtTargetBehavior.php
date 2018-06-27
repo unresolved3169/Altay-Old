@@ -29,6 +29,8 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 
 class OwnerHurtTargetBehavior extends Behavior{
 
+  protected $mutexBits = 1;
+
 	public function canStart() : bool{
 		$owner = $this->mob->getOwningEntity();
 

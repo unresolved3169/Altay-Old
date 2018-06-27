@@ -28,50 +28,58 @@ class BehaviorPool{
 
 	/** @var Behavior[] */
 	protected $behaviors = [];
-	/** @var Behavior|null */
-	protected $currentBehavior = null;
+	/** @var Behavior[]*/
+	protected $workingBehaviors = [];
+	protected $tickRate = 3;
 
 	public function __construct(array $behaviors = []){
 		$this->behaviors = $behaviors;
 	}
 
-	public function setBehavior(Behavior $behavior, int $index = null) : void{
-		if($index === null){
-			$this->behaviors[] = $behavior;
-		}else{
-			$this->behaviors[$index] = $behavior;
-		}
+	public function setBehavior(int $priority, Behavior $behavior) : void{
+		$this->behaviors[spl_object_hash($behavior)] = [$priority, $behavior];
 	}
 
-	public function removeBehavior(int $index) : void{
-		unset($this->behaviors[$index]);
+	public function removeBehavior(Behavior $behavior) : void{
+		unset($this->behaviors[spl_object_hash($behavior)]);
 	}
 
 	/**
-	 * Checks behaviors to execute
+	 * Updates behaviors
 	 */
-	public function checkBehaviors(int $tick) : void{
-		foreach($this->behaviors as $index => $behavior){
-			if($behavior == $this->currentBehavior){
-				if($behavior->canContinue()){
-					$behavior->onTick();
-					break;
-				}
-				$behavior->onEnd();
-				$this->currentBehavior = null;
-       continue;
-			}
-			if($behavior->canStart()){
-				if($this->currentBehavior == null or (array_search($this->currentBehavior, $this->behaviors)) > $index){
-					if($this->currentBehavior != null){
-						$this->currentBehavior->onEnd();
-					}
-					$behavior->onStart();
-					$behavior->onTick();
-					$this->currentBehavior = $behavior;
-					break;
-				}
-			}
-		}
+	public function onUpdate(int $tick) : void{
+	    if($tick % 3 === 0){
+	        foreach($this->behaviors as $i => $data){
+	            if(!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)){
+	                $this->workingBehaviors[$i] = $data[1];
+	                $data[1]->onStart();
+	            }
+	        }
+	    }else{
+	        foreach($this->workingBehaviors as $hash => $b){
+	            if(!$b->canContinue()){
+	                $b->onEnd();
+	                unset($this->workingBehaviors[$hash]);
+	            }else{
+	                $b->onTick();
+	            }
+	        }
+	    }
+	}
+	
+	public function canUse(array $data) : bool{
+	    $priority = $data[0];
+	    foreach($this->behaviors as $b){
+	        if($priority >= $b[0]){
+	            if(!$this->theyCanWorkCompatible($data[1], $b[1])){
+	                return false;
+	            }
+	        }
+	    }
+	    return true;
+	}
+	
+	public function theyCanWorkCompatible(Behavior $b1, Behavior $b2) : bool{
+	    return $b1->getMutexBits() & $b2->getMutexBits() === 0;
 	}
 }

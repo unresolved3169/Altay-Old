@@ -44,6 +44,7 @@ class FleeSunBehavior extends Behavior{
 		parent::__construct($mob);
 
 		$this->speedMultiplier = $speedMultiplier;
+    $this->mutexBits = 1;
 	}
 
 	public function canStart() : bool{

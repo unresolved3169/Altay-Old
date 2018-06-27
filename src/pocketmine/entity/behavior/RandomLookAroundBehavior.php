@@ -35,6 +35,7 @@ class RandomLookAroundBehavior extends Behavior{
 
 	public function __construct(Mob $mob){
 		parent::__construct($mob);
+    $this->mutexBits = 3;
 	}
 
 	public function canStart() : bool{

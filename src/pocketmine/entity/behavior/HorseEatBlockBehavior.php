@@ -42,6 +42,7 @@ class HorseEatBlockBehavior extends Behavior{
 	// TODO : MOB CHANGE TO HORSE
 	public function __construct(Mob $mob, int $duration){
 		parent::__construct($mob);
+    $this->mutexBits = 7;
 
 		$this->duration = $this->timeLeft = max(40, $duration);
 	}

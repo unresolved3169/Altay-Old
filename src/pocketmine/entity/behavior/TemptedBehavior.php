@@ -56,6 +56,7 @@ class TemptedBehavior extends Behavior{
 
 		$this->temptItems = $temptItemIds;
 		$this->speedMultiplier = $speedMultiplier;
+    $this->mutexBits = 3;
 	}
 
 	public function canStart() : bool{

@@ -42,6 +42,7 @@ class FindAttackableTargetBehavior extends Behavior{
 
         $this->targetDistance = $targetDistance;
         $this->targetClass = $targetClass;
+        $this->mutexBits = 1;
     }
 
     public function canStart() : bool{

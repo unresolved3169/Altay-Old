@@ -29,15 +29,15 @@ use pocketmine\entity\Mob;
 class ArrowAttackBehavior extends Behavior{
 
     /** @var float */
-    protected $speedMultiplier;
+    protected $speedMultiplier = 1.0;
     /** @var int */
     protected $minAttackTime, $maxAttackTime;
     /** @var float */
     protected $maxAttackDistanceIn, $maxAttackDistance;
     /** @var int */
-    protected $rangedAttackTime;
+    protected $rangedAttackTime = 0;
     /** @var int */
-    protected $targetSeenTicks;
+    protected $targetSeenTicks = 0;
 
     public function __construct(Mob $mob, float $speedMultiplier, int $minAttackTime, int $maxAttackTime, float $maxAttackDistanceIn){
         parent::__construct($mob);
@@ -48,6 +48,7 @@ class ArrowAttackBehavior extends Behavior{
         $this->maxAttackDistanceIn = $maxAttackDistanceIn;
         $this->maxAttackDistance = $maxAttackDistanceIn ** 2;
         $this->rangedAttackTime = -1;
+        $this->mutexBits = 3;
     }
 
     public function canStart() : bool{

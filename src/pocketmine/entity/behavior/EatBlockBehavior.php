@@ -40,6 +40,7 @@ class EatBlockBehavior extends Behavior{
 
 	public function __construct(Mob $mob){
 		parent::__construct($mob);
+    $this->mutexBits = 7;
 	}
 
 	public function canStart(): bool{

@@ -29,6 +29,7 @@ use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\Player;
 
 class HurtByTargetBehavior extends FindAttackableTargetBehavior{
+  protected $mutexBits = 1;
 
 	public function canStart() : bool{
 		$player = $this->getLastAttackSource();

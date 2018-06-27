@@ -41,6 +41,7 @@ class LookAtPlayerBehavior extends Behavior{
 		parent::__construct($mob);
 
 		$this->lookDistance = $lookDistance;
+    $this->mutexBits = 2;
 	}
 
 	public function canStart() : bool{
