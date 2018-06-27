@@ -86,6 +86,8 @@ use pocketmine\inventory\transaction\InventoryTransaction;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Consumable;
 use pocketmine\item\Durable;
+use pocketmine\item\enchantment\EnchantmentInstance;
+use pocketmine\item\enchantment\MeleeWeaponEnchantment;
 use pocketmine\item\WritableBook;
 use pocketmine\item\WrittenBook;
 use pocketmine\item\Item;
@@ -359,11 +361,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $serverSettingsForm = null;
 
 	/** @var int */
-	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
-	protected $keepExperience = false;
+	private $bossbarIdCounter = 0;
+	/** @var Bossbar[] */
+	private $bossbars = [];
 
-    /** @var null|Bossbar */
-    private $bossbar = null;
+	/** @var int */
+	protected $commandPermission = AdventureSettingsPacket::PERMISSION_NORMAL;
+
+	/** @var bool */
+	protected $keepExperience = false;
 
 	/**
 	 * @return TranslationContainer|string
@@ -2284,7 +2290,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->server->broadcastPacket($this->getViewers(), $packet);
 				break;
 			case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
-				$this->addXpLevels($packet->data);
+				if($packet->data == 0){
+					return false;
+				}
+
+				if($this->isSurvival()){
+					$this->addXpLevels($packet->data);
+				}
 				break;
 			case EntityEventPacket::COMPLETE_TRADE:
 				// TODO : İncele
@@ -2516,6 +2528,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
+						if(!$target->isAlive()){
+							return true;
+						}
+
 						$item = $this->inventory->getItemInHand();
 						$clickPos = $packet->trData->clickPos;
 						$slot = $packet->trData->hotbarSlot;
@@ -2556,6 +2572,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						$ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $heldItem->getAttackPoints());
+
+						$meleeEnchantmentDamage = 0;
+						/** @var EnchantmentInstance[] $meleeEnchantments */
+						$meleeEnchantments = [];
+						foreach($heldItem->getEnchantments() as $enchantment){
+							$type = $enchantment->getType();
+							if($type instanceof MeleeWeaponEnchantment and $type->isApplicableTo($target)){
+								$meleeEnchantmentDamage += $type->getDamageBonus($enchantment->getLevel());
+								$meleeEnchantments[] = $enchantment;
+							}
+						}
+						$ev->setModifier($meleeEnchantmentDamage, EntityDamageEvent::MODIFIER_WEAPON_ENCHANTMENTS);
+
 						if($cancelled){
 							$ev->setCancelled();
 						}
@@ -2583,11 +2612,21 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							}
 						}
 
-						if($heldItem->onAttackEntity($target) and $this->isSurvival()){ //always fire the hook, even if we are survival
-							$this->inventory->setItemInHand($heldItem);
+						foreach($meleeEnchantments as $enchantment){
+							$type = $enchantment->getType();
+							assert($type instanceof MeleeWeaponEnchantment);
+							$type->onPostAttack($this, $target, $enchantment->getLevel());
 						}
 
-						$this->exhaust(0.3, PlayerExhaustEvent::CAUSE_ATTACK);
+						if($this->isAlive()){
+							//reactive damage like thorns might cause us to be killed by attacking another mob, which
+							//would mean we'd already have dropped the inventory by the time we reached here
+							if($heldItem->onAttackEntity($target) and $this->isSurvival()){ //always fire the hook, even if we are survival
+								$this->inventory->setItemInHand($heldItem);
+							}
+
+							$this->exhaust(0.3, PlayerExhaustEvent::CAUSE_ATTACK);
+						}
 
 						return true;
 					default:
@@ -3295,6 +3334,52 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	}
 
 	/**
+	 * Returns bossbar with id
+	 *
+	 * @param int $id
+	 * @return null|Bossbar
+	 */
+	public function getBossbar(int $id) : ?Bossbar{
+		return $this->bossbars[$id] ?? null;
+	}
+
+	/**
+	 * Removes a bossbar with id
+	 *
+	 * @param int $id
+	 * @return bool
+	 */
+	public function removeBossbar(int $id) : bool{
+		if(!isset($this->bossbars[$id])){
+			return false;
+		}
+
+		$this->bossbars[$id]->hideFrom($this);
+		unset($this->bossbars[$id]);
+
+		return true;
+	}
+
+	/**
+	 * Adds a bossbar to the player.
+	 *
+	 * @param string $title
+	 * @param float $health
+	 * @param float $maxHealth
+	 * @param int|null $id
+	 * @return int
+	 */
+	public function addBossbar(string $title, float $health = 0, float $maxHealth = 1, int $id = null) : int{
+		$bossbar = new Bossbar($title, $health, $maxHealth);
+		$bossbar->showTo($this);
+
+		$id = $id ?? $this->bossbarIdCounter++;
+		$this->bossbars[$id] = $bossbar;
+
+		return $id;
+	}
+
+	/**
 	 * Adds a title text to the user's screen, with an optional subtitle.
 	 *
 	 * @param string $title
@@ -3418,23 +3503,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 		$this->dataPacket($pk);
 	}
-	
-    public function getBossBar(): Bossbar{
-        return $this->bossbar;
-    }
-
-    public function removeBossBar(){
-        if($this->bossbar == null) return;
-        $this->bossbar->hideFrom($this);
-        $this->bossbar = null;
-    }
-
-    public function sendBossBar(string $title, float $health = 0, float $maxHealth = 1){
-        $this->removeBossBar(); // TODO: Allow multiple bossbars, and a way to remove them
-        $bossbar = new Bossbar($title, $health, $maxHealth);
-        $bossbar->showTo($this);
-        $this->bossbar = $bossbar;
-    }
 
 	/**
 	 * Sends a popup message to the player
@@ -3995,7 +4063,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->addWindow($this->cursorInventory, ContainerIds::CURSOR, true);
 
 		$this->craftingGrid = new CraftingGrid($this, CraftingGrid::SIZE_SMALL);
-		
+
 		$this->offHandInventory = new PlayerOffHandInventory($this);
 		$this->addWindow($this->offHandInventory, ContainerIds::OFFHAND, true);
 
@@ -4005,7 +4073,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function getCursorInventory() : PlayerCursorInventory{
 		return $this->cursorInventory;
 	}
-	
+
 	public function getOffHandInventory() : PlayerOffHandInventory{
 		return $this->offHandInventory;
 	}
