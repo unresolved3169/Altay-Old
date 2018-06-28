@@ -26,7 +26,7 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
 
-class ArrowAttackBehavior extends Behavior{
+class ProjectileAttackBehavior extends Behavior{
 
     /** @var float */
     protected $speedMultiplier = 1.0;
@@ -77,7 +77,7 @@ class ArrowAttackBehavior extends Behavior{
         if($dist <= $this->maxAttackDistance and $this->targetSeenTicks >= 20){
             $this->mob->getNavigator()->clearPath();
         }else{
-            $this->mob->getNavigator()->tryMoveTo($this->mob->getTargetEntity()); // TODO : FIXLE EMRE
+            $this->mob->getNavigator()->tryMoveTo($this->mob->getTargetEntity(), $this->speedMultiplier);
         }
 
         $this->mob->setLookPosition($this->mob->getTargetEntity());
