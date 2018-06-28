@@ -53,7 +53,7 @@ class BehaviorPool{
 	    if($tick % 3 === 0){
 	        /** @var \pocketmine\entity\behavior\Behavior[] $data */
             foreach($this->behaviors as $i => $data){
-	            if(!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)){
+	            if($data[1]->canStart() and $this->canUse($data)){
 	                $this->workingBehaviors[$i] = $data[1];
 	                $data[1]->onStart();
 	            }
@@ -72,12 +72,15 @@ class BehaviorPool{
 	
 	public function canUse(array $data) : bool{
 	    $priority = $data[0];
-	    foreach($this->behaviors as $b){
+	    foreach($this->behaviors as $h => $b){
+          if($b[1] == $data[1]) continue;
 	        if($priority >= $b[0]){
-	            if(!$this->theyCanWorkCompatible($data[1], $b[1])){
+	            if(!$this->theyCanWorkCompatible($data[1], $b[1]) and isset($this->workingBehaviors[$h])){
 	                return false;
 	            }
-	        }
+	        }elseif(isset($this->workingBehaviors[$h])){
+           return false;
+          }
 	    }
 	    return true;
 	}
