@@ -67,7 +67,7 @@ class Wolf extends Tamable{
     protected function initEntity() : void{
         $this->setMaxHealth(8);
         parent::initEntity();
-        $this->setDefaultMovementSpeed(0.3);
+        $this->setMovementSpeed(0.3);
         $this->setAttackDamage(3);
         $this->setFollowRange(16);
 
@@ -94,17 +94,9 @@ class Wolf extends Tamable{
                     $this->setAngry(false);
                     $this->setAttackDamage(4);
 
-                    $particle = new HeartParticle($this, mt_rand(0, 2));
-                    $particle->setComponents($this->x, $this->y + ($this->height + 0.85), $this->z);
-                    for($i = 0; $i < 7; ++$i){
-                        $this->level->addParticle($particle);
-                    }
+                    $this->broadcastEntityEvent(EntityEventPacket::TAME_SUCCESS);
                 }else{
-                    $particle = new SmokeParticle($this);
-                    $particle->setComponents($this->x, $this->y + ($this->height + 0.85), $this->z);
-                    for($i = 0; $i < 7; ++$i){
-                        $this->level->addParticle($particle);
-                    }
+                    $this->broadcastEntityEvent(EntityEventPacket::TAME_FAIL);
                 }
             }
         }

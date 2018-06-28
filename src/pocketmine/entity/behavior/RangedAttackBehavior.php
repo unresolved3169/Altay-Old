@@ -26,7 +26,7 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
 
-class ProjectileAttackBehavior extends Behavior{
+class RangedAttackBehavior extends Behavior{
 
     /** @var float */
     protected $speedMultiplier = 1.0;
@@ -96,7 +96,7 @@ class ProjectileAttackBehavior extends Behavior{
             $this->rangedAttackTime = floor($f * ($this->maxAttackDistance - $this->minAttackTime) + $this->minAttackTime);
         }elseif($this->rangedAttackTime < 0){
             $f = sqrt($dist) / $this->maxAttackDistanceIn;
-            $this->rangedAttackTime = floor($f * ($this->maxAttackDistance - $this->minAttackTime) + $this->minAttackTime);
+            $this->rangedAttackTime = floor($f * ($this->maxAttackTime - $this->minAttackTime) + $this->minAttackTime);
         }
     }
 }

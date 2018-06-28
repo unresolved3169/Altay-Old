@@ -95,9 +95,11 @@ class EntityNavigator{
             $closed[$current->getHashCode()] = $current;
 
             foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
-                $blockPos = $this->getBlockByPoint($n, $blockCache);
-                if(!isset($closed[$n->getHashCode()]) and $blockPos->distanceSquared($this->mob) <= $followRange){
+                if(!isset($closed[$n->getHashCode()])){
                     $g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
+                    if($g >= $followRange * 2){
+                     continue;
+                    }
 
                     if(isset($open[$n->getHashCode()])){
                         $og = $open[$n->getHashCode()];
