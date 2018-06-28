@@ -30,6 +30,7 @@ class BehaviorPool{
 	protected $behaviors = [];
 	/** @var Behavior[]*/
 	protected $workingBehaviors = [];
+	/** @var int */
 	protected $tickRate = 3;
 
 	public function __construct(array $behaviors = []){
@@ -44,12 +45,14 @@ class BehaviorPool{
 		unset($this->behaviors[spl_object_hash($behavior)]);
 	}
 
-	/**
-	 * Updates behaviors
-	 */
+    /**
+     * Updates behaviors
+     * @param int $tick
+     */
 	public function onUpdate(int $tick) : void{
 	    if($tick % 3 === 0){
-	        foreach($this->behaviors as $i => $data){
+	        /** @var \pocketmine\entity\behavior\Behavior[] $data */
+            foreach($this->behaviors as $i => $data){
 	            if(!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)){
 	                $this->workingBehaviors[$i] = $data[1];
 	                $data[1]->onStart();
@@ -80,6 +83,6 @@ class BehaviorPool{
 	}
 	
 	public function theyCanWorkCompatible(Behavior $b1, Behavior $b2) : bool{
-	    return $b1->getMutexBits() & $b2->getMutexBits() === 0;
+	    return ($b1->getMutexBits() & $b2->getMutexBits()) === 0;
 	}
 }

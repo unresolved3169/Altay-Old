@@ -24,29 +24,29 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-use pocketmine\entity\Entity;
-use pocketmine\entity\Mob;
-use pocketmine\math\Vector3;
+use pocketmine\entity\Tamable;
 use pocketmine\Player;
-use pocketmine\utils\MainLogger;
-use pocketmine\entity\pathfinder\Path;
 
+/**
+ * Override necessary
+ * @property Tamable $mob
+ */
 class FollowOwnerBehavior extends Behavior{
 
     /** @var float */
     protected $speedMultiplier;
+    /** @var int */
     protected $followDelay = 0;
 
-    // TODO : Mob change to Wolf
-    public function __construct(Mob $mob, float $speedMultiplier){
+    public function __construct(Tamable $mob, float $speedMultiplier){
         parent::__construct($mob);
 
         $this->speedMultiplier = $speedMultiplier;
         $this->mutexBits = 3;
     }
 
-    public function canStart(): bool{
-        if(!$this->mob->getGenericFlag(Entity::DATA_FLAG_TAMED)) return false;
+    public function canStart() : bool{
+        if(!$this->mob->isTamed()) return false;
         if($this->mob->getOwningEntity() === null or $this->mob->isLeashed() or $this->mob->isSitting()) return false;
 
         return true;

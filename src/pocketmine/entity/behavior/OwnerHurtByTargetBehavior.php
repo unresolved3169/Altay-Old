@@ -27,23 +27,24 @@ namespace pocketmine\entity\behavior;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 
 class OwnerHurtByTargetBehavior extends Behavior{
-  protected $mutexBits = 1;
 
-	public function canStart() : bool{
-		$owner = $this->mob->getOwningEntity();
+    protected $mutexBits = 1;
 
-		if($owner !== null){
-			$cause = $owner->getLastDamageCause();
-			if($cause instanceof EntityDamageByEntityEvent){
-				$this->mob->setTargetEntity($cause->getDamager());
-				return true;
-			}
-		}
+    public function canStart() : bool{
+        $owner = $this->mob->getOwningEntity();
 
-		return false;
-	}
+        if($owner !== null){
+            $cause = $owner->getLastDamageCause();
+            if($cause instanceof EntityDamageByEntityEvent){
+                $this->mob->setTargetEntity($cause->getDamager());
+                return true;
+            }
+        }
 
-	public function canContinue() : bool{
-		return false;
-	}
+        return false;
+    }
+
+    public function canContinue() : bool{
+        return false;
+    }
 }
