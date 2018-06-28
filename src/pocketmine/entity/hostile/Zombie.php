@@ -38,6 +38,7 @@ use pocketmine\entity\behavior\BehaviorPool;
 use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
+use pocketmine\entity\passive\Villager;
 
 class Zombie extends Monster implements Ageable{
 	public const NETWORK_ID = self::ZOMBIE;
@@ -88,19 +89,15 @@ class Zombie extends Monster implements Ageable{
 	}
 
 	protected function addBehaviors() : void{
-		$this->behaviorPool = new BehaviorPool(
-			[
-				new FloatBehavior($this),
-				new MeleeAttackBehavior($this, 1.0),
-				new FleeSunBehavior($this),
-				new WanderBehavior($this),
-				new LookAtPlayerBehavior($this, 8.0),
-				new RandomLookAroundBehavior($this)
-			]);
-			$this->targetBehaviorPool = new BehaviorPool([
-				new HurtByTargetBehavior($this),
-				new FindAttackableTargetBehavior($this, 35)
-			]);
+	    $this->behaviorPool->setBehavior(0, new FloatBehavior($this));
+	    $this->behaviorPool->setBehavior(2, new MeleeAttackBehavior($this, 1.0));
+	    $this->behaviorPool->setBehavior(4, new MeleeAttackBehavior($this, 1.0, Villager::class));
+	    $this->behaviorPool->setBehavior(7, new WanderBehavior($this, 1.0));
+	    $this->behaviorPool->setBehavior(8, new LookAtPlayer($this, 0.8));
+	    $this->behaviorPool->setBehavior(8, new RandomLookAroundBehavior($this));
+	    
+	    $this->targetBehaviorPool->setBehavior(2, new FindAttackableTargetBehavior($this, 35));
+	    $this->targetBehaviorPool->setBehavior(2, new FindAttackableTargetBehavior($this, 35, Villager::class));
 	}
 
 	public function isBaby() : bool{
