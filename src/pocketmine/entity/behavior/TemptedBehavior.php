@@ -27,107 +27,105 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
-use pocketmine\entity\pathfinder\Path;
 
 class TemptedBehavior extends Behavior{
-    
-	/** @var float */
-	protected $speedMultiplier;
-	/** @var int[] */
-	protected $temptItems;
-	/** @var int */
-	protected $coolDown = 0;
-	/** @var Player */
-	protected $temptingPlayer;
-	/** @var Vector3 */
-	protected $lastPlayerPos;
-	/** @var Vector3 */
-	protected $originalPos;
 
-	/**
-	 * TemptedBehavior constructor.
-	 * @param Mob    $mob
-	 * @param int[]  $temptItemIds
-	 * @param float  $lookDistance
-	 * @param float  $speedMultiplier
-	 */
-	public function __construct(Mob $mob, array $temptItemIds, float $speedMultiplier){
-		parent::__construct($mob);
+    /** @var float */
+    protected $speedMultiplier;
+    /** @var int[] */
+    protected $temptItems;
+    /** @var int */
+    protected $coolDown = 0;
+    /** @var Player */
+    protected $temptingPlayer;
+    /** @var Vector3 */
+    protected $lastPlayerPos;
+    /** @var Vector3 */
+    protected $originalPos;
 
-		$this->temptItems = $temptItemIds;
-		$this->speedMultiplier = $speedMultiplier;
-    $this->mutexBits = 3;
-	}
+    /**
+     * TemptedBehavior constructor.
+     * @param Mob $mob
+     * @param int[] $temptItemIds
+     * @param float $speedMultiplier
+     */
+    public function __construct(Mob $mob, array $temptItemIds, float $speedMultiplier){
+        parent::__construct($mob);
 
-	public function canStart() : bool{
-		if($this->coolDown > 0){
-			$this->coolDown--;
-			return false;
-		}
+        $this->temptItems = $temptItemIds;
+        $this->speedMultiplier = $speedMultiplier;
+        $this->mutexBits = 3;
+    }
 
-		/** @var Player|null $player */
-		$player = $this->mob->level->getNearestEntity($this->mob, $this->mob->getFollowRange(), Player::class);
-		if($player === null) return false;
-		$player = $this->containsTempItems($player) ? $player : null;
+    public function canStart() : bool{
+        if($this->coolDown > 0){
+            $this->coolDown--;
+            return false;
+        }
 
-		if($player === null) return false;
+        /** @var Player|null $player */
+        $player = $this->mob->level->getNearestEntity($this->mob, $this->mob->getFollowRange(), Player::class);
+        if($player === null) return false;
+        $player = $this->containsTempItems($player) ? $player : null;
 
-		if($player !== $this->temptingPlayer){
-			$this->temptingPlayer = $player;
-			$this->lastPlayerPos = $player->asVector3();
-			$this->originalPos = $this->mob->asVector3();
-		}
+        if($player === null) return false;
 
-		return true;
-	}
+        if($player !== $this->temptingPlayer){
+            $this->temptingPlayer = $player;
+            $this->lastPlayerPos = $player->asVector3();
+            $this->originalPos = $this->mob->asVector3();
+        }
 
-	public function containsTempItems(Player $player) : bool{
-		$handItem = $player->getInventory()->getItemInHand();
-		foreach($this->temptItems as $temptItem){
-			if($temptItem == $handItem->getId()){
-				return true;
-			}
-		}
+        return true;
+    }
 
-		return false;
-	}
+    public function containsTempItems(Player $player) : bool{
+        $handItem = $player->getInventory()->getItemInHand();
+        foreach($this->temptItems as $temptItem){
+            if($temptItem == $handItem->getId()){
+                return true;
+            }
+        }
 
-	public function canContinue() : bool{
-		if(abs($this->originalPos->y - $this->mob->y) < 0.5)
-			return true;
+        return false;
+    }
 
-		return false;
-	}
+    public function canContinue() : bool{
+        if(abs($this->originalPos->y - $this->mob->y) < 0.5)
+            return true;
 
-	public function onTick(): void{
-		if($this->temptingPlayer === null) return;
-		$distanceToPlayer = $this->mob->distance($this->temptingPlayer);
+        return false;
+    }
 
-		if($distanceToPlayer < 1.75){
-			$this->mob->resetMotion();
-			$this->mob->setLookPosition($this->temptingPlayer);
+    public function onTick(): void{
+        if($this->temptingPlayer === null) return;
+        $distanceToPlayer = $this->mob->distance($this->temptingPlayer);
 
-			$this->mob->getNavigator()->clearPath();
+        if($distanceToPlayer < 1.75){
+            $this->mob->resetMotion();
+            $this->mob->setLookPosition($this->temptingPlayer);
 
-			return;
-		}
-		
-		$deltaDistance = $this->lastPlayerPos->distance($this->temptingPlayer);
-		if(!$this->mob->getNavigator()->havePath() || $deltaDistance > 1){
-		    $m = 2 - $distanceToPlayer;
-		    $m = ($m <= 0) ? 1 : $m / 2.0;
-		    $this->mob->getNavigator()->tryMoveTo($this->temptingPlayer, $this->speedMultiplier * $m);
-		    $this->lastPlayerPos = $this->temptingPlayer->asVector3();
-		}
+            $this->mob->getNavigator()->clearPath();
 
-		$this->mob->setLookPosition($this->temptingPlayer);
-	}
+            return;
+        }
 
-	public function onEnd(): void{
-		$this->coolDown = 100;
-		$this->mob->resetMotion();
-		$this->temptingPlayer = null;
-		$this->mob->pitch = 0;
-		$this->mob->getNavigator()->clearPath();
-	}
+        $deltaDistance = $this->lastPlayerPos->distance($this->temptingPlayer);
+        if(!$this->mob->getNavigator()->havePath() || $deltaDistance > 1){
+            $m = 2 - $distanceToPlayer;
+            $m = ($m <= 0) ? 1 : $m / 2.0;
+            $this->mob->getNavigator()->tryMoveTo($this->temptingPlayer, $this->speedMultiplier * $m);
+            $this->lastPlayerPos = $this->temptingPlayer->asVector3();
+        }
+
+        $this->mob->setLookPosition($this->temptingPlayer);
+    }
+
+    public function onEnd(): void{
+        $this->coolDown = 100;
+        $this->mob->resetMotion();
+        $this->temptingPlayer = null;
+        $this->mob->pitch = 0;
+        $this->mob->getNavigator()->clearPath();
+    }
 }

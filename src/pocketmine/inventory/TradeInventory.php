@@ -26,7 +26,7 @@ namespace pocketmine\inventory;
 
 use pocketmine\nbt\NetworkLittleEndianNBTStream;
 use pocketmine\network\mcpe\protocol\UpdateTradePacket;
-use pocketmine\passive\Villager;
+use pocketmine\entity\passive\Villager;
 use pocketmine\Player;
 
 class TradeInventory extends BaseInventory{
