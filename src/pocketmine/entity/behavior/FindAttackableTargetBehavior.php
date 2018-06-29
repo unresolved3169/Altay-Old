@@ -37,7 +37,7 @@ class FindAttackableTargetBehavior extends Behavior{
     /** @var string */
     protected $targetClass;
 
-    public function __construct(Mob $mob, string $targetClass = Player::class){
+    public function __construct(Mob $mob, string $targetClass = Mob::class){
         parent::__construct($mob);
 
         $this->targetDistance = $mob->getFollowRange() ** 2;

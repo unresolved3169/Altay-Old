@@ -24,68 +24,74 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-class BehaviorPool{
+class BehaviorPool
+{
 
-	/** @var Behavior[] */
-	protected $behaviors = [];
-	/** @var Behavior[]*/
-	protected $workingBehaviors = [];
-	/** @var int */
-	protected $tickRate = 3;
+    /** @var Behavior[] */
+    protected $behaviors = [];
+    /** @var Behavior[] */
+    protected $workingBehaviors = [];
+    /** @var int */
+    protected $tickRate = 3;
 
-	public function __construct(array $behaviors = []){
-		$this->behaviors = $behaviors;
-	}
+    public function __construct(array $behaviors = [])
+    {
+        $this->behaviors = $behaviors;
+    }
 
-	public function setBehavior(int $priority, Behavior $behavior) : void{
-		$this->behaviors[spl_object_hash($behavior)] = [$priority, $behavior];
-	}
+    public function setBehavior(int $priority, Behavior $behavior): void
+    {
+        $this->behaviors[spl_object_hash($behavior)] = [$priority, $behavior];
+    }
 
-	public function removeBehavior(Behavior $behavior) : void{
-		unset($this->behaviors[spl_object_hash($behavior)]);
-	}
+    public function removeBehavior(Behavior $behavior): void
+    {
+        unset($this->behaviors[spl_object_hash($behavior)]);
+    }
 
     /**
      * Updates behaviors
      * @param int $tick
      */
-	public function onUpdate(int $tick) : void{
-	    if($tick % 3 === 0){
-	        /** @var \pocketmine\entity\behavior\Behavior[] $data */
-            foreach($this->behaviors as $i => $data){
-	            if(!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)){
-	                $this->workingBehaviors[$i] = $data[1];
-	                $data[1]->onStart();
-	            }
-	        }
-	    }else{
-	        foreach($this->workingBehaviors as $hash => $b){
-	            if(!$b->canContinue()){
-	                $b->onEnd();
-	                unset($this->workingBehaviors[$hash]);
-	            }else{
-	                $b->onTick();
-	            }
-	        }
-	    }
-	}
-	
-	public function canUse(array $data) : bool{
-	    $priority = $data[0];
-	    foreach($this->behaviors as $h => $b){
-          if($b[1] == $data[1]) continue;
-	        if($priority >= $b[0]){
-	            if(!$this->theyCanWorkCompatible($data[1], $b[1]) and isset($this->workingBehaviors[$h])){
-	                return false;
-	            }
-	        }elseif(isset($this->workingBehaviors[$h])){
-           return false;
-          }
-	    }
-	    return true;
-	}
-	
-	public function theyCanWorkCompatible(Behavior $b1, Behavior $b2) : bool{
-	    return ($b1->getMutexBits() & $b2->getMutexBits()) === 0;
-	}
+    public function onUpdate(int $tick): void
+    {
+        if ($tick % 3 === 0) {
+            /** @var \pocketmine\entity\behavior\Behavior[] $data */
+            foreach ($this->behaviors as $i => $data) {
+                if (!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)) {
+                    $this->workingBehaviors[$i] = $data[1];
+                    $data[1]->onStart();
+                }
+            }
+        }
+        foreach ($this->workingBehaviors as $hash => $b) {
+            if (!$b->canContinue()) {
+                $b->onEnd();
+                unset($this->workingBehaviors[$hash]);
+            } else {
+                $b->onTick();
+            }
+        }
+    }
+
+    public function canUse(array $data): bool
+    {
+        $priority = $data[0];
+        foreach ($this->behaviors as $h => $b) {
+            if ($b[1] == $data[1]) continue;
+            if ($priority >= $b[0]) {
+                if (!$this->theyCanWorkCompatible($data[1], $b[1]) and isset($this->workingBehaviors[$h])) {
+                    return false;
+                }
+            } elseif (isset($this->workingBehaviors[$h])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public function theyCanWorkCompatible(Behavior $b1, Behavior $b2): bool
+    {
+        return ($b1->getMutexBits() & $b2->getMutexBits()) === 0;
+    }
 }

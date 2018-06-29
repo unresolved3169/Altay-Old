@@ -968,29 +968,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	}
 
-	public function canSeeEntity(Entity $target) : bool{
-		$entityPos = $this->asVector3()->add(0, ($this instanceof Human ? $this->eyeHeight : $this->height), 0);
-		$targetPos = $target->asVector3()->add(0, ($target instanceof Human ? $this->eyeHeight : $target->height), 0);
-		$distance = $entityPos->distance($targetPos);
-
-		$rayPos = $entityPos;
-		$direction = $targetPos->subtract($entityPos)->normalize();
-
-		if($distance < $direction->length()){
-			return true;
-		}
-
-		do{
-			if($this->level->getBlock($rayPos)->isSolid()){
-				return false;
-			}
-
-			$rayPos = $rayPos->add($direction);
-		}while ($distance > $entityPos->distance($rayPos));
-
-		return true;
-	}
-
 	/**
 	 * @param EntityDamageEvent $source
 	 */
@@ -1589,6 +1566,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$this->fallDistance -= $distanceThisTick;
 		}
 	}
+
+	public function handleWaterMovement() : void{
+	    if($this->isUnderwater()){
+	        $this->motion->x *= 0.5;
+	        $this->motion->z *= 0.5;
+        }
+    }
 
 	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDER, bool $send = true) : void{
 		if($this->ridingEntity == null and $entity !== $this){

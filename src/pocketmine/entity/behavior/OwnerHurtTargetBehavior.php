@@ -27,7 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 
-class OwnerHurtTargetBehavior extends Behavior{
+class OwnerHurtTargetBehavior extends FindAttackableTargetBehavior {
 
     protected $mutexBits = 1;
 
@@ -50,7 +50,8 @@ class OwnerHurtTargetBehavior extends Behavior{
         return null;
     }
 
-    public function canContinue() : bool{
-        return false;
+    public function onEnd() : void{
+        parent::onEnd();
+        $this->mob->setLastDamageCause(null);
     }
 }

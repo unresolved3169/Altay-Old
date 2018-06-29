@@ -56,7 +56,7 @@ class RangedAttackBehavior extends Behavior{
     }
 
     public function canContinue() : bool{
-        return $this->canStart() and $this->mob->getNavigator()->havePath();
+        return $this->canStart() or $this->mob->getNavigator()->havePath();
     }
 
     public function onEnd() : void{
@@ -82,7 +82,7 @@ class RangedAttackBehavior extends Behavior{
 
         $this->mob->setLookPosition($this->mob->getTargetEntity());
 
-        if(--$this->rangedAttackTime === 0){
+        if($this->rangedAttackTime-- === 0){
             if($dist > $this->maxAttackDistance or !$flag){
                 return;
             }
@@ -93,7 +93,7 @@ class RangedAttackBehavior extends Behavior{
 
             $this->mob->onRangedAttackToTarget($this->mob->getTargetEntity(), $f);
 
-            $this->rangedAttackTime = floor($f * ($this->maxAttackDistance - $this->minAttackTime) + $this->minAttackTime);
+            $this->rangedAttackTime = floor($f * ($this->maxAttackTime - $this->minAttackTime) + $this->minAttackTime);
         }elseif($this->rangedAttackTime < 0){
             $f = sqrt($dist) / $this->maxAttackDistanceIn;
             $this->rangedAttackTime = floor($f * ($this->maxAttackTime - $this->minAttackTime) + $this->minAttackTime);

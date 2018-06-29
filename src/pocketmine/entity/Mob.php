@@ -24,9 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\block\Air;
+use pocketmine\block\Block;
 use pocketmine\entity\behavior\BehaviorPool;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\math\VoxelRayTrace;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\entity\pathfinder\EntityNavigator;
 
@@ -40,6 +43,9 @@ abstract class Mob extends Living{
     protected $navigator;
     /** @var Vector3 */
     protected $lookPosition;
+
+    protected $seenEntities = [];
+    protected $unseenEntities = [];
 
     public function __construct(Level $level, CompoundTag $nbt){
         parent::__construct($level, $nbt);
@@ -74,6 +80,37 @@ abstract class Mob extends Living{
             $this->lookAt($this->getLookPosition(), true);
             $this->lookPosition = null;
         }
+
+        if($this->getTargetEntity() === null){
+            $this->setLastDamageCause(null);
+        }
+
+        $this->handleWaterMovement();
+
+        $this->clearSightCache();
+    }
+
+    public function canSeeEntity(Entity $target) : bool{
+        if(in_array($target->getId(), $this->unseenEntities)){
+            return false;
+        }elseif(in_array($target->getId(), $this->seenEntities)){
+            return true;
+        }else{
+            $blocks = (VoxelRayTrace::betweenPoints($this->floor(), $target->floor()))->getReturn();
+            $canSee = count(array_filter($blocks, function (Block $b){return $b->isSolid();})) === 0;
+            if($canSee){
+                $this->seenEntities[] = $target->getId();
+            }else{
+                $this->unseenEntities[] = $target->getId();
+            }
+
+            return $canSee;
+        }
+    }
+
+    public function clearSightCache() : void{
+        $this->seenEntities = [];
+        $this->unseenEntities = [];
     }
 
     public function getLookPosition() : ?Vector3{

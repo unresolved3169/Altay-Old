@@ -35,6 +35,7 @@ use pocketmine\entity\Monster;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\entity\passive\Villager;
+use pocketmine\Player;
 
 class Zombie extends Monster implements Ageable{
     public const NETWORK_ID = self::ZOMBIE;
@@ -43,7 +44,6 @@ class Zombie extends Monster implements Ageable{
     public $height = 1.8;
 
     protected function initEntity() : void{
-        parent::initEntity();
         $this->setMovementSpeed($this->isBaby() ? 0.345 : 0.23);
         $this->setFollowRange(35);
         $this->setAttackDamage(3);
@@ -51,6 +51,8 @@ class Zombie extends Monster implements Ageable{
             $this->height *= 0.5;
             $this->setScale(0.5);
         }
+
+        parent::initEntity();
     }
 
     public function getName(): string{
@@ -91,7 +93,7 @@ class Zombie extends Monster implements Ageable{
         $this->behaviorPool->setBehavior(8, new LookAtPlayerBehavior($this, 0.8));
         $this->behaviorPool->setBehavior(8, new RandomLookAroundBehavior($this));
 
-        $this->targetBehaviorPool->setBehavior(2, new FindAttackableTargetBehavior($this));
+        $this->targetBehaviorPool->setBehavior(2, new FindAttackableTargetBehavior($this, Player::class));
         $this->targetBehaviorPool->setBehavior(2, new FindAttackableTargetBehavior($this, Villager::class));
     }
 

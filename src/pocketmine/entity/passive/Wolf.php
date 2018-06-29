@@ -38,9 +38,8 @@ use pocketmine\entity\behavior\WanderBehavior;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Tamable;
 use pocketmine\item\Item;
-use pocketmine\level\particle\HeartParticle;
-use pocketmine\level\particle\SmokeParticle;
 use pocketmine\math\Vector3;
+use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\Player;
 
 class Wolf extends Tamable{
@@ -66,12 +65,13 @@ class Wolf extends Tamable{
 
     protected function initEntity() : void{
         $this->setMaxHealth(8);
-        parent::initEntity();
         $this->setMovementSpeed(0.3);
         $this->setAttackDamage(3);
         $this->setFollowRange(16);
 
         $this->propertyManager->setInt(self::DATA_COLOR, 14); // collar color
+
+        parent::initEntity();
     }
 
     public function getName() : string{
