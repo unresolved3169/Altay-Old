@@ -96,8 +96,11 @@ abstract class Mob extends Living{
         }elseif(in_array($target->getId(), $this->seenEntities)){
             return true;
         }else{
-            $blocks = (VoxelRayTrace::betweenPoints($this->floor(), $target->floor()))->getReturn();
-            $canSee = count(array_filter($blocks, function (Block $b){return $b->isSolid();})) === 0;
+            $blocks = VoxelRayTrace::betweenPoints($this->floor(), $target->floor());
+            if($blocks instanceof \Generator){
+                $blocks = $blocks->getReturn();
+            }
+            $canSee = $blocks === null or count(array_filter($blocks, function (Block $b){return $b->isSolid();})) === 0;
             if($canSee){
                 $this->seenEntities[] = $target->getId();
             }else{
