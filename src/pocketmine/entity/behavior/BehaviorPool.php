@@ -53,7 +53,7 @@ class BehaviorPool{
 	    if($tick % 3 === 0){
 	        /** @var \pocketmine\entity\behavior\Behavior[] $data */
             foreach($this->behaviors as $i => $data){
-	            if($data[1]->canStart() and $this->canUse($data)){
+	            if(!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)){
 	                $this->workingBehaviors[$i] = $data[1];
 	                $data[1]->onStart();
 	            }
