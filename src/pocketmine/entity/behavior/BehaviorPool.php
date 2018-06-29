@@ -55,7 +55,7 @@ class BehaviorPool
      */
     public function onUpdate(int $tick): void
     {
-        if ($tick % 3 === 0) {
+        if ($tick % $this->tickRate === 0) {
             /** @var \pocketmine\entity\behavior\Behavior[] $data */
             foreach ($this->behaviors as $i => $data) {
                 if (!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)) {

@@ -71,7 +71,7 @@ class MeleeAttackBehavior extends Behavior{
         $target = $this->mob->getTargetEntity();
         if($target == null) return;
 
-        $distanceToPlayer = $this->mob->distance($target);
+        $distanceToPlayer = $this->mob->distanceSquared($target);
 
         --$this->delay;
 

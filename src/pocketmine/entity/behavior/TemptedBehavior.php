@@ -99,10 +99,9 @@ class TemptedBehavior extends Behavior{
 
     public function onTick(): void{
         if($this->temptingPlayer === null) return;
-        $distanceToPlayer = $this->mob->distance($this->temptingPlayer);
+        $distanceToPlayer = $this->mob->distanceSquared($this->temptingPlayer);
 
         if($distanceToPlayer < 1.75){
-            $this->mob->resetMotion();
             $this->mob->setLookPosition($this->temptingPlayer);
 
             $this->mob->getNavigator()->clearPath();
@@ -110,7 +109,7 @@ class TemptedBehavior extends Behavior{
             return;
         }
 
-        $deltaDistance = $this->lastPlayerPos->distance($this->temptingPlayer);
+        $deltaDistance = $this->lastPlayerPos->distanceSquared($this->temptingPlayer);
         if(!$this->mob->getNavigator()->havePath() || $deltaDistance > 1){
             $m = 2 - $distanceToPlayer;
             $m = ($m <= 0) ? 1 : $m / 2.0;
