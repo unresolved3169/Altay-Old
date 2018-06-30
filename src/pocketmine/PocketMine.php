@@ -39,7 +39,6 @@ namespace pocketmine {
 
 	const NAME = "Altay";
 	const BASE_VERSION = "3.0.4";
-	const IS_DEVELOPMENT_BUILD = true;
 	const BUILD_NUMBER = 0;
 
 	const MIN_PHP_VERSION = "7.2.0";
@@ -194,8 +193,8 @@ namespace pocketmine {
 		$logger->warning(PHP_EOL . PHP_EOL . PHP_EOL . "\tYou are running " . \pocketmine\NAME . " with xdebug enabled. This has a major impact on performance." . PHP_EOL . PHP_EOL);
 	}
 
-	$version = new VersionString(\pocketmine\BASE_VERSION, \pocketmine\IS_DEVELOPMENT_BUILD, \pocketmine\BUILD_NUMBER);
-	define('pocketmine\VERSION', $version->getFullVersion(true));
+	$version = new VersionString(\pocketmine\BASE_VERSION, \pocketmine\BUILD_NUMBER);
+	define('pocketmine\VERSION', $version->getFullVersion());
 
 	$gitHash = str_repeat("00", 20);
 
