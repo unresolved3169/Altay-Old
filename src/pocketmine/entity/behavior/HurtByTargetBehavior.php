@@ -41,6 +41,11 @@ class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 
         parent::onStart();
     }
+    
+    public function canContinue() : bool{
+    	$this->mob->setTargetEntity($this->getLastAttackSource() ?? $this->mob->getTargetEntity());
+    	return parent::canContinue();
+    }
 
     public function getLastAttackSource(): ?Entity{
         $cause = $this->mob->getLastDamageCause();

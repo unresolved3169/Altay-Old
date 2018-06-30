@@ -66,6 +66,7 @@ class RangedAttackBehavior extends Behavior{
     }
 
     public function onTick() : void{
+    	if(!$this->canStart()) return;
         $dist = $this->mob->distanceSquared($this->mob->getTargetEntity());
 
         if($flag = $this->mob->canSeeEntity($this->mob->getTargetEntity())){
