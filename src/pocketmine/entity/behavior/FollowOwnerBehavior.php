@@ -61,10 +61,9 @@ class FollowOwnerBehavior extends Behavior{
         $owner = $this->mob->getOwningEntity();
         if ($owner == null) return;
 
-        $distanceToPlayer = $this->mob->distance($owner);
+        $distanceToPlayer = $this->mob->distanceSquared($owner);
 
         if($distanceToPlayer < 1.75){
-            $this->mob->resetMotion();
             $this->mob->getNavigator()->clearPath();
             $this->mob->setLookPosition($owner);
             return;
@@ -75,7 +74,7 @@ class FollowOwnerBehavior extends Behavior{
             $m = 2 - $distanceToPlayer;
             $m = ($m <= 0) ? 1 : $m / 2.0;
             $this->mob->getNavigator()->tryMoveTo($owner, $this->speedMultiplier * $m);
-            if($distanceToPlayer > 145){
+            if($distanceToPlayer > 144){
                 $this->mob->setPosition($owner);
                 $this->mob->getNavigator()->clearPath();
             }
