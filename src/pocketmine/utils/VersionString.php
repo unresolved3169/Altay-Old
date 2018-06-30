@@ -73,8 +73,7 @@ class VersionString{
 	}
 
 	public function getFullVersion() : string{
-		$retval = $this->baseVersion;
-		return $retval;
+		return $this->baseVersion;
 	}
 
 	public function getMajor() : int{

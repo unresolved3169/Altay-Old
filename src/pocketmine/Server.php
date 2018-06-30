@@ -1486,14 +1486,6 @@ class Server{
 
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
-
-			if(!file_exists($this->dataPath . "pocketmine.yml")){
-				$content = file_get_contents(\pocketmine\RESOURCE_PATH . "pocketmine.yml");
-				if(\pocketmine\IS_DEVELOPMENT_BUILD){
-					$content = str_replace("preferred-channel: stable", "preferred-channel: beta", $content);
-				}
-				@file_put_contents($this->dataPath . "pocketmine.yml", $content);
-			}
 			$this->config = new Config($this->dataPath . "pocketmine.yml", Config::YAML, []);
 
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
@@ -1659,7 +1651,7 @@ class Server{
 
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
 				$this->getName(),
-				(\pocketmine\IS_DEVELOPMENT_BUILD ? TextFormat::YELLOW : "") . $this->getPocketMineVersion() . TextFormat::RESET
+                TextFormat::RESET
 			]));
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));
 
