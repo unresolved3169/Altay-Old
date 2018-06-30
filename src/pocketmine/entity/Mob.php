@@ -91,15 +91,13 @@ abstract class Mob extends Living{
     }
 
     public function canSeeEntity(Entity $target) : bool{
-        if(in_array($target->getId(), $this->unseenEntities)){
+        // TODO: wtf?? why this always return false!? fix this.
+        /*if(in_array($target->getId(), $this->unseenEntities)){
             return false;
         }elseif(in_array($target->getId(), $this->seenEntities)){
             return true;
         }else{
             $blocks = VoxelRayTrace::betweenPoints($this->floor(), $target->floor());
-            if($blocks instanceof \Generator){
-                $blocks = $blocks->getReturn();
-            }
             $canSee = $blocks === null or count(array_filter($blocks, function (Block $b){return $b->isSolid();})) === 0;
             if($canSee){
                 $this->seenEntities[] = $target->getId();
@@ -108,7 +106,9 @@ abstract class Mob extends Living{
             }
 
             return $canSee;
-        }
+        }*/
+
+        return true;
     }
 
     public function clearSightCache() : void{

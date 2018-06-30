@@ -35,15 +35,15 @@ class OwnerHurtTargetBehavior extends FindAttackableTargetBehavior {
         $owner = $this->mob->getOwningEntity();
 
         if($owner !== null){
-            $this->mob->setTargetEntity($this->getLastAttackSource());
+            $this->mob->setTargetEntity($this->getLastAttackSource($owner));
             return true;
         }
 
         return false;
     }
 
-    public function getLastAttackSource(): ?Entity{
-        $cause = $this->mob->getLastDamageCause();
+    public function getLastAttackSource(Entity $owner): ?Entity{
+        $cause = $owner->getLastDamageCause();
         if($cause instanceof EntityDamageByEntityEvent)
             return $cause->getDamager();
 
