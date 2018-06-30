@@ -82,7 +82,9 @@ class RangedAttackBehavior extends Behavior{
 
         $this->mob->setLookPosition($this->mob->getTargetEntity());
 
-        if($this->rangedAttackTime-- === 0){
+        $this->rangedAttackTime--;
+
+        if($this->rangedAttackTime <= 0){
             if($dist > $this->maxAttackDistance or !$flag){
                 return;
             }
@@ -92,10 +94,6 @@ class RangedAttackBehavior extends Behavior{
             if($f < 0.1) $f = 0.1;
 
             $this->mob->onRangedAttackToTarget($this->mob->getTargetEntity(), $f);
-
-            $this->rangedAttackTime = floor($f * ($this->maxAttackTime - $this->minAttackTime) + $this->minAttackTime);
-        }elseif($this->rangedAttackTime < 0){
-            $f = sqrt($dist) / $this->maxAttackDistanceIn;
             $this->rangedAttackTime = floor($f * ($this->maxAttackTime - $this->minAttackTime) + $this->minAttackTime);
         }
     }
