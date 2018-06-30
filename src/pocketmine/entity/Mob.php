@@ -65,7 +65,9 @@ abstract class Mob extends Living{
     public function onUpdate(int $tick) : bool{
         if($this->closed) return false;
 
-        $this->onBehaviorUpdate($tick);
+        if($this->isAlive()) {
+            $this->onBehaviorUpdate($tick);
+        }
 
         return parent::onUpdate($tick);
     }
@@ -79,10 +81,6 @@ abstract class Mob extends Living{
         if($this->getLookPosition() !== null){
             $this->lookAt($this->getLookPosition(), true);
             $this->lookPosition = null;
-        }
-
-        if($this->getTargetEntity() === null){
-            $this->setLastDamageCause(null);
         }
 
         $this->handleWaterMovement();
