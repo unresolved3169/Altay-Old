@@ -49,9 +49,8 @@ class VersionString{
 	 * @param bool   $isDevBuild
 	 * @param int    $buildNumber
 	 */
-	public function __construct(string $baseVersion, bool $isDevBuild = false, int $buildNumber = 0){
+	public function __construct(string $baseVersion, int $buildNumber = 0){
 		$this->baseVersion = $baseVersion;
-		$this->development = $isDevBuild;
 		$this->build = $buildNumber;
 
 		preg_match('/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-(.*))?$/', $this->baseVersion, $matches);
@@ -73,16 +72,8 @@ class VersionString{
 		return $this->baseVersion;
 	}
 
-	public function getFullVersion(bool $build = false) : string{
-		$retval = $this->baseVersion;
-		if($this->development){
-			$retval .= "+dev";
-			if($build and $this->build > 0){
-				$retval .= "." . $this->build;
-			}
-		}
-
-		return $retval;
+	public function getFullVersion() : string{
+		return $this->baseVersion;
 	}
 
 	public function getMajor() : int{
@@ -105,10 +96,6 @@ class VersionString{
 		return $this->build;
 	}
 
-	public function isDev() : bool{
-		return $this->development;
-	}
-
 	public function __toString() : string{
 		return $this->getFullVersion();
 	}
@@ -129,8 +116,6 @@ class VersionString{
 			return -1; //Target is older
 		}elseif($number < $tNumber){
 			return 1; //Target is newer
-		}elseif($target->isDev() and !$this->isDev()){
-			return -1; //Dev builds of the same version are always considered older than a release
 		}elseif($target->getBuild() > $this->getBuild()){
 			return 1;
 		}elseif($target->getBuild() < $this->getBuild()){

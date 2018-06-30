@@ -1486,14 +1486,6 @@ class Server{
 
 			$this->dataPath = realpath($dataPath) . DIRECTORY_SEPARATOR;
 			$this->pluginPath = realpath($pluginPath) . DIRECTORY_SEPARATOR;
-
-			if(!file_exists($this->dataPath . "pocketmine.yml")){
-				$content = file_get_contents(\pocketmine\RESOURCE_PATH . "pocketmine.yml");
-				if(\pocketmine\IS_DEVELOPMENT_BUILD){
-					$content = str_replace("preferred-channel: stable", "preferred-channel: beta", $content);
-				}
-				@file_put_contents($this->dataPath . "pocketmine.yml", $content);
-			}
 			$this->config = new Config($this->dataPath . "pocketmine.yml", Config::YAML, []);
 
 			define('pocketmine\DEBUG', (int) $this->getProperty("debug.level", 1));
@@ -1512,24 +1504,6 @@ class Server{
 			}
 			$this->altayConfig = new Config($this->dataPath . "altay.yml", Config::YAML, []);
 			$this->loadAltayConfig();
-
-			if(\pocketmine\IS_DEVELOPMENT_BUILD){
-				if(!((bool) $this->getProperty("settings.enable-dev-builds", false))){
-					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error1", [\pocketmine\NAME]));
-					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error2"));
-					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error3"));
-					$this->logger->emergency($this->baseLang->translateString("pocketmine.server.devBuild.error4", ["settings.enable-dev-builds"]));
-					$this->forceShutdown();
-
-					return;
-				}
-
-				$this->logger->warning(str_repeat("-", 40));
-				$this->logger->warning($this->baseLang->translateString("pocketmine.server.devBuild.warning1", [\pocketmine\NAME]));
-				$this->logger->warning($this->baseLang->translateString("pocketmine.server.devBuild.warning2"));
-				$this->logger->warning($this->baseLang->translateString("pocketmine.server.devBuild.warning3"));
-				$this->logger->warning(str_repeat("-", 40));
-			}
 
 			if(((int) ini_get('zend.assertions')) > 0 and ((bool) $this->getProperty("debug.assertions.warn-if-enabled", true)) !== false){
 				$this->logger->warning("Debugging assertions are enabled, this may impact on performance. To disable them, set `zend.assertions = -1` in php.ini.");
@@ -1677,7 +1651,7 @@ class Server{
 
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.info", [
 				$this->getName(),
-				(\pocketmine\IS_DEVELOPMENT_BUILD ? TextFormat::YELLOW : "") . $this->getPocketMineVersion() . TextFormat::RESET
+                TextFormat::RESET
 			]));
 			$this->logger->info($this->getLanguage()->translateString("pocketmine.server.license", [$this->getName()]));
 
