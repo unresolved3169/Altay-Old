@@ -56,6 +56,14 @@ class BehaviorPool
     public function onUpdate(int $tick): void
     {
         if ($tick % $this->tickRate === 0) {
+            foreach($this->workingBehaviors as $hash => $bh){
+                if(isset($this->behaviors[$hash])){
+                    if(!$this->canUse($this->behaviors[$hash])){
+                        $bh->onEnd();
+                        unset($this->workingBehaviors[$hash]);
+                    }
+                }
+            }
             /** @var \pocketmine\entity\behavior\Behavior[] $data */
             foreach ($this->behaviors as $i => $data) {
                 if (!isset($this->workingBehaviors[$i]) and $data[1]->canStart() and $this->canUse($data)) {
@@ -78,7 +86,7 @@ class BehaviorPool
     {
         $priority = $data[0];
         foreach ($this->behaviors as $h => $b) {
-            if ($b[1] == $data[1]) continue;
+            if ($b[1] === $data[1]) continue;
             if ($priority >= $b[0]) {
                 if (!$this->theyCanWorkCompatible($data[1], $b[1]) and isset($this->workingBehaviors[$h])) {
                     return false;
