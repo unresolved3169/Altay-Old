@@ -33,7 +33,7 @@ class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 
     public function canStart() : bool{
         $player = $this->getLastAttackSource();
-        return $player instanceof Player and $player->isSurvival() and $this->mob->getOwningEntity() != $player and $player->isAlive();
+        return $player !== null and ($player instanceof Player ? $player->isSurvival() : true) and $this->mob->getOwningEntity() !== $player and $player->isAlive();
     }
 
     public function onStart(): void{
@@ -41,10 +41,13 @@ class HurtByTargetBehavior extends FindAttackableTargetBehavior{
 
         parent::onStart();
     }
-    
-    public function canContinue() : bool{
-    	$this->mob->setTargetEntity($this->getLastAttackSource() ?? $this->mob->getTargetEntity());
-    	return parent::canContinue();
+
+    public function canContinue(): bool
+    {
+        if(($s = $this->getLastAttackSource()) !== null){
+            $this->mob->setTargetEntity($s);
+        }
+        return $this->canStart() and parent::canContinue();
     }
 
     public function getLastAttackSource(): ?Entity{
