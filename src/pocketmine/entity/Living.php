@@ -70,9 +70,28 @@ abstract class Living extends Entity implements Damageable{
 	/** @var ArmorInventory */
 	protected $armorInventory;
 
+	/** @var Entity|null */
+	protected $lastAttacker = null;
+
 	abstract public function getName() : string;
 
-	protected function initEntity() : void{
+    /**
+     * @return null|Entity
+     */
+    public function getLastAttacker(): ?Entity
+    {
+        return $this->lastAttacker;
+    }
+
+    /**
+     * @param null|Entity $lastAttacker
+     */
+    public function setLastAttacker(?Entity $lastAttacker): void
+    {
+        $this->lastAttacker = $lastAttacker;
+    }
+
+    protected function initEntity() : void{
 		parent::initEntity();
 
 		$this->armorInventory = new ArmorInventory($this);
@@ -585,9 +604,10 @@ abstract class Living extends Entity implements Damageable{
 
 		if($source instanceof EntityDamageByEntityEvent){
 			$e = $source->getDamager();
-			if($source instanceof EntityDamageByChildEntityEvent){
-				$e = $source->getChild();
-			}
+			if($source instanceof EntityDamageByChildEntityEvent) {
+                $e = $source->getChild();
+            }
+
 
 			if($e !== null){
 				if($e->isOnFire()){
@@ -599,6 +619,9 @@ abstract class Living extends Entity implements Damageable{
 				$this->knockBack($e, $source->getBaseDamage(), $deltaX, $deltaZ, $source->getKnockBack());
 
 				$e->broadcastEntityEvent(EntityEventPacket::ARM_SWING);
+
+                $e->setTargetEntity($this);
+                $this->setLastAttacker($e);
 			}
 		}
 

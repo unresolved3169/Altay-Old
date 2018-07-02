@@ -96,8 +96,6 @@ class FindAttackableTargetBehavior extends Behavior{
             }elseif($this->targetUnseenTicks++ > 60){
                 return false;
             }
-
-            $this->mob->setTargetEntity($target);
         }else{
             if($this->mob->distanceSquared($target) > $this->targetDistance){
                 return false;
