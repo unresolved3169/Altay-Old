@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\behavior;
 
-class OwnerHurtTargetBehavior extends FindAttackableTargetBehavior {
+class OwnerHurtTargetBehavior extends Behavior {
 
     protected $mutexBits = 1;
 

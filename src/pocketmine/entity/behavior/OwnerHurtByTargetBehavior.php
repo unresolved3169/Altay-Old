@@ -27,7 +27,7 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Living;
 use pocketmine\entity\Mob;
 
-class OwnerHurtByTargetBehavior extends FindAttackableTargetBehavior{
+class OwnerHurtByTargetBehavior extends Behavior {
 
     protected $mutexBits = 1;
 
