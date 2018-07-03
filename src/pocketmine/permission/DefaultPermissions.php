@@ -107,6 +107,11 @@ abstract class DefaultPermissions{
 		self::registerPermission(new Permission(self::ALTAY . ".command.kill.other", "Allows the user to kill other players"), $kill);
 		$kill->recalculatePermissibles();
 
+        $clear = self::registerPermission(new Permission(self::ALTAY . ".command.clear", "Allows the user to clear player's inventory", Permission::DEFAULT_OP), $commands);
+        self::registerPermission(new Permission(self::ALTAY . ".command.clear.self", "Allows the user to clear inventory", Permission::DEFAULT_TRUE), $clear);
+        self::registerPermission(new Permission(self::ALTAY . ".command.clear.other", "Allows the user to clear other player's inventory"), $clear);
+        $clear->recalculatePermissibles();
+
 		self::registerPermission(new Permission(self::ROOT . ".command.me", "Allows the user to perform a chat action", Permission::DEFAULT_TRUE), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.tell", "Allows the user to privately message another player", Permission::DEFAULT_TRUE), $commands);
 		self::registerPermission(new Permission(self::ROOT . ".command.say", "Allows the user to talk as the console", Permission::DEFAULT_OP), $commands);
