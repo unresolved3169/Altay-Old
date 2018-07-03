@@ -40,13 +40,7 @@ class PlaySoundCommand extends VanillaCommand{
 			$name,
 			"Plays a sound",
 			"/playsound <sound: string> [player: target] [position: x y z] [volume: float] [pitch: float]",
-			[], [
-				new CommandParameter("sound", CommandParameter::ARG_TYPE_STRING, false),
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
-				new CommandParameter("pos", CommandParameter::ARG_TYPE_POSITION),
-				new CommandParameter("volume", CommandParameter::ARG_TYPE_FLOAT),
-				new CommandParameter("pitch", CommandParameter::ARG_TYPE_FLOAT),
-			]
+			[]
 		);
 
 		$this->setPermission("altay.command.playsound");

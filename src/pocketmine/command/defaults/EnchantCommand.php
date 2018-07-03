@@ -43,20 +43,6 @@ class EnchantCommand extends VanillaCommand{
 			"%commands.enchant.usage"
 		);
 		$this->setPermission("pocketmine.command.enchant");
-
-		$this->setOverloads([
-			new CommandOverload("enchantmentName", [
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
-				new CommandParameter("enchantName", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getEnchant()),
-				new CommandParameter("level", CommandParameter::ARG_TYPE_INT)
-			]),
-			// NOT VANILLA
-			new CommandOverload("enchantmentId", [
-				new CommandParameter("player", CommandParameter::ARG_TYPE_INT, false),
-				new CommandParameter("enchantmentId", CommandParameter::ARG_TYPE_INT,false),
-				new CommandParameter("level", CommandParameter::ARG_TYPE_INT, false)
-			]),
-		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

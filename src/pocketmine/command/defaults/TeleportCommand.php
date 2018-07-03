@@ -26,9 +26,6 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnum;
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\math\Vector3;
@@ -45,56 +42,6 @@ class TeleportCommand extends VanillaCommand{
 			["teleport"]
 		);
 		$this->setPermission("pocketmine.command.teleport");
-
-		// TODO : Vanilla ile uyumlu olsun && optimize
-
-		$destination = new CommandParameter("destination", CommandParameter::ARG_TYPE_POSITION, false);
-		$facing = new CommandParameter("facing", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("facing", ["facing"]));
-		$lookAtEntity = new CommandParameter("lookAtEntity", CommandParameter::ARG_TYPE_TARGET, false);
-		$yRot = new CommandParameter("yRot", CommandParameter::ARG_TYPE_VALUE);
-
-		$this->setOverloads([
-			new CommandOverload("1", [
-				$destination,
-				$yRot,
-				(clone $yRot)->setName("xRot")
-			]),
-			new CommandOverload("2", [
-				$destination,
-				$facing,
-				(clone $destination)->setName("lookAtPosition")
-			]),
-			new CommandOverload("3", [
-				$destination,
-				$facing,
-				$lookAtEntity
-			]),
-			new CommandOverload("4", [
-				(clone $lookAtEntity)->setName("victim"),
-				$destination,
-				$yRot,
-				$yRot->setName("xRot")
-			]),
-			new CommandOverload("5", [
-				(clone $lookAtEntity)->setName("victim"),
-				$destination,
-				$facing,
-				(clone $destination)->setName("lookAtPosition")
-			]),
-			new CommandOverload("6", [
-				(clone $lookAtEntity)->setName("victim"),
-				$destination,
-				$facing,
-				$lookAtEntity
-			]),
-			new CommandOverload("7", [
-				(clone $lookAtEntity)->setName("destination")
-			]),
-			new CommandOverload("8", [
-				(clone $lookAtEntity)->setName("victim"),
-				(clone $lookAtEntity)->setName("destination")
-			])
-		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

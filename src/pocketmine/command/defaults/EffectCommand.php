@@ -25,10 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnum;
-use pocketmine\command\overload\CommandEnumValues;
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
@@ -44,20 +40,6 @@ class EffectCommand extends VanillaCommand{
 			"%commands.effect.usage"
 		);
 		$this->setPermission("pocketmine.command.effect");
-
-		$this->setOverloads([
-			new CommandOverload("clear", [
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-				new CommandParameter("clear", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("clear", ["clear"]))
-			]),
-			new CommandOverload("effect", [
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-				new CommandParameter("effect", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getEffect()),
-				new CommandParameter("seconds", CommandParameter::ARG_TYPE_INT),
-				new CommandParameter("amplifier", CommandParameter::ARG_TYPE_INT),
-				new CommandParameter("bool", CommandParameter::ARG_TYPE_VALUE, false, CommandEnumValues::getBoolean())
-			])
-		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

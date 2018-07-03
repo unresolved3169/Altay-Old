@@ -27,358 +27,342 @@ declare(strict_types=1);
  */
 namespace pocketmine\command;
 
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\lang\TextContainer;
 use pocketmine\lang\TranslationContainer;
-use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
+use pocketmine\network\mcpe\protocol\types\CommandData;
+use pocketmine\network\mcpe\protocol\types\CommandEnum;
+use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\Server;
 use pocketmine\timings\TimingsHandler;
 use pocketmine\utils\TextFormat;
-use pocketmine\utils\Utils;
 
 abstract class Command{
 
-	/** @var string */
-	private $name;
+    /** @var CommandData */
+    private $commandData;
 
-	/** @var string */
-	private $nextLabel;
+    /** @var string */
+    private $nextLabel;
 
-	/** @var string */
-	private $label;
+    /** @var string */
+    private $label;
 
-	/** @var string[] */
-	private $aliases = [];
+    /** @var string[] */
+    private $aliases = [];
 
-	/**
-	 * @var string[]
-	 */
-	private $activeAliases = [];
+    /** @var string[] */
+    private $activeAliases = [];
 
-	/** @var CommandMap */
-	private $commandMap = null;
+    /** @var CommandMap */
+    private $commandMap = null;
 
-	/** @var string */
-	protected $description = "";
+    /** @var string */
+    protected $usageMessage;
 
-	/** @var string */
-	protected $usageMessage;
+    /** @var string|null */
+    private $permission = null;
 
-	/** @var string|null */
-	private $permission = null;
+    /** @var string */
+    private $permissionMessage = null;
 
-	/** @var string */
-	private $permissionMessage = null;
+    /** @var TimingsHandler */
+    public $timings;
 
-	/** @var TimingsHandler */
-	public $timings;
+    /**
+     * @param string $name
+     * @param string $description
+     * @param string $usageMessage
+     * @param string[] $aliases
+     * @param array $overloads
+     */
+    public function __construct(string $name, string $description = "", string $usageMessage = null, array $aliases = [], array $overloads = null){
+        if(strlen($description) > 0 and $description{0} == '%'){
+            $description = Server::getInstance()->getLanguage()->translateString($description);
+        }
+        $this->setAliases($aliases);
 
-	/** @var array */
-	private $overloads = [];
+        if($overloads === null){
+            $overloads = [[new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]];
+        }
 
-	private $permissionLevel = AdventureSettingsPacket::PERMISSION_NORMAL; // TODO
+        $this->commandData = new CommandData(
+            $name,
+            $description,
+            0,
+            0,
+            $this->aliasesToEnum($name),
+            $overloads
+        );
+        $this->setLabel($name);
+        $this->usageMessage = $usageMessage ?? ("/" . $name);
+    }
 
-	/** @var int */
-	private $flags = 0; // TODO
+    /**
+     * @param CommandSender $sender
+     * @param string        $commandLabel
+     * @param string[]      $args
+     *
+     * @return mixed
+     */
+    abstract public function execute(CommandSender $sender, string $commandLabel, array $args);
 
-	/**
-	 * @param string $name
-	 * @param string $description
-	 * @param string $usageMessage
-	 * @param string[] $aliases
-	 * @param array|null $parameters
-	 */
-	public function __construct(string $name, string $description = "", string $usageMessage = null, array $aliases = [], array $parameters = null){
-		$this->name = $name;
-		$this->setLabel($name);
-		$this->setDescription($description);
-		$this->usageMessage = $usageMessage ?? ("/" . $name);
-		$this->setAliases($aliases);
-		$this->addOverload(new CommandOverload("default", $parameters ?? [new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]));
-	}
+    /**
+     * @return CommandData
+     */
+    public function getCommandData() : CommandData{
+        return $this->commandData;
+    }
 
-	/**
-	 * @param CommandSender $sender
-	 * @param string        $commandLabel
-	 * @param string[]      $args
-	 *
-	 * @return mixed
-	 */
-	abstract public function execute(CommandSender $sender, string $commandLabel, array $args);
+    /**
+     * @return string
+     */
+    public function getName() : string{
+        return $this->commandData->commandName;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getName() : string{
-		return $this->name;
-	}
-
-	public function getPermissionLevel() : int{
-		return $this->permissionLevel;
-	}
-
-	public function setPermissionLevel(int $permissionLevel) : void{
-		$this->permissionLevel = $permissionLevel;
-	}
-
-	/**
-	 * @return string|null
-	 */
-	public function getPermission(){
-		return $this->permission;
-	}
+    /**
+     * @return string|null
+     */
+    public function getPermission(){
+        return $this->permission;
+    }
 
 
-	/**
-	 * @param string|null $permission
-	 */
-	public function setPermission(string $permission = null){
-		$this->permission = $permission;
-	}
+    /**
+     * @param string|null $permission
+     */
+    public function setPermission(string $permission = null){
+        $this->permission = $permission;
+    }
 
-	/**
-	 * @param CommandSender $target
-	 *
-	 * @return bool
-	 */
-	public function testPermission(CommandSender $target) : bool{
-		if($this->testPermissionSilent($target)){
-			return true;
-		}
+    /**
+     * @param CommandSender $target
+     *
+     * @return bool
+     */
+    public function testPermission(CommandSender $target) : bool{
+        if($this->testPermissionSilent($target)){
+            return true;
+        }
 
-		if($this->permissionMessage === null){
-			$target->sendMessage($target->getServer()->getLanguage()->translateString(TextFormat::RED . "%commands.generic.permission"));
-		}elseif($this->permissionMessage !== ""){
-			$target->sendMessage(str_replace("<permission>", $this->getPermission(), $this->permissionMessage));
-		}
+        if($this->permissionMessage === null){
+            $target->sendMessage($target->getServer()->getLanguage()->translateString(TextFormat::RED . "%commands.generic.permission"));
+        }elseif($this->permissionMessage !== ""){
+            $target->sendMessage(str_replace("<permission>", $this->getPermission(), $this->permissionMessage));
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * @param CommandSender $target
-	 *
-	 * @return bool
-	 */
-	public function testPermissionSilent(CommandSender $target) : bool{
-		if(($perm = $this->getPermission()) === null or $perm === ""){
-			return true;
-		}
+    /**
+     * @param CommandSender $target
+     *
+     * @return bool
+     */
+    public function testPermissionSilent(CommandSender $target) : bool{
+        if(($perm = $this->getPermission()) === null or $perm === ""){
+            return true;
+        }
 
-		foreach(explode(";", $perm) as $permission){
-			if($target->hasPermission($permission)){
-				return true;
-			}
-		}
+        foreach(explode(";", $perm) as $permission){
+            if($target->hasPermission($permission)){
+                return true;
+            }
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getLabel() : string{
-		return $this->label;
-	}
+    /**
+     * @return string
+     */
+    public function getLabel() : string{
+        return $this->label;
+    }
 
-	public function setLabel(string $name) : bool{
-		$this->nextLabel = $name;
-		if(!$this->isRegistered()){
-			if($this->timings instanceof TimingsHandler){
-				$this->timings->remove();
-			}
-			$this->timings = new TimingsHandler("** Command: " . $name);
-			$this->label = $name;
+    public function setLabel(string $name) : bool{
+        $this->nextLabel = $name;
+        if(!$this->isRegistered()){
+            if($this->timings instanceof TimingsHandler){
+                $this->timings->remove();
+            }
+            $this->timings = new TimingsHandler("** Command: " . $name);
+            $this->label = $name;
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * Registers the command into a Command map
-	 *
-	 * @param CommandMap $commandMap
-	 *
-	 * @return bool
-	 */
-	public function register(CommandMap $commandMap) : bool{
-		if($this->allowChangesFrom($commandMap)){
-			$this->commandMap = $commandMap;
+    /**
+     * Registers the command into a Command map
+     *
+     * @param CommandMap $commandMap
+     *
+     * @return bool
+     */
+    public function register(CommandMap $commandMap) : bool{
+        if($this->allowChangesFrom($commandMap)){
+            $this->commandMap = $commandMap;
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * @param CommandMap $commandMap
-	 *
-	 * @return bool
-	 */
-	public function unregister(CommandMap $commandMap) : bool{
-		if($this->allowChangesFrom($commandMap)){
-			$this->commandMap = null;
-			$this->activeAliases = $this->aliases;
-			$this->label = $this->nextLabel;
+    /**
+     * @param CommandMap $commandMap
+     *
+     * @return bool
+     */
+    public function unregister(CommandMap $commandMap) : bool{
+        if($this->allowChangesFrom($commandMap)){
+            $this->commandMap = null;
+            $this->activeAliases = $this->aliases;
+            $this->label = $this->nextLabel;
 
-			return true;
-		}
+            return true;
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	/**
-	 * @param CommandMap $commandMap
-	 *
-	 * @return bool
-	 */
-	private function allowChangesFrom(CommandMap $commandMap) : bool{
-		return $this->commandMap === null or $this->commandMap === $commandMap;
-	}
+    /**
+     * @param CommandMap $commandMap
+     *
+     * @return bool
+     */
+    private function allowChangesFrom(CommandMap $commandMap) : bool{
+        return $this->commandMap === null or $this->commandMap === $commandMap;
+    }
 
-	/**
-	 * @return bool
-	 */
-	public function isRegistered() : bool{
-		return $this->commandMap !== null;
-	}
+    /**
+     * @return bool
+     */
+    public function isRegistered() : bool{
+        return $this->commandMap !== null;
+    }
 
-	/**
-	 * @return string[]
-	 */
-	public function getAliases() : array{
-		return $this->activeAliases;
-	}
+    /**
+     * @return string[]
+     */
+    public function getAliases() : array{
+        return $this->activeAliases;
+    }
 
-	/**
-	 * @return string|null
-	 */
-	public function getPermissionMessage() : ?string{
-		return $this->permissionMessage;
-	}
+    /**
+     * @return string|null
+     */
+    public function getPermissionMessage() : ?string{
+        return $this->permissionMessage;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getDescription() : string{
-		return $this->description;
-	}
+    /**
+     * @return string
+     */
+    public function getDescription() : string{
+        return $this->commandData->commandDescription;
+    }
 
-	/**
-	 * @return string
-	 */
-	public function getUsage() : string{
-		return $this->usageMessage;
-	}
+    /**
+     * @return string
+     */
+    public function getUsage() : string{
+        return $this->usageMessage;
+    }
 
-	/**
-	 * @param string[] $aliases
-	 */
-	public function setAliases(array $aliases){
-		$this->aliases = $aliases;
-		if(!$this->isRegistered()){
-			$this->activeAliases = $aliases;
-		}
-	}
+    /**
+     * @param string[] $aliases
+     */
+    public function setAliases(array $aliases){
+        $this->aliases = $aliases;
+        if(!$this->isRegistered()){
+            $this->activeAliases = $aliases;
+        }
+    }
 
-	/**
-	 * @param string $description
-	 */
-	public function setDescription(string $description){
-		if(strlen($description) > 0 and $description{0} == '%'){
-			$description = Server::getInstance()->getLanguage()->translateString($description);
-		}
-		$this->description = $description;
-	}
+    /**
+     * @param string $description
+     */
+    public function setDescription(string $description){
+        if(strlen($description) > 0 and $description{0} == '%'){
+            $description = Server::getInstance()->getLanguage()->translateString($description);
+        }
+        $this->commandData->commandDescription = $description;
+    }
 
-	/**
-	 * @param string $permissionMessage
-	 */
-	public function setPermissionMessage(string $permissionMessage){
-		$this->permissionMessage = $permissionMessage;
-	}
+    /**
+     * @param string $permissionMessage
+     */
+    public function setPermissionMessage(string $permissionMessage){
+        $this->permissionMessage = $permissionMessage;
+    }
 
-	/**
-	 * @param string $usage
-	 */
-	public function setUsage(string $usage){
-		$this->usageMessage = $usage;
-	}
+    /**
+     * @param string $usage
+     */
+    public function setUsage(string $usage){
+        $this->usageMessage = $usage;
+    }
 
-	/**
-	 * @return CommandOverload[]
-	 */
-	public function getOverloads() : array{
-		return $this->overloads;
-	}
+    /**
+     * @param CommandSender        $source
+     * @param TextContainer|string $message
+     * @param bool                 $sendToSource
+     */
+    public static function broadcastCommandMessage(CommandSender $source, $message, bool $sendToSource = true){
+        if($message instanceof TextContainer){
+            $m = clone $message;
+            $result = "[" . $source->getName() . ": " . ($source->getServer()->getLanguage()->get($m->getText()) !== $m->getText() ? "%" : "") . $m->getText() . "]";
 
-	public function addOverload(CommandOverload $overload){
-		$this->overloads[$overload->getName()] = $overload;
-	}
+            $users = $source->getServer()->getPluginManager()->getPermissionSubscriptions(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
+            $colored = TextFormat::GRAY . TextFormat::ITALIC . $result;
 
-	public function removeAllOverload(){
-		$this->overloads = [];
-	}
+            $m->setText($result);
+            $result = clone $m;
+            $m->setText($colored);
+            $colored = clone $m;
+        }else{
+            $users = $source->getServer()->getPluginManager()->getPermissionSubscriptions(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
+            $result = new TranslationContainer("chat.type.admin", [$source->getName(), $message]);
+            $colored = new TranslationContainer(TextFormat::GRAY . TextFormat::ITALIC . "%chat.type.admin", [$source->getName(), $message]);
+        }
 
-	public function getOverload(string $overloadName) : ?CommandOverload{
-		return $this->overloads[$overloadName] ?? null;
-	}
+        if($sendToSource and !($source instanceof ConsoleCommandSender)){
+            $source->sendMessage($message);
+        }
 
-	public function setOverloads(array $overloads) : void{
-		Utils::validateObjectArray($overloads, CommandOverload::class);
-		$this->overloads = $overloads;
-	}
+        foreach($users as $user){
+            if($user instanceof CommandSender){
+                if($user instanceof ConsoleCommandSender){
+                    $user->sendMessage($result);
+                }elseif($user !== $source){
+                    $user->sendMessage($colored);
+                }
+            }
+        }
+    }
 
-	public function getFlags() : int{
-		return $this->flags;
-	}
+    public function aliasesToEnum(string $name) : ?CommandEnum{
+        $aliases = $this->getAliases();
+        if(!empty($aliases)){
+            if(!in_array($name, $aliases, true)){
+                //work around a client bug which makes the original name not show when aliases are used
+                $aliases[] = $name;
+            }
 
-	/**
-	 * @param CommandSender        $source
-	 * @param TextContainer|string $message
-	 * @param bool                 $sendToSource
-	 */
-	public static function broadcastCommandMessage(CommandSender $source, $message, bool $sendToSource = true){
-		if($message instanceof TextContainer){
-			$m = clone $message;
-			$result = "[" . $source->getName() . ": " . ($source->getServer()->getLanguage()->get($m->getText()) !== $m->getText() ? "%" : "") . $m->getText() . "]";
+            return new CommandEnum(ucfirst($name) . "Aliases", $aliases);
+        }
 
-			$users = $source->getServer()->getPluginManager()->getPermissionSubscriptions(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
-			$colored = TextFormat::GRAY . TextFormat::ITALIC . $result;
+        return null;
+    }
 
-			$m->setText($result);
-			$result = clone $m;
-			$m->setText($colored);
-			$colored = clone $m;
-		}else{
-			$users = $source->getServer()->getPluginManager()->getPermissionSubscriptions(Server::BROADCAST_CHANNEL_ADMINISTRATIVE);
-			$result = new TranslationContainer("chat.type.admin", [$source->getName(), $message]);
-			$colored = new TranslationContainer(TextFormat::GRAY . TextFormat::ITALIC . "%chat.type.admin", [$source->getName(), $message]);
-		}
-
-		if($sendToSource and !($source instanceof ConsoleCommandSender)){
-			$source->sendMessage($message);
-		}
-
-		foreach($users as $user){
-			if($user instanceof CommandSender){
-				if($user instanceof ConsoleCommandSender){
-					$user->sendMessage($result);
-				}elseif($user !== $source){
-					$user->sendMessage($colored);
-				}
-			}
-		}
-	}
-
-	/**
-	 * @return string
-	 */
-	public function __toString() : string{
-		return $this->name;
-	}
+    /**
+     * @return string
+     */
+    public function __toString() : string{
+        return $this->commandData->commandName;
+    }
 }

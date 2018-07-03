@@ -25,8 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnumValues;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\CommandSelector;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\inventory\Inventory;
@@ -43,13 +41,7 @@ class ClearCommand extends VanillaCommand{
 			$name,
 			"%altay.command.clear.description",
 			"%altay.command.clear.usage",
-			[],
-			[
-				// 3 parameter for Altay (normal 4)
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
-				new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, true, CommandEnumValues::getItem()),
-				new CommandParameter("maxCount", CommandParameter::ARG_TYPE_INT)
-			]
+			[]
 		);
 
 		$this->setPermission("altay.command.clear.self;altay.command.clear.other");

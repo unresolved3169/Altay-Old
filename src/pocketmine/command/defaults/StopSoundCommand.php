@@ -25,7 +25,6 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\network\mcpe\protocol\StopSoundPacket;
@@ -38,10 +37,7 @@ class StopSoundCommand extends VanillaCommand{
 			$name,
 			"Stops a sound or all sounds",
 			"/stopsound <player: target> [sound: string]",
-			[], [
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-				new CommandParameter("sound", CommandParameter::ARG_TYPE_STRING)
-			]
+			[]
 		);
 
 		$this->setPermission("altay.command.stopsound");

@@ -25,8 +25,6 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
@@ -40,12 +38,6 @@ class BanCommand extends VanillaCommand{
 			"%commands.ban.usage"
 		);
 		$this->setPermission("pocketmine.command.ban.player");
-
-		$this->removeAllOverload();
-		$this->addOverload(new CommandOverload("args", [
-		    new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-		    new CommandParameter("reason", CommandParameter::ARG_TYPE_RAWTEXT)
-        ]));
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

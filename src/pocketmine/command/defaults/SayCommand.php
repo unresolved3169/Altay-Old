@@ -39,8 +39,7 @@ class SayCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.say.description",
 			"%commands.say.usage",
-			[],
-			[new CommandParameter("message", CommandParameter::ARG_TYPE_RAWTEXT, false)]
+			[]
 		);
 		$this->setPermission("pocketmine.command.say");
 	}

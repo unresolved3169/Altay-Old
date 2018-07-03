@@ -26,9 +26,6 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnumValues;
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\level\Level;
@@ -42,15 +39,6 @@ class DifficultyCommand extends VanillaCommand{
 			"%commands.difficulty.usage"
 		);
 		$this->setPermission("pocketmine.command.difficulty");
-
-		$this->setOverloads([
-			new CommandOverload("string", [
-				new CommandParameter("difficulty", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getDifficulty())
-			]),
-			new CommandOverload("int", [
-				new CommandParameter("difficulty", CommandParameter::ARG_TYPE_INT, false)
-			])
-		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

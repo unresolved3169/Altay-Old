@@ -42,8 +42,7 @@ class KillCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.kill.description",
 			"%pocketmine.command.kill.usage",
-			[],
-			[new CommandParameter("target", CommandParameter::ARG_TYPE_TARGET, false)]
+			[]
 		);
 
 		$this->setPermission("altay.command.kill.self;altay.command.kill.other");

@@ -45,21 +45,6 @@ class GiveCommand extends VanillaCommand{
 			"%pocketmine.command.give.usage"
 		);
 		$this->setPermission("pocketmine.command.give");
-
-		$itemName = new CommandOverload("itemName", [
-			new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-			new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getItem()),
-			new CommandParameter("amount", CommandParameter::ARG_TYPE_INT),
-			//new CommandParameter("data", CommandParameter::ARG_TYPE_INT), not in Altay
-			new CommandParameter("components", CommandParameter::ARG_TYPE_JSON),
-		]);
-		// NOT VANILLA
-		$itemId = clone $itemName;
-		$itemId->setParameter(1, new CommandParameter("itemId", CommandParameter::ARG_TYPE_INT, false));
-
-		$this->setOverloads([
-			$itemName, $itemId
-		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

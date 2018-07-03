@@ -45,17 +45,6 @@ class GamemodeCommand extends VanillaCommand{
 			["gm"]
 		);
 		$this->setPermission("pocketmine.command.gamemode");
-
-		$this->setOverloads([
-			new CommandOverload("GameMode", [
-				new CommandParameter("gameMode", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getGameMode()),
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET)
-			]),
-			new CommandOverload("int", [
-				new CommandParameter("gameMode", CommandParameter::ARG_TYPE_INT, false),
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET)
-			])
-		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){

@@ -41,11 +41,7 @@ class SpawnpointCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.spawnpoint.description",
 			"%commands.spawnpoint.usage",
-			[],
-			[
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET),
-				new CommandParameter("spawnPoint", CommandParameter::ARG_TYPE_POSITION)
-			]
+			[]
 		);
 		$this->setPermission("pocketmine.command.spawnpoint");
 	}

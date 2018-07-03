@@ -25,13 +25,11 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
-// TODO : postfixes
 class XpCommand extends VanillaCommand{
 
 	public function __construct(string $name){
@@ -39,11 +37,7 @@ class XpCommand extends VanillaCommand{
 			$name,
 			"%altay.command.xp.description",
 			'altay.command.xp.usage',
-			[],
-			[
-				new CommandParameter("amount", CommandParameter::ARG_TYPE_INT, false),
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET)
-			]
+			[]
 		);
 
 		$this->setPermission("altay.command.xp");

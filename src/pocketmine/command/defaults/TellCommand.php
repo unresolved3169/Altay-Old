@@ -38,11 +38,7 @@ class TellCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.tell.description",
 			"%commands.message.usage",
-			["w", "msg"],
-			[
-				new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
-				new CommandParameter("message", CommandParameter::ARG_TYPE_RAWTEXT, false)
-			]
+			["w", "msg"]
 		);
 		$this->setPermission("pocketmine.command.tell");
 	}

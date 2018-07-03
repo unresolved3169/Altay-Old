@@ -45,27 +45,6 @@ class TimeCommand extends VanillaCommand{
 			"%pocketmine.command.time.usage"
 		);
 		$this->setPermission("pocketmine.command.time.add;pocketmine.command.time.set;pocketmine.command.time.start;pocketmine.command.time.stop");
-
-		$amount = new CommandParameter("amount", CommandParameter::ARG_TYPE_INT);
-
-		$this->setOverloads([
-			new CommandOverload("add", [
-				new CommandParameter("add", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("add", ["add"])),
-				$amount
-			]),
-			new CommandOverload("set", [
-				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("set", ["set"])),
-				$amount
-			]),
-			new CommandOverload("set1", [
-				new CommandParameter("set", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("set", ["set"])),
-				new CommandParameter("time", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getTimeSpec())
-			]),
-			new CommandOverload("query", [
-				new CommandParameter("querySE", CommandParameter::ARG_TYPE_STRING, false, new CommandEnum("query", ["query"])),
-				new CommandParameter("query", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getTimeSpec()),
-			])
-		]);
 	}
 
 	public function execute(CommandSender $sender, string $commandLabel, array $args){
