@@ -26,32 +26,23 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
 use pocketmine\network\mcpe\NetworkSession;
 
-class EntityFallPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::ENTITY_FALL_PACKET;
+class NetworkStackLatencyPacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::NETWORK_STACK_LATENCY_PACKET;
 
 	/** @var int */
-	public $entityRuntimeId;
-	/** @var float */
-	public $fallDistance;
-	/** @var bool */
-	public $isInVoid;
+	public $timestamp;
 
 	protected function decodePayload(){
-		$this->entityRuntimeId = $this->getEntityRuntimeId();
-		$this->fallDistance = $this->getLFloat();
-		$this->isInVoid = $this->getBool();
+		$this->timestamp = $this->getLLong();
 	}
 
 	protected function encodePayload(){
-		$this->putEntityRuntimeId($this->entityRuntimeId);
-		$this->putLFloat($this->fallDistance);
-		$this->putBool($this->isInVoid);
+		$this->putLLong($this->timestamp);
 	}
 
 	public function handle(NetworkSession $session) : bool{
-		return $session->handleEntityFall($this);
+		return $session->handleNetworkStackLatency($this);
 	}
 }

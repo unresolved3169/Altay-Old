@@ -29,7 +29,7 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\EntityIds;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\{
-	AddEntityPacket, BossEventPacket, RemoveEntityPacket, SetEntityDataPacket, UpdateAttributesPacket
+	AddActorPacket, BossEventPacket, RemoveActorPacket, SetActorDataPacket, UpdateAttributesPacket
 };
 use pocketmine\Player;
 
@@ -103,7 +103,7 @@ class Bossbar extends Vector3{
 	}
 
 	public function showTo(Player $player, bool $isViewer = true){
-		$pk = new AddEntityPacket();
+		$pk = new AddActorPacket();
 		$pk->entityRuntimeId = $this->entityId;
 		$pk->type = EntityIds::SHULKER;
 		$pk->metadata = $this->metadata;
@@ -135,7 +135,7 @@ class Bossbar extends Vector3{
 
 		$player->dataPacket($pk);
 
-		$pk2 = new RemoveEntityPacket();
+		$pk2 = new RemoveActorPacket();
 		$pk2->entityUniqueId = $this->entityId;
 
 		$player->dataPacket($pk2);
@@ -159,7 +159,7 @@ class Bossbar extends Vector3{
 		$player->dataPacket($pk2);
 		$player->dataPacket($this->getHealthPacket());
 
-		$mpk = new SetEntityDataPacket();
+		$mpk = new SetActorDataPacket();
 		$mpk->entityRuntimeId = $this->entityId;
 		$mpk->metadata = $this->metadata;
 

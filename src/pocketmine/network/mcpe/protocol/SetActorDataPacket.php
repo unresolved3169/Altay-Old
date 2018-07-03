@@ -28,24 +28,25 @@ namespace pocketmine\network\mcpe\protocol;
 
 use pocketmine\network\mcpe\NetworkSession;
 
-class AddPaintingPacket extends AddHangingActorPacket{
-	public const NETWORK_ID = ProtocolInfo::ADD_PAINTING_PACKET;
+class SetActorDataPacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::SET_ACTOR_DATA_PACKET;
 
-	/** @var string */
-	public $title;
+	/** @var int */
+	public $entityRuntimeId;
+	/** @var array */
+	public $metadata;
 
 	protected function decodePayload(){
-		parent::decodePayload();
-		$this->title = $this->getString();
+		$this->entityRuntimeId = $this->getEntityRuntimeId();
+		$this->metadata = $this->getEntityMetadata();
 	}
 
 	protected function encodePayload(){
-		parent::encodePayload();
-		$this->putString($this->title);
+		$this->putEntityRuntimeId($this->entityRuntimeId);
+		$this->putEntityMetadata($this->metadata);
 	}
 
 	public function handle(NetworkSession $session) : bool{
-		return $session->handleAddPainting($this);
+		return $session->handleSetActorData($this);
 	}
-
 }

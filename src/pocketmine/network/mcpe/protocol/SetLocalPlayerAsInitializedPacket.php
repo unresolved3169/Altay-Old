@@ -22,23 +22,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\network\mcpe\protocol\types;
+namespace pocketmine\network\mcpe\protocol;
 
-class MapTrackedObject{
-	public const TYPE_ENTITY = 0;
-	public const TYPE_BLOCK = 1;
+#include <rules/DataPacket.h>
 
-	/** @var int */
-	public $type;
+use pocketmine\network\mcpe\NetworkSession;
 
-	/** @var int Only set if is TYPE_ENTITY */
-	public $entityUniqueId;
+class SetLocalPlayerAsInitializedPacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::SET_LOCAL_PLAYER_AS_INITIALIZED_PACKET;
 
 	/** @var int */
-	public $x;
-	/** @var int */
-	public $y;
-	/** @var int */
-	public $z;
+	public $entityRuntimeId;
 
+	protected function decodePayload(){
+		$this->entityRuntimeId = $this->getEntityRuntimeId();
+	}
+
+	protected function encodePayload(){
+		$this->putEntityRuntimeId($this->entityRuntimeId);
+	}
+
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleSetLocalPlayerAsInitialized($this);
+	}
 }

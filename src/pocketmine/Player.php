@@ -112,7 +112,7 @@ use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
 use pocketmine\network\mcpe\protocol\BatchPacket;
-use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
+use pocketmine\network\mcpe\protocol\BlockActorDataPacket;
 use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
@@ -121,14 +121,14 @@ use pocketmine\network\mcpe\protocol\CommandRequestPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\DisconnectPacket;
-use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\LoginPacket;
 use pocketmine\network\mcpe\protocol\MobEffectPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
-use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\MoveActorAbsolutePacket;
 use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
@@ -218,9 +218,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
      * TODO: remove this once player and network are divorced properly
      */
     protected $sessionAdapter;
-
-    /** @var int */
-    protected $protocol = -1;
 
     /** @var string */
     protected $ip;
@@ -1869,9 +1866,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
             return false;
         }
 
-        $this->protocol = $packet->protocol;
-
-        if(!in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS)){
+        if(!in_array($packet->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS)){
             if($packet->protocol < ProtocolInfo::CURRENT_PROTOCOL){
                 $this->sendPlayStatus(PlayStatusPacket::LOGIN_FAILED_CLIENT, true);
             }else{
@@ -1956,7 +1951,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     public function sendPlayStatus(int $status, bool $immediate = false){
         $pk = new PlayStatusPacket();
         $pk->status = $status;
-        $pk->protocol = $this->protocol;
         $this->sendDataPacket($pk, false, $immediate);
     }
 
@@ -2218,12 +2212,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return true;
     }
 
-    public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+    public function handleMoveActorAbsolute(MoveActorAbsolutePacket $packet) : bool{
         $target = $this->level->getEntity($packet->entityRuntimeId);
         if($target === null)
             return false;
 
-        $target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
+        $target->setPositionAndRotation($packet->position, $packet->zRot, $packet->xRot);
 
         $this->server->broadcastPacket($this->getViewers(), $packet);
         return true;
@@ -2271,14 +2265,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return true;
     }
 
-    public function handleEntityEvent(EntityEventPacket $packet) : bool{
+    public function handleActorEvent(ActorEventPacket $packet) : bool{
         if(!$this->spawned or !$this->isAlive()){
             return true;
         }
         $this->resetCraftingGridType();
 
         switch($packet->event){
-            case EntityEventPacket::EATING_ITEM:
+            case ActorEventPacket::EATING_ITEM:
                 if($packet->data === 0){
                     return false;
                 }
@@ -2286,7 +2280,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
                 $this->dataPacket($packet);
                 $this->server->broadcastPacket($this->getViewers(), $packet);
                 break;
-            case EntityEventPacket::PLAYER_ADD_XP_LEVELS:
+            case ActorEventPacket::PLAYER_ADD_XP_LEVELS:
                 if($packet->data == 0){
                     return false;
                 }
@@ -2295,7 +2289,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
                     $this->addXpLevels($packet->data);
                 }
                 break;
-            case EntityEventPacket::COMPLETE_TRADE:
+            case ActorEventPacket::COMPLETE_TRADE:
                 // TODO : İncele
                 break;
             default:
@@ -3020,7 +3014,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return $handled;
     }
 
-    public function handleBlockEntityData(BlockEntityDataPacket $packet) : bool{
+    public function handleBlockActorData(BlockActorDataPacket $packet) : bool{
         if(!$this->spawned or !$this->isAlive()){
             return true;
         }

@@ -423,8 +423,8 @@ class BlockFactory{
 	public static function registerStaticRuntimeIdMappings() : void{
 		/** @var mixed[] $runtimeIdMap */
 		$runtimeIdMap = json_decode(file_get_contents(\pocketmine\RESOURCE_PATH . "runtimeid_table.json"), true);
-		foreach($runtimeIdMap as $obj){
-			self::registerMapping($obj["runtimeID"], $obj["id"], $obj["data"]);
+		foreach($runtimeIdMap as $k => $obj){
+			self::registerMapping($k, $obj["id"], $obj["data"]);
 		}
 	}
 
@@ -437,18 +437,7 @@ class BlockFactory{
 	 * @return int
 	 */
 	public static function toStaticRuntimeId(int $id, int $meta = 0) : int{
-		if($id === Block::AIR){
-			$meta = 0;
-		}
-
-		$index = ($id << 4) | $meta;
-		if(!isset(self::$staticRuntimeIdMap[$index])){
-			self::registerMapping($rtId = ++self::$lastRuntimeId, $id, $meta);
-			MainLogger::getLogger()->error("ID $id meta $meta does not have a corresponding block static runtime ID, added a new unknown runtime ID ($rtId)");
-			return $rtId;
-		}
-
-		return self::$staticRuntimeIdMap[$index];
+        return self::$staticRuntimeIdMap[($id << 4) | $meta] ?? self::$staticRuntimeIdMap[$id << 4] ?? self::$staticRuntimeIdMap[BlockIds::INFO_UPDATE << 4];
 	}
 
 	/**

@@ -24,21 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\network\mcpe\protocol\types;
 
-class MapTrackedObject{
-	public const TYPE_ENTITY = 0;
-	public const TYPE_BLOCK = 1;
+use pocketmine\utils\UUID;
 
+class ScoreboardIdentityPacketEntry{
 	/** @var int */
-	public $type;
-
-	/** @var int Only set if is TYPE_ENTITY */
-	public $entityUniqueId;
-
-	/** @var int */
-	public $x;
-	/** @var int */
-	public $y;
-	/** @var int */
-	public $z;
+	public $scoreboardId;
+	/** @var UUID|null */
+	public $uuid;
 
 }

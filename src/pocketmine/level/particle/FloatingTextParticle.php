@@ -30,7 +30,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\AddPlayerPacket;
 use pocketmine\network\mcpe\protocol\PlayerSkinPacket;
-use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
+use pocketmine\network\mcpe\protocol\RemoveActorPacket;
 use pocketmine\utils\UUID;
 
 class FloatingTextParticle extends Particle{
@@ -82,7 +82,7 @@ class FloatingTextParticle extends Particle{
 		if($this->entityId === null){
 			$this->entityId = Entity::$entityCount++;
 		}else{
-			$pk0 = new RemoveEntityPacket();
+			$pk0 = new RemoveActorPacket();
 			$pk0->entityUniqueId = $this->entityId;
 
 			$p[] = $pk0;

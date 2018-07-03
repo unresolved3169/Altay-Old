@@ -33,9 +33,9 @@ use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\math\RayTraceResult;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\network\mcpe\protocol\EntityEventPacket;
+use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
-use pocketmine\network\mcpe\protocol\TakeItemEntityPacket;
+use pocketmine\network\mcpe\protocol\TakeItemActorPacket;
 use pocketmine\Player;
 
 class Arrow extends Projectile{
@@ -132,7 +132,7 @@ class Arrow extends Projectile{
 
 	protected function onHitBlock(Block $blockHit, RayTraceResult $hitResult) : void{
 		parent::onHitBlock($blockHit, $hitResult);
-		$this->broadcastEntityEvent(EntityEventPacket::ARROW_SHAKE, 7); //7 ticks
+		$this->broadcastEntityEvent(ActorEventPacket::ARROW_SHAKE, 7); //7 ticks
 	}
 
 	protected function onHitEntity(Entity $entityHit, RayTraceResult $hitResult) : void{
@@ -182,7 +182,7 @@ class Arrow extends Projectile{
 			return;
 		}
 
-		$pk = new TakeItemEntityPacket();
+		$pk = new TakeItemActorPacket();
 		$pk->eid = $player->getId();
 		$pk->target = $this->getId();
 		$this->server->broadcastPacket($this->getViewers(), $pk);

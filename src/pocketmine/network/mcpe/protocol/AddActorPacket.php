@@ -1,23 +1,24 @@
 <?php
 
 /*
- *
- *  ____            _        _   __  __ _                  __  __ ____
- * |  _ \ ___   ___| | _____| |_|  \/  (_)_ __   ___      |  \/  |  _ \
- * | |_) / _ \ / __| |/ / _ \ __| |\/| | | '_ \ / _ \_____| |\/| | |_) |
- * |  __/ (_) | (__|   <  __/ |_| |  | | | | | |  __/_____| |  | |  __/
- * |_|   \___/ \___|_|\_\___|\__|_|  |_|_|_| |_|\___|     |_|  |_|_|
+ *               _ _
+ *         /\   | | |
+ *        /  \  | | |_ __ _ _   _
+ *       / /\ \ | | __/ _` | | | |
+ *      / ____ \| | || (_| | |_| |
+ *     /_/    \_|_|\__\__,_|\__, |
+ *                           __/ |
+ *                          |___/
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * @author PocketMine Team
- * @link http://www.pocketmine.net/
+ * @author TuranicTeam
+ * @link https://github.com/TuranicTeam/Altay
  *
- *
-*/
+ */
 
 declare(strict_types=1);
 
@@ -30,8 +31,8 @@ use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 
-class AddEntityPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::ADD_ENTITY_PACKET;
+class AddActorPacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::ADD_ACTOR_PACKET;
 
 	/** @var int|null */
 	public $entityUniqueId = null; //TODO
@@ -44,9 +45,11 @@ class AddEntityPacket extends DataPacket{
 	/** @var Vector3|null */
 	public $motion;
 	/** @var float */
+	public $pitch = 0.0;
+	/** @var float */
 	public $yaw = 0.0;
 	/** @var float */
-	public $pitch = 0.0;
+	public $headYaw = 0.0;
 
 	/** @var Attribute[] */
 	public $attributes = [];
@@ -63,6 +66,7 @@ class AddEntityPacket extends DataPacket{
 		$this->motion = $this->getVector3();
 		$this->pitch = $this->getLFloat();
 		$this->yaw = $this->getLFloat();
+		$this->headYaw = $this->getLFloat();
 
 		$attrCount = $this->getUnsignedVarInt();
 		for($i = 0; $i < $attrCount; ++$i){
@@ -97,6 +101,7 @@ class AddEntityPacket extends DataPacket{
 		$this->putVector3Nullable($this->motion);
 		$this->putLFloat($this->pitch);
 		$this->putLFloat($this->yaw);
+		$this->putLFloat($this->headYaw);
 
 		$this->putUnsignedVarInt(count($this->attributes));
 		foreach($this->attributes as $attribute){
@@ -114,7 +119,7 @@ class AddEntityPacket extends DataPacket{
 	}
 
 	public function handle(NetworkSession $session) : bool{
-		return $session->handleAddEntity($this);
+		return $session->handleAddActor($this);
 	}
 
 }
