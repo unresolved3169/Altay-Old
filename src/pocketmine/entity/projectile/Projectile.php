@@ -47,7 +47,8 @@ abstract class Projectile extends Entity{
 
 	public const DATA_SHOOTER_ID = 17;
 
-	protected $damage = 0;
+	/** @var float */
+	protected $damage = 0.0;
 
 	/** @var Vector3|null */
 	protected $blockHit;
@@ -75,6 +76,7 @@ abstract class Projectile extends Entity{
 		$this->setMaxHealth(1);
 		$this->setHealth(1);
 		$this->age = $this->namedtag->getShort("Age", $this->age);
+		$this->damage = $this->namedtag->getDouble("damage", $this->damage);
 
 		do{
 			$blockHit = null;
@@ -114,6 +116,25 @@ abstract class Projectile extends Entity{
 	}
 
 	/**
+	 * Returns the base damage applied on collision. This is multiplied by the projectile's speed to give a result
+	 * damage.
+	 *
+	 * @return float
+	 */
+	public function getBaseDamage() : float{
+		return $this->damage;
+	}
+
+	/**
+	 * Sets the base amount of damage applied by the projectile.
+	 *
+	 * @param float $damage
+	 */
+	public function setBaseDamage(float $damage) : void{
+		$this->damage = $damage;
+	}
+
+	/**
 	 * Returns the amount of damage this projectile will deal to the entity it hits.
 	 * @return int
 	 */
@@ -125,6 +146,7 @@ abstract class Projectile extends Entity{
 		parent::saveNBT();
 
 		$this->namedtag->setShort("Age", $this->age);
+		$this->namedtag->setDouble("damage", $this->damage);
 
 		if($this->blockHit !== null){
 			$this->namedtag->setInt("tileX", $this->blockHit->x);
@@ -141,17 +163,19 @@ abstract class Projectile extends Entity{
 		return true;
 	}
 
-	public function hasMovementUpdate() : bool{
-		$parent = parent::hasMovementUpdate();
-		if($parent and $this->blockHit !== null){
+	public function onNearbyBlockChange() : void{
+		if($this->blockHit !== null){
 			$blockIn = $this->level->getBlockAt($this->blockHit->x, $this->blockHit->y, $this->blockHit->z);
-
-			if($blockIn->getId() === $this->blockHitId and $blockIn->getDamage() === $this->blockHitData){
-				return false;
+			if($blockIn->getId() !== $this->blockHitId or $blockIn->getDamage() !== $this->blockHitData){
+				$this->blockHit = $this->blockHitId = $this->blockHitData = null;
 			}
 		}
 
-		return $parent;
+		parent::onNearbyBlockChange();
+	}
+
+	public function hasMovementUpdate() : bool{
+		return $this->blockHit === null and parent::hasMovementUpdate();
 	}
 
 	public function move(float $dx, float $dy, float $dz) : void{
@@ -216,7 +240,7 @@ abstract class Projectile extends Entity{
 			}elseif($blockHit !== null){
 				$ev = new ProjectileHitBlockEvent($this, $hitResult, $blockHit);
 			}else{
-				\assert(false, "unknown hit type");
+				assert(false, "unknown hit type");
 			}
 
 			if($ev !== null){

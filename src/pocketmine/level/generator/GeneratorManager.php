@@ -25,6 +25,7 @@ declare(strict_types=1);
 namespace pocketmine\level\generator;
 
 use pocketmine\level\generator\hell\Nether;
+use pocketmine\level\generator\end\End;
 use pocketmine\level\generator\normal\Normal;
 
 final class GeneratorManager{
@@ -40,6 +41,9 @@ final class GeneratorManager{
 		self::addGenerator(Normal::class, "default");
 		self::addGenerator(Nether::class, "hell");
 		self::addGenerator(Nether::class, "nether");
+		self::addGenerator(End::class, "ender");
+		self::addGenerator(End::class, "end");
+		self::addGenerator(VoidGenerator::class, "void");
 	}
 
 	/**

@@ -71,11 +71,11 @@ class Explosion{
 	 * @param Entity|Block $what
 	 */
 	public function __construct(Position $center, float $size, $what = null){
-		$this->source = $center;
-		$this->level = $center->getLevel();
-		if($this->level === null){
+		if(!$center->isValid()){
 			throw new \InvalidArgumentException("Position does not have a valid level");
 		}
+		$this->source = $center;
+		$this->level = $center->getLevel();
 
 		if($size <= 0){
 			throw new \InvalidArgumentException("Explosion radius must be greater than 0, got $size");
@@ -86,6 +86,9 @@ class Explosion{
 		$this->subChunkHandler = new SubChunkIteratorManager($this->level, false);
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function explodeA() : bool{
 		if($this->size < 0.1){
 			return false;
@@ -234,6 +237,9 @@ class Explosion{
 				if(!isset($this->affectedBlocks[$index = Level::blockHash($sideBlock->x, $sideBlock->y, $sideBlock->z)]) and !isset($updateBlocks[$index])){
 					$this->level->getServer()->getPluginManager()->callEvent($ev = new BlockUpdateEvent($this->level->getBlockAt($sideBlock->x, $sideBlock->y, $sideBlock->z)));
 					if(!$ev->isCancelled()){
+						foreach($this->level->getNearbyEntities(new AxisAlignedBB($sideBlock->x - 1, $sideBlock->y - 1, $sideBlock->z - 1, $sideBlock->x + 2, $sideBlock->y + 2, $sideBlock->z + 2)) as $entity){
+							$entity->onNearbyBlockChange();
+						}
 						$ev->getBlock()->onNearbyBlockChange();
 					}
 					$updateBlocks[$index] = true;

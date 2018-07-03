@@ -19,7 +19,7 @@
  * @link https://github.com/TuranicTeam/Altay
  *
  */
- 
+
 declare(strict_types=1);
 
 namespace pocketmine\block;
@@ -55,15 +55,8 @@ class Cactus extends Transparent{
 	}
 
 	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-
-		return new AxisAlignedBB(
-			$this->x + 0.0625,
-			$this->y + 0.0625,
-			$this->z + 0.0625,
-			$this->x + 0.9375,
-			$this->y + 0.9375,
-			$this->z + 0.9375
-		);
+		static $shrinkSize = 0.0625;
+		return new AxisAlignedBB($shrinkSize, $shrinkSize, $shrinkSize, 1 - $shrinkSize, 1 - $shrinkSize, 1 - $shrinkSize);
 	}
 
 	public function onEntityCollide(Entity $entity) : void{

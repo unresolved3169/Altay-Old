@@ -51,15 +51,7 @@ class Carpet extends Flowable{
 	}
 
 	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-
-		return new AxisAlignedBB(
-			$this->x,
-			$this->y,
-			$this->z,
-			$this->x + 1,
-			$this->y + 0.0625,
-			$this->z + 1
-		);
+		return new AxisAlignedBB(0, 0, 0, 1, 0.0625, 1);
 	}
 
 	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector, Player $player = null) : bool{
@@ -80,10 +72,10 @@ class Carpet extends Flowable{
 	}
 
 	public function getFlameEncouragement() : int {
-        return 30;
-    }
+		return 30;
+	}
 
-    public function getFlammability() : int {
-        return 20;
-    }
+	public function getFlammability() : int {
+		return 20;
+	}
 }

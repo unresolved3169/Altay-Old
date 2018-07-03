@@ -457,10 +457,7 @@ class LevelDB extends BaseLevelProvider{
 		/** @var CompoundTag[] $tiles */
 		$tiles = [];
 		foreach($chunk->getTiles() as $tile){
-			if(!$tile->isClosed()){
-				$tile->saveNBT($tileTag = new CompoundTag());
-				$tiles[] = $tileTag;
-			}
+			$tiles[] = $tile->saveNBT();
 		}
 		$this->writeTags($tiles, $index . self::TAG_BLOCK_ENTITY);
 
