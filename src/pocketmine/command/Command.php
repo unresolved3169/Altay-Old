@@ -95,7 +95,7 @@ abstract class Command{
 		$this->setDescription($description);
 		$this->usageMessage = $usageMessage ?? ("/" . $name);
 		$this->setAliases($aliases);
-		$this->addOverload(new CommandOverload("default", $parameters ?? [new CommandParameter("args", CommandParameter::ARG_TYPE_STRING)]));
+		$this->addOverload(new CommandOverload("default", $parameters ?? [new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]));
 	}
 
 	/**
