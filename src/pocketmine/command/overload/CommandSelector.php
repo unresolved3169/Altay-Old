@@ -22,16 +22,18 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\command\utils;
+namespace pocketmine\command\overload;
 
 use pocketmine\command\CommandSender;
+use pocketmine\command\utils\NoSelectorMatchException;
 use pocketmine\entity\Entity;
 use pocketmine\level\Position;
 use pocketmine\Player;
+use pocketmine\Server;
 
 class CommandSelector{
 
-	public const ESCAPE = "\x40";
+	public const ESCAPE = "\x40"; // @
 
 	public const ALL_PLAYERS = CommandSelector::ESCAPE . "a";
 	public const ALL_ENTITIES = CommandSelector::ESCAPE . "e";
@@ -42,12 +44,12 @@ class CommandSelector{
 	/** @var Entity[] */
 	protected $selected = [];
 
-	public function __construct(string $selector, CommandSender $sender, string $entityType = Entity::class){
+	public function __construct(string $selector, CommandSender $sender, ?array &$args = null, string $entityType = Entity::class){
 		if(!self::isSubClass($entityType, Entity::class)){
 			throw new NoSelectorMatchException(NoSelectorMatchException::NO_TARGET_MATCH);
 		}
 
-		$this->selected = self::setSelectedFromSelector($selector, $entityType, $sender);
+		$this->selected = self::setSelectedFromSelector($selector, $entityType, $sender, $args);
 		if(empty($this->selected)){
 			throw new NoSelectorMatchException((int) self::isSubClass($entityType, Player::class));
 		}
@@ -57,7 +59,7 @@ class CommandSelector{
 		return $sClass === $sExpectedParentClass ? true : is_subclass_of($sClass, $sExpectedParentClass);
 	}
 
-	public static function setSelectedFromSelector(string $selector, string $entityType, CommandSender $sender) : array{
+	public static function setSelectedFromSelector(string $selector, string $entityType, CommandSender $sender, ?array $args = null) : array{
 		switch($selector){
 			case CommandSelector::ALL_PLAYERS:
 				return $sender->getServer()->getOnlinePlayers();
@@ -74,8 +76,37 @@ class CommandSelector{
 				return $sender instanceof $entityType ? [$sender] : [];
 			default: // player name
 				$player = $sender->getServer()->getPlayerExact($selector);
-				return $player instanceof $entityType ? [$player] : [];
+				if($player !== null){
+					return [$player];
+				}elseif($args !== null and !empty($args)){
+					$index = array_search($selector, $args);
+					$player = self::getPlayerFromArgs($index, $args);
+					return $player !== null ? [$player] : [];
+				}else{
+					return [];
+				}
 		}
+	}
+
+	public static function getPlayerFromArgs(int $startIndex, array &$args) : ?Player{
+		$newArgs = array_slice($args, $startIndex, null, true);
+		while(!empty($newArgs)){
+			$name = implode(" ", $newArgs);
+			$player = Server::getInstance()->getPlayerExact($name);
+			if($player !== null){
+				$lastIndex = $startIndex + count($newArgs);
+				$args[$startIndex] = $name;
+				for($i=$startIndex + 1; $i<$lastIndex; $i++){
+					unset($args[$i]);
+				}
+				$args = array_values($args);
+				return $player;
+			}else{
+				array_pop($newArgs);
+			}
+		}
+
+		return null;
 	}
 
 	public static function getPosFromSender(CommandSender $sender) : Position{

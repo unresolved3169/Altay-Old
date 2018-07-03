@@ -27,7 +27,7 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandParameter;
-use pocketmine\command\utils\CommandSelector;
+use pocketmine\command\overload\CommandSelector;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -64,7 +64,7 @@ class KillCommand extends VanillaCommand{
 				return true;
 			}
 
-			$selectors = (new CommandSelector($args[0], $sender))->getSelected();
+			$selectors = (new CommandSelector($args[0], $sender, $args))->getSelected();
 			$names = [];
 
 			foreach($selectors as $selector){

@@ -27,7 +27,7 @@ namespace pocketmine\command\defaults;
 use pocketmine\command\CommandSender;
 use pocketmine\command\overload\CommandEnumValues;
 use pocketmine\command\overload\CommandParameter;
-use pocketmine\command\utils\CommandSelector;
+use pocketmine\command\overload\CommandSelector;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
@@ -73,7 +73,7 @@ class ClearCommand extends VanillaCommand{
 				return true;
 			}
 
-			$selectors = (new CommandSelector($args[0], $sender, Player::class))->getSelected();
+			$selectors = (new CommandSelector($args[0], $sender, $args, Player::class))->getSelected();
 		}
 
 		if(isset($args[1])){
