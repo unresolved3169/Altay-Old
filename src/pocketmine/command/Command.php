@@ -345,6 +345,13 @@ abstract class Command{
         $this->commandData->overloads[$overloadIndex][] = $parameter;
     }
 
+    /**
+     * Sets parameter to overload
+     *
+     * @param CommandParameter $parameter
+     * @param int $parameterIndex
+     * @param int $overloadIndex
+     */
     public function setParameter(CommandParameter $parameter, int $parameterIndex, int $overloadIndex = 0) : void{
         $this->commandData->overloads[$overloadIndex][$parameterIndex] = $parameter;
     }
