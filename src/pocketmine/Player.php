@@ -722,7 +722,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
                 continue;
             }
 
-            $pk->commandData[$command->getName()] = $command->getCommandData();
+            $pk->commandData[$command->getName()] = $command->getData();
         }
 
         $this->dataPacket($pk);

@@ -50,9 +50,6 @@ abstract class Command{
     /** @var string[] */
     private $aliases = [];
 
-    /** @var string[] */
-    private $activeAliases = [];
-
     /** @var CommandMap */
     private $commandMap = null;
 
@@ -69,30 +66,22 @@ abstract class Command{
     public $timings;
 
     /**
-     * @param string $name
-     * @param string $description
-     * @param string $usageMessage
+     * @param string   $name
+     * @param string   $description
+     * @param string   $usageMessage
      * @param string[] $aliases
-     * @param array $overloads
+     * @param array    $overloads
      */
     public function __construct(string $name, string $description = "", string $usageMessage = null, array $aliases = [], array $overloads = null){
         if(strlen($description) > 0 and $description{0} == '%'){
             $description = Server::getInstance()->getLanguage()->translateString($description);
         }
-        $this->setAliases($aliases);
 
-        if($overloads === null){
-            $overloads = [[new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]];
-        }
+        //work around a client bug which makes the original name not show when aliases are used
+        if(!empty($aliases)) $aliases[] = $name;
 
-        $this->commandData = new CommandData(
-            $name,
-            $description,
-            0,
-            0,
-            $this->aliasesToEnum($name),
-            $overloads
-        );
+        $this->commandData = new CommandData($name, $description, 0, 0, new CommandEnum(ucfirst($name) . "Aliases", $aliases), $overloads ?? [[new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]]);
+        $this->aliases = $aliases;
         $this->setLabel($name);
         $this->usageMessage = $usageMessage ?? ("/" . $name);
     }
@@ -109,8 +98,8 @@ abstract class Command{
     /**
      * @return CommandData
      */
-    public function getCommandData() : CommandData{
-        return $this->commandData;
+    public function getData() : CommandData{
+        return clone $this->commandData;
     }
 
     /**
@@ -220,7 +209,7 @@ abstract class Command{
     public function unregister(CommandMap $commandMap) : bool{
         if($this->allowChangesFrom($commandMap)){
             $this->commandMap = null;
-            $this->activeAliases = $this->aliases;
+            $this->commandData->aliases->enumValues = $this->aliases;
             $this->label = $this->nextLabel;
 
             return true;
@@ -249,7 +238,17 @@ abstract class Command{
      * @return string[]
      */
     public function getAliases() : array{
-        return $this->activeAliases;
+        return $this->commandData->aliases->enumValues;
+    }
+
+    /**
+     * @param string[] $aliases
+     */
+    public function setAliases(array $aliases){
+        $this->aliases = $aliases;
+        if(!$this->isRegistered()){
+            $this->commandData->aliases->enumValues = $aliases;
+        }
     }
 
     /**
@@ -260,27 +259,17 @@ abstract class Command{
     }
 
     /**
+     * @param string $permissionMessage
+     */
+    public function setPermissionMessage(string $permissionMessage){
+        $this->permissionMessage = $permissionMessage;
+    }
+
+    /**
      * @return string
      */
     public function getDescription() : string{
         return $this->commandData->commandDescription;
-    }
-
-    /**
-     * @return string
-     */
-    public function getUsage() : string{
-        return $this->usageMessage;
-    }
-
-    /**
-     * @param string[] $aliases
-     */
-    public function setAliases(array $aliases){
-        $this->aliases = $aliases;
-        if(!$this->isRegistered()){
-            $this->activeAliases = $aliases;
-        }
     }
 
     /**
@@ -290,14 +279,15 @@ abstract class Command{
         if(strlen($description) > 0 and $description{0} == '%'){
             $description = Server::getInstance()->getLanguage()->translateString($description);
         }
+
         $this->commandData->commandDescription = $description;
     }
 
     /**
-     * @param string $permissionMessage
+     * @return string
      */
-    public function setPermissionMessage(string $permissionMessage){
-        $this->permissionMessage = $permissionMessage;
+    public function getUsage() : string{
+        return $this->usageMessage;
     }
 
     /**
@@ -345,18 +335,63 @@ abstract class Command{
         }
     }
 
-    public function aliasesToEnum(string $name) : ?CommandEnum{
-        $aliases = $this->getAliases();
-        if(!empty($aliases)){
-            if(!in_array($name, $aliases, true)){
-                //work around a client bug which makes the original name not show when aliases are used
-                $aliases[] = $name;
-            }
+    /**
+     * Adds parameter to overload
+     *
+     * @param CommandParameter $parameter
+     * @param int $overloadIndex
+     */
+    public function addParameter(CommandParameter $parameter, int $overloadIndex = 0) : void{
+        $this->commandData->overloads[$overloadIndex][] = $parameter;
+    }
 
-            return new CommandEnum(ucfirst($name) . "Aliases", $aliases);
-        }
+    public function setParameter(CommandParameter $parameter, int $parameterIndex, int $overloadIndex = 0) : void{
+        $this->commandData->overloads[$overloadIndex][$parameterIndex] = $parameter;
+    }
 
-        return null;
+    /**
+     * Removes parameter from overload
+     *
+     * @param int $parameterIndex
+     * @param int $overloadIndex
+     */
+    public function removeParameter(int $parameterIndex, int $overloadIndex = 0) : void{
+        unset($this->commandData->overloads[$overloadIndex][$parameterIndex]);
+    }
+
+    /**
+     * Remove all overloads
+     */
+    public function removeAllParameters() : void{
+        $this->commandData->overloads = [];
+    }
+
+    /**
+     * Removes overload and includes.
+     *
+     * @param int $overloadIndex
+     */
+    public function removeOverload(int $overloadIndex) : void{
+        unset($this->commandData->overloads[$overloadIndex]);
+    }
+
+    /**
+     * Returns overload
+     *
+     * @param int $index
+     * @return CommandParameter[]|null
+     */
+    public function getOverload(int $index) : ?array{
+        return $this->commandData->overloads[$index] ?? null;
+    }
+
+    /**
+     * Returns all overloads
+     *
+     * @return CommandParameter[][]
+     */
+    public function getOverloads() : array{
+        return $this->commandData->overloads;
     }
 
     /**

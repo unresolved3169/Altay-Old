@@ -284,7 +284,7 @@ class AvailableCommandsPacket extends DataPacket{
         $postfixesMap = [];
         $enumMap = [];
         foreach($this->commandData as $commandData){
-            if($commandData->aliases !== null){
+            if($commandData->aliases !== null and !empty($commandData->aliases->enumValues)){
                 $enumMap[$commandData->aliases->enumName] = $commandData->aliases;
 
                 foreach($commandData->aliases->enumValues as $str){
