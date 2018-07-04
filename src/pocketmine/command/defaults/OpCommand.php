@@ -26,41 +26,44 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
+use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
 class OpCommand extends VanillaCommand{
 
-	public function __construct(string $name){
-		parent::__construct(
-			$name,
-			"%pocketmine.command.op.description",
-			"%commands.op.usage",
-			[]
-		);
-		$this->setPermission("pocketmine.command.op.give");
-	}
+    public function __construct(string $name){
+        parent::__construct(
+            $name,
+            "%pocketmine.command.op.description",
+            "%commands.op.usage",
+            [],
+            [[
+                new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false)
+            ]]
+        );
+        $this->setPermission("pocketmine.command.op.give");
+    }
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
+    public function execute(CommandSender $sender, string $commandLabel, array $args){
+        if(!$this->testPermission($sender)){
+            return true;
+        }
 
-		if(count($args) === 0){
-			throw new InvalidCommandSyntaxException();
-		}
+        if(count($args) === 0){
+            throw new InvalidCommandSyntaxException();
+        }
 
-		$name = array_shift($args);
+        $name = array_shift($args);
 
-		$player = $sender->getServer()->getOfflinePlayer($name);
-		Command::broadcastCommandMessage($sender, new TranslationContainer("commands.op.success", [$player->getName()]));
-		if($player instanceof Player){
-			$player->sendMessage(TextFormat::GRAY . "You are now op!");
-		}
-		$player->setOp(true);
-		return true;
-	}
+        $player = $sender->getServer()->getOfflinePlayer($name);
+        Command::broadcastCommandMessage($sender, new TranslationContainer("commands.op.success", [$player->getName()]));
+        if($player instanceof Player){
+            $player->sendMessage(TextFormat::GRAY . "You are now op!");
+        }
+        $player->setOp(true);
+        return true;
+    }
 }

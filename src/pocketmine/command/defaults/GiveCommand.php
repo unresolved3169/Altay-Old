@@ -25,81 +25,94 @@ declare(strict_types=1);
 namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
+use pocketmine\command\CommandEnumValues;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandEnumValues;
-use pocketmine\command\overload\CommandOverload;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\item\ItemFactory;
 use pocketmine\lang\TranslationContainer;
 use pocketmine\nbt\JsonNBTParser;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\utils\TextFormat;
 
 class GiveCommand extends VanillaCommand{
 
-	public function __construct(string $name){
-		parent::__construct(
-			$name,
-			"%pocketmine.command.give.description",
-			"%pocketmine.command.give.usage"
-		);
-		$this->setPermission("pocketmine.command.give");
-	}
+    public function __construct(string $name){
+        parent::__construct(
+            $name,
+            "%pocketmine.command.give.description",
+            "%pocketmine.command.give.usage"
+        );
+        $this->setPermission("pocketmine.command.give");
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
+        $itemName = [
+            new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET, false),
+            new CommandParameter("itemName", CommandParameter::ARG_TYPE_STRING, false, CommandEnumValues::getItem()),
+            new CommandParameter("amount", CommandParameter::ARG_TYPE_INT),
+            //new CommandParameter("data", CommandParameter::ARG_TYPE_INT), not in Altay
+            new CommandParameter("components", CommandParameter::ARG_TYPE_JSON),
+        ];
+        // FOR ALTAY NOT IN VANILLA
+        $itemId = $itemName;
+        $itemId[1] = new CommandParameter("itemId", CommandParameter::ARG_TYPE_INT, false);
 
-		if(count($args) < 2){
-			throw new InvalidCommandSyntaxException();
-		}
+        $this->setParameters($itemName, 0);
+        $this->setParameters($itemId, 1);
+    }
 
-		$player = $sender->getServer()->getPlayer($args[0]);
-		if($player === null){
-			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
-			return true;
-		}
+    public function execute(CommandSender $sender, string $commandLabel, array $args){
+        if(!$this->testPermission($sender)){
+            return true;
+        }
 
-		try{
-			$item = ItemFactory::fromString($args[1]);
-		}catch(\InvalidArgumentException $e){
-			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.give.item.notFound", [$args[1]]));
-			return true;
-		}
+        if(count($args) < 2){
+            throw new InvalidCommandSyntaxException();
+        }
 
-		if(!isset($args[2])){
-			$item->setCount($item->getMaxStackSize());
-		}else{
-			$item->setCount((int) $args[2]);
-		}
+        $player = $sender->getServer()->getPlayer($args[0]);
+        if($player === null){
+            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
+            return true;
+        }
 
-		if(isset($args[3])){
-			$tags = $exception = null;
-			$data = implode(" ", array_slice($args, 3));
-			try{
-				$tags = JsonNBTParser::parseJSON($data);
-			}catch(\Exception $ex){
-				$exception = $ex;
-			}
+        try{
+            $item = ItemFactory::fromString($args[1]);
+        }catch(\InvalidArgumentException $e){
+            $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.give.item.notFound", [$args[1]]));
+            return true;
+        }
 
-			if(!($tags instanceof CompoundTag) or $exception !== null){
-				$sender->sendMessage(new TranslationContainer("commands.give.tagError", [$exception !== null ? $exception->getMessage() : "Invalid tag conversion"]));
-				return true;
-			}
+        if(!isset($args[2])){
+            $item->setCount($item->getMaxStackSize());
+        }else{
+            $item->setCount((int) $args[2]);
+        }
 
-			$item->setNamedTag($tags);
-		}
+        if(isset($args[3])){
+            $tags = $exception = null;
+            $data = implode(" ", array_slice($args, 3));
+            try{
+                $tags = JsonNBTParser::parseJSON($data);
+            }catch(\Exception $ex){
+                $exception = $ex;
+            }
 
-		//TODO: overflow
-		$player->getInventory()->addItem(clone $item);
+            if(!($tags instanceof CompoundTag) or $exception !== null){
+                $sender->sendMessage(new TranslationContainer("commands.give.tagError", [$exception !== null ? $exception->getMessage() : "Invalid tag conversion"]));
+                return true;
+            }
 
-		Command::broadcastCommandMessage($sender, new TranslationContainer("%commands.give.success", [
-			$item->getName() . " (" . $item->getId() . ":" . $item->getDamage() . ")",
-			(string) $item->getCount(),
-			$player->getName()
-		]));
-		return true;
-	}
+            $item->setNamedTag($tags);
+        }
+
+        //TODO: overflow
+        $player->getInventory()->addItem(clone $item);
+
+        Command::broadcastCommandMessage($sender, new TranslationContainer("%commands.give.success", [
+            $item->getName() . " (" . $item->getId() . ":" . $item->getDamage() . ")",
+            (string) $item->getCount(),
+            $player->getName()
+        ]));
+        return true;
+    }
 }

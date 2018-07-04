@@ -77,11 +77,8 @@ abstract class Command{
             $description = Server::getInstance()->getLanguage()->translateString($description);
         }
 
-        //work around a client bug which makes the original name not show when aliases are used
-        if(!empty($aliases)) $aliases[] = $name;
-
-        $this->commandData = new CommandData($name, $description, 0, 0, new CommandEnum(ucfirst($name) . "Aliases", $aliases), $overloads ?? [[new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]]);
-        $this->aliases = $aliases;
+        $this->commandData = new CommandData($name, $description, 0, 0, null, $overloads ?? [[new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]]);
+        $this->setAliases($aliases);
         $this->setLabel($name);
         $this->usageMessage = $usageMessage ?? ("/" . $name);
     }
@@ -115,7 +112,6 @@ abstract class Command{
     public function getPermission(){
         return $this->permission;
     }
-
 
     /**
      * @param string|null $permission
@@ -238,7 +234,8 @@ abstract class Command{
      * @return string[]
      */
     public function getAliases() : array{
-        return $this->commandData->aliases->enumValues;
+        $aliases = $this->commandData->aliases;
+        return $aliases == null ? [] : $aliases->enumValues;
     }
 
     /**
@@ -247,7 +244,14 @@ abstract class Command{
     public function setAliases(array $aliases){
         $this->aliases = $aliases;
         if(!$this->isRegistered()){
-            $this->commandData->aliases->enumValues = $aliases;
+            if(empty($aliases)){
+                $this->commandData->aliases = null;
+            }else{
+                if($this->commandData->aliases == null){
+                    $this->commandData->aliases = new CommandEnum(ucfirst($this->getName()) . "Aliases");
+                }
+                $this->commandData->aliases->enumValues = $aliases;
+            }
         }
     }
 
@@ -339,7 +343,7 @@ abstract class Command{
      * Adds parameter to overload
      *
      * @param CommandParameter $parameter
-     * @param int $overloadIndex
+     * @param int              $overloadIndex
      */
     public function addParameter(CommandParameter $parameter, int $overloadIndex = 0) : void{
         $this->commandData->overloads[$overloadIndex][] = $parameter;
@@ -349,11 +353,21 @@ abstract class Command{
      * Sets parameter to overload
      *
      * @param CommandParameter $parameter
-     * @param int $parameterIndex
-     * @param int $overloadIndex
+     * @param int              $parameterIndex
+     * @param int              $overloadIndex
      */
     public function setParameter(CommandParameter $parameter, int $parameterIndex, int $overloadIndex = 0) : void{
         $this->commandData->overloads[$overloadIndex][$parameterIndex] = $parameter;
+    }
+
+    /**
+     * Sets parameters to overload
+     *
+     * @param CommandParameter[] $parameters
+     * @param int                $overloadIndex
+     */
+    public function setParameters(array $parameters, int $overloadIndex = 0) : void{
+        $this->commandData->overloads[$overloadIndex] = array_values($parameters);
     }
 
     /**
