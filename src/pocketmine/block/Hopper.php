@@ -70,7 +70,7 @@ class Hopper extends Transparent{
                 $hopper = Tile::createTile(Tile::HOPPER, $this->getLevel(), TileHopper::createNBT($this));
             }
 
-            if($hopper->canOpenWith($item->getCustomName())){
+            if(!$hopper->canOpenWith($item->getCustomName())){
                 return true;
             }
 
