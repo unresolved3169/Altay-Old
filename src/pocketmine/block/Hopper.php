@@ -67,7 +67,7 @@ class Hopper extends Transparent{
             if($t instanceof TileHopper){
                 $hopper = $t;
             }else{
-                $hopper = Tile::createTile(Tile::CHEST, $this->getLevel(), TileHopper::createNBT($this));
+                $hopper = Tile::createTile(Tile::HOPPER, $this->getLevel(), TileHopper::createNBT($this));
             }
 
             if($hopper->canOpenWith($item->getCustomName())){
