@@ -26,23 +26,36 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
 
-class FloatBehavior extends Behavior{
+class FloatBehavior extends Behavior
+{
 
-	public function __construct(Mob $mob){
-		parent::__construct($mob);
-		$mob->setGenericFlag(Mob::DATA_FLAG_SWIMMER, true);
-    $this->mutexBits = 4;
-	}
+    public function __construct(Mob $mob)
+    {
+        parent::__construct($mob);
+        $this->mutexBits = 4;
+    }
 
- public function canStart() : bool{
-  return $this->mob->isUnderWater();
- }
+    public function canStart(): bool
+    {
+        return $this->mob->isUnderWater();
+    }
 
-	public function onTick() : void{
-		if($this->mob->isUnderWater()){
-			if($this->random->nextFloat() < 0.8){
-				$this->mob->setMotion($this->mob->getMotion()->add(0,0.39,0));
-			}
-		}
-	}
+    public function onStart(): void
+    {
+        $this->mob->setGenericFlag(Mob::DATA_FLAG_SWIMMER, true);
+    }
+
+    public function onEnd(): void
+    {
+        $this->mob->setGenericFlag(Mob::DATA_FLAG_SWIMMER, false);
+    }
+
+    public function onTick(): void
+    {
+        if ($this->mob->isUnderWater()) {
+            if ($this->random->nextFloat() < 0.8) {
+                $this->mob->setMotion($this->mob->getMotion()->add(0, 0.39, 0));
+            }
+        }
+    }
 }

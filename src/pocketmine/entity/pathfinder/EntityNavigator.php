@@ -31,6 +31,10 @@ use pocketmine\block\Block;
 
 class EntityNavigator{
 
+    public const NAVIGATE_TYPE_GROUND = 0;
+    public const NAVIGATE_TYPE_AIR = 1;
+    public const NAVIGATE_TYPE_LIQUID = 2;
+
     /** @var Mob */
     protected $mob;
 
