@@ -37,8 +37,7 @@ class PingCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.ping.description",
 			"%commands.ping.usage",
-			[],
-            [[
+			[], [[
                 new CommandParameter("player", CommandParameter::ARG_TYPE_TARGET)
             ]]
 		);

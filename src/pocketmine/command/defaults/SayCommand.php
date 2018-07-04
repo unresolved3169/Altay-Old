@@ -26,34 +26,37 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\ConsoleCommandSender;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\lang\TranslationContainer;
+use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
 class SayCommand extends VanillaCommand{
 
-	public function __construct(string $name){
-		parent::__construct(
-			$name,
-			"%pocketmine.command.say.description",
-			"%commands.say.usage",
-			[]
-		);
-		$this->setPermission("pocketmine.command.say");
-	}
+    public function __construct(string $name){
+        parent::__construct(
+            $name,
+            "%pocketmine.command.say.description",
+            "%commands.say.usage",
+            [],
+            [[
+                new CommandParameter("message", CommandParameter::ARG_TYPE_MESSAGE, false)
+            ]]
+        );
+        $this->setPermission("pocketmine.command.say");
+    }
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
+    public function execute(CommandSender $sender, string $commandLabel, array $args){
+        if(!$this->testPermission($sender)){
+            return true;
+        }
 
-		if(count($args) === 0){
-			throw new InvalidCommandSyntaxException();
-		}
+        if(count($args) === 0){
+            throw new InvalidCommandSyntaxException();
+        }
 
-		$sender->getServer()->broadcastMessage(new TranslationContainer(TextFormat::LIGHT_PURPLE . "%chat.type.announcement", [$sender instanceof Player ? $sender->getDisplayName() : ($sender instanceof ConsoleCommandSender ? "Server" : $sender->getName()), TextFormat::LIGHT_PURPLE . implode(" ", $args)]));
-		return true;
-	}
+        $sender->getServer()->broadcastMessage(new TranslationContainer(TextFormat::LIGHT_PURPLE . "%chat.type.announcement", [$sender instanceof Player ? $sender->getDisplayName() : ($sender instanceof ConsoleCommandSender ? "Server" : $sender->getName()), TextFormat::LIGHT_PURPLE . implode(" ", $args)]));
+        return true;
+    }
 }

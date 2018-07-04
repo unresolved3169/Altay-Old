@@ -26,6 +26,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\plugin\FolderPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -38,7 +39,9 @@ class MakePluginCommand extends VanillaCommand{
             $name,
             "Creates a Phar plugin from a unarchived",
             '/makeplugin <pluginName>',
-            ["mp"]
+            ["mp"], [[
+                new CommandParameter("plugin", CommandParameter::ARG_TYPE_RAWTEXT, false)
+            ]]
         );
 
         $this->setPermission("altay.command.makeplugin");

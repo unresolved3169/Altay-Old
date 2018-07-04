@@ -40,7 +40,7 @@ class MeCommand extends VanillaCommand{
             "%commands.me.usage",
             [],
             [[
-                new CommandParameter("message", CommandParameter::ARG_TYPE_RAWTEXT, false)
+                new CommandParameter("message", CommandParameter::ARG_TYPE_MESSAGE, false)
             ]]
         );
         $this->setPermission("pocketmine.command.me");
