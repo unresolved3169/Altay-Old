@@ -79,6 +79,6 @@ trait ContainerTrait{
 	 * @return bool
 	 */
 	public function canOpenWith(string $key) : bool{
-		return $this->lock === null or $this->lock === $key;
+		return $this->lock === null or strlen($this->lock) === 0 or $this->lock === $key;
 	}
 }
