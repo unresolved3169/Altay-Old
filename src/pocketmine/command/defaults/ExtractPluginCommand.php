@@ -4,6 +4,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\CommandSender;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
+use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\plugin\PharPluginLoader;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -16,7 +17,9 @@ class ExtractPluginCommand extends VanillaCommand{
             $name,
             "Extracts the source code from a Phar plugin",
             '/extractplugin <pluginName>',
-            ["ep"]
+            ["ep"], [[
+                new CommandParameter("plugin", CommandParameter::ARG_TYPE_RAWTEXT, false)
+            ]]
         );
 
         $this->setPermission("altay.command.extractphar");

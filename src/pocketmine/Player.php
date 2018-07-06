@@ -721,11 +721,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     public function sendCommandData(){
         $pk = new AvailableCommandsPacket();
         foreach($this->server->getCommandMap()->getCommands() as $command){
-            if(!$command->testPermissionSilent($this)){
+            if(!$command->testPermissionSilent($this) or isset($pk->commandData[$command->getName()])){
                 continue;
             }
 
-            $pk->commands[$command->getName()] = $command;
+            $data = $command->getData();
+            if($data->aliases !== null){
+                //work around a client bug which makes the original name not show when aliases are used
+                $data->aliases->enumValues[] = $data->commandName;
+            }
+
+            $pk->commandData[$data->commandName] = $data;
         }
 
         $this->dataPacket($pk);
@@ -3363,18 +3369,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     /**
      * Adds a bossbar to the player.
      *
-     * @param string $title
-     * @param float $health
-     * @param float $maxHealth
+     * @param Bossbar $bossBar
      * @param int|null $id
      * @return int
      */
-    public function addBossbar(string $title, float $health = 0, float $maxHealth = 1, int $id = null) : int{
-        $bossbar = new Bossbar($title, $health, $maxHealth);
-        $bossbar->showTo($this);
+    public function addBossbar(Bossbar $bossBar, int $id = null) : int{
+        if($id !== null and isset($this->bossbars[$id])){
+            return $id;
+        }
+
+        $bossBar->showTo($this);
 
         $id = $id ?? $this->bossbarIdCounter++;
-        $this->bossbars[$id] = $bossbar;
+        $this->bossbars[$id] = $bossBar;
 
         return $id;
     }

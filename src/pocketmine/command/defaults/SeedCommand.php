@@ -29,23 +29,24 @@ use pocketmine\Player;
 
 class SeedCommand extends VanillaCommand{
 
-	public function __construct(string $name){
-		parent::__construct(
-			$name,
-			"%pocketmine.command.seed.description",
-			"%commands.seed.usage"
-		);
-		$this->setPermission("pocketmine.command.seed");
-	}
+    public function __construct(string $name){
+        parent::__construct(
+            $name,
+            "%pocketmine.command.seed.description",
+            "%commands.seed.usage",
+            [], []
+        );
+        $this->setPermission("pocketmine.command.seed");
+    }
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
+    public function execute(CommandSender $sender, string $commandLabel, array $args){
+        if(!$this->testPermission($sender)){
+            return true;
+        }
 
-		$seed = ($sender instanceof Player) ? $sender->getLevel()->getSeed() : $sender->getServer()->getDefaultLevel()->getSeed();
-		$sender->sendMessage(new TranslationContainer("commands.seed.success", [$seed]));
+        $seed = ($sender instanceof Player) ? $sender->getLevel()->getSeed() : $sender->getServer()->getDefaultLevel()->getSeed();
+        $sender->sendMessage(new TranslationContainer("commands.seed.success", [$seed]));
 
-		return true;
-	}
+        return true;
+    }
 }

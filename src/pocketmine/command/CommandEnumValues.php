@@ -22,7 +22,9 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\command\overload;
+namespace pocketmine\command;
+
+use pocketmine\network\mcpe\protocol\types\CommandEnum;
 
 class CommandEnumValues{
 

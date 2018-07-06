@@ -36,7 +36,9 @@ class WhitelistCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.whitelist.description",
 			"%commands.whitelist.usage",
-            ["wl"]
+            ["wl"], [[
+
+            ]]
 		);
 		$this->setPermission("pocketmine.command.whitelist.reload;pocketmine.command.whitelist.enable;pocketmine.command.whitelist.disable;pocketmine.command.whitelist.list;pocketmine.command.whitelist.add;pocketmine.command.whitelist.remove");
 	}
