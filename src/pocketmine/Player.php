@@ -3366,18 +3366,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     /**
      * Adds a bossbar to the player.
      *
-     * @param string $title
-     * @param float $health
-     * @param float $maxHealth
+     * @param Bossbar $bossBar
      * @param int|null $id
      * @return int
      */
-    public function addBossbar(string $title, float $health = 0, float $maxHealth = 1, int $id = null) : int{
-        $bossbar = new Bossbar($title, $health, $maxHealth);
-        $bossbar->showTo($this);
+    public function addBossbar(Bossbar $bossBar, int $id = null) : int{
+        if($id !== null and isset($this->bossbars[$id])){
+            return $id;
+        }
+
+        $bossBar->showTo($this);
 
         $id = $id ?? $this->bossbarIdCounter++;
-        $this->bossbars[$id] = $bossbar;
+        $this->bossbars[$id] = $bossBar;
 
         return $id;
     }
