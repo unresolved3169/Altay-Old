@@ -26,12 +26,12 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\command\overload\CommandParameter;
 use pocketmine\command\utils\CommandSelector;
 use pocketmine\command\utils\InvalidCommandSyntaxException;
 use pocketmine\entity\Living;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\lang\TranslationContainer;
+use pocketmine\network\mcpe\protocol\types\CommandParameter;
 use pocketmine\Player;
 use pocketmine\utils\TextFormat;
 
@@ -43,7 +43,9 @@ class KillCommand extends VanillaCommand{
 			"%pocketmine.command.kill.description",
 			"%pocketmine.command.kill.usage",
 			[],
-			[new CommandParameter("target", CommandParameter::ARG_TYPE_TARGET, false)]
+            [[
+                new CommandParameter("target", CommandParameter::ARG_TYPE_TARGET, false)
+            ]]
 		);
 
 		$this->setPermission("altay.command.kill.self;altay.command.kill.other");

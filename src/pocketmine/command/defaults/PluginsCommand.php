@@ -34,7 +34,7 @@ class PluginsCommand extends VanillaCommand{
 			$name,
 			"%pocketmine.command.plugins.description",
 			"%pocketmine.command.plugins.usage",
-			["pl"]
+			["pl"], []
 		);
 		$this->setPermission("pocketmine.command.plugins");
 	}

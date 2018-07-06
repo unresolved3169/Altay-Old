@@ -718,11 +718,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     public function sendCommandData(){
         $pk = new AvailableCommandsPacket();
         foreach($this->server->getCommandMap()->getCommands() as $command){
-            if(!$command->testPermissionSilent($this)){
+            if(!$command->testPermissionSilent($this) or isset($pk->commandData[$command->getName()])){
                 continue;
             }
 
-            $pk->commands[$command->getName()] = $command;
+            $data = $command->getData();
+            if($data->aliases !== null){
+                //work around a client bug which makes the original name not show when aliases are used
+                $data->aliases->enumValues[] = $data->commandName;
+            }
+
+            $pk->commandData[$data->commandName] = $data;
         }
 
         $this->dataPacket($pk);
