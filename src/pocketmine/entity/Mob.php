@@ -183,9 +183,4 @@ abstract class Mob extends Living{
     public function setDefaultMovementSpeed(float $value) : void{
         $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setDefaultValue($value);
     }
-
-    // TODO: Add this to a interface
-    public function onRangedAttackToTarget(Entity $target, float $power) : void{
-
-    }
 }

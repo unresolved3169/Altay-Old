@@ -23,7 +23,9 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\projectile;
 
+use pocketmine\entity\Entity;
 
 interface ProjectileSource{
 
+    public function onRangedAttackToTarget(Entity $target, float $power) : void;
 }
