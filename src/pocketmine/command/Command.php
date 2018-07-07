@@ -205,7 +205,7 @@ abstract class Command{
     public function unregister(CommandMap $commandMap) : bool{
         if($this->allowChangesFrom($commandMap)){
             $this->commandMap = null;
-            $this->commandData->aliases->enumValues = $this->aliases;
+            $this->setAliases($this->aliases);
             $this->label = $this->nextLabel;
 
             return true;
