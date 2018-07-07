@@ -47,9 +47,28 @@ abstract class Mob extends Living{
     protected $seenEntities = [];
     protected $unseenEntities = [];
 
+    /** @var bool */
+    protected $aiEnabled = false;
+
     public function __construct(Level $level, CompoundTag $nbt){
         parent::__construct($level, $nbt);
         $this->setImmobile(true);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAiEnabled(): bool
+    {
+        return $this->aiEnabled;
+    }
+
+    /**
+     * @param bool $aiEnabled
+     */
+    public function setAiEnabled(bool $aiEnabled): void
+    {
+        $this->aiEnabled = $aiEnabled;
     }
 
     protected function initEntity() : void{
@@ -65,7 +84,7 @@ abstract class Mob extends Living{
     public function onUpdate(int $tick) : bool{
         if($this->closed) return false;
 
-        if($this->isAlive()) {
+        if($this->isAlive() and $this->aiEnabled) {
             $this->onBehaviorUpdate($tick);
         }
 

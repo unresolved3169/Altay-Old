@@ -312,6 +312,8 @@ class Server{
     public $allowNether = true;
     /** @var bool */
     public $allowEnd = true;
+    /** @var bool */
+    public $mobAiEnabled = false;
 
     public function loadAltayConfig(){
         self::$readLine = $this->getAltayProperty("terminal.read-line", true);
@@ -321,6 +323,7 @@ class Server{
         $this->keepExperience = $this->getAltayProperty("player.keep-experience", false);
         $this->allowNether = $this->getAltayProperty("dimensions.nether.active", true);
         $this->allowEnd = $this->getAltayProperty("dimensions.end.active", true);
+        $this->mobAiEnabled = $this->getAltayProperty("level.enable-mob-ai", false);
         $this->folderPluginLoader = $this->getAltayProperty("developer.folder-plugin-loader", true);
     }
 
