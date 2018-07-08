@@ -100,11 +100,11 @@ abstract class Mob extends Living{
     }
 
     protected function onBehaviorUpdate(int $tick) : void{
-        if($this->getLastAttacker()->isClosed()){
+        if($this->getLastAttacker() instanceof Entity and $this->getLastAttacker()->isClosed()){
             $this->setLastAttacker(null);
         }
 
-        if($this->getTargetEntity()->isClosed()){
+        if($this->getTargetEntity() instanceof Entity and $this->getTargetEntity()->isClosed()){
             $this->setTargetEntity(null);
         }
 
