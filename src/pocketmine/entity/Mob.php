@@ -79,6 +79,14 @@ abstract class Mob extends Living{
         $this->navigator = new EntityNavigator($this);
 
         $this->addBehaviors();
+
+        $this->aiEnabled = boolval($this->namedtag->getByte("aiEnabled", 0));
+    }
+
+    public function saveNBT(): void
+    {
+        parent::saveNBT();
+        $this->namedtag->setByte("aiEnabled", intval($this->aiEnabled));
     }
 
     public function onUpdate(int $tick) : bool{
@@ -92,6 +100,14 @@ abstract class Mob extends Living{
     }
 
     protected function onBehaviorUpdate(int $tick) : void{
+        if($this->getLastAttacker()->isClosed()){
+            $this->setLastAttacker(null);
+        }
+
+        if($this->getTargetEntity()->isClosed()){
+            $this->setTargetEntity(null);
+        }
+
         $this->targetBehaviorPool->onUpdate($tick);
         $this->behaviorPool->onUpdate($tick);
 
