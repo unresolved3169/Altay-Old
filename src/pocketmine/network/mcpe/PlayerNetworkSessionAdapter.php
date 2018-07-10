@@ -118,8 +118,8 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
         return false;
     }
 
-    public function handleMoveEntity(MoveEntityAbsolutePacket $packet) : bool{
-        return $this->player->handleMoveEntity($packet);
+    public function handleMoveEntityAbsolute(MoveEntityAbsolutePacket $packet) : bool{
+        return $this->player->handleMoveEntityAbsolute($packet);
     }
 
     public function handleMovePlayer(MovePlayerPacket $packet) : bool{
