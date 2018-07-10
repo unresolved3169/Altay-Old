@@ -96,18 +96,12 @@ abstract class Mob extends Living{
             $this->onBehaviorUpdate($tick);
         }
 
-        return parent::onUpdate($tick);
+        $hasUpdate = parent::onUpdate($tick);
+
+        return $hasUpdate;
     }
 
     protected function onBehaviorUpdate(int $tick) : void{
-        if($this->getLastAttacker() instanceof Entity and $this->getLastAttacker()->isClosed()){
-            $this->setLastAttacker(null);
-        }
-
-        if($this->getTargetEntity() instanceof Entity and $this->getTargetEntity()->isClosed()){
-            $this->setTargetEntity(null);
-        }
-
         $this->targetBehaviorPool->onUpdate($tick);
         $this->behaviorPool->onUpdate($tick);
 
@@ -124,14 +118,19 @@ abstract class Mob extends Living{
     }
 
     public function canSeeEntity(Entity $target) : bool{
-        // TODO: wtf?? why this always return false!? fix this.
-        /*if(in_array($target->getId(), $this->unseenEntities)){
+        if(in_array($target->getId(), $this->unseenEntities)){
             return false;
         }elseif(in_array($target->getId(), $this->seenEntities)){
             return true;
         }else{
-            $blocks = VoxelRayTrace::betweenPoints($this->floor(), $target->floor());
-            $canSee = $blocks === null or count(array_filter($blocks, function (Block $b){return $b->isSolid();})) === 0;
+            $vecs = VoxelRayTrace::betweenPoints($this->floor(), $target->floor());
+            $canSee = true;
+            foreach ($vecs as $vec) {
+                if($this->level->getBlockAt($vec->x, $vec->y, $vec->z)->isSolid()){
+                    $canSee = false;
+                    break;
+                }
+            }
             if($canSee){
                 $this->seenEntities[] = $target->getId();
             }else{
@@ -139,9 +138,7 @@ abstract class Mob extends Living{
             }
 
             return $canSee;
-        }*/
-
-        return true;
+        }
     }
 
     public function clearSightCache() : void{

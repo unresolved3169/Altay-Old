@@ -47,7 +47,7 @@ class FleeSunBehavior extends Behavior{
     }
 
     public function canStart() : bool{
-        if($this->mob->isOnFire() and $this->mob->level->canSeeSky($this->mob->floor())){
+        if($this->mob->isOnFire() and $this->mob->level->canSeeSky($this->mob->floor()) and $this->mob->level->isDayTime()){
             $pos = $this->findPossibleShelter($this->mob);
             if($pos === null) return false;
 

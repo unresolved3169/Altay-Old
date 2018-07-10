@@ -69,7 +69,9 @@ class FollowOwnerBehavior extends Behavior{
             return;
         }
 
-        if(--$this->followDelay < 0){
+        $this->followDelay--;
+
+        if($this->followDelay < 0){
             $this->followDelay = 10;
             $m = 2 - $distanceToPlayer;
             $m = ($m <= 0) ? 1 : $m / 2.0;

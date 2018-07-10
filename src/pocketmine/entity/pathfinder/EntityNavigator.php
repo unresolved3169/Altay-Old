@@ -24,7 +24,12 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\pathfinder;
 
+use pocketmine\block\Air;
+use pocketmine\block\Lava;
+use pocketmine\block\Liquid;
+use pocketmine\block\Water;
 use pocketmine\entity\Mob;
+use pocketmine\level\particle\RedstoneParticle;
 use pocketmine\math\Vector2;
 use pocketmine\math\Vector3;
 use pocketmine\block\Block;
@@ -55,6 +60,9 @@ class EntityNavigator{
     protected $avoidsWater = false, $avoidsSun = false;
     /** @var float */
     protected $speedMultiplier = 1.0;
+
+    protected $lastPoint = null;
+    protected $stuckTick = 0;
 
     public function __construct(Mob $mob){
         $this->mob = $mob;
@@ -91,7 +99,7 @@ class EntityNavigator{
             if($current->equals($to)){
                 return $this->initPath($path, $current);
             }
-            if($ticks++ > 50){
+            if($ticks++ > 100){
                 return $this->initPath($path, $highScore);
             }
 
@@ -147,7 +155,7 @@ class EntityNavigator{
             array_unshift($totalPath, $current);
         }
         unset($totalPath[0]);
-        return $totalPath;
+        return array_values($totalPath);
     }
 
     public function calculateGridDistance(PathPoint $from, PathPoint $to) : float{
@@ -290,11 +298,87 @@ class EntityNavigator{
 
     public function isBlocked(Vector3 $coord) : bool{
         $block = $this->mob->level->getBlock($coord);
-        return $block->isSolid();
+        return $block->isSolid() and !$this->avoidsWater and !($block instanceof Water);
+    }
+
+    public function removeSunnyPath() : void{
+        if($this->avoidsSun and $this->mob->level->isDayTime()) {
+			$temp = new Vector3();
+            foreach ($this->currentPath->getPoints() as $i => $point) {
+                if ($this->mob->level->canSeeSky($temp->setComponents($point->x, $point->height, $point->y))) {
+                    $this->currentPath->limitPath($i - 1);
+                    return;
+                }
+            }
+        }
+    }
+
+    public function pathFollow() : void{
+        if($this->currentPath !== null){
+            $length = count($this->currentPath->getPoints()) - 1;
+
+            for ($i = $this->currentPath->getCurrentIndex(); $i < count($this->currentPath->getPoints()); ++$i){
+                if($this->currentPath->getPointByIndex($i)->height != (int) floor($this->mob->y)){
+                    $length = $i;
+                    break;
+                }
+            }
+			
+			$currentPoint = $this->currentPath->getPointByIndex($this->currentPath->getCurrentIndex());
+			if(floor($this->mob->x) === $currentPoint->x and floor($this->mob->z) === $currentPoint->y){
+				$this->currentPath->setCurrentIndex($this->currentPath->getCurrentIndex() + 1);
+			}
+
+            for ($a = $length - 1; $a >= $this->currentPath->getCurrentIndex(); --$a){
+                $vec = $this->currentPath->getVectorByIndex($a);
+                $vec->y = floor($this->mob->y);
+                if($this->isClearBetweenPoints($this->mob->floor(), $vec)){
+                    $this->currentPath->setCurrentIndex($a);
+                    break;
+                }
+            }
+        }
+    }
+
+    public function isClearBetweenPoints(Vector3 $from, Vector3 $to) : bool{
+        $entityPos = $from;
+        $targetPos = $to;
+        $distance = $entityPos->distance($targetPos);
+        $rayPos = $entityPos;
+        $direction = $targetPos->subtract($entityPos)->normalize();
+
+        if($distance < $direction->length()){
+            return true;
+        }
+
+        do{
+            if (!$this->isSafeToStandAt($rayPos->floor())){
+                return false;
+            }
+            $rayPos = $rayPos->add($direction);
+        }while($distance > $entityPos->distance($rayPos));
+
+        return true;
+    }
+
+    public function isSafeToStandAt(Vector3 $pos) : bool{
+        if($this->isObstructed($pos)){
+            return false;
+        }elseif ($this->isBlocked($pos)){
+            return false;
+        }else{
+            $block = $this->mob->level->getBlockAt($pos->x, $pos->y - 1, $pos->z);
+            if(($block instanceof Water and !$this->mob->isUnderwater()) or $block instanceof Lava or !$block->isSolid()){
+                return false;
+            }else{
+                return true;
+            }
+        }
     }
 
     public function setPath(Path $path) : void{
         $this->currentPath = $path;
+        $this->removeSunnyPath();
     }
 
     public function getPath() : ?Path{
@@ -307,6 +391,8 @@ class EntityNavigator{
 
     public function clearPath() : void{
         $this->currentPath = null;
+        $this->lastPoint = null;
+        $this->stuckTick = 0;
     }
 
     public function setAvoidsWater(bool $value) : void{
@@ -317,16 +403,16 @@ class EntityNavigator{
         $this->avoidsSun = $value;
     }
 
-    public function isAvoidsWater() : bool{
+    public function getAvoidsWater() : bool{
         return $this->avoidsWater;
     }
 
-    public function isAvoidsSun() : bool{
+    public function getAvoidsSun() : bool{
         return $this->avoidsSun;
     }
 
     public function isSameDestination(Vector3 $point) : bool{
-        return $this->currentPath === null ? false : $this->currentPath->getFinalVector()->equals($point);
+        return !$this->havePath() ? false : $this->currentPath->getVectorByIndex(count($this->currentPath->getPoints()) - 1)->equals($point);
     }
 
     public function tryMoveTo(Vector3 $pos, float $speed, ?float $followRange = null): bool{
@@ -344,17 +430,46 @@ class EntityNavigator{
 
     public function onNavigateUpdate(int $tick) : void{
         if($this->currentPath !== null){
-            $next = $this->currentPath->getNextTile($this->mob);
-            if($next !== null){
-                $this->mob->lookAt(new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+            $next = $this->currentPath->getPointByIndex($this->currentPath->getCurrentIndex());
+            if($next !== null and $this->havePath()){
+                $this->pathFollow();
+                $this->mob->lookAt($r = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+                $this->mob->level->addParticle(new RedstoneParticle($r));
                 $moved = $this->mob->moveForward($this->speedMultiplier);
                 if(!$moved){
                     $this->clearPath();
+                }
+
+                if($this->mob->floor() == $this->lastPoint){
+                    $this->stuckTick++;
+
+                    if($this->stuckTick > 100){
+                        $this->clearPath();
+                    }
+                }else{
+                    $this->lastPoint = $this->mob->floor();
+                    $this->stuckTick = 0;
                 }
             }else{
                 $this->clearPath();
             }
         }
+    }
+
+    /**
+     * @return float
+     */
+    public function getSpeedMultiplier(): float
+    {
+        return $this->speedMultiplier;
+    }
+
+    /**
+     * @param float $speedMultiplier
+     */
+    public function setSpeedMultiplier(float $speedMultiplier): void
+    {
+        $this->speedMultiplier = $speedMultiplier;
     }
 
 }

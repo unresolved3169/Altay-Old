@@ -27,8 +27,7 @@ namespace pocketmine\entity\behavior;
 class RestrictSunBehavior extends Behavior{
 
     public function canStart() : bool{
-        $degree = $this->mob->level->getSunAngleDegrees();
-        return $degree > 15 and $degree < 165;
+        return $this->mob->level->isDayTime();
     }
 
     public function onStart() : void{

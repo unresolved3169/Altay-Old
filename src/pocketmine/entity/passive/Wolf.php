@@ -53,7 +53,7 @@ class Wolf extends Tamable{
         $this->behaviorPool->setBehavior(1, new SittingBehavior($this));
         $this->behaviorPool->setBehavior(2, new JumpAttackBehavior($this, 1.0));
         $this->behaviorPool->setBehavior(3, new MeleeAttackBehavior($this, 1.0));
-        $this->behaviorPool->setBehavior(4, new FollowOwnerBehavior($this, 1.0));
+        $this->behaviorPool->setBehavior(4, new FollowOwnerBehavior($this, 2.0));
         $this->behaviorPool->setBehavior(5, new WanderBehavior($this, 1.0));
         $this->behaviorPool->setBehavior(6, new LookAtPlayerBehavior($this, 8.0));
         $this->behaviorPool->setBehavior(7, new RandomLookAroundBehavior($this));

@@ -31,67 +31,58 @@ use pocketmine\math\Vector3;
 class Path{
 
 	/* @var PathPoint[] */
-	protected $tiles = [];
+	protected $points = [];
 
-	public function __construct(array $tiles = []){
-		$this->tiles = $tiles;
+	protected $currentIndex = 0;
+
+	public function __construct(array $points = []){
+		$this->points = $points;
 	}
 
 	public function havePath() : bool{
-		return !empty($this->tiles);
+		return !empty($this->points) and $this->currentIndex < count($this->points) - 1;
 	}
 
-	public function getNextTile(Entity $entity, bool $compressPath = false) : ?PathPoint{
-		if($this->havePath()){
-			$next = reset($this->tiles);
+	public function getVectorByIndex(int $index) : ?Vector3{
+	    $point = $this->getPointByIndex($index);
+	    if($point === null) return null;
 
-			if($next->x == (int) floor($entity->x) and $next->y == (int) floor($entity->z)){
-				array_shift($this->tiles);
-
-				return $this->getNextTile($entity);
-			}
-
-			if($compressPath){
-				foreach ($this->tiles as $tile){
-					if($this->isClearBetweenPoints($entity->level, $entity->asVector3(), new Vector3($tile->x, floor($entity->y), $tile->y))) {
-						$next = $tile;
-						unset($this->tiles[array_search($tile, $this->tiles)]);
-					}else{
-						break;
-					}
-				}
-			}
-			return $next;
-		}
-		return null;
-	}
-	
-	public function getFinalVector() : Vector3{
-	    if(!$this->havePath()){
-	        return new Vector3(0,0,0);
-	    }
-	    $end = end($this->tiles);
-	    return new Vector3($end->x, $end->height, $end->y);
+	    return new Vector3($point->x, $point->height, $point->y);
 	}
 
-	public function isClearBetweenPoints(Level $level, Vector3 $from, Vector3 $to) : bool{
-		$entityPos = $from;
-		$targetPos = $to;
-		$distance = $entityPos->distance($targetPos);
-		$rayPos = $entityPos;
-		$direction = $targetPos->subtract($entityPos)->normalize();
+	public function getPointByIndex(int $index) : ?PathPoint{
+	    return $this->points[$index] ?? null;
+    }
 
-		if($distance < $direction->length()){
-			return true;
-		}
+    public function removePoint(int $index) : void{
+	    unset($this->points[$index]);
+    }
 
-		do{
-			if ($level->getBlock($rayPos)->isSolid()){
-				return false;
-			}
-			$rayPos = $rayPos->add($direction);
-		}while($distance > $entityPos->distance($rayPos));
+    /**
+     * @return PathPoint[]
+     */
+    public function getPoints(): array
+    {
+        return $this->points;
+    }
 
-		return true;
-	}
+    /**
+     * @return int
+     */
+    public function getCurrentIndex(): int
+    {
+        return $this->currentIndex;
+    }
+
+    /**
+     * @param int $currentIndex
+     */
+    public function setCurrentIndex(int $currentIndex): void
+    {
+        $this->currentIndex = $currentIndex;
+    }
+
+    public function limitPath(int $maxLength) : void{
+        $this->points = array_slice($this->points, 0, $maxLength + 1);
+    }
 }

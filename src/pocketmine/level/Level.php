@@ -2966,6 +2966,11 @@ class Level implements ChunkManager, Metadatable{
         $this->sendTime();
     }
 
+    public function isDayTime() : bool{
+        $degree = $this->getSunAngleDegrees();
+        return $degree > 0 and $degree < 180;
+    }
+
     /**
      * Gets the level seed
      *
