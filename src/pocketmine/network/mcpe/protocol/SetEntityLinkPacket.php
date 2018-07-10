@@ -30,21 +30,21 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 
 class SetEntityLinkPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::SET_ENTITY_LINK_PACKET;
+    public const NETWORK_ID = ProtocolInfo::SET_ENTITY_LINK_PACKET;
 
-	/** @var EntityLink */
-	public $link;
+    /** @var EntityLink */
+    public $link;
 
-	protected function decodePayload(){
-		$this->link = $this->getEntityLink();
-	}
+    protected function decodePayload() : void{
+        $this->link = $this->getEntityLink();
+    }
 
-	protected function encodePayload(){
-		$this->putEntityLink($this->link);
-	}
+    protected function encodePayload() : void{
+        $this->putEntityLink($this->link);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleSetEntityLink($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleSetEntityLink($this);
+    }
 
 }

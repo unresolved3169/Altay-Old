@@ -28,17 +28,17 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class StructureBlockUpdatePacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::STRUCTURE_BLOCK_UPDATE_PACKET;
+    public const NETWORK_ID = ProtocolInfo::STRUCTURE_BLOCK_UPDATE_PACKET;
 
-	protected function decodePayload(){
-		//TODO
-	}
+    protected function decodePayload() : void{
+        //TODO
+    }
 
-	protected function encodePayload(){
-		//TODO
-	}
+    protected function encodePayload() : void{
+        //TODO
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleStructureBlockUpdate($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleStructureBlockUpdate($this);
+    }
 }

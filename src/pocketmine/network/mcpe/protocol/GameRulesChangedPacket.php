@@ -28,21 +28,21 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class GameRulesChangedPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::GAME_RULES_CHANGED_PACKET;
+    public const NETWORK_ID = ProtocolInfo::GAME_RULES_CHANGED_PACKET;
 
-	/** @var array */
-	public $gameRules = [];
+    /** @var array */
+    public $gameRules = [];
 
-	protected function decodePayload(){
-		$this->gameRules = $this->getGameRules();
-	}
+    protected function decodePayload() : void{
+        $this->gameRules = $this->getGameRules();
+    }
 
-	protected function encodePayload(){
-		$this->putGameRules($this->gameRules);
-	}
+    protected function encodePayload() : void{
+        $this->putGameRules($this->gameRules);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleGameRulesChanged($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleGameRulesChanged($this);
+    }
 
 }

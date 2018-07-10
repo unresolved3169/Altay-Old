@@ -29,21 +29,21 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class SetCommandsEnabledPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::SET_COMMANDS_ENABLED_PACKET;
+    public const NETWORK_ID = ProtocolInfo::SET_COMMANDS_ENABLED_PACKET;
 
-	/** @var bool */
-	public $enabled;
+    /** @var bool */
+    public $enabled;
 
-	protected function decodePayload(){
-		$this->enabled = $this->getBool();
-	}
+    protected function decodePayload() : void{
+        $this->enabled = $this->getBool();
+    }
 
-	protected function encodePayload(){
-		$this->putBool($this->enabled);
-	}
+    protected function encodePayload() : void{
+        $this->putBool($this->enabled);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleSetCommandsEnabled($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleSetCommandsEnabled($this);
+    }
 
 }

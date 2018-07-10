@@ -29,45 +29,44 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\NetworkSession;
 
-class ExplodePacket extends DataPacket{
-    public const NETWORK_ID = ProtocolInfo::EXPLODE_PACKET;
+class MoveEntityAbsolutePacket extends DataPacket{
+    public const NETWORK_ID = ProtocolInfo::MOVE_ENTITY_ABSOLUTE_PACKET;
 
+    public const FLAG_GROUND = 0x01;
+    public const FLAG_TELEPORT = 0x02;
+
+    /** @var int */
+    public $entityRuntimeId;
+    /** @var int */
+    public $flags = 0;
     /** @var Vector3 */
     public $position;
     /** @var float */
-    public $radius;
-    /** @var Vector3[] */
-    public $records = [];
-
-    public function clean(){
-        $this->records = [];
-        return parent::clean();
-    }
+    public $xRot;
+    /** @var float */
+    public $yRot;
+    /** @var float */
+    public $zRot;
 
     protected function decodePayload() : void{
+        $this->entityRuntimeId = $this->getEntityRuntimeId();
+        $this->flags = $this->getByte();
         $this->position = $this->getVector3();
-        $this->radius = (float) ($this->getVarInt() / 32);
-        $count = $this->getUnsignedVarInt();
-        for($i = 0; $i < $count; ++$i){
-            $x = $y = $z = null;
-            $this->getSignedBlockPosition($x, $y, $z);
-            $this->records[$i] = new Vector3($x, $y, $z);
-        }
+        $this->xRot = $this->getByteRotation();
+        $this->yRot = $this->getByteRotation();
+        $this->zRot = $this->getByteRotation();
     }
 
     protected function encodePayload() : void{
+        $this->putEntityRuntimeId($this->entityRuntimeId);
+        $this->putByte($this->flags);
         $this->putVector3($this->position);
-        $this->putVarInt((int) ($this->radius * 32));
-        $this->putUnsignedVarInt(count($this->records));
-        if(count($this->records) > 0){
-            foreach($this->records as $record){
-                $this->putSignedBlockPosition((int) $record->x, (int) $record->y, (int) $record->z);
-            }
-        }
+        $this->putByteRotation($this->xRot);
+        $this->putByteRotation($this->yRot);
+        $this->putByteRotation($this->zRot);
     }
 
     public function handle(NetworkSession $session) : bool{
-        return $session->handleExplode($this);
+        return $session->handleMoveEntityAbsolute($this);
     }
-
 }

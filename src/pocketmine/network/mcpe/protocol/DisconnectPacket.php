@@ -28,33 +28,33 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class DisconnectPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::DISCONNECT_PACKET;
+    public const NETWORK_ID = ProtocolInfo::DISCONNECT_PACKET;
 
-	/** @var bool */
-	public $hideDisconnectionScreen = false;
-	/** @var string */
-	public $message = "";
+    /** @var bool */
+    public $hideDisconnectionScreen = false;
+    /** @var string */
+    public $message = "";
 
-	public function canBeSentBeforeLogin() : bool{
-		return true;
-	}
+    public function canBeSentBeforeLogin() : bool{
+        return true;
+    }
 
-	protected function decodePayload(){
-		$this->hideDisconnectionScreen = $this->getBool();
-		if(!$this->hideDisconnectionScreen){
-			$this->message = $this->getString();
-		}
-	}
+    protected function decodePayload() : void{
+        $this->hideDisconnectionScreen = $this->getBool();
+        if(!$this->hideDisconnectionScreen){
+            $this->message = $this->getString();
+        }
+    }
 
-	protected function encodePayload(){
-		$this->putBool($this->hideDisconnectionScreen);
-		if(!$this->hideDisconnectionScreen){
-			$this->putString($this->message);
-		}
-	}
+    protected function encodePayload() : void{
+        $this->putBool($this->hideDisconnectionScreen);
+        if(!$this->hideDisconnectionScreen){
+            $this->putString($this->message);
+        }
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleDisconnect($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleDisconnect($this);
+    }
 
 }

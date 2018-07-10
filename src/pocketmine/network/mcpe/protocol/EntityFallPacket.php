@@ -30,28 +30,28 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class EntityFallPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::ENTITY_FALL_PACKET;
+    public const NETWORK_ID = ProtocolInfo::ENTITY_FALL_PACKET;
 
-	/** @var int */
-	public $entityRuntimeId;
-	/** @var float */
-	public $fallDistance;
-	/** @var bool */
-	public $isInVoid;
+    /** @var int */
+    public $entityRuntimeId;
+    /** @var float */
+    public $fallDistance;
+    /** @var bool */
+    public $isInVoid;
 
-	protected function decodePayload(){
-		$this->entityRuntimeId = $this->getEntityRuntimeId();
-		$this->fallDistance = $this->getLFloat();
-		$this->isInVoid = $this->getBool();
-	}
+    protected function decodePayload() : void{
+        $this->entityRuntimeId = $this->getEntityRuntimeId();
+        $this->fallDistance = $this->getLFloat();
+        $this->isInVoid = $this->getBool();
+    }
 
-	protected function encodePayload(){
-		$this->putEntityRuntimeId($this->entityRuntimeId);
-		$this->putLFloat($this->fallDistance);
-		$this->putBool($this->isInVoid);
-	}
+    protected function encodePayload() : void{
+        $this->putEntityRuntimeId($this->entityRuntimeId);
+        $this->putLFloat($this->fallDistance);
+        $this->putBool($this->isInVoid);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleEntityFall($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleEntityFall($this);
+    }
 }

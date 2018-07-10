@@ -128,7 +128,7 @@ use pocketmine\network\mcpe\protocol\LoginPacket;
 use pocketmine\network\mcpe\protocol\MobEffectPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
-use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityAbsolutePacket;
 use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
@@ -2224,7 +2224,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return true;
     }
 
-    public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+    public function handleMoveEntity(MoveEntityAbsolutePacket $packet) : bool{
         $target = $this->level->getEntity($packet->entityRuntimeId);
         if($target === null)
             return false;
@@ -3312,12 +3312,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
      *
      * @param string $reason
      * @param bool   $isAdmin
+     * @param TextContainer|string $quitMessage
      *
      * @return bool
      */
-    public function kick(string $reason = "", bool $isAdmin = true) : bool{
-        $this->server->getPluginManager()->callEvent($ev = new PlayerKickEvent($this, $reason, $this->getLeaveMessage()));
+    public function kick(string $reason = "", bool $isAdmin = true, $quitMessage = null) : bool{
+        $this->server->getPluginManager()->callEvent($ev = new PlayerKickEvent($this, $reason, $quitMessage ?? $this->getLeaveMessage()));
         if(!$ev->isCancelled()){
+            $reason = $ev->getReason();
             $message = $reason;
             if($isAdmin){
                 if(!$this->isBanned()){

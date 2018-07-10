@@ -29,30 +29,30 @@ use pocketmine\item\Item;
 use pocketmine\network\mcpe\NetworkSession;
 
 class InventoryContentPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::INVENTORY_CONTENT_PACKET;
+    public const NETWORK_ID = ProtocolInfo::INVENTORY_CONTENT_PACKET;
 
-	/** @var int */
-	public $windowId;
-	/** @var Item[] */
-	public $items = [];
+    /** @var int */
+    public $windowId;
+    /** @var Item[] */
+    public $items = [];
 
-	protected function decodePayload(){
-		$this->windowId = $this->getUnsignedVarInt();
-		$count = $this->getUnsignedVarInt();
-		for($i = 0; $i < $count; ++$i){
-			$this->items[] = $this->getSlot();
-		}
-	}
+    protected function decodePayload() : void{
+        $this->windowId = $this->getUnsignedVarInt();
+        $count = $this->getUnsignedVarInt();
+        for($i = 0; $i < $count; ++$i){
+            $this->items[] = $this->getSlot();
+        }
+    }
 
-	protected function encodePayload(){
-		$this->putUnsignedVarInt($this->windowId);
-		$this->putUnsignedVarInt(count($this->items));
-		foreach($this->items as $item){
-			$this->putSlot($item);
-		}
-	}
+    protected function encodePayload() : void{
+        $this->putUnsignedVarInt($this->windowId);
+        $this->putUnsignedVarInt(count($this->items));
+        foreach($this->items as $item){
+            $this->putSlot($item);
+        }
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleInventoryContent($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleInventoryContent($this);
+    }
 }

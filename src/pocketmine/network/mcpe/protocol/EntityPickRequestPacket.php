@@ -28,24 +28,24 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class EntityPickRequestPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::ENTITY_PICK_REQUEST_PACKET;
+    public const NETWORK_ID = ProtocolInfo::ENTITY_PICK_REQUEST_PACKET;
 
-	/** @var int */
-	public $entityUniqueId;
-	/** @var int */
-	public $hotbarSlot;
+    /** @var int */
+    public $entityUniqueId;
+    /** @var int */
+    public $hotbarSlot;
 
-	protected function decodePayload(){
-		$this->entityUniqueId = $this->getLLong();
-		$this->hotbarSlot = $this->getByte();
-	}
+    protected function decodePayload() : void{
+        $this->entityUniqueId = $this->getLLong();
+        $this->hotbarSlot = $this->getByte();
+    }
 
-	protected function encodePayload(){
-		$this->putLLong($this->entityUniqueId);
-		$this->putByte($this->hotbarSlot);
-	}
+    protected function encodePayload() : void{
+        $this->putLLong($this->entityUniqueId);
+        $this->putByte($this->hotbarSlot);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleEntityPickRequest($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleEntityPickRequest($this);
+    }
 }

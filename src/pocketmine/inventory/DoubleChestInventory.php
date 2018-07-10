@@ -28,111 +28,119 @@ use pocketmine\Player;
 use pocketmine\tile\Chest;
 
 class DoubleChestInventory extends ChestInventory implements InventoryHolder{
-	/** @var ChestInventory */
-	private $left;
-	/** @var ChestInventory */
-	private $right;
+    /** @var ChestInventory */
+    private $left;
+    /** @var ChestInventory */
+    private $right;
 
-	public function __construct(Chest $left, Chest $right){
-		$this->left = $left->getRealInventory();
-		$this->right = $right->getRealInventory();
-		$items = array_merge($this->left->getContents(true), $this->right->getContents(true));
-		BaseInventory::__construct($items);
-	}
+    public function __construct(Chest $left, Chest $right){
+        $this->left = $left->getRealInventory();
+        $this->right = $right->getRealInventory();
+        $items = array_merge($this->left->getContents(true), $this->right->getContents(true));
+        BaseInventory::__construct($items);
+    }
 
-	public function getName() : string{
-		return "Double Chest";
-	}
+    public function getName() : string{
+        return "Double Chest";
+    }
 
-	public function getDefaultSize() : int{
-		return $this->left->getDefaultSize() + $this->right->getDefaultSize();
-	}
+    public function getDefaultSize() : int{
+        return $this->left->getDefaultSize() + $this->right->getDefaultSize();
+    }
 
-	public function getInventory(){
-		return $this;
-	}
+    public function getInventory(){
+        return $this;
+    }
 
-	/**
-	 * @return Chest
-	 */
-	public function getHolder(){
-		return $this->left->getHolder();
-	}
+    /**
+     * @return Chest
+     */
+    public function getHolder(){
+        return $this->left->getHolder();
+    }
 
-	public function getItem(int $index) : Item{
-		return $index < $this->left->getSize() ? $this->left->getItem($index) : $this->right->getItem($index - $this->right->getSize());
-	}
+    public function getItem(int $index) : Item{
+        return $index < $this->left->getSize() ? $this->left->getItem($index) : $this->right->getItem($index - $this->left->getSize());
+    }
 
-	public function setItem(int $index, Item $item, bool $send = true) : bool{
-		return $index < $this->left->getSize() ? $this->left->setItem($index, $item, $send) : $this->right->setItem($index - $this->right->getSize(), $item, $send);
-	}
+    public function setItem(int $index, Item $item, bool $send = true) : bool{
+        $old = $this->getItem($index);
+        if($index < $this->left->getSize() ? $this->left->setItem($index, $item, $send) : $this->right->setItem($index - $this->left->getSize(), $item, $send)){
+            $this->onSlotChange($index, $old, $send);
+            return true;
+        }
+        return false;
+    }
 
-	public function clear(int $index, bool $send = true) : bool{
-		return $index < $this->left->getSize() ? $this->left->clear($index, $send) : $this->right->clear($index - $this->right->getSize(), $send);
-	}
+    public function getContents(bool $includeEmpty = false) : array{
+        $result = $this->left->getContents($includeEmpty);
+        $leftSize = $this->left->getSize();
 
-	public function getContents(bool $includeEmpty = false) : array{
-		return array_merge($this->left->getContents($includeEmpty), $this->right->getContents($includeEmpty));
-	}
+        foreach($this->right->getContents($includeEmpty) as $i => $item){
+            $result[$i + $leftSize] = $item;
+        }
 
-	/**
-	 * @param Item[] $items
-	 * @param bool   $send
-	 */
-	public function setContents(array $items, bool $send = true) : void{
-		$size = $this->getSize();
-		if(count($items) > $size){
-			$items = array_slice($items, 0, $size, true);
-		}
+        return $result;
+    }
 
-		$leftSize = $this->left->getSize();
+    /**
+     * @param Item[] $items
+     * @param bool   $send
+     */
+    public function setContents(array $items, bool $send = true) : void{
+        $size = $this->getSize();
+        if(count($items) > $size){
+            $items = array_slice($items, 0, $size, true);
+        }
 
-		for($i = 0; $i < $size; ++$i){
-			if(!isset($items[$i])){
-				if(($i < $leftSize and isset($this->left->slots[$i])) or isset($this->right->slots[$i - $leftSize])){
-					$this->clear($i, false);
-				}
-			}elseif(!$this->setItem($i, $items[$i], false)){
-				$this->clear($i, false);
-			}
-		}
+        $leftSize = $this->left->getSize();
 
-		if($send){
-			$this->sendContents($this->getViewers());
-		}
-	}
+        for($i = 0; $i < $size; ++$i){
+            if(!isset($items[$i])){
+                if(($i < $leftSize and isset($this->left->slots[$i])) or isset($this->right->slots[$i - $leftSize])){
+                    $this->clear($i, false);
+                }
+            }elseif(!$this->setItem($i, $items[$i], false)){
+                $this->clear($i, false);
+            }
+        }
 
-	public function onOpen(Player $who) : void{
-		parent::onOpen($who);
+        if($send){
+            $this->sendContents($this->getViewers());
+        }
+    }
 
-		if(count($this->getViewers()) === 1 and $this->right->getHolder()->isValid()){
-			$this->right->broadcastBlockEventPacket(true);
-		}
-	}
+    public function onOpen(Player $who) : void{
+        parent::onOpen($who);
 
-	public function onClose(Player $who) : void{
-		if(count($this->getViewers()) === 1 and $this->right->getHolder()->isValid()){
-			$this->right->broadcastBlockEventPacket(false);
-		}
-		parent::onClose($who);
-	}
+        if(count($this->getViewers()) === 1 and $this->right->getHolder()->isValid()){
+            $this->right->broadcastBlockEventPacket(true);
+        }
+    }
 
-	/**
-	 * @return ChestInventory
-	 */
-	public function getLeftSide() : ChestInventory{
-		return $this->left;
-	}
+    public function onClose(Player $who) : void{
+        if(count($this->getViewers()) === 1 and $this->right->getHolder()->isValid()){
+            $this->right->broadcastBlockEventPacket(false);
+        }
+        parent::onClose($who);
+    }
 
-	/**
-	 * @return ChestInventory
-	 */
-	public function getRightSide() : ChestInventory{
-		return $this->right;
-	}
+    /**
+     * @return ChestInventory
+     */
+    public function getLeftSide() : ChestInventory{
+        return $this->left;
+    }
 
-	public function invalidate(){
-		$this->left = null;
-		$this->right = null;
-	}
+    /**
+     * @return ChestInventory
+     */
+    public function getRightSide() : ChestInventory{
+        return $this->right;
+    }
+
+    public function invalidate(){
+        $this->left = null;
+        $this->right = null;
+    }
 }

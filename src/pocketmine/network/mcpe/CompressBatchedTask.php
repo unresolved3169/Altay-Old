@@ -21,7 +21,7 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\network;
+namespace pocketmine\network\mcpe;
 
 use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\Player;
@@ -43,7 +43,7 @@ class CompressBatchedTask extends AsyncTask{
         $this->storeLocal($targets);
     }
 
-    public function onRun(){
+    public function onRun() : void{
         $batch = new BatchPacket();
         $batch->payload = $this->data;
         $this->data = null;
@@ -54,7 +54,7 @@ class CompressBatchedTask extends AsyncTask{
         $this->setResult($batch->buffer, false);
     }
 
-    public function onCompletion(Server $server){
+    public function onCompletion(Server $server) : void{
         $pk = new BatchPacket($this->getResult());
         $pk->isEncoded = true;
 

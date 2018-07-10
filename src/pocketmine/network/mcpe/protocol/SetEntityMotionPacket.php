@@ -30,25 +30,25 @@ use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\NetworkSession;
 
 class SetEntityMotionPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::SET_ENTITY_MOTION_PACKET;
+    public const NETWORK_ID = ProtocolInfo::SET_ENTITY_MOTION_PACKET;
 
-	/** @var int */
-	public $entityRuntimeId;
-	/** @var Vector3 */
-	public $motion;
+    /** @var int */
+    public $entityRuntimeId;
+    /** @var Vector3 */
+    public $motion;
 
-	protected function decodePayload(){
-		$this->entityRuntimeId = $this->getEntityRuntimeId();
-		$this->motion = $this->getVector3();
-	}
+    protected function decodePayload() : void{
+        $this->entityRuntimeId = $this->getEntityRuntimeId();
+        $this->motion = $this->getVector3();
+    }
 
-	protected function encodePayload(){
-		$this->putEntityRuntimeId($this->entityRuntimeId);
-		$this->putVector3($this->motion);
-	}
+    protected function encodePayload() : void{
+        $this->putEntityRuntimeId($this->entityRuntimeId);
+        $this->putVector3($this->motion);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleSetEntityMotion($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleSetEntityMotion($this);
+    }
 
 }

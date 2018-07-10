@@ -32,41 +32,48 @@ use pocketmine\Player;
  * Called when a player leaves the server
  */
 class PlayerKickEvent extends PlayerEvent implements Cancellable{
-	/** @var TextContainer|string */
-	protected $quitMessage;
+    /** @var TextContainer|string */
+    protected $quitMessage;
 
-	/** @var string */
-	protected $reason;
+    /** @var string */
+    protected $reason;
 
-	/**
-	 * PlayerKickEvent constructor.
-	 *
-	 * @param Player               $player
-	 * @param string               $reason
-	 * @param TextContainer|string $quitMessage
-	 */
-	public function __construct(Player $player, string $reason, $quitMessage){
-		$this->player = $player;
-		$this->quitMessage = $quitMessage;
-		$this->reason = $reason;
-	}
+    /**
+     * PlayerKickEvent constructor.
+     *
+     * @param Player               $player
+     * @param string               $reason
+     * @param TextContainer|string $quitMessage
+     */
+    public function __construct(Player $player, string $reason, $quitMessage){
+        $this->player = $player;
+        $this->quitMessage = $quitMessage;
+        $this->reason = $reason;
+    }
 
-	public function getReason() : string{
-		return $this->reason;
-	}
+    /**
+     * @param string $reason
+     */
+    public function setReason(string $reason) : void{
+        $this->reason = $reason;
+    }
 
-	/**
-	 * @param TextContainer|string $quitMessage
-	 */
-	public function setQuitMessage($quitMessage) : void{
-		$this->quitMessage = $quitMessage;
-	}
+    public function getReason() : string{
+        return $this->reason;
+    }
 
-	/**
-	 * @return TextContainer|string
-	 */
-	public function getQuitMessage(){
-		return $this->quitMessage;
-	}
+    /**
+     * @param TextContainer|string $quitMessage
+     */
+    public function setQuitMessage($quitMessage) : void{
+        $this->quitMessage = $quitMessage;
+    }
+
+    /**
+     * @return TextContainer|string
+     */
+    public function getQuitMessage(){
+        return $this->quitMessage;
+    }
 
 }

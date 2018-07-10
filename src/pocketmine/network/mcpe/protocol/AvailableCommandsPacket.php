@@ -103,7 +103,7 @@ class AvailableCommandsPacket extends DataPacket{
      */
     public $commandData = [];
 
-    protected function decodePayload(){
+    protected function decodePayload() : void{
         for($i = 0, $this->enumValuesCount = $this->getUnsignedVarInt(); $i < $this->enumValuesCount; ++$i){
             $this->enumValues[] = $this->getString();
         }
@@ -132,7 +132,7 @@ class AvailableCommandsPacket extends DataPacket{
         return $retval;
     }
 
-    protected function putEnum(CommandEnum $enum){
+    protected function putEnum(CommandEnum $enum) : void{
         $this->putString($enum->enumName);
 
         $this->putUnsignedVarInt(count($enum->enumValues));
@@ -156,7 +156,7 @@ class AvailableCommandsPacket extends DataPacket{
         }
     }
 
-    protected function putEnumValueIndex(int $index){
+    protected function putEnumValueIndex(int $index) : void{
         if($this->enumValuesCount < 256){
             $this->putByte($index);
         }elseif($this->enumValuesCount < 65536){
@@ -202,7 +202,7 @@ class AvailableCommandsPacket extends DataPacket{
         return $retval;
     }
 
-    protected function putCommandData(CommandData $data){
+    protected function putCommandData(CommandData $data) : void{
         $this->putString($data->commandName);
         $this->putString($data->commandDescription);
         $this->putByte($data->flags);
@@ -279,7 +279,7 @@ class AvailableCommandsPacket extends DataPacket{
         return "unknown ($argtype)";
     }
 
-    protected function encodePayload(){
+    protected function encodePayload() : void{
         $enumValuesMap = [];
         $postfixesMap = [];
         $enumMap = [];

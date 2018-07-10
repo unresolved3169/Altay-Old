@@ -22,27 +22,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\network\mcpe\protocol\types;
+namespace pocketmine\network\mcpe\protocol;
 
-class EntityLink{
+#include <rules/DataPacket.h>
 
-    public const TYPE_REMOVE = 0;
-    public const TYPE_RIDER = 1;
-    public const TYPE_PASSENGER = 0;
+use pocketmine\network\mcpe\NetworkSession;
+
+class SetLocalPlayerAsInitializedPacket extends DataPacket{
+    public const NETWORK_ID = ProtocolInfo::SET_LOCAL_PLAYER_AS_INITIALIZED_PACKET;
 
     /** @var int */
-    public $riddenId;
-    /** @var int */
-    public $riderId;
-    /** @var int */
-    public $type;
-    /** @var bool */
-    public $immediate; //for dismounting on mount death
+    public $entityRuntimeId;
 
-    public function __construct(?int $riddenId = null, ?int $riderId = null, ?int $type = null, bool $immediate = false){
-        $this->riddenId = $riddenId;
-        $this->riderId = $riderId;
-        $this->type = $type;
-        $this->immediate = $immediate;
+    protected function decodePayload() : void{
+        $this->entityRuntimeId = $this->getEntityRuntimeId();
+    }
+
+    protected function encodePayload() : void{
+        $this->putEntityRuntimeId($this->entityRuntimeId);
+    }
+
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleSetLocalPlayerAsInitialized($this);
     }
 }

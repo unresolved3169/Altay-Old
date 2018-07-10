@@ -29,20 +29,20 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class AddBehaviorTreePacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::ADD_BEHAVIOR_TREE_PACKET;
+    public const NETWORK_ID = ProtocolInfo::ADD_BEHAVIOR_TREE_PACKET;
 
-	/** @var string */
-	public $behaviorTreeJson;
+    /** @var string */
+    public $behaviorTreeJson;
 
-	protected function decodePayload(){
-		$this->behaviorTreeJson = $this->getString();
-	}
+    protected function decodePayload() : void{
+        $this->behaviorTreeJson = $this->getString();
+    }
 
-	protected function encodePayload(){
-		$this->putString($this->behaviorTreeJson);
-	}
+    protected function encodePayload() : void{
+        $this->putString($this->behaviorTreeJson);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleAddBehaviorTree($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleAddBehaviorTree($this);
+    }
 }
