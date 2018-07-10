@@ -434,7 +434,6 @@ class EntityNavigator{
             if($next !== null and $this->havePath()){
                 $this->pathFollow();
                 $this->mob->lookAt($r = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-                $this->mob->level->addParticle(new RedstoneParticle($r));
                 $moved = $this->mob->moveForward($this->speedMultiplier);
                 if(!$moved){
                     $this->clearPath();
