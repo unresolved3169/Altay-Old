@@ -46,7 +46,7 @@ use pocketmine\network\mcpe\protocol\MapInfoRequestPacket;
 use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\ModalFormResponsePacket;
-use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityAbsolutePacket;
 use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\network\mcpe\protocol\PlayerHotbarPacket;
@@ -70,195 +70,195 @@ use pocketmine\timings\Timings;
 
 class PlayerNetworkSessionAdapter extends NetworkSession{
 
-	/** @var Server */
-	private $server;
-	/** @var Player */
-	private $player;
+    /** @var Server */
+    private $server;
+    /** @var Player */
+    private $player;
 
-	public function __construct(Server $server, Player $player){
-		$this->server = $server;
-		$this->player = $player;
-	}
+    public function __construct(Server $server, Player $player){
+        $this->server = $server;
+        $this->player = $player;
+    }
 
-	public function handleDataPacket(DataPacket $packet){
-		$timings = Timings::getReceiveDataPacketTimings($packet);
-		$timings->startTiming();
+    public function handleDataPacket(DataPacket $packet) : void{
+        $timings = Timings::getReceiveDataPacketTimings($packet);
+        $timings->startTiming();
 
-		$packet->decode();
-		if(!$packet->feof() and !$packet->mayHaveUnreadBytes()){
-			$remains = substr($packet->buffer, $packet->offset);
-			$this->server->getLogger()->debug("Still " . strlen($remains) . " bytes unread in " . $packet->getName() . ": 0x" . bin2hex($remains));
-		}
+        $packet->decode();
+        if(!$packet->feof() and !$packet->mayHaveUnreadBytes()){
+            $remains = substr($packet->buffer, $packet->offset);
+            $this->server->getLogger()->debug("Still " . strlen($remains) . " bytes unread in " . $packet->getName() . ": 0x" . bin2hex($remains));
+        }
 
-		$this->server->getPluginManager()->callEvent($ev = new DataPacketReceiveEvent($this->player, $packet));
-		if(!$ev->isCancelled() and !$packet->handle($this)){
-			$this->server->getLogger()->debug("Unhandled " . $packet->getName() . " received from " . $this->player->getName() . ": 0x" . bin2hex($packet->buffer));
-		}
+        $this->server->getPluginManager()->callEvent($ev = new DataPacketReceiveEvent($this->player, $packet));
+        if(!$ev->isCancelled() and !$packet->handle($this)){
+            $this->server->getLogger()->debug("Unhandled " . $packet->getName() . " received from " . $this->player->getName() . ": 0x" . bin2hex($packet->buffer));
+        }
 
-		$timings->stopTiming();
-	}
+        $timings->stopTiming();
+    }
 
-	public function handleLogin(LoginPacket $packet) : bool{
-		return $this->player->handleLogin($packet);
-	}
+    public function handleLogin(LoginPacket $packet) : bool{
+        return $this->player->handleLogin($packet);
+    }
 
-	public function handleClientToServerHandshake(ClientToServerHandshakePacket $packet) : bool{
-		return false; //TODO
-	}
+    public function handleClientToServerHandshake(ClientToServerHandshakePacket $packet) : bool{
+        return false; //TODO
+    }
 
-	public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool{
-		return $this->player->handleResourcePackClientResponse($packet);
-	}
+    public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool{
+        return $this->player->handleResourcePackClientResponse($packet);
+    }
 
-	public function handleText(TextPacket $packet) : bool{
-		if($packet->type === TextPacket::TYPE_CHAT){
-			return $this->player->chat($packet->message);
-		}
+    public function handleText(TextPacket $packet) : bool{
+        if($packet->type === TextPacket::TYPE_CHAT){
+            return $this->player->chat($packet->message);
+        }
 
-		return false;
-	}
+        return false;
+    }
 
-	public function handleMoveEntity(MoveEntityPacket $packet) : bool{
-		return $this->player->handleMoveEntity($packet);
-	}
+    public function handleMoveEntityAbsolute(MoveEntityAbsolutePacket $packet) : bool{
+        return $this->player->handleMoveEntityAbsolute($packet);
+    }
 
-	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
-		return $this->player->handleMovePlayer($packet);
-	}
+    public function handleMovePlayer(MovePlayerPacket $packet) : bool{
+        return $this->player->handleMovePlayer($packet);
+    }
 
-	public function handleLevelSoundEvent(LevelSoundEventPacket $packet) : bool{
-		return $this->player->handleLevelSoundEvent($packet);
-	}
+    public function handleLevelSoundEvent(LevelSoundEventPacket $packet) : bool{
+        return $this->player->handleLevelSoundEvent($packet);
+    }
 
-	public function handleEntityEvent(EntityEventPacket $packet) : bool{
-		return $this->player->handleEntityEvent($packet);
-	}
+    public function handleEntityEvent(EntityEventPacket $packet) : bool{
+        return $this->player->handleEntityEvent($packet);
+    }
 
-	public function handleInventoryTransaction(InventoryTransactionPacket $packet) : bool{
-		return $this->player->handleInventoryTransaction($packet);
-	}
+    public function handleInventoryTransaction(InventoryTransactionPacket $packet) : bool{
+        return $this->player->handleInventoryTransaction($packet);
+    }
 
-	public function handleMobEquipment(MobEquipmentPacket $packet) : bool{
-		return $this->player->handleMobEquipment($packet);
-	}
+    public function handleMobEquipment(MobEquipmentPacket $packet) : bool{
+        return $this->player->handleMobEquipment($packet);
+    }
 
-	public function handleMobArmorEquipment(MobArmorEquipmentPacket $packet) : bool{
-		return true; //Not used
-	}
+    public function handleMobArmorEquipment(MobArmorEquipmentPacket $packet) : bool{
+        return true; //Not used
+    }
 
-	public function handleInteract(InteractPacket $packet) : bool{
-		return $this->player->handleInteract($packet);
-	}
+    public function handleInteract(InteractPacket $packet) : bool{
+        return $this->player->handleInteract($packet);
+    }
 
-	public function handleBlockPickRequest(BlockPickRequestPacket $packet) : bool{
-		return $this->player->handleBlockPickRequest($packet);
-	}
+    public function handleBlockPickRequest(BlockPickRequestPacket $packet) : bool{
+        return $this->player->handleBlockPickRequest($packet);
+    }
 
-	public function handleEntityPickRequest(EntityPickRequestPacket $packet) : bool{
-		return true; //TODO : Test for boat
-	}
+    public function handleEntityPickRequest(EntityPickRequestPacket $packet) : bool{
+        return true; //TODO : Test for boat
+    }
 
-	public function handlePlayerAction(PlayerActionPacket $packet) : bool{
-		return $this->player->handlePlayerAction($packet);
-	}
+    public function handlePlayerAction(PlayerActionPacket $packet) : bool{
+        return $this->player->handlePlayerAction($packet);
+    }
 
-	public function handleEntityFall(EntityFallPacket $packet) : bool{
-		return true;
-	}
+    public function handleEntityFall(EntityFallPacket $packet) : bool{
+        return true;
+    }
 
-	public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
-		$this->player->getServer()->broadcastPacket($this->player->getViewers(), $packet);
-		return true;
-	}
+    public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
+        $this->player->getServer()->broadcastPacket($this->player->getViewers(), $packet);
+        return true;
+    }
 
-	public function handleAnimate(AnimatePacket $packet) : bool{
-		return $this->player->handleAnimate($packet);
-	}
+    public function handleAnimate(AnimatePacket $packet) : bool{
+        return $this->player->handleAnimate($packet);
+    }
 
-	public function handleContainerClose(ContainerClosePacket $packet) : bool{
-		return $this->player->handleContainerClose($packet);
-	}
+    public function handleContainerClose(ContainerClosePacket $packet) : bool{
+        return $this->player->handleContainerClose($packet);
+    }
 
-	public function handlePlayerHotbar(PlayerHotbarPacket $packet) : bool{
-		return true; //this packet is useless
-	}
+    public function handlePlayerHotbar(PlayerHotbarPacket $packet) : bool{
+        return true; //this packet is useless
+    }
 
-	public function handleCraftingEvent(CraftingEventPacket $packet) : bool{
-		return true; //this is a broken useless packet, so we don't use it
-	}
+    public function handleCraftingEvent(CraftingEventPacket $packet) : bool{
+        return true; //this is a broken useless packet, so we don't use it
+    }
 
-	public function handleAdventureSettings(AdventureSettingsPacket $packet) : bool{
-		return $this->player->handleAdventureSettings($packet);
-	}
+    public function handleAdventureSettings(AdventureSettingsPacket $packet) : bool{
+        return $this->player->handleAdventureSettings($packet);
+    }
 
-	public function handleBlockEntityData(BlockEntityDataPacket $packet) : bool{
-		return $this->player->handleBlockEntityData($packet);
-	}
+    public function handleBlockEntityData(BlockEntityDataPacket $packet) : bool{
+        return $this->player->handleBlockEntityData($packet);
+    }
 
-	public function handlePlayerInput(PlayerInputPacket $packet) : bool{
-		return $this->player->handlePlayerInput($packet);
-	}
+    public function handlePlayerInput(PlayerInputPacket $packet) : bool{
+        return $this->player->handlePlayerInput($packet);
+    }
 
-	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
-		return $this->player->handleSetPlayerGameType($packet);
-	}
+    public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
+        return $this->player->handleSetPlayerGameType($packet);
+    }
 
-	public function handleSpawnExperienceOrb(SpawnExperienceOrbPacket $packet) : bool{
-		return false; //TODO
-	}
+    public function handleSpawnExperienceOrb(SpawnExperienceOrbPacket $packet) : bool{
+        return false; //TODO
+    }
 
-	public function handleMapInfoRequest(MapInfoRequestPacket $packet) : bool{
-		return false; //TODO
-	}
+    public function handleMapInfoRequest(MapInfoRequestPacket $packet) : bool{
+        return false; //TODO
+    }
 
-	public function handleRequestChunkRadius(RequestChunkRadiusPacket $packet) : bool{
-		$this->player->setViewDistance($packet->radius);
+    public function handleRequestChunkRadius(RequestChunkRadiusPacket $packet) : bool{
+        $this->player->setViewDistance($packet->radius);
 
-		return true;
-	}
+        return true;
+    }
 
-	public function handleItemFrameDropItem(ItemFrameDropItemPacket $packet) : bool{
-		return $this->player->handleItemFrameDropItem($packet);
-	}
+    public function handleItemFrameDropItem(ItemFrameDropItemPacket $packet) : bool{
+        return $this->player->handleItemFrameDropItem($packet);
+    }
 
-	public function handleBossEvent(BossEventPacket $packet) : bool{
-		return false; //TODO
-	}
+    public function handleBossEvent(BossEventPacket $packet) : bool{
+        return false; //TODO
+    }
 
-	public function handleShowCredits(ShowCreditsPacket $packet) : bool{
-		return false; //TODO: handle resume
-	}
+    public function handleShowCredits(ShowCreditsPacket $packet) : bool{
+        return false; //TODO: handle resume
+    }
 
-	public function handleCommandRequest(CommandRequestPacket $packet) : bool{
-		return $this->player->handleCommandRequest($packet);
-	}
+    public function handleCommandRequest(CommandRequestPacket $packet) : bool{
+        return $this->player->handleCommandRequest($packet);
+    }
 
-	public function handleCommandBlockUpdate(CommandBlockUpdatePacket $packet) : bool{
-		return false; //TODO
-	}
+    public function handleCommandBlockUpdate(CommandBlockUpdatePacket $packet) : bool{
+        return false; //TODO
+    }
 
-	public function handleResourcePackChunkRequest(ResourcePackChunkRequestPacket $packet) : bool{
-		return $this->player->handleResourcePackChunkRequest($packet);
-	}
+    public function handleResourcePackChunkRequest(ResourcePackChunkRequestPacket $packet) : bool{
+        return $this->player->handleResourcePackChunkRequest($packet);
+    }
 
-	public function handlePlayerSkin(PlayerSkinPacket $packet) : bool{
-		return $this->player->changeSkin($packet->skin, $packet->newSkinName, $packet->oldSkinName);
-	}
+    public function handlePlayerSkin(PlayerSkinPacket $packet) : bool{
+        return $this->player->changeSkin($packet->skin, $packet->newSkinName, $packet->oldSkinName);
+    }
 
-	public function handleBookEdit(BookEditPacket $packet) : bool{
-		return $this->player->handleBookEdit($packet);
-	}
+    public function handleBookEdit(BookEditPacket $packet) : bool{
+        return $this->player->handleBookEdit($packet);
+    }
 
-	public function handleModalFormResponse(ModalFormResponsePacket $packet) : bool{
-		return $this->player->onFormSubmit($packet->formId, json_decode($packet->formData, true));
-	}
+    public function handleModalFormResponse(ModalFormResponsePacket $packet) : bool{
+        return $this->player->onFormSubmit($packet->formId, json_decode($packet->formData, true));
+    }
 
-	public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
-		$setting = $this->player->getServerSettingsForm();
-		if($setting !== null){
-			$this->player->sendServerSettings($setting);
-		}
+    public function handleServerSettingsRequest(ServerSettingsRequestPacket $packet) : bool{
+        $setting = $this->player->getServerSettingsForm();
+        if($setting !== null){
+            $this->player->sendServerSettings($setting);
+        }
 
-		return true;
-	}
+        return true;
+    }
 }

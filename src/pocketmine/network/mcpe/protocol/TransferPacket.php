@@ -28,25 +28,25 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class TransferPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::TRANSFER_PACKET;
+    public const NETWORK_ID = ProtocolInfo::TRANSFER_PACKET;
 
-	/** @var string */
-	public $address;
-	/** @var int */
-	public $port = 19132;
+    /** @var string */
+    public $address;
+    /** @var int */
+    public $port = 19132;
 
-	protected function decodePayload(){
-		$this->address = $this->getString();
-		$this->port = $this->getLShort();
-	}
+    protected function decodePayload() : void{
+        $this->address = $this->getString();
+        $this->port = $this->getLShort();
+    }
 
-	protected function encodePayload(){
-		$this->putString($this->address);
-		$this->putLShort($this->port);
-	}
+    protected function encodePayload() : void{
+        $this->putString($this->address);
+        $this->putLShort($this->port);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleTransfer($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleTransfer($this);
+    }
 
 }

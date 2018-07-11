@@ -32,63 +32,63 @@ use pocketmine\utils\MainLogger;
 use pocketmine\utils\Utils;
 
 class LoginPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::LOGIN_PACKET;
+    public const NETWORK_ID = ProtocolInfo::LOGIN_PACKET;
 
-	public const EDITION_POCKET = 0;
+    public const EDITION_POCKET = 0;
 
-	/** @var string */
-	public $username;
-	/** @var int */
-	public $protocol;
-	/** @var string */
-	public $clientUUID;
-	/** @var int */
-	public $clientId;
-	/** @var string */
-	public $xuid;
-	/** @var string */
-	public $identityPublicKey;
-	/** @var string */
-	public $serverAddress;
-	/** @var string */
-	public $locale;
+    /** @var string */
+    public $username;
+    /** @var int */
+    public $protocol;
+    /** @var string */
+    public $clientUUID;
+    /** @var int */
+    public $clientId;
+    /** @var string */
+    public $xuid;
+    /** @var string */
+    public $identityPublicKey;
+    /** @var string */
+    public $serverAddress;
+    /** @var string */
+    public $locale;
 
-	/** @var array (the "chain" index contains one or more JWTs) */
-	public $chainData = [];
-	/** @var string */
-	public $clientDataJwt;
-	/** @var array decoded payload of the clientData JWT */
-	public $clientData = [];
+    /** @var array (the "chain" index contains one or more JWTs) */
+    public $chainData = [];
+    /** @var string */
+    public $clientDataJwt;
+    /** @var array decoded payload of the clientData JWT */
+    public $clientData = [];
 
-	/**
-	 * This field may be used by plugins to bypass keychain verification. It should only be used for plugins such as
-	 * Specter where passing verification would take too much time and not be worth it.
-	 *
-	 * @var bool
-	 */
-	public $skipVerification = false;
+    /**
+     * This field may be used by plugins to bypass keychain verification. It should only be used for plugins such as
+     * Specter where passing verification would take too much time and not be worth it.
+     *
+     * @var bool
+     */
+    public $skipVerification = false;
 
-	public function canBeSentBeforeLogin() : bool{
-		return true;
-	}
+    public function canBeSentBeforeLogin() : bool{
+        return true;
+    }
 
-	public function mayHaveUnreadBytes() : bool{
-		return $this->protocol !== null and !in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS);
-	}
+    public function mayHaveUnreadBytes() : bool{
+        return $this->protocol !== null and !in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS);
+    }
 
-	protected function decodePayload(){
-		$this->protocol = $this->getInt();
+    protected function decodePayload() : void{
+        $this->protocol = $this->getInt();
 
-		if($this->protocol !== ProtocolInfo::CURRENT_PROTOCOL){
-			if($this->protocol > 0xffff){ //guess MCPE <= 1.1
-				$this->offset -= 6;
-				$this->protocol = $this->getInt();
-			}
-		}
+        if($this->protocol !== ProtocolInfo::CURRENT_PROTOCOL){
+            if($this->protocol > 0xffff){ //guess MCPE <= 1.1
+                $this->offset -= 6;
+                $this->protocol = $this->getInt();
+            }
+        }
 
-		try{
-			$this->decodeConnectionRequest();
-		}catch(\Throwable $e) {
+        try{
+            $this->decodeConnectionRequest();
+        }catch(\Throwable $e) {
             if(in_array($this->protocol, ProtocolInfo::ACCEPTED_PROTOCOLS)){
                 throw $e;
             }
@@ -99,45 +99,51 @@ class LoginPacket extends DataPacket{
                 $logger->debug($line);
             }
         }
-	}
+    }
 
-	protected function decodeConnectionRequest() : void{
-		$buffer = new BinaryStream($this->getString());
+    protected function decodeConnectionRequest() : void{
+        $buffer = new BinaryStream($this->getString());
 
-		$this->chainData = json_decode($buffer->get($buffer->getLInt()), true);
-		foreach($this->chainData["chain"] as $chain){
-			$webtoken = Utils::decodeJWT($chain);
-			if(isset($webtoken["extraData"])){
-				if(isset($webtoken["extraData"]["displayName"])){
-					$this->username = $webtoken["extraData"]["displayName"];
-				}
-				if(isset($webtoken["extraData"]["identity"])){
-					$this->clientUUID = $webtoken["extraData"]["identity"];
-				}
-				if(isset($webtoken["extraData"]["XUID"])){
-					$this->xuid = $webtoken["extraData"]["XUID"];
-				}
-			}
+        $this->chainData = json_decode($buffer->get($buffer->getLInt()), true);
 
-			if(isset($webtoken["identityPublicKey"])){
-				$this->identityPublicKey = $webtoken["identityPublicKey"];
-			}
-		}
+        $hasExtraData = false;
+        foreach($this->chainData["chain"] as $chain){
+            $webtoken = Utils::decodeJWT($chain);
+            if(isset($webtoken["extraData"])){
+                if($hasExtraData){
+                    throw new \RuntimeException("Found 'extraData' multiple times in key chain");
+                }
+                $hasExtraData = true;
+                if(isset($webtoken["extraData"]["displayName"])){
+                    $this->username = $webtoken["extraData"]["displayName"];
+                }
+                if(isset($webtoken["extraData"]["identity"])){
+                    $this->clientUUID = $webtoken["extraData"]["identity"];
+                }
+                if(isset($webtoken["extraData"]["XUID"])){
+                    $this->xuid = $webtoken["extraData"]["XUID"];
+                }
+            }
 
-		$this->clientDataJwt = $buffer->get($buffer->getLInt());
-		$this->clientData = Utils::decodeJWT($this->clientDataJwt);
+            if(isset($webtoken["identityPublicKey"])){
+                $this->identityPublicKey = $webtoken["identityPublicKey"];
+            }
+        }
 
-		$this->clientId = $this->clientData["ClientRandomId"] ?? null;
-		$this->serverAddress = $this->clientData["ServerAddress"] ?? null;
+        $this->clientDataJwt = $buffer->get($buffer->getLInt());
+        $this->clientData = Utils::decodeJWT($this->clientDataJwt);
 
-		$this->locale = $this->clientData["LanguageCode"] ?? null;
-	}
+        $this->clientId = $this->clientData["ClientRandomId"] ?? null;
+        $this->serverAddress = $this->clientData["ServerAddress"] ?? null;
 
-	protected function encodePayload(){
-		//TODO
-	}
+        $this->locale = $this->clientData["LanguageCode"] ?? null;
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleLogin($this);
-	}
+    protected function encodePayload() : void{
+        //TODO
+    }
+
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleLogin($this);
+    }
 }

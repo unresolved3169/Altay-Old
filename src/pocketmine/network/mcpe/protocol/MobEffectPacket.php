@@ -29,45 +29,45 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class MobEffectPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::MOB_EFFECT_PACKET;
+    public const NETWORK_ID = ProtocolInfo::MOB_EFFECT_PACKET;
 
-	public const EVENT_ADD = 1;
-	public const EVENT_MODIFY = 2;
-	public const EVENT_REMOVE = 3;
+    public const EVENT_ADD = 1;
+    public const EVENT_MODIFY = 2;
+    public const EVENT_REMOVE = 3;
 
-	/** @var int */
-	public $entityRuntimeId;
-	/** @var int */
-	public $eventId;
-	/** @var int */
-	public $effectId;
-	/** @var int */
-	public $amplifier = 0;
-	/** @var bool */
-	public $particles = true;
-	/** @var int */
-	public $duration = 0;
+    /** @var int */
+    public $entityRuntimeId;
+    /** @var int */
+    public $eventId;
+    /** @var int */
+    public $effectId;
+    /** @var int */
+    public $amplifier = 0;
+    /** @var bool */
+    public $particles = true;
+    /** @var int */
+    public $duration = 0;
 
-	protected function decodePayload(){
-		$this->entityRuntimeId = $this->getEntityRuntimeId();
-		$this->eventId = $this->getByte();
-		$this->effectId = $this->getVarInt();
-		$this->amplifier = $this->getVarInt();
-		$this->particles = $this->getBool();
-		$this->duration = $this->getVarInt();
-	}
+    protected function decodePayload() : void{
+        $this->entityRuntimeId = $this->getEntityRuntimeId();
+        $this->eventId = $this->getByte();
+        $this->effectId = $this->getVarInt();
+        $this->amplifier = $this->getVarInt();
+        $this->particles = $this->getBool();
+        $this->duration = $this->getVarInt();
+    }
 
-	protected function encodePayload(){
-		$this->putEntityRuntimeId($this->entityRuntimeId);
-		$this->putByte($this->eventId);
-		$this->putVarInt($this->effectId);
-		$this->putVarInt($this->amplifier);
-		$this->putBool($this->particles);
-		$this->putVarInt($this->duration);
-	}
+    protected function encodePayload() : void{
+        $this->putEntityRuntimeId($this->entityRuntimeId);
+        $this->putByte($this->eventId);
+        $this->putVarInt($this->effectId);
+        $this->putVarInt($this->amplifier);
+        $this->putBool($this->particles);
+        $this->putVarInt($this->duration);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleMobEffect($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleMobEffect($this);
+    }
 
 }

@@ -29,21 +29,21 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class HurtArmorPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::HURT_ARMOR_PACKET;
+    public const NETWORK_ID = ProtocolInfo::HURT_ARMOR_PACKET;
 
-	/** @var int */
-	public $health;
+    /** @var int */
+    public $health;
 
-	protected function decodePayload(){
-		$this->health = $this->getVarInt();
-	}
+    protected function decodePayload() : void{
+        $this->health = $this->getVarInt();
+    }
 
-	protected function encodePayload(){
-		$this->putVarInt($this->health);
-	}
+    protected function encodePayload() : void{
+        $this->putVarInt($this->health);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleHurtArmor($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleHurtArmor($this);
+    }
 
 }

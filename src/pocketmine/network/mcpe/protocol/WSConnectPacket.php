@@ -29,20 +29,20 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class WSConnectPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::W_S_CONNECT_PACKET;
+    public const NETWORK_ID = ProtocolInfo::W_S_CONNECT_PACKET;
 
-	/** @var string */
-	public $serverUri;
+    /** @var string */
+    public $serverUri;
 
-	protected function decodePayload(){
-		$this->serverUri = $this->getString();
-	}
+    protected function decodePayload() : void{
+        $this->serverUri = $this->getString();
+    }
 
-	protected function encodePayload(){
-		$this->putString($this->serverUri);
-	}
+    protected function encodePayload() : void{
+        $this->putString($this->serverUri);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleWSConnect($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleWSConnect($this);
+    }
 }

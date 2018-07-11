@@ -38,8 +38,8 @@ namespace pocketmine {
     use pocketmine\wizard\SetupWizard;
 
     const NAME = "Altay";
-    const BASE_VERSION = "3.0.5";
-    const IS_DEVELOPMENT_BUILD = true;
+    const BASE_VERSION = "3.0.7";
+    const IS_DEVELOPMENT_BUILD = false;
     const BUILD_NUMBER = 0;
 
     const MIN_PHP_VERSION = "7.2.0";
@@ -54,82 +54,89 @@ namespace pocketmine {
      * Enjoy it as much as I did writing it. I don't want to do it again.
      */
 
-    if(version_compare(MIN_PHP_VERSION, PHP_VERSION) > 0){
-        critical_error(\pocketmine\NAME . " requires PHP >= " . MIN_PHP_VERSION . ", but you have PHP " . PHP_VERSION . ".");
-        critical_error("Please use the installer provided on the homepage, or update to a newer PHP version.");
+    /**
+     * @return string[]
+     */
+    function check_platform_dependencies(){
+        if(version_compare(MIN_PHP_VERSION, PHP_VERSION) > 0){
+            //If PHP version isn't high enough, anything below might break, so don't bother checking it.
+            return [
+                \pocketmine\NAME . " requires PHP >= " . MIN_PHP_VERSION . ", but you have PHP " . PHP_VERSION . "."
+            ];
+        }
+
+        $messages = [];
+
+        if(PHP_INT_SIZE < 8){
+            $messages[] = "Running " . \pocketmine\NAME . " with 32-bit systems/PHP is no longer supported. Please upgrade to a 64-bit system, or use a 64-bit PHP binary if this is a 64-bit system.";
+        }
+
+        if(php_sapi_name() !== "cli"){
+            $messages[] = "You must run " . \pocketmine\NAME . " using the CLI.";
+        }
+
+        $extensions = [
+            "bcmath" => "BC Math",
+            "curl" => "cURL",
+            "ctype" => "ctype",
+            "date" => "Date",
+            "hash" => "Hash",
+            "json" => "JSON",
+            "mbstring" => "Multibyte String",
+            "openssl" => "OpenSSL",
+            "pcre" => "PCRE",
+            "phar" => "Phar",
+            "pthreads" => "pthreads",
+            "reflection" => "Reflection",
+            "sockets" => "Sockets",
+            "spl" => "SPL",
+            "yaml" => "YAML",
+            "zip" => "Zip",
+            "zlib" => "Zlib"
+        ];
+
+        foreach($extensions as $ext => $name){
+            if(!extension_loaded($ext)){
+                $messages[] = "Unable to find the $name ($ext) extension.";
+            }
+        }
+
+        if(extension_loaded("pthreads")){
+            $pthreads_version = phpversion("pthreads");
+            if(substr_count($pthreads_version, ".") < 2){
+                $pthreads_version = "0.$pthreads_version";
+            }
+            if(version_compare($pthreads_version, "3.1.7dev") < 0){
+                $messages[] = "pthreads >= 3.1.7dev is required, while you have $pthreads_version.";
+            }
+        }
+
+        if(extension_loaded("leveldb")){
+            $leveldb_version = phpversion("leveldb");
+            if(version_compare($leveldb_version, "0.2.1") < 0){
+                $messages[] = "php-leveldb >= 0.2.1 is required, while you have $leveldb_version.";
+            }
+        }
+
+        if(extension_loaded("pocketmine")){
+            $messages[] = "The native PocketMine extension is no longer supported.";
+        }
+
+        return $messages;
+    }
+
+    if(!empty($messages = check_platform_dependencies())){
+        echo PHP_EOL;
+        $binary = version_compare(PHP_VERSION, "5.4") >= 0 ? PHP_BINARY : "unknown";
+        critical_error("Selected PHP binary ($binary) does not satisfy some requirements.");
+        foreach($messages as $m){
+            echo " - $m" . PHP_EOL;
+        }
+        critical_error("Please recompile PHP with the needed configuration, or refer to the installation instructions at http://pmmp.rtfd.io/en/rtfd/installation.html.");
+        echo PHP_EOL;
         exit(1);
     }
-
-    if(PHP_INT_SIZE < 8){
-        critical_error("Running " . \pocketmine\NAME . " with 32-bit systems/PHP is no longer supported.");
-        critical_error("Please upgrade to a 64-bit system, or use a 64-bit PHP binary if this is a 64-bit system.");
-        exit(1);
-    }
-
-    /* Dependencies check */
-
-    $errors = 0;
-
-    if(php_sapi_name() !== "cli"){
-        critical_error("You must run " . \pocketmine\NAME . " using the CLI.");
-        ++$errors;
-    }
-
-    $extensions = [
-        "bcmath" => "BC Math",
-        "curl" => "cURL",
-        "ctype" => "ctype",
-        "date" => "Date",
-        "hash" => "Hash",
-        "json" => "JSON",
-        "mbstring" => "Multibyte String",
-        "openssl" => "OpenSSL",
-        "pcre" => "PCRE",
-        "phar" => "Phar",
-        "pthreads" => "pthreads",
-        "reflection" => "Reflection",
-        "sockets" => "Sockets",
-        "spl" => "SPL",
-        "yaml" => "YAML",
-        "zip" => "Zip",
-        "zlib" => "Zlib"
-    ];
-
-    foreach($extensions as $ext => $name){
-        if(!extension_loaded($ext)){
-            critical_error("Unable to find the $name ($ext) extension.");
-            ++$errors;
-        }
-    }
-
-    if(extension_loaded("pthreads")){
-        $pthreads_version = phpversion("pthreads");
-        if(substr_count($pthreads_version, ".") < 2){
-            $pthreads_version = "0.$pthreads_version";
-        }
-        if(version_compare($pthreads_version, "3.1.7dev") < 0){
-            critical_error("pthreads >= 3.1.7dev is required, while you have $pthreads_version.");
-            ++$errors;
-        }
-    }
-
-    if(extension_loaded("leveldb")){
-        $leveldb_version = phpversion("leveldb");
-        if(version_compare($leveldb_version, "0.2.1") < 0){
-            critical_error("php-leveldb >= 0.2.1 is required, while you have $leveldb_version");
-            ++$errors;
-        }
-    }
-
-    if(extension_loaded("pocketmine")){
-        critical_error("The native PocketMine extension is no longer supported.");
-        ++$errors;
-    }
-
-    if($errors > 0){
-        critical_error("Please use the installer provided on the homepage, or recompile PHP again.");
-        exit(1);
-    }
+    unset($messages);
 
     error_reporting(-1);
 

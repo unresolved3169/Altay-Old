@@ -28,20 +28,20 @@ namespace pocketmine\network\mcpe\protocol;
 use pocketmine\network\mcpe\NetworkSession;
 
 class SubClientLoginPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::SUB_CLIENT_LOGIN_PACKET;
+    public const NETWORK_ID = ProtocolInfo::SUB_CLIENT_LOGIN_PACKET;
 
-	/** @var string */
-	public $connectionRequestData;
+    /** @var string */
+    public $connectionRequestData;
 
-	protected function decodePayload(){
-		$this->connectionRequestData = $this->getString();
-	}
+    protected function decodePayload() : void{
+        $this->connectionRequestData = $this->getString();
+    }
 
-	protected function encodePayload(){
-		$this->putString($this->connectionRequestData);
-	}
+    protected function encodePayload() : void{
+        $this->putString($this->connectionRequestData);
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handleSubClientLogin($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handleSubClientLogin($this);
+    }
 }

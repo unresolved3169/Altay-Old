@@ -31,44 +31,44 @@ use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\utils\UUID;
 
 class PlayerSkinPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::PLAYER_SKIN_PACKET;
+    public const NETWORK_ID = ProtocolInfo::PLAYER_SKIN_PACKET;
 
-	/** @var UUID */
-	public $uuid;
-	/** @var string */
-	public $oldSkinName = "";
-	/** @var string */
-	public $newSkinName = "";
-	/** @var Skin */
-	public $skin;
+    /** @var UUID */
+    public $uuid;
+    /** @var string */
+    public $oldSkinName = "";
+    /** @var string */
+    public $newSkinName = "";
+    /** @var Skin */
+    public $skin;
 
-	protected function decodePayload(){
-		$this->uuid = $this->getUUID();
+    protected function decodePayload() : void{
+        $this->uuid = $this->getUUID();
 
-		$skinId = $this->getString();
-		$this->newSkinName = $this->getString();
-		$this->oldSkinName = $this->getString();
-		$skinData = $this->getString();
-		$capeData = $this->getString();
-		$geometryModel = $this->getString();
-		$geometryData = $this->getString();
+        $skinId = $this->getString();
+        $this->newSkinName = $this->getString();
+        $this->oldSkinName = $this->getString();
+        $skinData = $this->getString();
+        $capeData = $this->getString();
+        $geometryModel = $this->getString();
+        $geometryData = $this->getString();
 
-		$this->skin = new Skin($skinId, $skinData, $capeData, $geometryModel, $geometryData);
-	}
+        $this->skin = new Skin($skinId, $skinData, $capeData, $geometryModel, $geometryData);
+    }
 
-	protected function encodePayload(){
-		$this->putUUID($this->uuid);
+    protected function encodePayload() : void{
+        $this->putUUID($this->uuid);
 
-		$this->putString($this->skin->getSkinId());
-		$this->putString($this->newSkinName);
-		$this->putString($this->oldSkinName);
-		$this->putString($this->skin->getSkinData());
-		$this->putString($this->skin->getCapeData());
-		$this->putString($this->skin->getGeometryName());
-		$this->putString($this->skin->getGeometryData());
-	}
+        $this->putString($this->skin->getSkinId());
+        $this->putString($this->newSkinName);
+        $this->putString($this->oldSkinName);
+        $this->putString($this->skin->getSkinData());
+        $this->putString($this->skin->getCapeData());
+        $this->putString($this->skin->getGeometryName());
+        $this->putString($this->skin->getGeometryData());
+    }
 
-	public function handle(NetworkSession $session) : bool{
-		return $session->handlePlayerSkin($this);
-	}
+    public function handle(NetworkSession $session) : bool{
+        return $session->handlePlayerSkin($this);
+    }
 }
