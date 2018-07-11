@@ -376,9 +376,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     /** @var bool */
     protected $keepExperience = false;
 
-    /** @var UUID */
-    private $fakePlayerListUUID = null;
-
     /**
      * @return TranslationContainer|string
      */
@@ -3195,19 +3192,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return true;
     }
 
-    public function handleSetLocalPlayerAsInitialized(SetLocalPlayerAsInitializedPacket $packet) : bool{
-        if($this->fakePlayerListUUID !== null){
-            $entry = PlayerListEntry::createRemovalEntry($this->fakePlayerListUUID);
-
-            $pk = new PlayerListPacket();
-            $pk->type = PlayerListPacket::TYPE_REMOVE;
-            $pk->entries = [$entry];
-            $this->directDataPacket($pk);
-        }
-
-        return false;
-    }
-
     /**
      * Called when a packet is received from the client. This method will call DataPacketReceiveEvent.
      *
@@ -3267,19 +3251,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
             $this->server->getPluginManager()->callEvent($ev = new DataPacketSendEvent($this, $packet));
             if($ev->isCancelled()){
                 return false;
-            }
-
-            // BLAME MOJANG!? TODO : DELETE THIS LATER
-            if($packet instanceof AddPlayerPacket and $this->server->getPlayerByUUID($packet->uuid) === null){
-                $skin = new Skin('Standard_Custom', \str_repeat("\x80", 8192));
-                $entry = PlayerListEntry::createAdditionEntry($packet->uuid, 0, 'blame mojang - 1.5', '', 0, $skin);
-
-                $pk = new PlayerListPacket();
-                $pk->type = PlayerListPacket::TYPE_ADD;
-                $pk->entries = [$entry];
-                $this->directDataPacket($pk);
-
-                $this->fakePlayerListUUID = $packet->uuid;
             }
 
             $identifier = $this->interface->putPacket($this, $packet, $needACK, $immediate);

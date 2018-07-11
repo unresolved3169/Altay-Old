@@ -262,8 +262,4 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 
         return true;
     }
-
-    public function handleSetLocalPlayerAsInitialized(SetLocalPlayerAsInitializedPacket $packet) : bool{
-        return $this->player->handleSetLocalPlayerAsInitialized($packet);
-    }
 }
