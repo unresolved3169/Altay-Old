@@ -123,7 +123,12 @@ abstract class Mob extends Living{
         }elseif(in_array($target->getId(), $this->seenEntities)){
             return true;
         }else{
-            $vecs = VoxelRayTrace::betweenPoints($this->floor(), $target->floor());
+            $sourcePos = $this->floor();
+            $targetPos = $target->floor();
+            if($sourcePos->equals($targetPos)){
+                return true;
+            }
+            $vecs = VoxelRayTrace::betweenPoints($sourcePos, $targetPos);
             $canSee = true;
             foreach ($vecs as $vec) {
                 if($this->level->getBlockAt($vec->x, $vec->y, $vec->z)->isSolid()){
