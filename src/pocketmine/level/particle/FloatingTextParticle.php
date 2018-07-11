@@ -108,7 +108,7 @@ class FloatingTextParticle extends Particle{
 
 			$skinPk = new PlayerSkinPacket();
 			$skinPk->uuid = $uuid;
-			$skinPk->skin = new Skin("Standard_Custom", str_repeat("\x00", 8192));
+			$skinPk->skin = new Skin("Standard_Custom", str_repeat("\x80", 8192));
 			$p[] = $skinPk;
 		}
 
