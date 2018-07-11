@@ -108,6 +108,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\DoubleTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\PlayerNetworkSessionAdapter;
+use pocketmine\network\mcpe\protocol\AddPlayerPacket;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\network\mcpe\protocol\AvailableCommandsPacket;
@@ -131,6 +132,7 @@ use pocketmine\network\mcpe\protocol\ModalFormRequestPacket;
 use pocketmine\network\mcpe\protocol\MoveEntityAbsolutePacket;
 use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
+use pocketmine\network\mcpe\protocol\PlayerListPacket;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\PlayStatusPacket;
 use pocketmine\network\mcpe\protocol\ProtocolInfo;
@@ -142,6 +144,7 @@ use pocketmine\network\mcpe\protocol\ResourcePackStackPacket;
 use pocketmine\network\mcpe\protocol\ResourcePacksInfoPacket;
 use pocketmine\network\mcpe\protocol\RespawnPacket;
 use pocketmine\network\mcpe\protocol\ServerSettingsResponsePacket;
+use pocketmine\network\mcpe\protocol\SetLocalPlayerAsInitializedPacket;
 use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
 use pocketmine\network\mcpe\protocol\SetSpawnPositionPacket;
 use pocketmine\network\mcpe\protocol\SetTitlePacket;
@@ -149,6 +152,7 @@ use pocketmine\network\mcpe\protocol\StartGamePacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
 use pocketmine\network\mcpe\protocol\TransferPacket;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
+use pocketmine\network\mcpe\protocol\types\PlayerListEntry;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAttributesPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
@@ -371,6 +375,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
     /** @var bool */
     protected $keepExperience = false;
+
+    /** @var UUID */
+    private $fakePlayerListUUID = null;
 
     /**
      * @return TranslationContainer|string
@@ -2229,7 +2236,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         if($target === null)
             return false;
 
-        $target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
+        $target->setPositionAndRotation($packet->position, $packet->zRot, $packet->xRot);
 
         $this->server->broadcastPacket($this->getViewers(), $packet);
         return true;
@@ -3188,6 +3195,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return true;
     }
 
+    public function handleSetLocalPlayerAsInitialized(SetLocalPlayerAsInitializedPacket $packet) : bool{
+        $entry = PlayerListEntry::createRemovalEntry($this->fakePlayerListUUID);
+
+        $pk = new PlayerListPacket();
+        $pk->type = PlayerListPacket::TYPE_REMOVE;
+        $pk->entries = [$entry];
+        $this->directDataPacket($pk);
+
+        return false;
+    }
+
     /**
      * Called when a packet is received from the client. This method will call DataPacketReceiveEvent.
      *
@@ -3247,6 +3265,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
             $this->server->getPluginManager()->callEvent($ev = new DataPacketSendEvent($this, $packet));
             if($ev->isCancelled()){
                 return false;
+            }
+
+            // BLAME MOJANG!? TODO : DELETE THIS LATER
+            if($packet instanceof AddPlayerPacket and $this->server->getPlayerByUUID($packet->uuid) === null){
+                $skin = new Skin('Standard_Custom', \str_repeat("\x80", 8192));
+                $entry = PlayerListEntry::createAdditionEntry($packet->uuid, 0, 'blame mojang - 1.5', '', 0, $skin);
+
+                $pk = new PlayerListPacket();
+                $pk->type = PlayerListPacket::TYPE_ADD;
+                $pk->entries = [$entry];
+                $this->directDataPacket($pk);
+
+                $this->fakePlayerListUUID = $packet->uuid;
             }
 
             $identifier = $this->interface->putPacket($this, $packet, $needACK, $immediate);
