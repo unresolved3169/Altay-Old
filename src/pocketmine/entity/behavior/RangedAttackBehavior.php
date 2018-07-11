@@ -26,7 +26,8 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\entity\Mob;
 
-class RangedAttackBehavior extends Behavior{
+class RangedAttackBehavior extends Behavior
+{
 
     /** @var float */
     protected $speedMultiplier = 1.0;
@@ -39,7 +40,8 @@ class RangedAttackBehavior extends Behavior{
     /** @var int */
     protected $targetSeenTicks = 0;
 
-    public function __construct(Mob $mob, float $speedMultiplier, int $minAttackTime, int $maxAttackTime, float $maxAttackDistanceIn){
+    public function __construct(Mob $mob, float $speedMultiplier, int $minAttackTime, int $maxAttackTime, float $maxAttackDistanceIn)
+    {
         parent::__construct($mob);
 
         $this->speedMultiplier = $speedMultiplier;
@@ -51,33 +53,37 @@ class RangedAttackBehavior extends Behavior{
         $this->mutexBits = 3;
     }
 
-    public function canStart() : bool{
+    public function canStart(): bool
+    {
         return $this->mob->getTargetEntityId() !== null;
     }
 
-    public function canContinue() : bool{
+    public function canContinue(): bool
+    {
         return $this->canStart() or $this->mob->getNavigator()->havePath();
     }
 
-    public function onEnd() : void{
+    public function onEnd(): void
+    {
         $this->targetSeenTicks = 0;
         $this->rangedAttackTime = -1;
         $this->mob->getNavigator()->clearPath();
     }
 
-    public function onTick() : void{
-    	if(!$this->canStart()) return;
+    public function onTick(): void
+    {
+        if (!$this->canStart()) return;
         $dist = $this->mob->distanceSquared($this->mob->getTargetEntity());
 
-        if($flag = $this->mob->canSeeEntity($this->mob->getTargetEntity())){
+        if ($flag = $this->mob->canSeeEntity($this->mob->getTargetEntity())) {
             $this->targetSeenTicks++;
-        }else{
+        } else {
             $this->targetSeenTicks = 0;
         }
 
-        if($dist <= $this->maxAttackDistance and $this->targetSeenTicks >= 20){
+        if ($dist <= $this->maxAttackDistance and $this->targetSeenTicks >= 20) {
             $this->mob->getNavigator()->clearPath();
-        }else{
+        } else {
             $this->mob->getNavigator()->tryMoveTo($this->mob->getTargetEntity(), $this->speedMultiplier);
         }
 
@@ -85,14 +91,14 @@ class RangedAttackBehavior extends Behavior{
 
         $this->rangedAttackTime--;
 
-        if($this->rangedAttackTime <= 0){
-            if($dist > $this->maxAttackDistance or !$flag){
+        if ($this->rangedAttackTime <= 0) {
+            if ($dist > $this->maxAttackDistance or !$flag) {
                 return;
             }
 
             $f = sqrt($dist) / $this->maxAttackDistanceIn;
-            if($f > 1) $f = 1;
-            if($f < 0.1) $f = 0.1;
+            if ($f > 1) $f = 1;
+            if ($f < 0.1) $f = 0.1;
 
             $this->mob->onRangedAttackToTarget($this->mob->getTargetEntity(), $f);
             $this->rangedAttackTime = floor($f * ($this->maxAttackTime - $this->minAttackTime) + $this->minAttackTime);

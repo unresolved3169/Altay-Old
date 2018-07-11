@@ -26,15 +26,18 @@ namespace pocketmine\entity\behavior;
 
 use pocketmine\Player;
 
-class HurtByTargetBehavior extends FindAttackableTargetBehavior{
+class HurtByTargetBehavior extends FindAttackableTargetBehavior
+{
     protected $mutexBits = 1;
 
-    public function canStart() : bool{
+    public function canStart(): bool
+    {
         $player = $this->mob->getLastAttacker();
         return $player !== null and ($player instanceof Player ? $player->isSurvival() : true) and $this->mob->getOwningEntity() !== $player and $player->isAlive();
     }
 
-    public function onStart(): void{
+    public function onStart(): void
+    {
         $this->mob->setTargetEntity($this->mob->getLastAttacker());
 
         parent::onStart();
@@ -46,7 +49,8 @@ class HurtByTargetBehavior extends FindAttackableTargetBehavior{
         return $this->canStart() and parent::canContinue();
     }
 
-    public function onEnd() : void{
+    public function onEnd(): void
+    {
         parent::onEnd();
         $this->mob->setLastAttacker(null);
     }

@@ -32,24 +32,27 @@ use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\block\Water;
 
-class FleeSunBehavior extends Behavior{
+class FleeSunBehavior extends Behavior
+{
 
     /** @var float */
     protected $speedMultiplier = 1.0;
     /** @var Vector3 */
     protected $shelter;
 
-    public function __construct(Mob $mob, float $speedMultiplier = 1.0){
+    public function __construct(Mob $mob, float $speedMultiplier = 1.0)
+    {
         parent::__construct($mob);
 
         $this->speedMultiplier = $speedMultiplier;
         $this->mutexBits = 1;
     }
 
-    public function canStart() : bool{
-        if($this->mob->isOnFire() and $this->mob->level->canSeeSky($this->mob->floor()) and $this->mob->level->isDayTime()){
+    public function canStart(): bool
+    {
+        if ($this->mob->isOnFire() and $this->mob->level->canSeeSky($this->mob->floor()) and $this->mob->level->isDayTime()) {
             $pos = $this->findPossibleShelter($this->mob);
-            if($pos === null) return false;
+            if ($pos === null) return false;
 
             $this->shelter = $pos;
 
@@ -59,24 +62,28 @@ class FleeSunBehavior extends Behavior{
         return false;
     }
 
-    public function onStart() : void{
+    public function onStart(): void
+    {
         $this->mob->getNavigator()->tryMoveTo($this->shelter, $this->speedMultiplier);
     }
 
-    public function canContinue() : bool{
+    public function canContinue(): bool
+    {
         return $this->mob->getNavigator()->havePath();
     }
 
-    public function onEnd() : void{
+    public function onEnd(): void
+    {
         $this->mob->setMotion($this->mob->getMotion()->multiply(0, 1.0, 0.0));
         $this->mob->getNavigator()->clearPath();
     }
 
-    public function findPossibleShelter(Entity $entity) : ?Block{
-        for($i = 0; $i < 10; $i++){
+    public function findPossibleShelter(Entity $entity): ?Block
+    {
+        for ($i = 0; $i < 10; $i++) {
             $block = $this->mob->level->getBlock($this->mob->add($this->random->nextBoundedInt(20) - 10, $this->random->nextBoundedInt(6) - 3, $this->random->nextBoundedInt(20) - 10));
             $canSeeSky = $entity->level->getHighestBlockAt($block->x, $block->z) <= $block->y;
-            if(!$block->isSolid() and ($block instanceof Water or !$canSeeSky)){
+            if (!$block->isSolid() and ($block instanceof Water or !$canSeeSky)) {
                 return $block;
             }
         }
@@ -84,15 +91,16 @@ class FleeSunBehavior extends Behavior{
         return null;
     }
 
-    public function calculateBlockWeight(Entity $entity, Block $block, Block $blockDown) : int{
+    public function calculateBlockWeight(Entity $entity, Block $block, Block $blockDown): int
+    {
         $vec = [$block->getX(), $block->getY(), $block->getZ()];
-        if($block instanceof Water) return -1;
-        if($entity instanceof Animal){
-            if($blockDown instanceof Grass) return 20;
+        if ($block instanceof Water) return -1;
+        if ($entity instanceof Animal) {
+            if ($blockDown instanceof Grass) return 20;
 
-            return (int) (max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec)) - 0.5);
-        }else{
-            return (int) 0.5 - max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));
+            return (int)(max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec)) - 0.5);
+        } else {
+            return (int)0.5 - max($entity->level->getBlockLightAt(...$vec), $entity->level->getBlockSkyLightAt(...$vec));
         }
     }
 }

@@ -27,20 +27,22 @@ namespace pocketmine\entity\behavior;
 use pocketmine\entity\Living;
 use pocketmine\entity\Mob;
 
-class OwnerHurtByTargetBehavior extends Behavior {
+class OwnerHurtByTargetBehavior extends Behavior
+{
 
     protected $mutexBits = 1;
 
-    public function canStart() : bool{
+    public function canStart(): bool
+    {
         $owner = $this->mob->getOwningEntity();
 
         /** @var Living $owner */
-        if($owner !== null){
-           $attacker = $owner->getLastAttacker();
-           if($attacker instanceof Mob){
-               $this->mob->setTargetEntity($attacker);
-               return true;
-           }
+        if ($owner !== null) {
+            $attacker = $owner->getLastAttacker();
+            if ($attacker instanceof Mob) {
+                $this->mob->setTargetEntity($attacker);
+                return true;
+            }
         }
 
         return false;

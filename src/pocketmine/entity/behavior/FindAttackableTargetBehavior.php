@@ -28,7 +28,8 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\Mob;
 use pocketmine\Player;
 
-class FindAttackableTargetBehavior extends Behavior{
+class FindAttackableTargetBehavior extends Behavior
+{
 
     /** @var float */
     protected $targetDistance = 16.0;
@@ -37,7 +38,8 @@ class FindAttackableTargetBehavior extends Behavior{
     /** @var string */
     protected $targetClass;
 
-    public function __construct(Mob $mob, string $targetClass = Mob::class){
+    public function __construct(Mob $mob, string $targetClass = Mob::class)
+    {
         parent::__construct($mob);
 
         $this->targetDistance = $mob->getFollowRange() ** 2;
@@ -45,23 +47,24 @@ class FindAttackableTargetBehavior extends Behavior{
         $this->mutexBits = 1;
     }
 
-    public function canStart() : bool{
-        if($this->random->nextBoundedInt(10) === 0){
+    public function canStart(): bool
+    {
+        if ($this->random->nextBoundedInt(10) === 0) {
             /** @var Entity[] $targets */
-            $targets = array_filter($this->mob->level->getEntities(), function(Entity $e){
+            $targets = array_filter($this->mob->level->getEntities(), function (Entity $e) {
                 return get_class($e) === $this->targetClass and $e->isAlive();
             });
             $target = null;
             $lastDist = $this->targetDistance;
-            foreach($targets as $t){
-                if($d = $t->distanceSquared($this->mob) < $lastDist and $t !== $this->mob){
-                    if($t instanceof Player and !$t->isSurvival()) continue;
+            foreach ($targets as $t) {
+                if ($d = $t->distanceSquared($this->mob) < $lastDist and $t !== $this->mob) {
+                    if ($t instanceof Player and !$t->isSurvival()) continue;
                     $target = $t;
                     $lastDist = $d;
                 }
             }
 
-            if($target === null) return false;
+            if ($target === null) return false;
 
             $this->mob->setTargetEntity($target);
 
@@ -71,33 +74,36 @@ class FindAttackableTargetBehavior extends Behavior{
         return false;
     }
 
-    public function getTargetDistance(Player $p){
+    public function getTargetDistance(Player $p)
+    {
         $dist = $this->targetDistance;
-        if($p->isSneaking())
+        if ($p->isSneaking())
             $dist *= 0.8;
 
         return $dist;
     }
 
-    public function onStart() : void{
+    public function onStart(): void
+    {
         $this->targetUnseenTicks = 0;
     }
 
-    public function canContinue() : bool{
+    public function canContinue(): bool
+    {
         $target = $this->mob->getTargetEntity();
 
-        if($target === null or !$target->isAlive() or ($target instanceof Player and !$target->isSurvival(true))) return false;
+        if ($target === null or !$target->isAlive() or ($target instanceof Player and !$target->isSurvival(true))) return false;
 
-        if($target instanceof Player){
-            if($this->mob->distanceSquared($target) > $this->getTargetDistance($target)) return false;
+        if ($target instanceof Player) {
+            if ($this->mob->distanceSquared($target) > $this->getTargetDistance($target)) return false;
 
-            if($this->mob->canSeeEntity($target)){
+            if ($this->mob->canSeeEntity($target)) {
                 $this->targetUnseenTicks = 0;
-            }elseif($this->targetUnseenTicks++ > 60){
+            } elseif ($this->targetUnseenTicks++ > 60) {
                 return false;
             }
-        }else{
-            if($this->mob->distanceSquared($target) > $this->targetDistance){
+        } else {
+            if ($this->mob->distanceSquared($target) > $this->targetDistance) {
                 return false;
             }
         }
@@ -105,7 +111,8 @@ class FindAttackableTargetBehavior extends Behavior{
         return true;
     }
 
-    public function onEnd() : void{
+    public function onEnd(): void
+    {
         $this->mob->setTargetEntity(null);
     }
 }

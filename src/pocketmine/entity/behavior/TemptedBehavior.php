@@ -28,7 +28,8 @@ use pocketmine\entity\Mob;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 
-class TemptedBehavior extends Behavior{
+class TemptedBehavior extends Behavior
+{
 
     /** @var float */
     protected $speedMultiplier;
@@ -49,7 +50,8 @@ class TemptedBehavior extends Behavior{
      * @param int[] $temptItemIds
      * @param float $speedMultiplier
      */
-    public function __construct(Mob $mob, array $temptItemIds, float $speedMultiplier){
+    public function __construct(Mob $mob, array $temptItemIds, float $speedMultiplier)
+    {
         parent::__construct($mob);
 
         $this->temptItems = $temptItemIds;
@@ -57,20 +59,21 @@ class TemptedBehavior extends Behavior{
         $this->mutexBits = 3;
     }
 
-    public function canStart() : bool{
-        if($this->coolDown > 0){
+    public function canStart(): bool
+    {
+        if ($this->coolDown > 0) {
             $this->coolDown--;
             return false;
         }
 
         /** @var Player|null $player */
         $player = $this->mob->level->getNearestEntity($this->mob, $this->mob->getFollowRange(), Player::class);
-        if($player === null) return false;
+        if ($player === null) return false;
         $player = $this->containsTempItems($player) ? $player : null;
 
-        if($player === null) return false;
+        if ($player === null) return false;
 
-        if($player !== $this->temptingPlayer){
+        if ($player !== $this->temptingPlayer) {
             $this->temptingPlayer = $player;
             $this->lastPlayerPos = $player->asVector3();
             $this->originalPos = $this->mob->asVector3();
@@ -79,10 +82,11 @@ class TemptedBehavior extends Behavior{
         return true;
     }
 
-    public function containsTempItems(Player $player) : bool{
+    public function containsTempItems(Player $player): bool
+    {
         $handItem = $player->getInventory()->getItemInHand();
-        foreach($this->temptItems as $temptItem){
-            if($temptItem == $handItem->getId()){
+        foreach ($this->temptItems as $temptItem) {
+            if ($temptItem == $handItem->getId()) {
                 return true;
             }
         }
@@ -90,18 +94,20 @@ class TemptedBehavior extends Behavior{
         return false;
     }
 
-    public function canContinue() : bool{
-        if(abs($this->originalPos->y - $this->mob->y) < 0.5)
+    public function canContinue(): bool
+    {
+        if (abs($this->originalPos->y - $this->mob->y) < 0.5)
             return true;
 
         return false;
     }
 
-    public function onTick(): void{
-        if($this->temptingPlayer === null) return;
+    public function onTick(): void
+    {
+        if ($this->temptingPlayer === null) return;
         $distanceToPlayer = $this->mob->distanceSquared($this->temptingPlayer);
 
-        if($distanceToPlayer < 1.75){
+        if ($distanceToPlayer < 1.75) {
             $this->mob->setLookPosition($this->temptingPlayer);
 
             $this->mob->getNavigator()->clearPath();
@@ -110,7 +116,7 @@ class TemptedBehavior extends Behavior{
         }
 
         $deltaDistance = $this->lastPlayerPos->distanceSquared($this->temptingPlayer);
-        if(!$this->mob->getNavigator()->havePath() || $deltaDistance > 1){
+        if (!$this->mob->getNavigator()->havePath() || $deltaDistance > 1) {
             $m = 2 - $distanceToPlayer;
             $m = ($m <= 0) ? 1 : $m / 2.0;
             $this->mob->getNavigator()->tryMoveTo($this->temptingPlayer, $this->speedMultiplier * $m);
@@ -120,7 +126,8 @@ class TemptedBehavior extends Behavior{
         $this->mob->setLookPosition($this->temptingPlayer);
     }
 
-    public function onEnd(): void{
+    public function onEnd(): void
+    {
         $this->coolDown = 100;
         $this->mob->resetMotion();
         $this->temptingPlayer = null;

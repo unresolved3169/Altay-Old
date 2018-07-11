@@ -56,9 +56,9 @@ class BehaviorPool
     public function onUpdate(int $tick): void
     {
         if ($tick % $this->tickRate === 0) {
-            foreach($this->workingBehaviors as $hash => $bh){
-                if(isset($this->behaviors[$hash])){
-                    if(!$this->canUse($this->behaviors[$hash])){
+            foreach ($this->workingBehaviors as $hash => $bh) {
+                if (isset($this->behaviors[$hash])) {
+                    if (!$this->canUse($this->behaviors[$hash])) {
                         $bh->onEnd();
                         unset($this->workingBehaviors[$hash]);
                     }
@@ -71,13 +71,14 @@ class BehaviorPool
                     $data[1]->onStart();
                 }
             }
-        }
-        foreach ($this->workingBehaviors as $hash => $b) {
-            if (!$b->canContinue()) {
-                $b->onEnd();
-                unset($this->workingBehaviors[$hash]);
-            } else {
-                $b->onTick();
+        } else {
+            foreach ($this->workingBehaviors as $hash => $b) {
+                if (!$b->canContinue()) {
+                    $b->onEnd();
+                    unset($this->workingBehaviors[$hash]);
+                } else {
+                    $b->onTick();
+                }
             }
         }
     }
