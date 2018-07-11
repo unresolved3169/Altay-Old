@@ -3196,12 +3196,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     }
 
     public function handleSetLocalPlayerAsInitialized(SetLocalPlayerAsInitializedPacket $packet) : bool{
-        $entry = PlayerListEntry::createRemovalEntry($this->fakePlayerListUUID);
+        if($this->fakePlayerListUUID !== null){
+            $entry = PlayerListEntry::createRemovalEntry($this->fakePlayerListUUID);
 
-        $pk = new PlayerListPacket();
-        $pk->type = PlayerListPacket::TYPE_REMOVE;
-        $pk->entries = [$entry];
-        $this->directDataPacket($pk);
+            $pk = new PlayerListPacket();
+            $pk->type = PlayerListPacket::TYPE_REMOVE;
+            $pk->entries = [$entry];
+            $this->directDataPacket($pk);
+        }
 
         return false;
     }
