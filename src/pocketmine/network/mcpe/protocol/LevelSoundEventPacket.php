@@ -183,7 +183,7 @@ class LevelSoundEventPacket extends DataPacket{
     public const SOUND_IMITATE_ELDER_GUARDIAN = 148;
     public const SOUND_IMITATE_ENDER_DRAGON = 149;
     public const SOUND_IMITATE_ENDERMAN = 150;
-
+    public const SOUND_IMITATE_ENDERMITE = 151;
     public const SOUND_IMITATE_EVOCATION_ILLAGER = 152;
     public const SOUND_IMITATE_GHAST = 153;
     public const SOUND_IMITATE_HUSK = 154;
@@ -218,7 +218,6 @@ class LevelSoundEventPacket extends DataPacket{
     public const SOUND_ITEM_TRIDENT_THROW = 183;
     public const SOUND_ITEM_TRIDENT_THUNDER = 184;
     public const SOUND_ITEM_TRIDENT_HIT_GROUND = 185;
-    public const SOUND_DEFAULT = 186;
 
     public const SOUND_ELEMCONSTRUCT_OPEN = 188;
     public const SOUND_ICEBOMB_HIT = 189;
@@ -227,7 +226,10 @@ class LevelSoundEventPacket extends DataPacket{
     public const SOUND_LT_REACTION_BLEACH = 192;
     public const SOUND_LT_REACTION_EPASTE = 193;
     public const SOUND_LT_REACTION_EPASTE2 = 194;
-
+    public const SOUND_LT_REACTION_GLOWSTICK = 195;
+    public const SOUND_LT_REACTION_GLOWSTICK2 = 196;
+    public const SOUND_LT_REACTION_LUMINOL = 197;
+    public const SOUND_LT_REACTION_SALT = 198;
     public const SOUND_LT_REACTION_FERTILIZER = 199;
     public const SOUND_LT_REACTION_FIREBALL = 200;
     public const SOUND_LT_REACTION_MGSALT = 201;
@@ -243,7 +245,32 @@ class LevelSoundEventPacket extends DataPacket{
     public const SOUND_CONVERT_TO_DROWNED = 211;
     public const SOUND_BUCKET_FILL_FISH = 212;
     public const SOUND_BUCKET_EMPTY_FISH = 213;
-    public const SOUND_UNDEFINED = 214;
+    public const SOUND_BUBBLE_COLUMN_UPWARDS = 214;
+    public const SOUND_BUBBLE_COLUMN_DOWNWARDS = 215;
+    public const SOUND_BUBBLE_POP = 216;
+    public const SOUND_BUBBLE_UP_INSIDE = 217;
+    public const SOUND_BUBBLE_DOWN_INSIDE = 218;
+    public const SOUND_HURT_BABY = 219;
+    public const SOUND_DEATH_BABY = 220;
+    public const SOUND_STEP_BABY = 221;
+    public const SOUND_SPAWN_BABY = 222;
+    public const SOUND_BORN = 223;
+    public const SOUND_TURTLE_EGG_BREAK = 224;
+    public const SOUND_TURTLE_EGG_CRACK = 225;
+    public const SOUND_TURTLE_EGG_HATCHED = 226;
+    public const SOUND_LAY_EGG = 227;
+    public const SOUND_TURTLE_EGG_ATTACKED = 228;
+    public const SOUND_BEACON_ACTIVATE = 229;
+    public const SOUND_BEACON_AMBIENT = 230;
+    public const SOUND_BEACON_DEACTIVATE = 231;
+    public const SOUND_BEACON_POWER = 232;
+    public const SOUND_COUDUIT_ACTIVATE = 233;
+    public const SOUND_COUDUIT_AMBIENT = 234;
+    public const SOUND_COUDUIT_ATTACK = 235;
+    public const SOUND_COUDUIT_DEACTIVATE = 236;
+    public const SOUND_COUDUIT_SHORT = 237;
+    public const SOUND_DEFAULT = 238;
+    public const SOUND_UNDEFINED = 239;
 
     /** @var int */
     public $sound;
