@@ -430,24 +430,28 @@ class EntityNavigator{
 
     public function onNavigateUpdate(int $tick) : void{
         if($this->currentPath !== null){
-            $next = $this->currentPath->getPointByIndex($this->currentPath->getCurrentIndex());
-            if($next !== null and $this->havePath()){
+            if($this->havePath()){
                 $this->pathFollow();
-                $this->mob->lookAt($r = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-                $moved = $this->mob->moveForward($this->speedMultiplier);
-                if(!$moved){
-                    $this->clearPath();
-                }
-
-                if($this->mob->floor() == $this->lastPoint){
-                    $this->stuckTick++;
-
-                    if($this->stuckTick > 100){
+                $next = $this->currentPath->getPointByIndex($this->currentPath->getCurrentIndex());
+                if($next !== null) {
+                    $this->mob->lookAt($r = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
+                    $moved = $this->mob->moveForward($this->speedMultiplier);
+                    if (!$moved) {
                         $this->clearPath();
                     }
+
+                    if ($this->mob->floor() == $this->lastPoint) {
+                        $this->stuckTick++;
+
+                        if ($this->stuckTick > 100) {
+                            $this->clearPath();
+                        }
+                    } else {
+                        $this->lastPoint = $this->mob->floor();
+                        $this->stuckTick = 0;
+                    }
                 }else{
-                    $this->lastPoint = $this->mob->floor();
-                    $this->stuckTick = 0;
+                    $this->clearPath();
                 }
             }else{
                 $this->clearPath();
