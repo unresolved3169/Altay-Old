@@ -1237,11 +1237,14 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
             //for arrows this is actually x/y/z rotation
             //for mobs x and z are used for pitch and yaw, and y is used for headyaw
             $pk->xRot = $this->pitch;
-            $pk->yRot = $this->yaw; //TODO: head yaw
+            $pk->yRot = $this->headYaw ?? $this->yaw;
             $pk->zRot = $this->yaw;
 
             if($teleport){
                 $pk->flags |= MoveEntityAbsolutePacket::FLAG_TELEPORT;
+            }
+            if($this->onGround){
+                $pk->flags |= MoveEntityAbsolutePacket::FLAG_GROUND;
             }
 
             $this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
