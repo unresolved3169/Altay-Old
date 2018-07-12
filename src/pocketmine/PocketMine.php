@@ -38,8 +38,8 @@ namespace pocketmine {
     use pocketmine\wizard\SetupWizard;
 
     const NAME = "Altay";
-    const BASE_VERSION = "3.0.7";
-    const IS_DEVELOPMENT_BUILD = false;
+    const BASE_VERSION = "3.0.6";
+    const IS_DEVELOPMENT_BUILD = true;
     const BUILD_NUMBER = 0;
 
     const MIN_PHP_VERSION = "7.2.0";

@@ -731,7 +731,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
                 $data->aliases->enumValues[] = $data->commandName;
             }
 
-            $pk->commandData[$data->commandName] = $data;
+            $pk->commandData[$command->getName()] = $data;
         }
 
         $this->dataPacket($pk);
@@ -2232,7 +2232,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         if($target === null)
             return false;
 
-        $target->setPositionAndRotation($packet->position, $packet->yaw, $packet->pitch);
+        $target->setPositionAndRotation($packet->position, $packet->zRot, $packet->xRot);
 
         $this->server->broadcastPacket($this->getViewers(), $packet);
         return true;
