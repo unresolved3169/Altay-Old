@@ -63,6 +63,8 @@ class EntityNavigator{
 
     protected $lastPoint = null;
     protected $stuckTick = 0;
+    /** @var Vector3 */
+    protected $movePos;
 
     public function __construct(Mob $mob){
         $this->mob = $mob;
@@ -109,8 +111,8 @@ class EntityNavigator{
             foreach ($this->getNeighbors($current, $blockCache, $currentY) as $n){
                 if(!isset($closed[$n->getHashCode()])){
                     $g = $current->gScore + $this->calculateBlockDistance($current, $n, $blockCache);
-                    if($g >= $followRange * 2){
-                     continue;
+                    if($g >= $followRange){
+                     return $this->initPath($path, $highScore);
                     }
 
                     if(isset($open[$n->getHashCode()])){
@@ -319,7 +321,7 @@ class EntityNavigator{
 
             for ($i = $this->currentPath->getCurrentIndex(); $i < count($this->currentPath->getPoints()); ++$i){
                 if($this->currentPath->getPointByIndex($i)->height != (int) floor($this->mob->y)){
-                    $length = $i;
+                    $length = $i + 1;
                     break;
                 }
             }
@@ -434,27 +436,39 @@ class EntityNavigator{
                 $this->pathFollow();
                 $next = $this->currentPath->getPointByIndex($this->currentPath->getCurrentIndex());
                 if($next !== null) {
-                    $this->mob->lookAt($r = new Vector3($next->x + 0.5, $this->mob->y, $next->y + 0.5));
-                    $moved = $this->mob->moveForward($this->speedMultiplier);
-                    if (!$moved) {
-                        $this->clearPath();
-                    }
-
-                    if ($this->mob->floor() == $this->lastPoint) {
-                        $this->stuckTick++;
-
-                        if ($this->stuckTick > 100) {
-                            $this->clearPath();
-                        }
-                    } else {
-                        $this->lastPoint = $this->mob->floor();
-                        $this->stuckTick = 0;
-                    }
+                    $this->movePos = new Vector3($next->x, $this->mob->y, $next->y);
                 }else{
                     $this->clearPath();
                 }
             }else{
                 $this->clearPath();
+            }
+        }
+
+        if($this->movePos !== null){
+            $this->mob->lookAt($this->movePos->add(0.5, 0, 0.5));
+            $moved = $this->mob->moveForward($this->speedMultiplier);
+            if (!$moved) {
+                $this->clearPath();
+                $this->movePos = null;
+                return;
+            }
+
+            $currentPos = $this->mob->floor();
+
+            if($currentPos->equals($this->movePos)){
+                $this->movePos = null;
+            }
+
+            if ($currentPos == $this->lastPoint) {
+                $this->stuckTick++;
+
+                if ($this->stuckTick > 100) {
+                    $this->clearPath();
+                }
+            } else {
+                $this->lastPoint = $currentPos;
+                $this->stuckTick = 0;
             }
         }
     }

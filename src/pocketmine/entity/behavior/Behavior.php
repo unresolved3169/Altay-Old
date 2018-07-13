@@ -76,4 +76,8 @@ abstract class Behavior
     {
         return $this->mutexBits;
     }
+
+    public function isMutable() : bool{
+        return true;
+    }
 }

@@ -96,7 +96,7 @@ class TemptedBehavior extends Behavior
 
     public function canContinue(): bool
     {
-        if (abs($this->originalPos->y - $this->mob->y) < 0.5)
+        if (abs($this->originalPos->y - $this->mob->y) < 0.5 and $this->containsTempItems($this->temptingPlayer) and $this->mob->distanceSquared($this->temptingPlayer) < 36)
             return true;
 
         return false;
@@ -117,9 +117,7 @@ class TemptedBehavior extends Behavior
 
         $deltaDistance = $this->lastPlayerPos->distanceSquared($this->temptingPlayer);
         if (!$this->mob->getNavigator()->havePath() || $deltaDistance > 1) {
-            $m = 2 - $distanceToPlayer;
-            $m = ($m <= 0) ? 1 : $m / 2.0;
-            $this->mob->getNavigator()->tryMoveTo($this->temptingPlayer, $this->speedMultiplier * $m);
+            $this->mob->getNavigator()->tryMoveTo($this->temptingPlayer, $this->speedMultiplier);
             $this->lastPlayerPos = $this->temptingPlayer->asVector3();
         }
 

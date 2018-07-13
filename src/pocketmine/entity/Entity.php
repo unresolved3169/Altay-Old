@@ -37,6 +37,7 @@ use pocketmine\entity\object\FireworksRocket;
 use pocketmine\entity\object\Painting;
 use pocketmine\entity\object\PrimedTNT;
 use pocketmine\entity\object\ItemEntity;
+use pocketmine\entity\passive\Cow;
 use pocketmine\entity\passive\Wolf;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
@@ -692,6 +693,15 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
         $this->riddenByEntity = $riddenByEntity;
     }
 
+    public function isBaby() : bool{
+        return $this->getGenericFlag(self::DATA_FLAG_BABY);
+    }
+
+    public function setBaby(bool $value = true) : void{
+        $this->setGenericFlag(self::DATA_FLAG_BABY, $value);
+        $this->setScale($value ? 0.5 : 1.0);
+    }
+
     public function getBoundingBox() : AxisAlignedBB{
         return $this->boundingBox;
     }
@@ -1237,8 +1247,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
             //for arrows this is actually x/y/z rotation
             //for mobs x and z are used for pitch and yaw, and y is used for headyaw
             $pk->xRot = $this->pitch;
-            $pk->yRot = $this->headYaw ?? $this->yaw;
-            $pk->zRot = $this->yaw;
+            $pk->yRot = $this->yaw;
+            $pk->zRot = $this->headYaw ?? $this->yaw;
 
             if($teleport){
                 $pk->flags |= MoveEntityAbsolutePacket::FLAG_TELEPORT;

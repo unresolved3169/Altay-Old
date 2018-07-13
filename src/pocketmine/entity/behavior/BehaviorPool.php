@@ -76,10 +76,12 @@ class BehaviorPool
                 if (!$b->canContinue()) {
                     $b->onEnd();
                     unset($this->workingBehaviors[$hash]);
-                } else {
-                    $b->onTick();
                 }
             }
+        }
+
+        foreach($this->workingBehaviors as $behavior){
+            $behavior->onTick();
         }
     }
 
@@ -92,7 +94,7 @@ class BehaviorPool
                 if (!$this->theyCanWorkCompatible($data[1], $b[1]) and isset($this->workingBehaviors[$h])) {
                     return false;
                 }
-            } elseif (isset($this->workingBehaviors[$h])) {
+            } elseif (!$b[1]->isMutable() and isset($this->workingBehaviors[$h])) {
                 return false;
             }
         }

@@ -41,16 +41,12 @@ class Zombie extends Monster implements Ageable{
     public const NETWORK_ID = self::ZOMBIE;
 
     public $width = 0.6;
-    public $height = 1.8;
+    public $height = 1.95;
 
     protected function initEntity() : void{
         $this->setMovementSpeed($this->isBaby() ? 0.345 : 0.23);
         $this->setFollowRange(35);
         $this->setAttackDamage(3);
-        if($this->isBaby()){
-            $this->height *= 0.5;
-            $this->setScale(0.5);
-        }
 
         parent::initEntity();
     }
@@ -95,9 +91,5 @@ class Zombie extends Monster implements Ageable{
 
         $this->targetBehaviorPool->setBehavior(2, new FindAttackableTargetBehavior($this, Player::class));
         $this->targetBehaviorPool->setBehavior(2, new FindAttackableTargetBehavior($this, Villager::class));
-    }
-
-    public function isBaby() : bool{
-        return $this->getGenericFlag(self::DATA_FLAG_BABY);
     }
 }

@@ -79,7 +79,6 @@ class WanderBehavior extends Behavior
 
     public function onEnd(): void
     {
-        $this->mob->setMotion($this->mob->getMotion()->multiply(0, 1.0, 0.0));
         $this->targetPos = null;
         $this->mob->getNavigator()->clearPath();
     }

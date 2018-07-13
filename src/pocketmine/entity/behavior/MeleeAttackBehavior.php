@@ -33,14 +33,16 @@ class MeleeAttackBehavior extends Behavior
 {
 
     /** @var float */
-    protected $speedMultiplier;
+    protected $speedMultiplier = 0;
 
     /** @var int */
-    protected $attackCooldown;
+    protected $attackCooldown = 0;
     /** @var int */
-    protected $delay;
+    protected $delay = 0;
     /** @var Vector3 */
     protected $lastPlayerPos;
+
+    protected $path;
 
     public function __construct(Mob $mob, float $speedMultiplier)
     {
@@ -57,14 +59,15 @@ class MeleeAttackBehavior extends Behavior
 
         $this->lastPlayerPos = $target->asVector3();
 
-        $path = $this->mob->getNavigator()->findPath($target);
-        return $path->havePath();
+        $this->path = $this->mob->getNavigator()->findPath($target);
+        return $this->path->havePath();
     }
 
     public function onStart(): void
     {
         $this->delay = 0;
-        $this->mob->getNavigator()->tryMoveTo($this->mob->getTargetEntity(), $this->speedMultiplier);
+        $this->mob->getNavigator()->setPath($this->path);
+        $this->mob->getNavigator()->setSpeedMultiplier($this->speedMultiplier);
     }
 
     public function canContinue(): bool
@@ -83,16 +86,14 @@ class MeleeAttackBehavior extends Behavior
 
         $deltaDistance = $this->lastPlayerPos->distanceSquared($target);
 
-        $canSee = true;
-
-        if ($this->delay <= 0 or $canSee or ($deltaDistance > 1 || $this->random->nextFloat() < 0.05)) {
+        if ($this->delay <= 0 and $this->mob->canSeeEntity($target) and ($deltaDistance > 1 or $this->random->nextFloat() < 0.05)) {
             $this->lastPlayerPos = $target->asVector3();
 
             $this->delay = 4 + $this->random->nextBoundedInt(7);
 
-            if ($distanceToPlayer > 32) {
+            if ($distanceToPlayer > 1024) {
                 $this->delay += 10;
-            } elseif ($distanceToPlayer > 16) {
+            } elseif ($distanceToPlayer > 256) {
                 $this->delay += 5;
             }
 
@@ -121,6 +122,7 @@ class MeleeAttackBehavior extends Behavior
         $this->mob->resetMotion();
         $this->mob->pitch = 0;
         $this->attackCooldown = $this->delay = 0;
+        $this->path = null;
         $this->mob->getNavigator()->clearPath();
     }
 
