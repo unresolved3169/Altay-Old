@@ -117,12 +117,6 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
         return $len === 64 * 64 * 4 or $len === 64 * 32 * 4 or $len === 128 * 128 * 4;
     }
 
-    public function setNameTag(string $name) : void{
-        parent::setNameTag($name);
-        $this->despawnFromAll();
-        $this->spawnToAll();
-    }
-
     /**
      * @return UUID|null
      */
