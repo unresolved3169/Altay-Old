@@ -56,7 +56,7 @@ class Cow extends Tamable{
     protected function initEntity() : void{
         $this->setMaxHealth(10);
         $this->setMovementSpeed(0.2);
-        $this->setFollowRange(16);
+        $this->setFollowRange(10);
 
         parent::initEntity();
     }
