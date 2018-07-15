@@ -3058,6 +3058,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     }
 
     public function handlePlayerInput(PlayerInputPacket $packet) : bool{
+        if($this->isRiding()){
+            $entity = $this->getRidingEntity();
+            if($entity !== null and $entity->isAlive()){
+                $entity->onRidingUpdate($this, $packet->motionX, $packet->motionY, $packet->jumping, $packet->sneaking);
+            }
+        }
         return true;
     }
 

@@ -2441,6 +2441,19 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
     }
 
     /**
+     * Called when riding by a player
+     *
+     * @param Player $player
+     * @param int $motX
+     * @param int $motY
+     * @param bool $jumping
+     * @param bool $sneaking
+     */
+    public function onRidingUpdate(Player $player, float $motX, float $motY, bool $jumping = false, bool $sneaking = false) : void{
+
+    }
+
+    /**
      * @return Item[]
      */
     public function getDrops() : array{
