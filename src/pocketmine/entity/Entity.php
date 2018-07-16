@@ -1099,6 +1099,12 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
     public function entityBaseTick(int $tickDiff = 1) : bool{
         if($this->ridingEntity instanceof Entity and !$this->ridingEntity->isAlive()){
             $this->ridingEntity = null;
+            $this->setRiding(false);
+        }
+
+        if($this->riddenByEntity instanceof Entity and !$this->riddenByEntity->isAlive()){
+            $this->riddenByEntity = null;
+            $this->setGenericFlag(Entity::DATA_FLAG_WASD_CONTROLLED, false);
         }
 
         $this->justCreated = false;
@@ -1607,6 +1613,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
             if($send){
                 $this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, $this->getRiderSeatPosition());
+                $this->propertyManager->setByte(self::DATA_CONTROLLING_RIDER_SEAT_NUMBER, 0);
                 $this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 0);
                 $this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 360);
                 $this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, 0);

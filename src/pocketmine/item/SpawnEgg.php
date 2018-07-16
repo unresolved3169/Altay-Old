@@ -46,7 +46,9 @@ class SpawnEgg extends Item{
 
 		if($entity instanceof Entity){
 			--$this->count;
-			$entity->setAiEnabled($player->getServer()->mobAiEnabled);
+			if($entity instanceof Mob) {
+                $entity->setAiEnabled($player->getServer()->mobAiEnabled);
+            }
 			$entity->spawnToAll();
 			return true;
 		}
