@@ -1602,9 +1602,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
             if($send){
                 $this->propertyManager->setVector3(self::DATA_RIDER_SEAT_POSITION, $this->getRiderSeatPosition());
-                $this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
-                $this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 90);
-                $this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, -90);
+                $this->propertyManager->setByte(self::DATA_RIDER_ROTATION_LOCKED, 0);
+                $this->propertyManager->setFloat(self::DATA_RIDER_MAX_ROTATION, 360);
+                $this->propertyManager->setFloat(self::DATA_RIDER_MIN_ROTATION, 0);
 
                 $this->setRiding(true);
                 $this->ridingEntity->setDataFlag(Entity::DATA_FLAGS, Entity::DATA_FLAG_WASD_CONTROLLED, true);
