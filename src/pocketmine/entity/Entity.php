@@ -1597,6 +1597,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function mountEntity(Entity $entity, int $type = EntityLink::TYPE_RIDER, bool $send = true) : void{
 		if($this->ridingEntity == null and $entity !== $this){
+		    if($entity instanceof Rideable){
+		        if(!$entity->onRiderMount()){
+		            return;
+                }
+            }
 			$this->setRidingEntity($entity);
 			$entity->setRiddenByEntity($this);
 
@@ -1622,6 +1627,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
     public function dismountEntity(bool $send = true) : void{
         if($this->ridingEntity !== null){
+            if($this->ridingEntity instanceof Rideable){
+                if(!$this->onRiderLeave()){
+                    return;
+                }
+            }
             $this->ridingEntity->setRiddenByEntity(null);
 
             if($send){
