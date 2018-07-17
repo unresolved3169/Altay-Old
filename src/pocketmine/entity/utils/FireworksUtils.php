@@ -24,7 +24,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity\utils;
 
-use pocketmine\entity\projectile\FireworksRocket;
+use pocketmine\entity\object\FireworksRocket;
 use pocketmine\item\Fireworks;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\NBT;
