@@ -36,6 +36,7 @@ use pocketmine\command\PluginIdentifiableCommand;
 use pocketmine\command\SimpleCommandMap;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Skin;
+use pocketmine\entity\utils\Bossbar;
 use pocketmine\event\HandlerList;
 use pocketmine\event\level\LevelLoadEvent;
 use pocketmine\event\level\LevelInitEvent;
@@ -1816,14 +1817,13 @@ class Server{
     }
 
     /**
-     * @param string     $title
+     * @param Bossbar $bossbar
+     * @param int|null $id
      * @param Player[] $recipients
-     * @param float      $health
-     * @param float      $maxHealth
      *
      * @return int
      */
-    public function broadcastBossBar(string $title, array $recipients = null, float $health = 0, float $maxHealth = 1) : int{
+    public function broadcastBossbar(Bossbar $bossbar, ?int $id = null, array $recipients = null) : int{
         if(!is_array($recipients)){
             /** @var Player[] $recipients */
             $recipients = [];
@@ -1837,7 +1837,11 @@ class Server{
 
         /** @var Player[] $recipients */
         foreach($recipients as $recipient){
-            $recipient->sendBossBar($title, $health, $maxHealth);
+            if($id == null){
+                $recipient->addBossbar($bossbar);
+            }else{
+                $recipient->addBossbar($bossbar, $id);
+            }
         }
 
         return count($recipients);
