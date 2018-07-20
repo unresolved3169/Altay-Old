@@ -73,7 +73,6 @@ use pocketmine\event\player\PlayerTransferEvent;
 use pocketmine\event\player\PlayerInteractEntityEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
-use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\form\Form;
 use pocketmine\form\ServerSettingsForm;
 use pocketmine\inventory\ContainerInventory;
@@ -120,7 +119,6 @@ use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
 use pocketmine\network\mcpe\protocol\CommandRequestPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
-use pocketmine\network\mcpe\protocol\DisconnectPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
@@ -156,7 +154,7 @@ use pocketmine\network\mcpe\protocol\InteractPacket;
 use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
 use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\network\mcpe\VerifyLoginTask;
-use pocketmine\network\SourceInterface;
+use pocketmine\network\NetworkInterface;
 use pocketmine\permission\PermissibleBase;
 use pocketmine\permission\PermissionAttachment;
 use pocketmine\permission\PermissionAttachmentInfo;
@@ -209,10 +207,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return $lname !== "rcon" and $lname !== "console" and $len >= 1 and $len <= 16 and preg_match("/[^A-Za-z0-9_ ]/", $name) === 0;
     }
 
-
-    /** @var SourceInterface */
-    protected $interface;
-
     /**
      * @var PlayerNetworkSessionAdapter
      * TODO: remove this once player and network are divorced properly
@@ -226,12 +220,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     protected $ip;
     /** @var int */
     protected $port;
-
-    /** @var bool[] */
-    private $needACK = [];
-
-    /** @var DataPacket[] */
-    private $batchedPackets = [];
 
     /**
      * @var int
@@ -735,12 +723,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     }
 
     /**
-     * @param SourceInterface $interface
+     * @param NetworkInterface $interface
      * @param string          $ip
      * @param int             $port
      */
-    public function __construct(SourceInterface $interface, string $ip, int $port){
-        $this->interface = $interface;
+    public function __construct(NetworkInterface $interface, string $ip, int $port){
         $this->perm = new PermissibleBase($this);
         $this->namedtag = new CompoundTag();
         $this->server = Server::getInstance();
@@ -757,7 +744,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
         $this->allowMovementCheats = (bool) $this->server->getProperty("player.anti-cheat.allow-movement-cheats", false);
 
-        $this->sessionAdapter = new PlayerNetworkSessionAdapter($this->server, $this);
+        $this->sessionAdapter = new PlayerNetworkSessionAdapter($this->server, $this, $interface);
     }
 
     /**
@@ -1199,6 +1186,20 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         Timings::$playerChunkOrderTimer->stopTiming();
     }
 
+    public function doChunkRequests(){
+        if(!$this->isOnline()){
+            return;
+        }
+
+        if($this->nextChunkOrderRun-- <= 0){
+            $this->orderChunks();
+        }
+
+        if(count($this->loadQueue) > 0){
+            $this->sendNextChunk();
+        }
+    }
+
     /**
      * @return Position
      */
@@ -1536,14 +1537,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     }
 
     protected function checkGroundState(float $movX, float $movY, float $movZ, float $dx, float $dy, float $dz) : void{
-        if(!$this->onGround or $movY != 0){
-            $bb = clone $this->boundingBox;
-            $bb->minY = $this->y - 0.20000000298023224;
-            $bb->maxY = $this->y + 0.20000000298023224;
+        $bb = clone $this->boundingBox;
+        $bb->minY = $this->y - 0.2;
+        $bb->maxY = $this->y + 0.2;
 
-            $this->onGround = count($this->level->getCollisionBlocks($bb, true)) > 0;
-        }
-        $this->isCollided = $this->onGround;
+        $this->onGround = $this->isCollided = count($this->level->getCollisionBlocks($bb, true)) > 0;
     }
 
     public function canBeMovedByCurrents() : bool{
@@ -1819,25 +1817,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         $pk->effectId = $effect->getId();
 
         $this->dataPacket($pk);
-    }
-
-    public function checkNetwork(){
-        if(!$this->isOnline()){
-            return;
-        }
-
-        if($this->nextChunkOrderRun-- <= 0){
-            $this->orderChunks();
-        }
-
-        if(count($this->loadQueue) > 0){
-            $this->sendNextChunk();
-        }
-
-        if(count($this->batchedPackets) > 0){
-            $this->server->batchPackets([$this], $this->batchedPackets, false);
-            $this->batchedPackets = [];
-        }
     }
 
     /**
@@ -2208,7 +2187,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
             return false;
         }
 
-        $this->resetCraftingGridType();
+        $this->doCloseInventory();
 
         $message = TextFormat::clean($message, $this->removeFormat);
         foreach(explode("\n", $message) as $messagePart){
@@ -2281,7 +2260,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         if(!$this->spawned or !$this->isAlive()){
             return true;
         }
-        $this->resetCraftingGridType();
+        $this->doCloseInventory();
 
         switch($packet->event){
             case EntityEventPacket::EATING_ITEM:
@@ -2447,7 +2426,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
                         return true;
                     case InventoryTransactionPacket::USE_ITEM_ACTION_BREAK_BLOCK:
-                        $this->resetCraftingGridType();
+                        $this->doCloseInventory();
 
                         $item = $this->inventory->getItemInHand();
                         $oldItem = clone $item;
@@ -2727,7 +2706,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
             return true;
         }
 
-        $this->resetCraftingGridType();
+        $this->doCloseInventory();
 
         $target = $this->level->getEntity($packet->target);
         if($target === null){
@@ -2980,7 +2959,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
             return true;
         }
 
-        $this->resetCraftingGridType();
+        $this->doCloseInventory();
 
         if(isset($this->windowIndex[$packet->windowId])){
             $this->server->getPluginManager()->callEvent(new InventoryCloseEvent($this->windowIndex[$packet->windowId], $this));
@@ -3030,7 +3009,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         if(!$this->spawned or !$this->isAlive()){
             return true;
         }
-        $this->resetCraftingGridType();
+        $this->doCloseInventory();
 
         $pos = new Vector3($packet->x, $packet->y, $packet->z);
         if($pos->distanceSquared($this) > 10000 or $this->level->checkSpawnProtection($this, $pos)){
@@ -3200,31 +3179,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
     }
 
     /**
-     * Batch a Data packet into the channel list to send at the end of the tick
-     *
-     * @param DataPacket $packet
-     *
-     * @return bool
-     */
-    public function batchDataPacket(DataPacket $packet) : bool{
-        if(!$this->isConnected()){
-            return false;
-        }
-
-        $timings = Timings::getSendDataPacketTimings($packet);
-        $timings->startTiming();
-        $this->server->getPluginManager()->callEvent($ev = new DataPacketSendEvent($this, $packet));
-        if($ev->isCancelled()){
-            $timings->stopTiming();
-            return false;
-        }
-
-        $this->batchedPackets[] = clone $packet;
-        $timings->stopTiming();
-        return true;
-    }
-
-    /**
      * @param DataPacket $packet
      * @param bool       $needACK
      * @param bool       $immediate
@@ -3241,25 +3195,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
             throw new \InvalidArgumentException("Attempted to send " . get_class($packet) . " to " . $this->getName() . " too early");
         }
 
-        $timings = Timings::getSendDataPacketTimings($packet);
-        $timings->startTiming();
-        try{
-            $this->server->getPluginManager()->callEvent($ev = new DataPacketSendEvent($this, $packet));
-            if($ev->isCancelled()){
-                return false;
-            }
-
-            $identifier = $this->interface->putPacket($this, $packet, $needACK, $immediate);
-
-            if($needACK and $identifier !== null){
-                $this->needACK[$identifier] = false;
-                return $identifier;
-            }
-
-            return true;
-        }finally{
-            $timings->stopTiming();
-        }
+        return $this->sessionAdapter->sendDataPacket($packet, $immediate);
     }
 
     /**
@@ -3620,13 +3556,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         if($this->isConnected() and !$this->closed){
 
             try{
-                if($notify and strlen($reason) > 0){
-                    $pk = new DisconnectPacket();
-                    $pk->message = $reason;
-                    $this->directDataPacket($pk);
-                }
-
-                $this->interface->close($this, $notify ? $reason : "");
+                $this->sessionAdapter->serverDisconnect($reason, $notify);
                 $this->sessionAdapter = null;
 
                 $this->server->getPluginManager()->unsubscribeFromPermission(Server::BROADCAST_CHANNEL_USERS, $this);
@@ -3893,7 +3823,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
         //Crafting grid must always be evacuated even if keep-inventory is true. This dumps the contents into the
         //main inventory and drops the rest on the ground.
-        $this->resetCraftingGridType();
+        $this->doCloseInventory();
 
         $ev = new PlayerDeathEvent($this, $this->getDrops(), new TranslationContainer($message, $params));
         $ev->setKeepInventory($this->server->keepInventory);
@@ -4098,15 +4028,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         $this->craftingGrid = $grid;
     }
 
-    public function resetCraftingGridType() : void{
-        $contents = $this->craftingGrid->getContents();
-        if(count($contents) > 0){
-            $drops = $this->inventory->addItem(...$contents);
-            foreach($drops as $drop){
-                $this->dropItem($drop);
-            }
+    public function doCloseInventory() : void{
+        /** @var Inventory[] $inventories */
+        $inventories = [$this->craftingGrid, $this->cursorInventory];
+        foreach($inventories as $inventory){
+            $contents = $inventory->getContents();
+            if(count($contents) > 0){
+                $drops = $this->inventory->addItem(...$contents);
+                foreach($drops as $drop){
+                    $this->dropItem($drop);
+                }
 
-            $this->craftingGrid->clearAll();
+                $inventory->clearAll();
+            }
         }
 
         if($this->craftingGrid->getGridWidth() > CraftingGrid::SIZE_SMALL){

@@ -28,49 +28,49 @@ use pocketmine\block\utils\ColorBlockMetaHelper;
 
 class ConcretePowder extends Fallable{
 
-	protected $id = self::CONCRETE_POWDER;
+    protected $id = self::CONCRETE_POWDER;
 
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
+    public function __construct(int $meta = 0){
+        $this->meta = $meta;
+    }
 
-	public function getName() : string{
-		return ColorBlockMetaHelper::getColorFromMeta($this->meta) . " Concrete Powder";
-	}
+    public function getName() : string{
+        return ColorBlockMetaHelper::getColorFromMeta($this->meta) . " Concrete Powder";
+    }
 
-	public function getHardness() : float{
-		return 0.5;
-	}
+    public function getHardness() : float{
+        return 0.5;
+    }
 
-	public function getToolType() : int{
-		return BlockToolType::TYPE_SHOVEL;
-	}
+    public function getToolType() : int{
+        return BlockToolType::TYPE_SHOVEL;
+    }
 
-	public function onNearbyBlockChange() : void{
-		if(($block = $this->checkAdjacentWater()) !== null){
-			$this->level->setBlock($this, $block);
-		}else{
-		    parent::onNearbyBlockChange();
-		}
-	}
+    public function onNearbyBlockChange() : void{
+        if(($block = $this->checkAdjacentWater()) !== null){
+            $this->level->setBlock($this, $block);
+        }else{
+            parent::onNearbyBlockChange();
+        }
+    }
 
-	/**
-	 * @return null|Block
-	 */
-	public function tickFalling() : ?Block{
-		return $this->checkAdjacentWater();
-	}
+    /**
+     * @return null|Block
+     */
+    public function tickFalling() : ?Block{
+        return $this->checkAdjacentWater();
+    }
 
-	/**
-	 * @return null|Block
-	 */
-	private function checkAdjacentWater() : ?Block{
-		for($i = 1; $i < 6; ++$i){ //Do not check underneath
-			if($this->getSide($i) instanceof Water){
-				return Block::get(Block::CONCRETE, $this->meta);
-			}
-		}
+    /**
+     * @return null|Block
+     */
+    private function checkAdjacentWater() : ?Block{
+        for($i = 1; $i < 6; ++$i){ //Do not check underneath
+            if($this->getSide($i) instanceof Water){
+                return BlockFactory::get(Block::CONCRETE, $this->meta);
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 }
