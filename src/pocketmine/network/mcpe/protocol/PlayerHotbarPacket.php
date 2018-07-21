@@ -26,7 +26,7 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\network\mcpe\handler\SessionHandler;
 use pocketmine\network\mcpe\protocol\types\ContainerIds;
 
 class PlayerHotbarPacket extends DataPacket{
@@ -51,7 +51,7 @@ class PlayerHotbarPacket extends DataPacket{
         $this->putBool($this->selectHotbarSlot);
     }
 
-    public function handle(NetworkSession $session) : bool{
-        return $session->handlePlayerHotbar($this);
+    public function handle(SessionHandler $handler) : bool{
+        return $handler->handlePlayerHotbar($this);
     }
 }
