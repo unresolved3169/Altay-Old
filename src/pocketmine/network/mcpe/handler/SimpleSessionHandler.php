@@ -257,7 +257,7 @@ class SimpleSessionHandler extends SessionHandler{
     }
 
     public function handleCommandRequest(CommandRequestPacket $packet) : bool{
-        return $this->player->chat($packet->command);
+        return $this->player->handleCommandRequest($packet);
     }
 
     public function handleCommandBlockUpdate(CommandBlockUpdatePacket $packet) : bool{
