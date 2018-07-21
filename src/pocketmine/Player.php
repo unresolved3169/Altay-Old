@@ -2744,10 +2744,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return true;
     }
 
-    public function handlePlayerInput(PlayerInputPacket $packet) : bool{
-        return true;
-    }
-
     public function handleItemFrameDropItem(ItemFrameDropItemPacket $packet) : bool{
         $tile = $this->level->getTileAt($packet->x, $packet->y, $packet->z);
         if($tile instanceof ItemFrame){

@@ -218,7 +218,7 @@ class SimpleSessionHandler extends SessionHandler{
     }
 
     public function handlePlayerInput(PlayerInputPacket $packet) : bool{
-        return $this->player->handlePlayerInput($packet);
+        return true; // TODO
     }
 
     public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
