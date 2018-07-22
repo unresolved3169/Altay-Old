@@ -26,7 +26,7 @@ namespace pocketmine\entity;
 
 interface Rideable{
 
-    public function onRiderLeave(Entity $rider) : bool;
+    public function onRiderLeave(Entity $rider) : void;
 
-    public function onRiderMount(Entity $rider) : bool;
+    public function onRiderMount(Entity $rider) : void;
 }
