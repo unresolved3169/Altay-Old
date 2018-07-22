@@ -70,7 +70,6 @@ use pocketmine\metadata\MetadataValue;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\ChunkRequestTask;
-use pocketmine\network\mcpe\protocol\BatchPacket;
 use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\LevelEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
@@ -131,7 +130,7 @@ class Level implements ChunkManager, Metadatable{
     /** @var Block[][] */
     private $blockCache = [];
 
-    /** @var BatchPacket[] */
+    /** @var string[] */
     private $chunkCache = [];
 
     /** @var int */
@@ -208,6 +207,8 @@ class Level implements ChunkManager, Metadatable{
     private $chunkPopulationLock = [];
     /** @var int */
     private $chunkPopulationQueueSize = 2;
+    /** @var bool[] */
+    private $generatorRegisteredWorkers = [];
 
     /** @var bool */
     private $autoSave = true;
@@ -255,9 +256,6 @@ class Level implements ChunkManager, Metadatable{
 
     /** @var bool */
     private $closed = false;
-
-    /** @var \Closure */
-    private $asyncPoolStartHook;
 
     /** @var Random */
     public $random;
@@ -392,10 +390,6 @@ class Level implements ChunkManager, Metadatable{
         $this->temporalPosition = new Position(0, 0, 0, $this);
         $this->temporalVector = new Vector3(0, 0, 0);
         $this->tickRate = 1;
-
-        $this->server->getAsyncPool()->addWorkerStartHook($this->asyncPoolStartHook = function(int $worker) : void{
-            $this->registerGeneratorToWorker($worker);
-        });
     }
 
     public function getTickRate() : int{
@@ -411,15 +405,16 @@ class Level implements ChunkManager, Metadatable{
     }
 
     public function registerGeneratorToWorker(int $worker) : void{
+        $this->generatorRegisteredWorkers[$worker] = true;
         $this->server->getAsyncPool()->submitTaskToWorker(new GeneratorRegisterTask($this, $this->generator, $this->provider->getGeneratorOptions()), $worker);
     }
 
     public function unregisterGenerator(){
         $pool = $this->server->getAsyncPool();
-        $pool->removeWorkerStartHook($this->asyncPoolStartHook);
-        foreach($pool->getRunningWorkers() as $i){
+        foreach($this->generatorRegisteredWorkers as $i => $bool){
             $pool->submitTaskToWorker(new GeneratorUnregisterTask($this), $i);
         }
+        $this->generatorRegisteredWorkers = [];
     }
 
     public function getBlockMetadata() : BlockMetadataStore{
@@ -820,7 +815,10 @@ class Level implements ChunkManager, Metadatable{
 
         }
 
-        $this->processChunkRequest();
+        foreach($this->players as $p){
+            $p->doChunkRequests();
+        }
+        $this->processChunkRequests();
 
         if($this->sleepTicks > 0 and --$this->sleepTicks <= 0){
             $this->checkSleep();
@@ -1692,7 +1690,7 @@ class Level implements ChunkManager, Metadatable{
 
             $spawnLocation = $this->getSpawnLocation();
             $s = new Vector2($spawnLocation->x, $spawnLocation->z);
-            if(count($this->server->getOps()->getAll()) > 0 and $t->distance($s) <= $distance){
+            if($t->distance($s) <= $distance){
                 return true;
             }
         }
@@ -2560,7 +2558,7 @@ class Level implements ChunkManager, Metadatable{
         }
     }
 
-    private function processChunkRequest(){
+    private function processChunkRequests(){
         if(count($this->chunkSendQueue) > 0){
             $this->timings->syncChunkSendTimer->startTiming();
 
@@ -2591,7 +2589,7 @@ class Level implements ChunkManager, Metadatable{
         }
     }
 
-    public function chunkRequestCallback(int $x, int $z, BatchPacket $payload){
+    public function chunkRequestCallback(int $x, int $z, string $payload){
         $this->timings->syncChunkSendTimer->startTiming();
 
         $index = Level::chunkHash($x, $z);
@@ -2883,7 +2881,7 @@ class Level implements ChunkManager, Metadatable{
         $chunk = $this->getChunk($v->x >> 4, $v->z >> 4, false);
         $x = (int) $v->x;
         $z = (int) $v->z;
-        if($chunk !== null){
+        if($chunk !== null and $chunk->isGenerated()){
             $y = (int) min($max - 2, $v->y);
             $wasAir = ($chunk->getBlockId($x & 0x0f, $y - 1, $z & 0x0f) === 0);
             for(; $y > 0; --$y){
@@ -3044,16 +3042,19 @@ class Level implements ChunkManager, Metadatable{
             }
 
             if($populate){
-                if(!isset($this->chunkPopulationQueue[$index])){
-                    $this->chunkPopulationQueue[$index] = true;
-                    for($xx = -1; $xx <= 1; ++$xx){
-                        for($zz = -1; $zz <= 1; ++$zz){
-                            $this->chunkPopulationLock[Level::chunkHash($x + $xx, $z + $zz)] = true;
-                        }
+                $this->chunkPopulationQueue[$index] = true;
+                for($xx = -1; $xx <= 1; ++$xx){
+                    for($zz = -1; $zz <= 1; ++$zz){
+                        $this->chunkPopulationLock[Level::chunkHash($x + $xx, $z + $zz)] = true;
                     }
-                    $task = new PopulationTask($this, $chunk);
-                    $this->server->getAsyncPool()->submitTask($task);
                 }
+
+                $task = new PopulationTask($this, $chunk);
+                $workerId = $this->server->getAsyncPool()->selectWorker();
+                if(!isset($this->generatorRegisteredWorkers[$workerId])){
+                    $this->registerGeneratorToWorker($workerId);
+                }
+                $this->server->getAsyncPool()->submitTaskToWorker($task, $workerId);
             }
 
             Timings::$populationTimer->stopTiming();

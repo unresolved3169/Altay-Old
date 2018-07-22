@@ -25,14 +25,14 @@ declare(strict_types=1);
 namespace pocketmine\event\player;
 
 use pocketmine\event\Event;
-use pocketmine\network\SourceInterface;
+use pocketmine\network\NetworkInterface;
 use pocketmine\Player;
 
 /**
  * Allows the creation of players overriding the base Player class
  */
 class PlayerCreationEvent extends Event{
-	/** @var SourceInterface */
+	/** @var NetworkInterface */
 	private $interface;
 	/** @var string */
 	private $address;
@@ -45,13 +45,13 @@ class PlayerCreationEvent extends Event{
 	private $playerClass;
 
 	/**
-	 * @param SourceInterface $interface
+	 * @param NetworkInterface $interface
 	 * @param Player::class   $baseClass
 	 * @param Player::class   $playerClass
 	 * @param string          $address
 	 * @param int             $port
 	 */
-	public function __construct(SourceInterface $interface, $baseClass, $playerClass, string $address, int $port){
+	public function __construct(NetworkInterface $interface, $baseClass, $playerClass, string $address, int $port){
 		$this->interface = $interface;
 		$this->address = $address;
 		$this->port = $port;
@@ -70,9 +70,9 @@ class PlayerCreationEvent extends Event{
 	}
 
 	/**
-	 * @return SourceInterface
+	 * @return NetworkInterface
 	 */
-	public function getInterface() : SourceInterface{
+	public function getInterface() : NetworkInterface{
 		return $this->interface;
 	}
 

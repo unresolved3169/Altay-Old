@@ -37,76 +37,61 @@ use pocketmine\utils\TextFormat;
 
 class KillCommand extends VanillaCommand{
 
-	public function __construct(string $name){
-		parent::__construct(
-			$name,
-			"%pocketmine.command.kill.description",
-			"%pocketmine.command.kill.usage",
-			[],
+    public function __construct(string $name){
+        parent::__construct(
+            $name,
+            "%pocketmine.command.kill.description",
+            "%pocketmine.command.kill.usage",
+            [],
             [[
                 new CommandParameter("target", CommandParameter::ARG_TYPE_TARGET, false)
             ]]
-		);
+        );
 
-		$this->setPermission("altay.command.kill.self;altay.command.kill.other");
-	}
+        $this->setPermission("altay.command.kill.self;altay.command.kill.other");
+    }
 
-	public function execute(CommandSender $sender, string $commandLabel, array $args){
-		if(!$this->testPermission($sender)){
-			return true;
-		}
+    public function execute(CommandSender $sender, string $commandLabel, array $args){
+        if(!$this->testPermission($sender)){
+            return true;
+        }
 
-		if(count($args) >= 2){
-			throw new InvalidCommandSyntaxException();
-		}
+        if(count($args) >= 2){
+            throw new InvalidCommandSyntaxException();
+        }
 
-		if(count($args) === 1){
-			if(!$sender->hasPermission("altay.command.kill.other")){
-				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-				return true;
-			}
+        if(count($args) === 1){
+            if(!$sender->hasPermission("altay.command.kill.other")){
+                $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
+                return true;
+            }
 
-			$selectors = (new CommandSelector($args[0], $sender))->getSelected();
-			$names = [];
+            $selectors = (new CommandSelector($args[0], $sender))->getSelected();
+            $names = [];
 
-			foreach($selectors as $selector){
-				$sender->getServer()->getPluginManager()->callEvent($ev = new EntityDamageEvent($selector, EntityDamageEvent::CAUSE_SUICIDE, 1000));
+            foreach($selectors as $selector){
+                $selector->attack(new EntityDamageEvent($player, EntityDamageEvent::CAUSE_SUICIDE, 1000));
+                $names[] = $selector instanceof Living ? $selector->getName() : $selector->getSaveId();
+            }
 
-				if($ev->isCancelled()){
-					return true;
-				}
+            Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kill.successful", [implode(", ", $names)]));
 
-				$selector->setLastDamageCause($ev);
-				$selector->setHealth(0);
+            return true;
+        }
 
-				$names[] = $selector instanceof Living ? $selector->getName() : $selector->getSaveId();
-			}
+        if($sender instanceof Player){
+            if(!$sender->hasPermission("altay.command.kill.self")){
+                $sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
 
-			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kill.successful", [implode(", ", $names)]));
+                return true;
+            }
 
-			return true;
-		}
+            $sender->attack(new EntityDamageEvent($sender, EntityDamageEvent::CAUSE_SUICIDE, 1000));
+            $sender->sendMessage(new TranslationContainer("commands.kill.successful", [$sender->getName()]));
+        }else{
+            throw new InvalidCommandSyntaxException();
+        }
 
-		if($sender instanceof Player){
-			if(!$sender->hasPermission("altay.command.kill.self")){
-				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.permission"));
-
-				return true;
-			}
-
-			$sender->getServer()->getPluginManager()->callEvent($ev = new EntityDamageEvent($sender, EntityDamageEvent::CAUSE_SUICIDE, 1000));
-
-			if($ev->isCancelled()){
-				return true;
-			}
-
-			$sender->setLastDamageCause($ev);
-			$sender->setHealth(0);
-			$sender->sendMessage(new TranslationContainer("commands.kill.successful", [$sender->getName()]));
-		}else{
-			throw new InvalidCommandSyntaxException();
-		}
-
-		return true;
-	}
+        return true;
+    }
 }

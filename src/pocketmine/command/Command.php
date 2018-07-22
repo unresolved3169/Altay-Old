@@ -48,7 +48,7 @@ abstract class Command{
     private $label;
 
     /** @var string[] */
-    private $aliases = [];
+    private $aliases = [], $activeAliases = [];
 
     /** @var CommandMap */
     private $commandMap = null;
@@ -78,8 +78,8 @@ abstract class Command{
         }
 
         $this->commandData = new CommandData($name, $description, 0, 0, null, $overloads ?? [[new CommandParameter("args", CommandParameter::ARG_TYPE_RAWTEXT)]]);
-        $this->setAliases($aliases);
         $this->setLabel($name);
+        $this->setAliases($aliases);
         $this->usageMessage = $usageMessage ?? ("/" . $name);
     }
 
@@ -96,7 +96,12 @@ abstract class Command{
      * @return CommandData
      */
     public function getData() : CommandData{
-        return clone $this->commandData;
+        $data = clone $this->commandData;
+        if(!empty($this->activeAliases)){
+            $data->aliases = new CommandEnum(ucfirst($this->getName()) . "Aliases", array_values($this->activeAliases));
+        }
+
+        return $data;
     }
 
     /**
@@ -234,8 +239,7 @@ abstract class Command{
      * @return string[]
      */
     public function getAliases() : array{
-        $aliases = $this->commandData->aliases;
-        return $aliases == null ? [] : $aliases->enumValues;
+        return $this->aliases;
     }
 
     /**
@@ -244,14 +248,7 @@ abstract class Command{
     public function setAliases(array $aliases){
         $this->aliases = $aliases;
         if(!$this->isRegistered()){
-            if(empty($aliases)){
-                $this->commandData->aliases = null;
-            }else{
-                if($this->commandData->aliases == null){
-                    $this->commandData->aliases = new CommandEnum(ucfirst($this->getName()) . "Aliases");
-                }
-                $this->commandData->aliases->enumValues = $aliases;
-            }
+            $this->activeAliases = $aliases;
         }
     }
 

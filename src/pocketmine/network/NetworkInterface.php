@@ -26,13 +26,12 @@ declare(strict_types=1);
  */
 namespace pocketmine\network;
 
-use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\Player;
 
 /**
- * Classes that implement this interface will be able to be attached to players
+ * Network interfaces are transport layers which can be used to transmit packets between the server and clients.
  */
-interface SourceInterface{
+interface NetworkInterface{
 
     /**
      * Performs actions needed to start the interface after it is registered.
@@ -42,14 +41,11 @@ interface SourceInterface{
     /**
      * Sends a DataPacket to the interface, returns an unique identifier for the packet if $needACK is true
      *
-     * @param Player     $player
-     * @param DataPacket $packet
-     * @param bool       $needACK
-     * @param bool       $immediate
-     *
-     * @return int|null
+     * @param Player $player
+     * @param string $payload
+     * @param bool   $immediate
      */
-    public function putPacket(Player $player, DataPacket $packet, bool $needACK = false, bool $immediate = true) : ?int;
+    public function putPacket(Player $player, string $payload, bool $immediate = true) : void;
 
     /**
      * Terminates the connection
@@ -69,8 +65,14 @@ interface SourceInterface{
      */
     public function process() : void;
 
+    /**
+     * Gracefully shuts down the network interface.
+     */
     public function shutdown() : void;
 
+    /**
+     * Shuts down the network interface in an emergency situation, such as due to a crash.
+     */
     public function emergencyShutdown() : void;
 
 }

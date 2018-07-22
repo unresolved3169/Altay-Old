@@ -22,9 +22,9 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\network\mcpe;
+namespace pocketmine\network\mcpe\handler;
 
-use pocketmine\event\server\DataPacketReceiveEvent;
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\network\mcpe\protocol\BlockEntityDataPacket;
@@ -36,79 +36,48 @@ use pocketmine\network\mcpe\protocol\CommandBlockUpdatePacket;
 use pocketmine\network\mcpe\protocol\CommandRequestPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\CraftingEventPacket;
-use pocketmine\network\mcpe\protocol\DataPacket;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\EntityFallPacket;
 use pocketmine\network\mcpe\protocol\EntityPickRequestPacket;
+use pocketmine\network\mcpe\protocol\InteractPacket;
+use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
+use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
+use pocketmine\network\mcpe\protocol\LabTablePacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
-use pocketmine\network\mcpe\protocol\LoginPacket;
 use pocketmine\network\mcpe\protocol\MapInfoRequestPacket;
 use pocketmine\network\mcpe\protocol\MobArmorEquipmentPacket;
 use pocketmine\network\mcpe\protocol\MobEquipmentPacket;
 use pocketmine\network\mcpe\protocol\ModalFormResponsePacket;
-use pocketmine\network\mcpe\protocol\MoveEntityAbsolutePacket;
 use pocketmine\network\mcpe\protocol\MovePlayerPacket;
 use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\network\mcpe\protocol\PlayerHotbarPacket;
-use pocketmine\network\mcpe\protocol\PlayerSkinPacket;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
+use pocketmine\network\mcpe\protocol\PlayerSkinPacket;
 use pocketmine\network\mcpe\protocol\RequestChunkRadiusPacket;
-use pocketmine\network\mcpe\protocol\ResourcePackChunkRequestPacket;
-use pocketmine\network\mcpe\protocol\ResourcePackClientResponsePacket;
 use pocketmine\network\mcpe\protocol\ServerSettingsRequestPacket;
-use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
 use pocketmine\network\mcpe\protocol\SetLocalPlayerAsInitializedPacket;
 use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
 use pocketmine\network\mcpe\protocol\ShowCreditsPacket;
 use pocketmine\network\mcpe\protocol\SpawnExperienceOrbPacket;
+use pocketmine\network\mcpe\protocol\SubClientLoginPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
-use pocketmine\network\mcpe\protocol\InteractPacket;
-use pocketmine\network\mcpe\protocol\InventoryTransactionPacket;
-use pocketmine\network\mcpe\protocol\ItemFrameDropItemPacket;
 use pocketmine\Player;
-use pocketmine\Server;
-use pocketmine\timings\Timings;
 
-class PlayerNetworkSessionAdapter extends NetworkSession{
+/**
+ * Temporary session handler implementation
+ * TODO: split this up properly into different handlers
+ */
+class SimpleSessionHandler extends SessionHandler{
 
-    /** @var Server */
-    private $server;
     /** @var Player */
     private $player;
 
-    public function __construct(Server $server, Player $player){
-        $this->server = $server;
+    public function __construct(Player $player){
         $this->player = $player;
-    }
-
-    public function handleDataPacket(DataPacket $packet) : void{
-        $timings = Timings::getReceiveDataPacketTimings($packet);
-        $timings->startTiming();
-
-        $packet->decode();
-        if(!$packet->feof() and !$packet->mayHaveUnreadBytes()){
-            $remains = substr($packet->buffer, $packet->offset);
-            $this->server->getLogger()->debug("Still " . strlen($remains) . " bytes unread in " . $packet->getName() . ": 0x" . bin2hex($remains));
-        }
-
-        $this->server->getPluginManager()->callEvent($ev = new DataPacketReceiveEvent($this->player, $packet));
-        if(!$ev->isCancelled() and !$packet->handle($this)){
-            $this->server->getLogger()->debug("Unhandled " . $packet->getName() . " received from " . $this->player->getName() . ": 0x" . bin2hex($packet->buffer));
-        }
-
-        $timings->stopTiming();
-    }
-
-    public function handleLogin(LoginPacket $packet) : bool{
-        return $this->player->handleLogin($packet);
     }
 
     public function handleClientToServerHandshake(ClientToServerHandshakePacket $packet) : bool{
         return false; //TODO
-    }
-
-    public function handleResourcePackClientResponse(ResourcePackClientResponsePacket $packet) : bool{
-        return $this->player->handleResourcePackClientResponse($packet);
     }
 
     public function handleText(TextPacket $packet) : bool{
@@ -117,10 +86,6 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
         }
 
         return false;
-    }
-
-    public function handleMoveEntityAbsolute(MoveEntityAbsolutePacket $packet) : bool{
-        return $this->player->handleMoveEntityAbsolute($packet);
     }
 
     public function handleMovePlayer(MovePlayerPacket $packet) : bool{
@@ -140,7 +105,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
     }
 
     public function handleMobEquipment(MobEquipmentPacket $packet) : bool{
-        return $this->player->handleMobEquipment($packet);
+        return $this->player->equipItem($packet->hotbarSlot);
     }
 
     public function handleMobArmorEquipment(MobArmorEquipmentPacket $packet) : bool{
@@ -152,32 +117,88 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
     }
 
     public function handleBlockPickRequest(BlockPickRequestPacket $packet) : bool{
-        return $this->player->handleBlockPickRequest($packet);
+        return $this->player->pickBlock(new Vector3($packet->blockX, $packet->blockY, $packet->blockZ), $packet->addUserData);
     }
 
     public function handleEntityPickRequest(EntityPickRequestPacket $packet) : bool{
-        return true; //TODO : Test for boat
+        return false; //TODO
     }
 
     public function handlePlayerAction(PlayerActionPacket $packet) : bool{
-        return $this->player->handlePlayerAction($packet);
+        $pos = new Vector3($packet->x, $packet->y, $packet->z);
+
+        switch($packet->action){
+            case PlayerActionPacket::ACTION_START_BREAK:
+                $this->player->startBreakBlock($pos, $packet->face);
+
+                break;
+
+            case PlayerActionPacket::ACTION_ABORT_BREAK:
+            case PlayerActionPacket::ACTION_STOP_BREAK:
+                $this->player->stopBreakBlock($pos);
+                break;
+            case PlayerActionPacket::ACTION_START_SLEEPING:
+                //unused
+                break;
+            case PlayerActionPacket::ACTION_STOP_SLEEPING:
+                $this->player->stopSleep();
+                break;
+            case PlayerActionPacket::ACTION_JUMP:
+                $this->player->jump();
+                return true;
+            case PlayerActionPacket::ACTION_START_SPRINT:
+                $this->player->toggleSprint(true);
+                return true;
+            case PlayerActionPacket::ACTION_STOP_SPRINT:
+                $this->player->toggleSprint(false);
+                return true;
+            case PlayerActionPacket::ACTION_START_SNEAK:
+                $this->player->toggleSneak(true);
+                return true;
+            case PlayerActionPacket::ACTION_STOP_SNEAK:
+                $this->player->toggleSneak(false);
+                return true;
+            case PlayerActionPacket::ACTION_START_GLIDE:
+                $this->player->toggleGlide(true);
+                break;
+            case PlayerActionPacket::ACTION_STOP_GLIDE:
+                $this->player->toggleGlide(false);
+                break;
+            case PlayerActionPacket::ACTION_CONTINUE_BREAK:
+                $this->player->continueBreakBlock($pos, $packet->face);
+                break;
+            case PlayerActionPacket::ACTION_SET_ENCHANTMENT_SEED:
+                break; // TODO
+            case PlayerActionPacket::ACTION_START_SWIMMING:
+                if(!$this->player->isSwimming()){
+                    $this->player->toggleSwimming(true);
+                }
+                break;
+            case PlayerActionPacket::ACTION_STOP_SWIMMING:
+                if($this->player->isSwimming()){ // for spam issue
+                    $this->player->toggleSwimming(false);
+                }
+                break;
+            default:
+                $this->player->getServer()->getLogger()->debug("Unhandled/unknown player action type " . $packet->action . " from " . $this->player->getName());
+                return false;
+        }
+
+        $this->player->setUsingItem(false);
+
+        return true;
     }
 
     public function handleEntityFall(EntityFallPacket $packet) : bool{
-        return true;
-    }
-
-    public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
-        $this->player->getServer()->broadcastPacket($this->player->getViewers(), $packet);
-        return true;
+        return true; //Not used
     }
 
     public function handleAnimate(AnimatePacket $packet) : bool{
-        return $this->player->handleAnimate($packet);
+        return $this->player->animate($packet->action);
     }
 
     public function handleContainerClose(ContainerClosePacket $packet) : bool{
-        return $this->player->handleContainerClose($packet);
+        return $this->player->doCloseWindow($packet->windowId);
     }
 
     public function handlePlayerHotbar(PlayerHotbarPacket $packet) : bool{
@@ -197,11 +218,16 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
     }
 
     public function handlePlayerInput(PlayerInputPacket $packet) : bool{
-        return $this->player->handlePlayerInput($packet);
+        return true; // TODO
     }
 
     public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
-        return $this->player->handleSetPlayerGameType($packet);
+        if($packet->gamemode !== $this->player->getGamemode()){
+            //Set this back to default. TODO: handle this properly
+            $this->player->sendGamemode();
+            $this->player->sendSettings();
+        }
+        return true;
     }
 
     public function handleSpawnExperienceOrb(SpawnExperienceOrbPacket $packet) : bool{
@@ -238,12 +264,12 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
         return false; //TODO
     }
 
-    public function handleResourcePackChunkRequest(ResourcePackChunkRequestPacket $packet) : bool{
-        return $this->player->handleResourcePackChunkRequest($packet);
-    }
-
     public function handlePlayerSkin(PlayerSkinPacket $packet) : bool{
         return $this->player->changeSkin($packet->skin, $packet->newSkinName, $packet->oldSkinName);
+    }
+
+    public function handleSubClientLogin(SubClientLoginPacket $packet) : bool{
+        return false; //TODO
     }
 
     public function handleBookEdit(BookEditPacket $packet) : bool{
@@ -261,5 +287,13 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
         }
 
         return true;
+    }
+
+    public function handleLabTable(LabTablePacket $packet) : bool{
+        return false; //TODO
+    }
+
+    public function handleSetLocalPlayerAsInitialized(SetLocalPlayerAsInitializedPacket $packet) : bool{
+        return false; //TODO
     }
 }

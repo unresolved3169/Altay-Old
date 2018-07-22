@@ -33,16 +33,13 @@ use pocketmine\network\mcpe\protocol\PacketPool;
 use pocketmine\Server;
 
 class Network{
-
-    public static $BATCH_THRESHOLD = 512;
-
     /** @var Server */
     private $server;
 
-    /** @var SourceInterface[] */
+    /** @var NetworkInterface[] */
     private $interfaces = [];
 
-    /** @var AdvancedSourceInterface[] */
+    /** @var AdvancedNetworkInterface[] */
     private $advancedInterfaces = [];
 
     private $upload = 0;
@@ -77,7 +74,7 @@ class Network{
     }
 
     /**
-     * @return SourceInterface[]
+     * @return NetworkInterface[]
      */
     public function getInterfaces() : array{
         return $this->interfaces;
@@ -89,7 +86,7 @@ class Network{
         }
     }
 
-    public function processInterface(SourceInterface $interface) : void{
+    public function processInterface(NetworkInterface $interface) : void{
         try{
             $interface->process();
         }catch(\Throwable $e){
@@ -107,14 +104,14 @@ class Network{
     }
 
     /**
-     * @param SourceInterface $interface
+     * @param NetworkInterface $interface
      */
-    public function registerInterface(SourceInterface $interface) : void{
+    public function registerInterface(NetworkInterface $interface) : void{
         $this->server->getPluginManager()->callEvent($ev = new NetworkInterfaceRegisterEvent($interface));
         if(!$ev->isCancelled()){
             $interface->start();
             $this->interfaces[$hash = spl_object_hash($interface)] = $interface;
-            if($interface instanceof AdvancedSourceInterface){
+            if($interface instanceof AdvancedNetworkInterface){
                 $this->advancedInterfaces[$hash] = $interface;
                 $interface->setNetwork($this);
             }
@@ -123,9 +120,9 @@ class Network{
     }
 
     /**
-     * @param SourceInterface $interface
+     * @param NetworkInterface $interface
      */
-    public function unregisterInterface(SourceInterface $interface) : void{
+    public function unregisterInterface(NetworkInterface $interface) : void{
         $this->server->getPluginManager()->callEvent(new NetworkInterfaceUnregisterEvent($interface));
         unset($this->interfaces[$hash = spl_object_hash($interface)], $this->advancedInterfaces[$hash]);
     }

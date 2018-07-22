@@ -25,8 +25,7 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
-use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\network\mcpe\handler\SessionHandler;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 
 class AdventureSettingsPacket extends DataPacket{
@@ -116,8 +115,8 @@ class AdventureSettingsPacket extends DataPacket{
         }
     }
 
-    public function handle(NetworkSession $session) : bool{
-        return $session->handleAdventureSettings($this);
+    public function handle(SessionHandler $handler) : bool{
+        return $handler->handleAdventureSettings($this);
     }
 
 }
