@@ -24,6 +24,8 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\entity\Entity;
+
 class SlimeBlock extends Solid{
 
 	protected $id = self::SLIME_BLOCK;
@@ -43,4 +45,9 @@ class SlimeBlock extends Solid{
 	public function getName() : string{
 		return "Slime Block";
 	}
+
+	public function onEntityCollideUpon(Entity $entity): void
+    {
+        $entity->resetFallDistance();
+    }
 }
