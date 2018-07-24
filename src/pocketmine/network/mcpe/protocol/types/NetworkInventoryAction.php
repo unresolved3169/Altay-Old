@@ -227,14 +227,10 @@ class NetworkInventoryAction{
                         return new SlotChangeAction($window, 1, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_RESULT:
                         $window = $player->getWindowByType(AnvilInventory::class);
-                        $air = ItemFactory::get(Block::AIR);
-                        $window->setContents([
-                            $air, $air, $this->oldItem
-                        ], false);
+                        $window->setItem(2, $this->oldItem, false);
                         return new SlotChangeAction($window, 2, $this->oldItem, $this->newItem);
                     case self::SOURCE_TYPE_ANVIL_OUTPUT:
-                        throw new \RuntimeException("Anvil inventory source type OUTPUT");
-
+                        break;
                     case self::SOURCE_TYPE_ENCHANT_INPUT:
                         $window = $player->getWindowByType(EnchantInventory::class);
                         return new EnchantAction($window, 0, $this->oldItem, $this->newItem);
