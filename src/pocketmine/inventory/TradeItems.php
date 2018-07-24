@@ -24,13 +24,13 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory;
 
-use pocketmine\entity\Villager;
 use pocketmine\item\enchantment\EnchantmentHelper;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
+use pocketmine\entity\passive\Villager;
 use pocketmine\utils\Random;
 
 class TradeItems{

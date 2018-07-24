@@ -29,7 +29,6 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
-use pocketmine\entity\Attribute;
 use pocketmine\entity\Effect;
 use pocketmine\entity\EffectInstance;
 use pocketmine\entity\Entity;
@@ -395,15 +394,19 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return $this->xuid !== "";
     }
 
-    /**
-     * If the player is logged into Xbox Live, returns their Xbox user ID (XUID) as a string. Returns an empty string if
-     * the player is not logged into Xbox Live.
-     *
-     * @return string
-     */
-    public function getXuid() : string{
-        return $this->xuid;
-    }
+  public function canBePushed() : bool{
+   return true;
+  }
+
+	/**
+	 * If the player is logged into Xbox Live, returns their Xbox user ID (XUID) as a string. Returns an empty string if
+	 * the player is not logged into Xbox Live.
+	 *
+	 * @return string
+	 */
+	public function getXuid() : string{
+		return $this->xuid;
+	}
 
     /**
      * Returns the player's UUID. This should be preferred over their Xbox user ID (XUID) because UUID is a standard
@@ -1709,9 +1712,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
         $this->timings->startTiming();
 
-        if($this->spawned){
-            $this->processMovement($tickDiff);
-            $this->motion->x = $this->motion->y = $this->motion->z = 0; //TODO: HACK! (Fixes player knockback being messed up)
+		if($this->spawned){
+			$this->processMovement($tickDiff);
+			$this->resetMotion(); //TODO: HACK! (Fixes player knockback being messed up)
 
             Timings::$timerEntityBaseTick->startTiming();
             $this->entityBaseTick($tickDiff);
@@ -3901,28 +3904,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         return $this->isConnected();
     }
 
-    /**
-     * Sets the movement speed of player
-     * 1 = default 0 = immobile
-     *
-     * @param float $speed
-     */
-    public function setMovementSpeed(float $speed) : void{
-        $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->setValue($speed, true);
-    }
-
-    /**
-     * Returns the movement speed of player
-     *
-     * @return float
-     */
-    public function getMovementSpeed() : float{
-        return $this->getAttributeMap()->getAttribute(Attribute::MOVEMENT_SPEED)->getValue();
-    }
-
-    public function getDeviceModel() : string{
-        return $this->deviceModel;
-    }
+	public function getDeviceModel() : string{
+		return $this->deviceModel;
+	}
 
     public function getDeviceOS() : int{
         return $this->deviceOS;

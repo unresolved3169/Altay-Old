@@ -2468,17 +2468,21 @@ class Level implements ChunkManager, Metadatable{
         }
     }
 
-    /**
-     * Gets the highest block Y value at a specific $x and $z
-     *
-     * @param int $x
-     * @param int $z
-     *
-     * @return int 0-255
-     */
-    public function getHighestBlockAt(int $x, int $z) : int{
-        return $this->getChunk($x >> 4, $z >> 4, true)->getHighestBlockAt($x & 0x0f, $z & 0x0f);
-    }
+	/**
+	 * Gets the highest block Y value at a specific $x and $z
+	 *
+	 * @param int $x
+	 * @param int $z
+	 *
+	 * @return int 0-255
+	 */
+	public function getHighestBlockAt(int $x, int $z) : int{
+		return $this->getChunk($x >> 4, $z >> 4, true)->getHighestBlockAt($x & 0x0f, $z & 0x0f);
+	}
+
+	public function canSeeSky(Vector3 $pos) : bool{
+	    return $pos->y >= $this->getHighestBlockAt($pos->x, $pos->z);
+	}
 
     /**
      * @param int $x
@@ -2958,6 +2962,11 @@ class Level implements ChunkManager, Metadatable{
     public function startTime(){
         $this->stopTime = false;
         $this->sendTime();
+    }
+
+    public function isDayTime() : bool{
+        $degree = $this->getSunAngleDegrees();
+        return $degree > 0 and $degree < 180;
     }
 
     /**

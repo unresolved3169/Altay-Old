@@ -22,8 +22,13 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\entity\passive;
 
+use pocketmine\entity\Ageable;
+use pocketmine\entity\Creature;
+use pocketmine\entity\Effect;
+use pocketmine\entity\EffectInstance;
+use pocketmine\entity\NPC;
 use pocketmine\inventory\TradeInventory;
 use pocketmine\inventory\TradeItems;
 use pocketmine\item\Item;

@@ -48,7 +48,7 @@ class Bossbar extends Vector3{
 	/** @var array */
 	protected $viewers = [];
 
-	public function __construct(string $title = "Altay Bossbar API", float $hp = 1, float $maxHp = 1){
+	public function __construct(string $title = "Altay Bossbar API", float $hp = 1, float $maxHp = 1, ?int $entityId = null){
 		parent::__construct(0,0,0);
 
 		$flags = (
@@ -60,7 +60,7 @@ class Bossbar extends Vector3{
 			Entity::DATA_NAMETAG => [Entity::DATA_TYPE_STRING, $title]
 		];
 
-		$this->entityId = Entity::$entityCount++;
+		$this->entityId = $entityId ?? Entity::$entityCount++;
 
 		$this->setHealthPercent($hp, $maxHp);
 	}
