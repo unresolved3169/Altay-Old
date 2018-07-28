@@ -65,7 +65,7 @@ class VoidGenerator extends Generator {
 
             $spawn = $this->getSpawn();
             if($spawn->getX() >> 4 === $chunkX and $spawn->getZ() >> 4 === $chunkZ){
-                $this->chunk->setBlockId(0, 64, 0, Block::GRASS);
+                $this->chunk->setBlockId(256, 64, 256, Block::GRASS);
             }else{
                 $this->emptyChunk = clone $this->chunk;
             }
@@ -84,7 +84,7 @@ class VoidGenerator extends Generator {
 	}
 
 	public function getSpawn() : Vector3{
-        return new Vector3(128, 72, 128);
+        return new Vector3(256, 65, 256);
     }
 
 }
